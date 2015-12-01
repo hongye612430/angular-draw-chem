@@ -1,0 +1,7 @@
+*.komodoproject
+~.*
+.npmignore
+gh-pages
+gh-pages-src
+node_modules
+bower_components
