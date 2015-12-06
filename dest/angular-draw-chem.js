@@ -39,7 +39,7 @@
 			currentInstance = {};
 		
 		/*
-		 * Returns 'true' if the modal should be shown
+		 * Returns 'true' if the modal should be shown, 'false' otherwise.
 		 * @api public
 		 *
 		 */
