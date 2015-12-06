@@ -1,9 +1,9 @@
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
-		.factory("DrawChemEditor", DrawChemEditor);
+		.factory("DrawChem", DrawChem);
 	
-	function DrawChemEditor() {
+	function DrawChem() {
 		
 		var service = {},
 			// at the beginning, the modal is hidden

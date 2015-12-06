@@ -9,19 +9,21 @@ module.exports = function(config) {
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ["jasmine"],
+    frameworks: ["jasmine-jquery", "jasmine"],
 
     // list of files / patterns to load in the browser
     files: [
       "assets/angular.js",
       "assets/angular-sanitize.js",
       "assets/angular-mocks.js",
+      { pattern: "assets/draw-chem-editor.html", included: false, served: true, watched: true },
       "../src/angular-draw-chem-app.js",
-      "../src/components/**/*.js"
+      "../src/components/**/*.js",      
     ],
 
     // list of files to exclude
     exclude: [
+      "../src/angular-draw-chem.js"
     ],
 
     // preprocess matching files before serving them to the browser

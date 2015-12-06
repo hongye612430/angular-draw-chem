@@ -5,11 +5,11 @@
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
-		.directive("editorModal", EditorModal);
+		.directive("drawChemEditor", DrawChemEditor);
 	
-	EditorModal.$inject = ["DrawChemEditor", "$sce"];
+	DrawChemEditor.$inject = ["DrawChem", "$sce"];
 	
-	function EditorModal(DrawChemEditor, $sce) {
+	function DrawChemEditor(DrawChem, $sce) {
 		return {
 			templateUrl: "draw-chem-editor.html",
 			scope: {
@@ -18,7 +18,7 @@
 				editorHeight: "@"
 			},
 			link: function (scope, element, attrs) {
-				
+				scope.closeEditor = DrawChem.closeEditor;
 			}
 		}
 	}
@@ -26,9 +26,9 @@
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
-		.factory("DrawChemEditor", DrawChemEditor);
+		.factory("DrawChem", DrawChem);
 	
-	function DrawChemEditor() {
+	function DrawChem() {
 		
 		var service = {},
 			// at the beginning, the modal is hidden

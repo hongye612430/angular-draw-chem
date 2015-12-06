@@ -34,7 +34,8 @@ module.exports = function(grunt) {
 		},
 		buildHtml: {
 			files: [
-				{ expand: true, cwd: "src/components/editor/", src: "draw-chem-editor.html", dest: "dest/" }
+				{ expand: true, cwd: "src/components/editor/", src: "draw-chem-editor.html", dest: "dest/" },
+				{ expand: true, cwd: "src/components/editor/", src: "draw-chem-editor.html", dest: "tests/assets" }
 			]
 		},
 		buildCss: {
