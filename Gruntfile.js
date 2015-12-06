@@ -2,8 +2,22 @@ module.exports = function(grunt) {
 
   grunt.initConfig({
     pkg: grunt.file.readJSON("package.json"),
+	watch: {
+		buildJs: {
+		  files: ["src/angular-draw-chem-app.js", "src/components/*/*.js", "!src/components/*/*-test.js"],
+		  tasks: ["js"]
+		},
+		buildHtml: {
+		  files: ["src/components/editor/draw-chem-editor.html"],
+		  tasks: ["html"]
+		},
+		buildCss: {
+		  files: ["src/components/editor/draw-chem-editor.sass"],
+		  tasks: ["css"]
+		}
+	},
 	concat: {
-		build: {
+		buildJs: {
 			src: [
 				"src/angular-draw-chem-app.js",
 				"src/components/*/*.js",
@@ -13,21 +27,46 @@ module.exports = function(grunt) {
 		}
 	},
 	copy: {
-		build: {
+		buildJs: {
 			files: [
-				{ expand: true, cwd: "src/components/", src: "angular-draw-chem.js", dest: "dest/" }
+				{ expand: true, cwd: "src/components/", src: "angular-draw-chem.js", dest: "dest/" }				
+			]
+		},
+		buildHtml: {
+			files: [
+				{ expand: true, cwd: "src/components/editor/", src: "draw-chem-editor.html", dest: "dest/" }
+			]
+		},
+		buildCss: {
+			files: [
+				{ expand: true, cwd: "src/components/editor/", src: "draw-chem-editor.css", dest: "dest/" }
 			]
 		}
 	},
     uglify: {
-		build: {
+		buildJs: {
 			files: {
 				"dest/angular-draw-chem.min.js": "src/components/angular-draw-chem.js"
 			}	
 		}
     },
 	clean: {
-		build: ["src/components/angular-chemistry.js"]
+		buildJs: ["src/components/angular-draw-chem.js"],
+		buildCss: ["src/components/editor/draw-chem-editor.css"]
+	},
+	sass: {
+		buildCss: {
+			files: {
+				"src/components/editor/draw-chem-editor.css": "src/components/editor/draw-chem-editor.sass"
+			}
+		}
+	},
+	cssmin: {
+		buildCss: {
+			files: {
+				"dest/draw-chem-editor.min.css": "src/components/editor/draw-chem-editor.css"
+			}
+		}
 	}
   });
   
@@ -35,7 +74,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks("grunt-contrib-concat");
   grunt.loadNpmTasks("grunt-contrib-clean");
   grunt.loadNpmTasks("grunt-contrib-copy");
+  grunt.loadNpmTasks("grunt-contrib-cssmin");
+  grunt.loadNpmTasks("grunt-sass");
+  grunt.loadNpmTasks("grunt-contrib-watch");
   
-  grunt.registerTask("default", ["concat", "copy", "uglify", "clean"]);
-
+  grunt.registerTask("js", ["concat:buildJs", "copy:buildJs", "uglify:buildJs", "clean:buildJs"]);
+  grunt.registerTask("css", ["sass:buildCss", "copy:buildCss", "cssmin:buildCss", "clean:buildCss"]);
+  grunt.registerTask("html", ["copy:buildHtml"]);  
 };
