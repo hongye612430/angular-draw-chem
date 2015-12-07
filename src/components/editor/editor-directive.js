@@ -3,9 +3,9 @@
 	angular.module("mmAngularDrawChem")
 		.directive("drawChemEditor", DrawChemEditor);
 	
-	DrawChemEditor.$inject = ["DrawChem", "$sce"];
+	DrawChemEditor.$inject = ["DrawChemShapes", "DrawChem", "$sce"];
 	
-	function DrawChemEditor(DrawChem, $sce) {
+	function DrawChemEditor(DrawChemShapes, DrawChem, $sce) {
 		return {
 			templateUrl: "draw-chem-editor.html",
 			scope: {
@@ -13,8 +13,12 @@
 				editorWidth: "@",
 				editorHeight: "@"
 			},
-			link: function (scope, element, attrs) {
+			link: function (scope, element, attrs) {				
 				scope.closeEditor = DrawChem.closeEditor;
+				scope.content = "";
+				scope.benzene = function () {
+					scope.content = $sce.trustAsHtml(DrawChemShapes.benzene().generate());
+				};
 			}
 		}
 	}

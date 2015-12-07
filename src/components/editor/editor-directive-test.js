@@ -40,6 +40,16 @@ describe("DrawChemEditor directive tests", function () {
 	it("should render the basic scaffolds", function () {
 		var output = temp.find(".dc-editor-dialog-content");
 		temp.find(".dc-benzene-button").click();
-		expect(output.html()).toEqual("");
+		expect(output.html()).toEqual(
+			"<svg>" +
+				"<defs>" +
+					"<g id=\"benzene\">" +
+						"<polygon points=\"0.00 -11.55 10.00 -5.77 10.00 5.77 0.00 11.55 -10.00 5.77 -10.00 -5.77\"></polygon>" +
+						"<circle r=\"6.67\"></circle>" +
+					"</g>" +
+				"</defs>" +
+				"<use xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"#benzene\" transform=\"\" style=\"stroke: black; stroke-width: 0.48; fill: none;\"></use>" +
+			"</svg>"
+		);
 	});
 });
