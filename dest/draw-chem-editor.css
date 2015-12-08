@@ -1,4 +1,4 @@
-.draw-chem-editor-overlay {
+.dc-editor-overlay {
   /* A dark translucent div that covers the whole screen */
   position: absolute;
   z-index: 9999;
@@ -9,7 +9,7 @@
   background-color: #000000;
   opacity: 0.8; }
 
-.draw-chem-editor-dialog {
+.dc-editor-dialog {
   /* A centered div above the overlay with a box shadow. */
   z-index: 10000;
   position: absolute;
@@ -23,11 +23,11 @@
   background-color: #fff;
   box-shadow: 4px 4px 80px #000; }
 
-.draw-chem-editor-dialog-content {
+.dc-editor-dialog-content {
   padding: 10px;
   text-align: left; }
 
-.draw-chem-editor-close {
+.dc-editor-close {
   position: absolute;
   top: 3px;
   right: 5px;

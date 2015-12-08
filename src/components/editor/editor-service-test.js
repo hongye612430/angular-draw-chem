@@ -18,24 +18,45 @@ describe("DrawChem service tests", function () {
 	
 	it("should have a getContent and setContent functions", function () {
 		DrawChem.setContent("An interesting content", "test"); // explicitly associates content with name
-		expect(DrawChem.getContent("test")()).toEqual("An interesting content"); // gets explicitly named content 
+		expect(DrawChem.getContent("test")).toEqual("An interesting content"); // gets explicitly named content 
 	});
 	
 	it("should run the editor and associate the currently active 'instance' with it", function () {
 		DrawChem.runEditor("test"); // creates a new 'instance' and sets it to active
 		expect(DrawChem.showEditor()).toEqual(true);
 		DrawChem.setContent("An interesting content"); // already associated with 'test' 'instance'
-		expect(DrawChem.getContent()()).toEqual("An interesting content"); // returns content of the currently active 'instance'
+		expect(DrawChem.getContent()).toEqual("An interesting content"); // returns content of the currently active 'instance'
 	});
 	
 	it("should run the editor and then close it", function () {
 		DrawChem.runEditor("test"); // creates a new 'instance' and sets it to active
 		expect(DrawChem.showEditor()).toEqual(true);
 		DrawChem.setContent("An interesting content"); // already associated with 'test' 'instance'
-		expect(DrawChem.getContent()()).toEqual("An interesting content");
+		expect(DrawChem.getContent()).toEqual("An interesting content");
 		DrawChem.closeEditor(); // hides modal and clears currently active 'instance'
 		expect(DrawChem.showEditor()).toEqual(false);
-		expect(DrawChem.getContent()()).toBeUndefined(); // no active 'instance'
-		expect(DrawChem.getContent("test")()).toEqual("An interesting content"); // the content was saved, however
+		expect(DrawChem.getContent()).toBeUndefined(); // no active 'instance'
+		expect(DrawChem.getContent("test")).toEqual("An interesting content"); // the content was saved, however
+	});
+	
+	it("should be able to create different 'instances' of editor", function () {
+		DrawChem.runEditor("test"); // creates a new 'instance' and sets it to active
+		expect(DrawChem.showEditor()).toEqual(true);
+		DrawChem.setContent("An interesting content"); // already associated with 'test' 'instance'
+		expect(DrawChem.getContent()).toEqual("An interesting content");
+		DrawChem.closeEditor(); // hides modal and clears currently active 'instance'
+		expect(DrawChem.showEditor()).toEqual(false);
+		//
+		expect(DrawChem.getContent()).toBeUndefined(); // no active 'instance'
+		DrawChem.runEditor("test2"); // creates a new 'instance' and sets it to active
+		expect(DrawChem.showEditor()).toEqual(true);
+		DrawChem.setContent("A more interesting content"); // already associated with 'test' 'instance'
+		expect(DrawChem.getContent()).toEqual("A more interesting content");
+		DrawChem.closeEditor(); // hides modal and clears currently active 'instance'
+		expect(DrawChem.showEditor()).toEqual(false);
+		//
+		expect(DrawChem.getContent()).toBeUndefined(); // no active 'instance'
+		expect(DrawChem.getContent("test")).toEqual("An interesting content"); // the content was saved
+		expect(DrawChem.getContent("test2")).toEqual("A more interesting content"); // the content was saved
 	});
 })

@@ -49,14 +49,10 @@
 		 */
 		service.getContent = function (name) {
 			if (typeof name === "string") {
-				return function () {
-					var inst = getInstance(name);
-					return typeof inst === "undefined" ? "": inst.content;
-				}
+				var inst = getInstance(name);
+				return typeof inst === "undefined" ? "": inst.content;
 			}
-			return function () {
-				return currentInstance.content;
-			};
+			return currentInstance.content;
 		}
 		
 		/*

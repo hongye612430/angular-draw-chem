@@ -1,6 +1,7 @@
 *.komodoproject
 ~.*
 .npmignore
+src/components/editor/.sass-cache
 gh-pages
 gh-pages-src
 node_modules
