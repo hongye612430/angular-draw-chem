@@ -13,21 +13,20 @@
 			// currently active 'instance'
 			currentInstance = {};
 		
-		/*
+		/**
 		 * Returns 'true' if the modal should be shown, 'false' otherwise.
-		 * @api public
-		 *
+		 * @public
+		 * @returns {boolean}
 		 */
 		service.showEditor = function () {
 			return showModal;
 		}
 		
-		/*
+		/**
 		 * Runs the editor, i.e. shows the modal, fetches the editor 'instance', and assigns it to the currently active 'instance'.
 		 * If the 'instance' does not exist, a new one is created.
-		 * @api public
-		 * @param name - string, name of the 'instance' with which the editor is to be opened
-		 * 
+		 * @public
+		 * @param {string} name - name of the 'instance' with which the editor is to be opened
 		 */
 		service.runEditor = function (name) {
 			showModal = true;
@@ -40,12 +39,12 @@
 			currentInstance = getInstance(name);
 		}
 		
-		/*
+		/**
 		 * Returns the content of the 'instance' with the specified name. If it does not exist, an empty string is returned.
 		 * If the argument is not supplied, the content of the currently active 'instance' is returned.
-		 * @api public
-		 * @param name - string, name of the 'instance' which content is to be returned
-		 *
+		 * @public
+		 * @param {string} name - name of the 'instance' which content is to be returned
+		 * @returns {string}
 		 */
 		service.getContent = function (name) {
 			if (typeof name === "string") {
@@ -55,13 +54,12 @@
 			return currentInstance.content;
 		}
 		
-		/*
+		/**
 		 * Sets the content of the 'instance'. If the name of the 'instance' is not supplied,
 		 * the content of the currently active 'instance' is set and then the corresponding 'instance' in the 'instances' array is updated.
-		 * @api public
-		 * @param name - string, name of the instance
-		 * @param content - string, content to be set
-		 *
+		 * @public
+		 * @param {string} name - name of the instance
+		 * @param {string} content - content to be set
 		 */
 		service.setContent = function (content, name) {			 
 			if (typeof name === "undefined") {
@@ -72,23 +70,23 @@
 			}
 		}
 		
-		/*
+		/**
 		 * Hides the editor and clears the currently active 'instance'.
-		 * @api public
-		 *
+		 * @public
 		 */
 		service.closeEditor = function () {
 			showModal = false;
 			currentInstance = {};
 		}
 		
+		// exposes API
 		return service;
 		
-		/*
+		/**
 		 * Checks if the 'instance' exists.
-		 * @api private
-		 * @param name - string, name of the 'instance' to look for
-		 *
+		 * @private
+		 * @param {string} name - name of the 'instance' to look for
+		 * @returns {boolean}
 		 */
 		function instanceExists(name) {
 			for (var i = 0; i < instances.length; i++) {
@@ -99,11 +97,11 @@
 			return false;
 		}
 		
-		/*
+		/**
 		 * Returns 'instance' with the specified name.
-		 * @api private
-		 * @param name - string, name of the 'instance' to look for
-		 *
+		 * @private
+		 * @param {string} - name of the 'instance' to look for
+		 * @returns {Object}
 		 */
 		function getInstance(name) {
 			for (var i = 0; i < instances.length; i++) {
@@ -113,12 +111,11 @@
 			}
 		}
 		
-		/*
+		/**
 		 * Sets content of the 'instance' with the specified name. If the 'instance' does not exist, a new one is created.
 		 * If the name is not specified, the content of the currently active 'instance' is saved in the 'instances' array.
-		 * @api private
-		 * @param name - string, name of the 'instance' to look for
-		 *
+		 * @private
+		 * @param {string} - name of the 'instance' to look for
 		 */
 		function setInstance(content, name) {
 			var i;
