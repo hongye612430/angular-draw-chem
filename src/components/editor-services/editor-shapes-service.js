@@ -182,28 +182,30 @@
 			}
 		}
 		
-		/*
-		 * Predefined structure of benzene.
+		/**
+		 * Stores all predefined structures.
 		 */
-		service.benzene = function () {
-			// todo
-			return [
-				{
-					coords: [100, 100],
-					bonds: [
-						{
-							coords: [200, 100], bonds: []
-						},
-						{
-							coords: [100, 200], bonds: []
-						},
-						{
-							coords: [50, 50], bonds: []
-						}
-					]
-				}
-			]
-		};
+		service.custom = [
+			{
+				name: "benzene",
+				structure: [
+					{
+						coords: [100, 100],
+						bonds: [
+							{
+								coords: [200, 100], bonds: []
+							},
+							{
+								coords: [100, 200], bonds: []
+							},
+							{
+								coords: [50, 50], bonds: []
+							}
+						]
+					}
+				]
+			}
+		];
 		
 		return service;			
 	}

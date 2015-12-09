@@ -8,11 +8,11 @@ module.exports = function(grunt) {
 		  tasks: ["js"]
 		},
 		buildHtml: {
-		  files: ["src/components/editor/draw-chem-editor.html"],
+		  files: ["src/components/static/draw-chem-editor.html"],
 		  tasks: ["html"]
 		},
 		buildCss: {
-		  files: ["src/components/editor/draw-chem-editor.sass"],
+		  files: ["src/components/static/draw-chem-editor.sass"],
 		  tasks: ["css"]
 		}
 	},
@@ -34,13 +34,13 @@ module.exports = function(grunt) {
 		},
 		buildHtml: {
 			files: [
-				{ expand: true, cwd: "src/components/editor/", src: "draw-chem-editor.html", dest: "dest/" },
-				{ expand: true, cwd: "src/components/editor/", src: "draw-chem-editor.html", dest: "tests/assets" }
+				{ expand: true, cwd: "src/components/static/", src: "draw-chem-editor.html", dest: "dest/" },
+				{ expand: true, cwd: "src/components/static/", src: "draw-chem-editor.html", dest: "tests/assets" }
 			]
 		},
 		buildCss: {
 			files: [
-				{ expand: true, cwd: "src/components/editor/", src: "draw-chem-editor.css", dest: "dest/" }
+				{ expand: true, cwd: "src/components/static/", src: "draw-chem-editor.css", dest: "dest/" }
 			]
 		}
 	},
@@ -58,14 +58,14 @@ module.exports = function(grunt) {
 	sass: {
 		buildCss: {
 			files: {
-				"src/components/editor/draw-chem-editor.css": "src/components/editor/draw-chem-editor.sass"
+				"src/components/static/draw-chem-editor.css": "src/components/static/draw-chem-editor.sass"
 			}
 		}
 	},
 	cssmin: {
 		buildCss: {
 			files: {
-				"dest/draw-chem-editor.min.css": "src/components/editor/draw-chem-editor.css"
+				"dest/draw-chem-editor.min.css": "src/components/static/draw-chem-editor.css"
 			}
 		}
 	}
