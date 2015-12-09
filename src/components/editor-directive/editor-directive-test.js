@@ -1,9 +1,9 @@
 describe("DrawChemEditor directive tests", function () {
 	beforeEach(module("mmAngularDrawChem"));
 	
-	var $scope, element, DrawChem, template;
+	var $scope, element, DrawChem, DrawChemShapes, DrawChemStructures, template;
 	
-	beforeEach(inject(function ($httpBackend, $compile, $rootScope, _DrawChem_, _DrawChemShapes_) {
+	beforeEach(inject(function ($httpBackend, $compile, $rootScope, _DrawChem_, _DrawChemShapes_, _DrawChemStructures_) {
 		// configure path for static files
 		jasmine.getFixtures().fixturesPath = "base/assets/";
 		// load template of the editor
@@ -11,6 +11,7 @@ describe("DrawChemEditor directive tests", function () {
 		
 		DrawChem = _DrawChem_;
 		DrawChemShapes = _DrawChemShapes_;
+		DrawChemStructures = _DrawChemStructures_;
 		
 		$scope = $rootScope.$new();
 		element = angular.element(
@@ -41,28 +42,26 @@ describe("DrawChemEditor directive tests", function () {
 	it("should choose a scaffold", function () {
 		DrawChem.runEditor("test");
 		expect(DrawChem.showEditor()).toEqual(true);
-		temp.find(".dc-custom-button").click();
-		expect(element.isolateScope().chosenShape).toEqual(DrawChemShapes.benzene());
+		DrawChemStructures.custom.forEach(function (custom) {
+			temp.find("#" + custom.name).click();
+			expect(element.isolateScope().chosenStructure).toEqual(custom.structure);
+		});		
 	});
 	
 	it("should change content of the output", function () {
 		DrawChem.runEditor("test");
 		expect(DrawChem.showEditor()).toEqual(true);
-		temp.find(".dc-custom-button").click();
-		expect(element.isolateScope().chosenShape).toEqual(DrawChemShapes.benzene());
-		temp.find(".dc-editor-dialog-content").click();
-		expect(temp.find(".dc-editor-dialog-content").html()).toEqual(
-			"<svg>" +
-				"<defs>" +
-					"<g id=\"cmpd1\">" +
-						"<path d=\"M 100 100 l 200 100 \"></path>" +
-						"<path d=\"M 100 100 l 100 200 \"></path>" +	
-						"<path d=\"M 100 100 l 50 50 \"></path>" +								
-					"</g>" +
-				"</defs>" +
-				"<use xmlns:xlink=\"http://www.w3.org/1999/xlink\" " +
-					 "xlink:href=\"#cmpd1\" transform=\"\" style=\"stroke: black; stroke-width: 0.48; fill: none;\"></use>" +
-			"</svg>"
-		);
+		DrawChemStructures.custom.forEach(function (custom) {
+			temp.find("#" + custom.name).click();
+			expect(element.isolateScope().chosenStructure).toEqual(custom.structure);
+			temp.find(".dc-editor-dialog-content").click();
+			expect(temp.find(".dc-editor-dialog-content").html())
+				.toEqual(
+					DrawChemShapes
+						.draw(custom.structure, "cmpd1")
+						.replace(/'/g, "\"")
+				);
+		});
+		
 	});
 });

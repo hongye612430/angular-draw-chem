@@ -3,9 +3,9 @@
 	angular.module("mmAngularDrawChem")
 		.directive("drawChemEditor", DrawChemEditor);
 	
-	DrawChemEditor.$inject = ["DrawChemShapes", "DrawChem", "$sce"];
+	DrawChemEditor.$inject = ["DrawChemShapes", "DrawChemStructures", "DrawChem", "$sce"];
 	
-	function DrawChemEditor(DrawChemShapes, DrawChem, $sce) {
+	function DrawChemEditor(DrawChemShapes, DrawChemStructures, DrawChem, $sce) {
 		return {
 			templateUrl: "draw-chem-editor.html",
 			scope: {
@@ -50,11 +50,11 @@
 				/**
 				 * Adds all predefined shapes to the scope.
 				 */
-				angular.forEach(DrawChemShapes.custom, function (custom) {
+				angular.forEach(DrawChemStructures.custom, function (custom) {
 					scope.customButtons.push({
 						name: custom.name,
 						choose: function () {
-							scope.chosenShape = custom.structure;
+							scope.chosenStructure = custom.structure;
 						}
 					});
 				});

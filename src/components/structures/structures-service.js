@@ -1,13 +1,37 @@
-describe("DrawChem service tests", function () {
-	beforeEach(module("mmAngularDrawChem"));
+(function () {
+	"use strict";
+	angular.module("mmAngularDrawChem")
+		.factory("DrawChemStructures", DrawChemStructures);
 	
-	var DrawChemStructures;
-	
-	beforeEach(inject(function (_DrawChemStructures_) {
-		DrawChemStructures = _DrawChemStructures_;
-	}));
-	
-	it("should have an array with predefined structures", function () {
-		expect(DrawChemStructures.custom).toBeDefined(); // an array containing predefined structures should be defined
-	});
-})
+	function DrawChemStructures() {
+		
+		var service = {};
+		
+		/**
+		 * Stores all predefined structures.
+		 */
+		service.custom = [
+			{
+				name: "benzene",
+				structure: [
+					{
+						coords: [100, 100],
+						bonds: [
+							{
+								coords: [200, 100], bonds: []
+							},
+							{
+								coords: [100, 200], bonds: []
+							},
+							{
+								coords: [50, 50], bonds: []
+							}
+						]
+					}
+				]
+			}
+		];
+		
+		return service;
+	}
+})();

@@ -1,37 +1,19 @@
-(function () {
-	"use strict";
-	angular.module("mmAngularDrawChem")
-		.factory("DrawChemStructures", DrawChemStructures);
+describe("DrawChem service tests", function () {
+	beforeEach(module("mmAngularDrawChem"));
 	
-	function DrawChemStructures() {
-		
-		var service = {};
-		
-		/**
-		 * Stores all predefined structures.
-		 */
-		service.custom = [
-			{
-				name: "benzene",
-				structure: [
-					{
-						coords: [100, 100],
-						bonds: [
-							{
-								coords: [200, 100], bonds: []
-							},
-							{
-								coords: [100, 200], bonds: []
-							},
-							{
-								coords: [50, 50], bonds: []
-							}
-						]
-					}
-				]
-			}
-		];
-		
-		return service;
-	}
-})();
+	var DrawChemStructures;
+	
+	beforeEach(inject(function (_DrawChemStructures_) {
+		DrawChemStructures = _DrawChemStructures_;
+	}));
+	
+	it("should have an array with predefined structures", function () {
+		// an array containing predefined structures should be defined
+		expect(DrawChemStructures.custom).toBeDefined();
+		// each element should contain name and structure poperties
+		DrawChemStructures.custom.forEach(function (custom) {
+			expect(custom.name).toBeDefined();
+			expect(custom.structure).toBeDefined();
+		});
+	});
+})
