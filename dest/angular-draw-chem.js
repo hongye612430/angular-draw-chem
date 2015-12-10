@@ -143,7 +143,6 @@
 		service.setContent = function (content, name) {			 
 			if (typeof name === "undefined") {
 				currentInstance.content = content;
-				setInstance();
 			} else {
 				setInstance(content, name);
 			}
@@ -156,6 +155,18 @@
 		service.closeEditor = function () {
 			showModal = false;
 			currentInstance = {};
+		}
+		
+		/**
+		 * Clears content associated with the specified 'instance'.
+		 * @public
+		 */
+		service.clearContent = function (name) {
+			if (typeof name === "string") {
+				setInstance("", name);
+			} else {
+				currentInstance.content = "";	
+			}			
 		}
 		
 		// exposes API
@@ -198,23 +209,15 @@
 		 */
 		function setInstance(content, name) {
 			var i;
-			if (arguments.length === 0) {
-				for (i = 0; i < instances.length; i++) {
-					if (instances[i].name === currentInstance.name) {
-						return instances[i] = currentInstance;
-					}
+			for (i = 0; i < instances.length; i++) {
+				if (instances[i].name === name) {
+					return instances[i].content = content;
 				}
-			} else {
-				for (i = 0; i < instances.length; i++) {
-					if (instances[i].name === name) {
-						return instances[i].content = content;
-					}
-				}
-				instances.push({
-					name: name,
-					content: content
-				});
-			}			
+			}
+			instances.push({
+				name: name,
+				content: content
+			});
 		}
 	}
 })();

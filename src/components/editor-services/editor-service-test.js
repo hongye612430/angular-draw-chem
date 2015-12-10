@@ -59,4 +59,24 @@ describe("DrawChem service tests", function () {
 		expect(DrawChem.getContent("test")).toEqual("An interesting content"); // the content was saved
 		expect(DrawChem.getContent("test2")).toEqual("A more interesting content"); // the content was saved
 	});
+	
+	it("should clear the content of a specified 'instance'", function () {
+		DrawChem.runEditor("test"); // creates a new 'instance' and sets it to active
+		expect(DrawChem.showEditor()).toEqual(true);
+		DrawChem.setContent("An interesting content"); // already associated with 'test' 'instance'
+		expect(DrawChem.getContent()).toEqual("An interesting content");
+		DrawChem.closeEditor(); // hides modal and clears currently active 'instance'
+		expect(DrawChem.showEditor()).toEqual(false);		
+		DrawChem.clearContent("test"); // clear the previously set content
+		expect(DrawChem.getContent("test")).toEqual("");
+	});
+	
+	it("should clear the content of the currently active 'instance'", function () {
+		DrawChem.runEditor("test"); // creates a new 'instance' and sets it to active
+		expect(DrawChem.showEditor()).toEqual(true);
+		DrawChem.setContent("An interesting content"); // already associated with 'test' 'instance'
+		expect(DrawChem.getContent()).toEqual("An interesting content");
+		DrawChem.clearContent();
+		expect(DrawChem.getContent()).toEqual("");
+	});
 })
