@@ -10,9 +10,9 @@
 	angular.module("mmAngularDrawChem")
 		.directive("drawChemEditor", DrawChemEditor);
 	
-	DrawChemEditor.$inject = ["DrawChemShapes", "DrawChem", "$sce"];
+	DrawChemEditor.$inject = ["DrawChemShapes", "DrawChemStructures", "DrawChem", "$sce"];
 	
-	function DrawChemEditor(DrawChemShapes, DrawChem, $sce) {
+	function DrawChemEditor(DrawChemShapes, DrawChemStructures, DrawChem, $sce) {
 		return {
 			templateUrl: "draw-chem-editor.html",
 			scope: {
@@ -57,11 +57,11 @@
 				/**
 				 * Adds all predefined shapes to the scope.
 				 */
-				angular.forEach(DrawChemShapes.custom, function (custom) {
+				angular.forEach(DrawChemStructures.custom, function (custom) {
 					scope.customButtons.push({
 						name: custom.name,
 						choose: function () {
-							scope.chosenShape = custom.structure;
+							scope.chosenStructure = custom.structure;
 						}
 					});
 				});
@@ -403,5 +403,42 @@
 		}
 		
 		return service;			
+	}
+})();
+(function () {
+	"use strict";
+	angular.module("mmAngularDrawChem")
+		.factory("DrawChemStructures", DrawChemStructures);
+	
+	function DrawChemStructures() {
+		
+		var service = {};
+		
+		/**
+		 * Stores all predefined structures.
+		 */
+		service.custom = [
+			{
+				name: "benzene",
+				structure: [
+					{
+						coords: [100, 100],
+						bonds: [
+							{
+								coords: [200, 100], bonds: []
+							},
+							{
+								coords: [100, 200], bonds: []
+							},
+							{
+								coords: [50, 50], bonds: []
+							}
+						]
+					}
+				]
+			}
+		];
+		
+		return service;
 	}
 })();
