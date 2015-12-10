@@ -80,7 +80,9 @@
 		
 		/**
 		 * Clears content associated with the specified 'instance'.
+		 * If the name is not supplied, the currently active 'instance' is cleared.
 		 * @public
+		 * @param {string} name - name of the 'instance'
 		 */
 		service.clearContent = function (name) {
 			if (typeof name === "string") {
