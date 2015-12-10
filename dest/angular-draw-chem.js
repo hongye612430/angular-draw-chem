@@ -334,6 +334,17 @@
 		
 		var service = {};
 		
+		// the default bond length
+		service.bondLength = 10;
+		
+		// the default bond width
+		service.bondWidth = service.bondLength * service.widthToLength;
+		
+		// proportion of the bond width to bond length
+		// 0.041 corresponds to the ACS settings in ChemDraw, according to
+		// https://en.wikipedia.org/wiki/Wikipedia:Manual_of_Style/Chemistry/Structure_drawing
+		service.widthToLength = 0.041;
+		
 		/**
 		 * Generates the desired output based on given input.
 		 * @param {Structure} input - an object containing all information needed to render the shape
