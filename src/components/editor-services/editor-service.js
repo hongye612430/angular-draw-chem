@@ -29,6 +29,7 @@
 		 * @param {string} name - name of the 'instance' with which the editor is to be opened
 		 */
 		service.runEditor = function (name) {
+			var inst;
 			showModal = true;
 			if (!instanceExists(name)) {
 				instances.push({
@@ -36,7 +37,9 @@
 					content: ""
 				});
 			}
-			currentInstance = getInstance(name);
+			inst = getInstance(name);
+			currentInstance.name = inst.name;
+			currentInstance.content = inst.content;
 		}
 		
 		/**
@@ -67,6 +70,14 @@
 			} else {
 				setInstance(content, name);
 			}
+		}
+		
+		/**
+		 * Transfers the currently active 'instance' to 'instances' array.
+		 * @public
+		 */
+		service.transferContent = function () {
+			setInstance(currentInstance.content, currentInstance.name);
 		}
 		
 		/**

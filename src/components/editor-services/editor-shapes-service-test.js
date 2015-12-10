@@ -50,10 +50,10 @@ describe("DrawChemShapes service tests", function () {
 				]
 			}
 		];
-		expect(DrawChemShapes.draw(input, "cmpd1")).toEqual(
+		expect(DrawChemShapes.draw(input, "cmpd1", [0, 0])).toEqual(
 			"<svg>" +
 				"<defs>" +
-					"<g id='cmpd1'>" +
+					"<g id='cmpd1' >" +
 						"<path d='M 10 10 l 15 15 l 20 20 l 30 30 '></path>" +
 						"<path d='M 15 15 l 25 25 '></path>" +	
 						"<path d='M 10 10 l 5 10 '></path>" +

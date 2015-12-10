@@ -21,7 +21,8 @@
 		 * @param {string} element - an svg element
 		 * @param {string} id - an id of the element
 		 */
-		function Shape(element, id) {			
+		function Shape(element, id, coords) {
+			this.coords = coords;
 			this.element = element;
 			this.id = id;
 			this.scale = 1;
@@ -38,14 +39,17 @@
 		 * @returns {Shape}
 		 */
 		Shape.prototype.wrap = function (el, attr) {
-			var customAttr = {};
+			var customAttr = {}, tagOpen;
 			if (el === "g" && !attr) {
 				attr = customAttr;
-				attr.key = "id";
-				attr.val = this.id;
+				attr.id = this.id;
 			}
-			if (attr) {
-				this.element = "<" + el + " " + attr.key + "='" + attr.val + "'>" + this.element + "</" + el + ">";
+			if (attr) {				
+				tagOpen = "<" + el + " ";
+				angular.forEach(attr, function (val, key) {
+					tagOpen += key + "='" + val + "' ";
+				});
+				this.element = tagOpen + ">" + this.element + "</" + el + ">";
 			} else {
 				this.element = "<" + el + ">" + this.element + "</" + el + ">";
 			}
@@ -118,10 +122,10 @@
 		 * @param {Structure} input - an object containing all information needed to render the shape
 		 * @param {string} id - id of the object to be created (will be used inside 'g' tag and in 'use' tag)
 		 */
-		service.draw = function (input, id) {
+		service.draw = function (input, id, coords) {
 			var shape,
 				output = parseInput(input);
-			shape = new Shape(genPaths(), id);
+			shape = new Shape(genPaths(), id, coords);
 			return shape.wrap("g").wrap("defs").generate();
 			
 			// generates a string from the output array and wraps each line with 'path' tags.
