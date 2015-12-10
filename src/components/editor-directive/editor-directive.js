@@ -38,6 +38,13 @@
 				}
 				
 				/**
+				 * Clears the content.
+				 */
+				scope.clear = function () {
+					DrawChem.clearContent();
+				}
+				
+				/**
 				 * Stores the chosen structure.
 				 */
 				scope.chosenStructure;

@@ -3,8 +3,9 @@
 	<div class="dc-editor-dialog" ng-style="dialogStyle">
 		<div class="dc-editor-close" ng-click="closeEditor()">X</div>
 		<span ng-repeat="custom in customButtons">
-			<button id="{{custom.name}}" class="dc-custom-button" ng-click="custom.choose()" ng-bind="custom.name"></button>
+			<button id="dc-{{custom.name}}" class="dc-custom-button" ng-click="custom.choose()" ng-bind="custom.name"></button>
 		</span>
+		<button class="dc-clear-content-button" ng-click="clear()">clear</button>	
 		<div class="dc-editor-dialog-content" ng-click="drawShape()" ng-bind-html="content()"></div>
 	</div>
 </div>

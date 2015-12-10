@@ -43,7 +43,7 @@ describe("DrawChemEditor directive tests", function () {
 		DrawChem.runEditor("test");
 		expect(DrawChem.showEditor()).toEqual(true);
 		DrawChemStructures.custom.forEach(function (custom) {
-			temp.find("#" + custom.name).click();
+			temp.find("#dc-" + custom.name).click();
 			expect(element.isolateScope().chosenStructure).toEqual(custom.structure);
 		});		
 	});
@@ -52,7 +52,7 @@ describe("DrawChemEditor directive tests", function () {
 		DrawChem.runEditor("test");
 		expect(DrawChem.showEditor()).toEqual(true);
 		DrawChemStructures.custom.forEach(function (custom) {
-			temp.find("#" + custom.name).click();
+			temp.find("#dc-" + custom.name).click();
 			expect(element.isolateScope().chosenStructure).toEqual(custom.structure);
 			temp.find(".dc-editor-dialog-content").click();
 			expect(temp.find(".dc-editor-dialog-content").html())
@@ -61,7 +61,24 @@ describe("DrawChemEditor directive tests", function () {
 						.draw(custom.structure, "cmpd1")
 						.replace(/'/g, "\"")
 				);
-		});
-		
+		});		
+	});
+	
+	it("should clear the content", function () {
+		DrawChem.runEditor("test");
+		expect(DrawChem.showEditor()).toEqual(true);
+		DrawChemStructures.custom.forEach(function (custom) {
+			temp.find("#dc-" + custom.name).click();
+			expect(element.isolateScope().chosenStructure).toEqual(custom.structure);
+			temp.find(".dc-editor-dialog-content").click();
+			expect(temp.find(".dc-editor-dialog-content").html())
+				.toEqual(
+					DrawChemShapes
+						.draw(custom.structure, "cmpd1")
+						.replace(/'/g, "\"")
+				);
+			temp.find(".dc-clear-content-button").click();
+			expect(temp.find(".dc-editor-dialog-content").html()).toEqual("");
+		});		
 	});
 });
