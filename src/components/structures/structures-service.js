@@ -2,10 +2,12 @@
 	"use strict";
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemStructures", DrawChemStructures);
-	
-	function DrawChemStructures() {
 		
-		var service = {};
+	DrawChemStructures.$inject = ["DrawChemShapes"];
+	
+	function DrawChemStructures(DrawChemShapes) {
+		
+		var service = {}, LEN = DrawChemShapes.BOND_LENGTH;
 		
 		/**
 		 * Stores all predefined structures.
@@ -13,18 +15,41 @@
 		service.custom = [
 			{
 				name: "benzene",
+				decorate: {
+					shape: "circle",
+					r: 0.6 * LEN
+				},
 				structure: [
 					{
-						coords: [100, 100],
+						coords: [0, 0],
 						bonds: [
 							{
-								coords: [200, 100], bonds: []
+								coords: [(LEN * Math.sqrt(3) / 2).toFixed(2), (LEN / 2).toFixed(2)],
+								bonds: [
+									{
+										coords: [0, LEN],
+										bonds: [
+											{
+												coords: [-(LEN * Math.sqrt(3) / 2).toFixed(2), (LEN / 2).toFixed(2)],
+												bonds: [
+													{
+														coords: [-(LEN * Math.sqrt(3) / 2).toFixed(2), -(LEN / 2).toFixed(2)],
+														bonds: [
+															{
+																coords: [0, -LEN],
+																bonds: []
+															}
+														]
+													}
+												]
+											}
+										]
+									}
+								]
 							},
 							{
-								coords: [100, 200], bonds: []
-							},
-							{
-								coords: [50, 50], bonds: []
+								coords: [-(LEN * Math.sqrt(3) / 2).toFixed(2), (LEN / 2).toFixed(2)],
+								bonds: []
 							}
 						]
 					}

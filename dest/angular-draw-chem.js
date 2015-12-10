@@ -10,9 +10,9 @@
 	angular.module("mmAngularDrawChem")
 		.directive("drawChemEditor", DrawChemEditor);
 	
-	DrawChemEditor.$inject = ["DrawChemShapes", "DrawChemStructures", "DrawChem", "$sce"];
+	DrawChemEditor.$inject = ["DrawChemShapes", "DrawChemStructures", "DrawChem", "$sce", "$window"];
 	
-	function DrawChemEditor(DrawChemShapes, DrawChemStructures, DrawChem, $sce) {
+	function DrawChemEditor(DrawChemShapes, DrawChemStructures, DrawChem, $sce, $window) {
 		return {
 			templateUrl: "draw-chem-editor.html",
 			scope: {
@@ -52,6 +52,13 @@
 				}
 				
 				/**
+				 * Transfers the content.
+				 */
+				scope.transfer = function () {
+					DrawChem.transferContent();
+				}
+				
+				/**
 				 * Stores the chosen structure.
 				 */
 				scope.chosenStructure;
@@ -76,9 +83,18 @@
 				/**
 				 * Draws chosen shape.
 				 */
-				scope.drawShape = function () {
-					var drawn = DrawChemShapes.draw(scope.chosenStructure, "cmpd1");
+				scope.drawShape = function ($event) {
+					var drawn = DrawChemShapes.draw(scope.chosenStructure, "cmpd1").transform("translate", innerCoords()).generate();
 					DrawChem.setContent(drawn);
+					
+					function innerCoords() {
+						var content = element.find("dc-content")[0],
+							coords = [								
+								$event.clientX - content.getBoundingClientRect().left,
+								$event.clientY - content.getBoundingClientRect().top
+							]
+						return coords;
+					}
 				}
 			}
 		}
@@ -115,6 +131,7 @@
 		 * @param {string} name - name of the 'instance' with which the editor is to be opened
 		 */
 		service.runEditor = function (name) {
+			var inst;
 			showModal = true;
 			if (!instanceExists(name)) {
 				instances.push({
@@ -122,7 +139,9 @@
 					content: ""
 				});
 			}
-			currentInstance = getInstance(name);
+			inst = getInstance(name);
+			currentInstance.name = inst.name;
+			currentInstance.content = inst.content;
 		}
 		
 		/**
@@ -153,6 +172,14 @@
 			} else {
 				setInstance(content, name);
 			}
+		}
+		
+		/**
+		 * Transfers the currently active 'instance' to 'instances' array.
+		 * @public
+		 */
+		service.transferContent = function () {
+			setInstance(currentInstance.content, currentInstance.name);
 		}
 		
 		/**
@@ -253,12 +280,12 @@
 		 * @param {string} element - an svg element
 		 * @param {string} id - an id of the element
 		 */
-		function Shape(element, id) {			
+		function Shape(element, id) {
 			this.element = element;
 			this.id = id;
 			this.scale = 1;
 			this.transformAttr = "";
-			this.styleAttr = "stroke: black; stroke-width: " + 0.48 * this.scale + "; fill: none;";
+			this.styleAttr = "stroke: black; stroke-width: " + (service.BOND_WIDTH * this.scale) + "; fill: none;";
 		}
 		
 		/**
@@ -270,14 +297,17 @@
 		 * @returns {Shape}
 		 */
 		Shape.prototype.wrap = function (el, attr) {
-			var customAttr = {};
+			var customAttr = {}, tagOpen;
 			if (el === "g" && !attr) {
 				attr = customAttr;
-				attr.key = "id";
-				attr.val = this.id;
+				attr.id = this.id;
 			}
-			if (attr) {
-				this.element = "<" + el + " " + attr.key + "='" + attr.val + "'>" + this.element + "</" + el + ">";
+			if (attr) {				
+				tagOpen = "<" + el + " ";
+				angular.forEach(attr, function (val, key) {
+					tagOpen += key + "='" + val + "' ";
+				});
+				this.element = tagOpen + ">" + this.element + "</" + el + ">";
 			} else {
 				this.element = "<" + el + ">" + this.element + "</" + el + ">";
 			}
@@ -296,9 +326,9 @@
 			if (this.transformAttr) {
 				this.transformAttr += " ";
 			}
-			this.transformAttr += transform + "(" + value.x;
-			if (value.y) {
-				this.transformAttr += "," + value.y;
+			this.transformAttr += transform + "(" + value[0];
+			if (value[1]) {
+				this.transformAttr += "," + value[1];
 			}			
 			this.transformAttr += ")";
 			return this;
@@ -335,15 +365,15 @@
 		var service = {};
 		
 		// the default bond length
-		service.BOND_LENGTH = 10;
-		
-		// the default bond width
-		service.BOND_WIDTH = service.bondLength * service.widthToLength;
+		service.BOND_LENGTH = 20;
 		
 		// proportion of the bond width to bond length
 		// 0.041 corresponds to the ACS settings in ChemDraw, according to
 		// https://en.wikipedia.org/wiki/Wikipedia:Manual_of_Style/Chemistry/Structure_drawing
-		service.WIDTH_TO_LENGTH = 0.041;
+		service.WIDTH_TO_LENGTH = 0.04;
+		
+		// the default bond width
+		service.BOND_WIDTH = (service.BOND_LENGTH * service.WIDTH_TO_LENGTH).toFixed(2);
 		
 		/**
 		 * Generates the desired output based on given input.
@@ -354,7 +384,7 @@
 			var shape,
 				output = parseInput(input);
 			shape = new Shape(genPaths(), id);
-			return shape.wrap("g").wrap("defs").generate();
+			return shape.wrap("g").wrap("defs");
 			
 			// generates a string from the output array and wraps each line with 'path' tags.
 			function genPaths() {
@@ -432,10 +462,12 @@
 	"use strict";
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemStructures", DrawChemStructures);
-	
-	function DrawChemStructures() {
 		
-		var service = {};
+	DrawChemStructures.$inject = ["DrawChemShapes"];
+	
+	function DrawChemStructures(DrawChemShapes) {
+		
+		var service = {}, LEN = DrawChemShapes.BOND_LENGTH;
 		
 		/**
 		 * Stores all predefined structures.
@@ -443,18 +475,41 @@
 		service.custom = [
 			{
 				name: "benzene",
+				decorate: {
+					shape: "circle",
+					r: 0.6 * LEN
+				},
 				structure: [
 					{
-						coords: [100, 100],
+						coords: [0, 0],
 						bonds: [
 							{
-								coords: [200, 100], bonds: []
+								coords: [(LEN * Math.sqrt(3) / 2).toFixed(2), (LEN / 2).toFixed(2)],
+								bonds: [
+									{
+										coords: [0, LEN],
+										bonds: [
+											{
+												coords: [-(LEN * Math.sqrt(3) / 2).toFixed(2), (LEN / 2).toFixed(2)],
+												bonds: [
+													{
+														coords: [-(LEN * Math.sqrt(3) / 2).toFixed(2), -(LEN / 2).toFixed(2)],
+														bonds: [
+															{
+																coords: [0, -LEN],
+																bonds: []
+															}
+														]
+													}
+												]
+											}
+										]
+									}
+								]
 							},
 							{
-								coords: [100, 200], bonds: []
-							},
-							{
-								coords: [50, 50], bonds: []
+								coords: [-(LEN * Math.sqrt(3) / 2).toFixed(2), (LEN / 2).toFixed(2)],
+								bonds: []
 							}
 						]
 					}

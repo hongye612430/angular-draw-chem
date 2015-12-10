@@ -21,13 +21,12 @@
 		 * @param {string} element - an svg element
 		 * @param {string} id - an id of the element
 		 */
-		function Shape(element, id, coords) {
-			this.coords = coords;
+		function Shape(element, id) {
 			this.element = element;
 			this.id = id;
 			this.scale = 1;
 			this.transformAttr = "";
-			this.styleAttr = "stroke: black; stroke-width: " + 0.48 * this.scale + "; fill: none;";
+			this.styleAttr = "stroke: black; stroke-width: " + (service.BOND_WIDTH * this.scale) + "; fill: none;";
 		}
 		
 		/**
@@ -68,9 +67,9 @@
 			if (this.transformAttr) {
 				this.transformAttr += " ";
 			}
-			this.transformAttr += transform + "(" + value.x;
-			if (value.y) {
-				this.transformAttr += "," + value.y;
+			this.transformAttr += transform + "(" + value[0];
+			if (value[1]) {
+				this.transformAttr += "," + value[1];
 			}			
 			this.transformAttr += ")";
 			return this;
@@ -107,26 +106,26 @@
 		var service = {};
 		
 		// the default bond length
-		service.BOND_LENGTH = 10;
-		
-		// the default bond width
-		service.BOND_WIDTH = service.bondLength * service.widthToLength;
+		service.BOND_LENGTH = 20;
 		
 		// proportion of the bond width to bond length
 		// 0.041 corresponds to the ACS settings in ChemDraw, according to
 		// https://en.wikipedia.org/wiki/Wikipedia:Manual_of_Style/Chemistry/Structure_drawing
-		service.WIDTH_TO_LENGTH = 0.041;
+		service.WIDTH_TO_LENGTH = 0.04;
+		
+		// the default bond width
+		service.BOND_WIDTH = (service.BOND_LENGTH * service.WIDTH_TO_LENGTH).toFixed(2);
 		
 		/**
 		 * Generates the desired output based on given input.
 		 * @param {Structure} input - an object containing all information needed to render the shape
 		 * @param {string} id - id of the object to be created (will be used inside 'g' tag and in 'use' tag)
 		 */
-		service.draw = function (input, id, coords) {
+		service.draw = function (input, id) {
 			var shape,
 				output = parseInput(input);
-			shape = new Shape(genPaths(), id, coords);
-			return shape.wrap("g").wrap("defs").generate();
+			shape = new Shape(genPaths(), id);
+			return shape.wrap("g").wrap("defs");
 			
 			// generates a string from the output array and wraps each line with 'path' tags.
 			function genPaths() {

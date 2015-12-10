@@ -36,6 +36,10 @@
   border: 1px solid black;
   display: block; }
 
+.dc-editor-dialog-content > svg {
+  width: 100%;
+  height: 100%; }
+
 .dc-tools-v {
   width: 10%;
   height: auto;

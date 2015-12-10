@@ -3,9 +3,9 @@
 	angular.module("mmAngularDrawChem")
 		.directive("drawChemEditor", DrawChemEditor);
 	
-	DrawChemEditor.$inject = ["DrawChemShapes", "DrawChemStructures", "DrawChem", "$sce"];
+	DrawChemEditor.$inject = ["DrawChemShapes", "DrawChemStructures", "DrawChem", "$sce", "$window"];
 	
-	function DrawChemEditor(DrawChemShapes, DrawChemStructures, DrawChem, $sce) {
+	function DrawChemEditor(DrawChemShapes, DrawChemStructures, DrawChem, $sce, $window) {
 		return {
 			templateUrl: "draw-chem-editor.html",
 			scope: {
@@ -45,6 +45,13 @@
 				}
 				
 				/**
+				 * Transfers the content.
+				 */
+				scope.transfer = function () {
+					DrawChem.transferContent();
+				}
+				
+				/**
 				 * Stores the chosen structure.
 				 */
 				scope.chosenStructure;
@@ -69,9 +76,18 @@
 				/**
 				 * Draws chosen shape.
 				 */
-				scope.drawShape = function () {
-					var drawn = DrawChemShapes.draw(scope.chosenStructure, "cmpd1");
+				scope.drawShape = function ($event) {
+					var drawn = DrawChemShapes.draw(scope.chosenStructure, "cmpd1").transform("translate", innerCoords()).generate();
 					DrawChem.setContent(drawn);
+					
+					function innerCoords() {
+						var content = element.find("dc-content")[0],
+							coords = [								
+								$event.clientX - content.getBoundingClientRect().left,
+								$event.clientY - content.getBoundingClientRect().top
+							]
+						return coords;
+					}
 				}
 			}
 		}

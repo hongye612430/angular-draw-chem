@@ -50,7 +50,7 @@ describe("DrawChemShapes service tests", function () {
 				]
 			}
 		];
-		expect(DrawChemShapes.draw(input, "cmpd1", [0, 0])).toEqual(
+		expect(DrawChemShapes.draw(input, "cmpd1").generate()).toEqual(
 			"<svg>" +
 				"<defs>" +
 					"<g id='cmpd1' >" +
@@ -62,7 +62,7 @@ describe("DrawChemShapes service tests", function () {
 					"</g>" +
 				"</defs>" +
 				"<use xmlns:xlink='http://www.w3.org/1999/xlink' " +
-					 "xlink:href='#cmpd1' transform='' style='stroke: black; stroke-width: 0.48; fill: none;'></use>" +
+					 "xlink:href='#cmpd1' transform='' style='stroke: black; stroke-width: 0.8; fill: none;'></use>" +
 			"</svg>"
 		);
 	});
