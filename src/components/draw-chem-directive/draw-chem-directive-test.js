@@ -41,7 +41,7 @@ describe("DrawChemEditor directive tests", function () {
 	});
 	
 	it("should choose a scaffold", function () {
-		var custom = DrawChemStructures.custom[0];
+		var custom = DrawChemStructures.benzene();
 		DrawChem.runEditor("test");
 		expect(DrawChem.showEditor()).toEqual(true);
 		temp.find("#dc-" + custom.name).click();
@@ -49,7 +49,7 @@ describe("DrawChemEditor directive tests", function () {
 	});
 	
 	it("should store the current structure (as a Structure object)", function () {
-		var custom = DrawChemStructures.custom[0];
+		var custom = DrawChemStructures.benzene();
 		DrawChem.runEditor("test");
 		expect(DrawChem.showEditor()).toEqual(true);
 		temp.find("#dc-" + custom.name).click();
@@ -77,7 +77,7 @@ describe("DrawChemEditor directive tests", function () {
 	});
 	
 	it("should change content of the output after clicking on the drawing area", function () {
-		var custom = DrawChemStructures.custom[0];		
+		var custom = DrawChemStructures.benzene();		
 		DrawChem.runEditor("test");
 		expect(DrawChem.showEditor()).toEqual(true);
 		temp.find("#dc-" + custom.name).click();
@@ -121,7 +121,7 @@ describe("DrawChemEditor directive tests", function () {
 	});
 	
 	it("should clear the content after clicking on the 'clear' button", function () {
-		var custom = DrawChemStructures.custom[0];		
+		var custom = DrawChemStructures.benzene();		
 		DrawChem.runEditor("test");
 		expect(DrawChem.showEditor()).toEqual(true);		
 		temp.find("#dc-" + custom.name).click();

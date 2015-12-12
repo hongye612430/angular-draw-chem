@@ -1,10 +1,11 @@
 describe("DrawChemShapes service tests", function () {
 	beforeEach(module("mmAngularDrawChem"));
 	
-	var DrawChemShapes;
+	var DrawChemShapes, DrawChemStructures;
 	
-	beforeEach(inject(function (_DrawChemShapes_) {		
+	beforeEach(inject(function (_DrawChemShapes_, _DrawChemStructures_) {		
 		DrawChemShapes = _DrawChemShapes_;
+		DrawChemStructures = _DrawChemStructures_;
 	}));
 	
 	it("should draw an object based on the input", function () {
@@ -83,5 +84,14 @@ describe("DrawChemShapes service tests", function () {
 					 "xlink:href='#cmpd1' transform=''></use>" +
 			"</svg>"
 		);
+	});
+	
+	it("should combine structure objects", function () {
+		var benzene = DrawChemStructures.benzene(),
+			singleBond = DrawChemStructures.singleBond();
+			
+		benzene.setTransform("translate", [100, 100]);
+		currentClick = [101, 99];
+		DrawChemShapes.modifyStructure(benzene, singleBond, currentClick);
 	});
 });

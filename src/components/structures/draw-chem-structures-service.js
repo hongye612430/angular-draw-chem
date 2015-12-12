@@ -19,65 +19,69 @@
 			BOND_SE = DrawChemConst.BOND_SE,
 			BOND_SW = DrawChemConst.BOND_SW;
 			
-		benzene = new DCStructure.Structure(
-			"benzene",
-			[
-				{
-					coords: [0, 0],
-					bonds: [
-						{
-							coords: BOND_SE,
-							bonds: [
-								{
-									coords: BOND_S,
-									bonds: [
-										{
-											coords: BOND_SW,
-											bonds: [
-												{
-													coords: BOND_NW,
-													bonds: [
-														{
-															coords: BOND_N,
-															bonds: []
-														}
-													]
-												}
-											]
-										}
-									]
-								}
-							]
-						},
-						{
-							coords: BOND_SW,
-							bonds: []
-						}
-					]
-				}
-			]
-		);
+		service.benzene = function () {
+			return new DCStructure.Structure(
+				"benzene",
+				[
+					{
+						coords: [0, 0],
+						bonds: [
+							{
+								coords: BOND_SE,
+								bonds: [
+									{
+										coords: BOND_S,
+										bonds: [
+											{
+												coords: BOND_SW,
+												bonds: [
+													{
+														coords: BOND_NW,
+														bonds: [
+															{
+																coords: BOND_N,
+																bonds: []
+															}
+														]
+													}
+												]
+											}
+										]
+									}
+								]
+							},
+							{
+								coords: BOND_SW,
+								bonds: []
+							}
+						]
+					}
+				]
+			);
+		};
 		
-		singleBond = new DCStructure.Structure(
-			"single bond",
-			[
-				{
-					coords: [0, 0],
-					bonds: [
-						{
-							coords: BOND_NW,
-							bonds: []
-						}
-					]
-				}
-			]
-		);
+		service.singleBond = function () {
+			return new DCStructure.Structure(
+				"single bond",
+				[
+					{
+						coords: [0, 0],
+						bonds: [
+							{
+								coords: BOND_NW,
+								bonds: []
+							}
+						]
+					}
+				]
+			);
+		};
 		
 		
 		/**
 		 * Stores all predefined structures.
 		 */
-		service.custom = [benzene, singleBond];
+		service.custom = [service.benzene, service.singleBond];
 		
 		return service;
 	}

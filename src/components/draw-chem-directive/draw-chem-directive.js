@@ -70,10 +70,11 @@
 				 * Adds all predefined shapes to the scope.
 				 */
 				angular.forEach(DrawChemStructures.custom, function (custom) {
+					var customInstance = custom();
 					scope.customButtons.push({
-						name: custom.name,
+						name: customInstance.name,
 						choose: function () {
-							scope.chosenStructure = custom.structure;
+							scope.chosenStructure = customInstance.structure;
 						}
 					});
 				});
@@ -99,11 +100,11 @@
 					}
 					
 					function modifyCurrentStructure() {
-						if (DrawChem.getContent() === "") {
-							scope.currentStructure = angular.copy(scope.chosenStructure);
-						} else {
+						if (DrawChem.getContent() !== "") {
 							DrawChemShapes.modifyStructure(scope.currentStructure, scope.chosenStructure, clickCoords);
-						}						
+						} else {
+							scope.currentStructure = angular.copy(scope.chosenStructure);
+						}
 					}
 				}
 			}

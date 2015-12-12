@@ -77,10 +77,11 @@
 				 * Adds all predefined shapes to the scope.
 				 */
 				angular.forEach(DrawChemStructures.custom, function (custom) {
+					var customInstance = custom();
 					scope.customButtons.push({
-						name: custom.name,
+						name: customInstance.name,
 						choose: function () {
-							scope.chosenStructure = custom.structure;
+							scope.chosenStructure = customInstance.structure;
 						}
 					});
 				});
@@ -106,11 +107,11 @@
 					}
 					
 					function modifyCurrentStructure() {
-						if (DrawChem.getContent() === "") {
-							scope.currentStructure = angular.copy(scope.chosenStructure);
-						} else {
+						if (DrawChem.getContent() !== "") {
 							DrawChemShapes.modifyStructure(scope.currentStructure, scope.chosenStructure, clickCoords);
-						}						
+						} else {
+							scope.currentStructure = angular.copy(scope.chosenStructure);
+						}
 					}
 				}
 			}
@@ -264,6 +265,25 @@
 		function Structure(name, structure) {
 			this.name = name;
 			this.structure = structure;
+			this.transform = [];
+		}
+		
+		Structure.prototype.setTransform = function (name, content) {
+			this.transform.push(
+				{
+					name: name,
+					content: content
+				}
+			);
+		}
+		
+		Structure.prototype.getTransform = function (name) {
+			var i, transform = this.transform;
+			for (i = 0; i < transform.length; i += 1) {
+				if (transform[i].name === name) {
+					return transform[i].content;
+				}
+			}
 		}
 		
 		service.Structure = Structure;
@@ -610,65 +630,69 @@
 			BOND_SE = DrawChemConst.BOND_SE,
 			BOND_SW = DrawChemConst.BOND_SW;
 			
-		benzene = new DCStructure.Structure(
-			"benzene",
-			[
-				{
-					coords: [0, 0],
-					bonds: [
-						{
-							coords: BOND_SE,
-							bonds: [
-								{
-									coords: BOND_S,
-									bonds: [
-										{
-											coords: BOND_SW,
-											bonds: [
-												{
-													coords: BOND_NW,
-													bonds: [
-														{
-															coords: BOND_N,
-															bonds: []
-														}
-													]
-												}
-											]
-										}
-									]
-								}
-							]
-						},
-						{
-							coords: BOND_SW,
-							bonds: []
-						}
-					]
-				}
-			]
-		);
+		service.benzene = function () {
+			return new DCStructure.Structure(
+				"benzene",
+				[
+					{
+						coords: [0, 0],
+						bonds: [
+							{
+								coords: BOND_SE,
+								bonds: [
+									{
+										coords: BOND_S,
+										bonds: [
+											{
+												coords: BOND_SW,
+												bonds: [
+													{
+														coords: BOND_NW,
+														bonds: [
+															{
+																coords: BOND_N,
+																bonds: []
+															}
+														]
+													}
+												]
+											}
+										]
+									}
+								]
+							},
+							{
+								coords: BOND_SW,
+								bonds: []
+							}
+						]
+					}
+				]
+			);
+		};
 		
-		singleBond = new DCStructure.Structure(
-			"single bond",
-			[
-				{
-					coords: [0, 0],
-					bonds: [
-						{
-							coords: BOND_NW,
-							bonds: []
-						}
-					]
-				}
-			]
-		);
+		service.singleBond = function () {
+			return new DCStructure.Structure(
+				"single bond",
+				[
+					{
+						coords: [0, 0],
+						bonds: [
+							{
+								coords: BOND_NW,
+								bonds: []
+							}
+						]
+					}
+				]
+			);
+		};
 		
 		
 		/**
 		 * Stores all predefined structures.
 		 */
-		service.custom = [benzene, singleBond];
+		service.custom = [service.benzene, service.singleBond];
 		
 		return service;
 	}

@@ -14,5 +14,7 @@ describe("DrawChemEditor directive tests", function () {
 		expect(structure).toBeDefined();
 		expect(structure.name).toEqual("name");
 		expect(structure.structure).toEqual([]);
+		structure.setTransform("translate", [10, 10]);
+		expect(structure.getTransform("translate")).toEqual([10, 10]);
 	});
 });
