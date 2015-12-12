@@ -1,5 +1,5 @@
 ### aim of the project
-The aim of this project is to create an AngularJS-based editor for producing structural formulas.
+The aim of this project is to create a light-weight, AngularJS-based editor for producing structural formulas.
 The editor is from the beginning designed to be svg-based, thus enabling the drawing of good-looking, scalable structures.
 
 ### possible usage
