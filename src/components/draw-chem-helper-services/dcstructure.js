@@ -1,13 +1,23 @@
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
-		.service("DCStructure", DCStructure);
+		.factory("DCStructure", DCStructure);
 	
-	/**
-	* Creates a new DCStructure.
-	* @class
-	*/
 	function DCStructure() {
 		
+		var service = {};
+		
+		/**
+		* Creates a new DCStructure.
+		* @class
+		*/
+		function Structure(name, structure) {
+			this.name = name;
+			this.structure = structure;
+		}
+		
+		service.Structure = Structure;
+		
+		return service;
 	}
 })();

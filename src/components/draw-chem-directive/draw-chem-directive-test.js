@@ -48,7 +48,7 @@ describe("DrawChemEditor directive tests", function () {
 		expect(element.isolateScope().chosenStructure).toEqual(custom.structure);		
 	});
 	
-	it("should store the current structure (as Structure object)", function () {
+	it("should store the current structure (as a Structure object)", function () {
 		var custom = DrawChemStructures.custom[0];
 		DrawChem.runEditor("test");
 		expect(DrawChem.showEditor()).toEqual(true);
@@ -59,7 +59,7 @@ describe("DrawChemEditor directive tests", function () {
 		expect(element.isolateScope().currentStructure).toEqual(custom.structure);	
 	});
 	
-	it("should set the content", function () {
+	it("should set the content after clicking on the 'transfer' button", function () {
 		var parallelScope = $rootScope.$new();
 		parallelScope.input = function () {
 			return DrawChem.getContent("test");
@@ -76,7 +76,7 @@ describe("DrawChemEditor directive tests", function () {
 		expect(parallelScope.input()).toEqual("A content");
 	});
 	
-	it("should change content of the output", function () {
+	it("should change content of the output after clicking on the drawing area", function () {
 		var custom = DrawChemStructures.custom[0];		
 		DrawChem.runEditor("test");
 		expect(DrawChem.showEditor()).toEqual(true);
@@ -120,7 +120,7 @@ describe("DrawChemEditor directive tests", function () {
 			);		
 	});
 	
-	it("should clear the content", function () {
+	it("should clear the content after clicking on the 'clear' button", function () {
 		var custom = DrawChemStructures.custom[0];		
 		DrawChem.runEditor("test");
 		expect(DrawChem.showEditor()).toEqual(true);		

@@ -251,14 +251,24 @@
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
-		.service("DCStructure", DCStructure);
+		.factory("DCStructure", DCStructure);
 	
-	/**
-	* Creates a new DCStructure.
-	* @class
-	*/
 	function DCStructure() {
 		
+		var service = {};
+		
+		/**
+		* Creates a new DCStructure.
+		* @class
+		*/
+		function Structure(name, structure) {
+			this.name = name;
+			this.structure = structure;
+		}
+		
+		service.Structure = Structure;
+		
+		return service;
 	}
 })();
 (function () {
@@ -274,12 +284,29 @@
 		service.BOND_LENGTH = 20;
 		
 		// proportion of the bond width to bond length
-		// 0.041 corresponds to the ACS settings in ChemDraw, according to
+		// 0.04 corresponds to the ACS settings in ChemDraw, according to
 		// https://en.wikipedia.org/wiki/Wikipedia:Manual_of_Style/Chemistry/Structure_drawing
 		service.WIDTH_TO_LENGTH = 0.04;
 		
 		// the default bond width
 		service.BOND_WIDTH = parseFloat((service.BOND_LENGTH * service.WIDTH_TO_LENGTH).toFixed(2));
+		
+		// bond in north direction
+		service.BOND_N = [0, -service.BOND_LENGTH];
+		// bond in south direction
+		service.BOND_S = [0, service.BOND_LENGTH];
+		// bond in east direction
+		service.BOND_E = [parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2)), 0];
+		// bond in west direction
+		service.BOND_W = [-parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2)), 0];
+		// bond in north-east direction
+		service.BOND_NE = [parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2)), -service.BOND_LENGTH / 2];
+		// bond in north-west direction
+		service.BOND_NW = [-parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2)), -service.BOND_LENGTH / 2];
+		// bond in south-east direction
+		service.BOND_SE = [parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2)), service.BOND_LENGTH / 2];
+		// bond in south-west direction
+		service.BOND_SW = [-parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2)), service.BOND_LENGTH / 2];
 		
 		return service;		
 	}		
@@ -567,69 +594,81 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemStructures", DrawChemStructures);
 		
-	DrawChemStructures.$inject = ["DrawChemConst"];
+	DrawChemStructures.$inject = ["DrawChemConst", "DCStructure"];
 	
-	function DrawChemStructures(DrawChemConst) {
+	function DrawChemStructures(DrawChemConst, DCStructure) {
 		
-		var service = {}, LEN = DrawChemConst.BOND_LENGTH;
+		var service = {},
+			benzene,
+			singleBond,
+			BOND_N = DrawChemConst.BOND_N,
+			BOND_S = DrawChemConst.BOND_S,
+			BOND_W = DrawChemConst.BOND_W,
+			BOND_E = DrawChemConst.BOND_E,
+			BOND_NE = DrawChemConst.BOND_NE,
+			BOND_NW = DrawChemConst.BOND_NW,
+			BOND_SE = DrawChemConst.BOND_SE,
+			BOND_SW = DrawChemConst.BOND_SW;
+			
+		benzene = new DCStructure.Structure(
+			"benzene",
+			[
+				{
+					coords: [0, 0],
+					bonds: [
+						{
+							coords: BOND_SE,
+							bonds: [
+								{
+									coords: BOND_S,
+									bonds: [
+										{
+											coords: BOND_SW,
+											bonds: [
+												{
+													coords: BOND_NW,
+													bonds: [
+														{
+															coords: BOND_N,
+															bonds: []
+														}
+													]
+												}
+											]
+										}
+									]
+								}
+							]
+						},
+						{
+							coords: BOND_SW,
+							bonds: []
+						}
+					]
+				}
+			]
+		);
+		
+		singleBond = new DCStructure.Structure(
+			"single bond",
+			[
+				{
+					coords: [0, 0],
+					bonds: [
+						{
+							coords: BOND_NW,
+							bonds: []
+						}
+					]
+				}
+			]
+		);
+		
 		
 		/**
 		 * Stores all predefined structures.
 		 */
-		service.custom = [			
-			{
-				name: "benzene",
-				structure: [
-					{
-						coords: [0, 0],
-						bonds: [
-							{
-								coords: [parseFloat((LEN * Math.sqrt(3) / 2).toFixed(2)), parseFloat((LEN / 2).toFixed(2))],
-								bonds: [
-									{
-										coords: [0, LEN],
-										bonds: [
-											{
-												coords: [parseFloat(-(LEN * Math.sqrt(3) / 2).toFixed(2)), parseFloat((LEN / 2).toFixed(2))],
-												bonds: [
-													{
-														coords: [parseFloat(-(LEN * Math.sqrt(3) / 2).toFixed(2)), parseFloat(-(LEN / 2).toFixed(2))],
-														bonds: [
-															{
-																coords: [0, -LEN],
-																bonds: []
-															}
-														]
-													}
-												]
-											}
-										]
-									}
-								]
-							},
-							{
-								coords: [parseFloat(-(LEN * Math.sqrt(3) / 2).toFixed(2)), parseFloat((LEN / 2).toFixed(2))],
-								bonds: []
-							}
-						]
-					}
-				]
-			},
-			{
-				name: "single bond",
-				structure: [
-					{
-						coords: [0, 0],
-						bonds: [
-							{
-								coords: [parseFloat((LEN * Math.sqrt(3) / 2).toFixed(2)), parseFloat((LEN / 2).toFixed(2))],
-								bonds: []
-							}
-						]
-					}
-				]
-			}
-		];
+		service.custom = [benzene, singleBond];
 		
 		return service;
 	}
