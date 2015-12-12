@@ -4,11 +4,13 @@ The editor is from the beginning designed to be svg-based, thus enabling the dra
 
 ### possible usage
 It will be possible to use it in two ways:
+
 1. By adding `mmAngularDrawChem` module to your project, making it available for the users of your website, so they can interact with it and make their own structures.
 2. You can use it on the project website, make structures that you need, grab the `svg` and place it within your `html`.
 
 ### components
 The project consists of the following components:
+
 1. `drawChemEditor` directive - the directive for interaction between the user and the editor,
 2. `DrawChem` factory - the main entry point for the use in a custom `controller`,
 3. `DrawChemConstants` factory - contains constant values, such as bond length, bond width, etc.,
