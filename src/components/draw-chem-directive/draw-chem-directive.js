@@ -82,8 +82,11 @@
 				 * Draws chosen shape.
 				 */
 				scope.drawShape = function ($event) {
+					var clickCoords = innerCoords(),
+						drawn = "";
+						
 					modifyCurrentStructure();
-					var drawn = DrawChemShapes.draw(scope.currentStructure, "cmpd1").transform("translate", innerCoords()).generate();
+					drawn = DrawChemShapes.draw(scope.currentStructure, "cmpd1").transform("translate", clickCoords).generate();
 					DrawChem.setContent(drawn);
 					
 					function innerCoords() {
@@ -98,7 +101,9 @@
 					function modifyCurrentStructure() {
 						if (DrawChem.getContent() === "") {
 							scope.currentStructure = angular.copy(scope.chosenStructure);
-						}
+						} else {
+							DrawChemShapes.modifyStructure(scope.currentStructure, scope.chosenStructure, clickCoords);
+						}						
 					}
 				}
 			}

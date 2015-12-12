@@ -3,11 +3,11 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemStructures", DrawChemStructures);
 		
-	DrawChemStructures.$inject = ["DrawChemShapes"];
+	DrawChemStructures.$inject = ["DrawChemConst"];
 	
-	function DrawChemStructures(DrawChemShapes) {
+	function DrawChemStructures(DrawChemConst) {
 		
-		var service = {}, LEN = DrawChemShapes.BOND_LENGTH;
+		var service = {}, LEN = DrawChemConst.BOND_LENGTH;
 		
 		/**
 		 * Stores all predefined structures.

@@ -7,11 +7,6 @@ describe("DrawChemShapes service tests", function () {
 		DrawChemShapes = _DrawChemShapes_;
 	}));
 	
-	it("should define the thickness and length of a bond", function () {
-		expect(DrawChemShapes.BOND_LENGTH).toBeDefined();
-		expect(DrawChemShapes.BOND_WIDTH).toBeDefined();
-	});
-	
 	it("should draw an object based on the input", function () {
 		var input = [
 			{
