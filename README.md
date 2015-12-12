@@ -20,7 +20,7 @@ The project consists of the following components:
 7. `DCStructure` factory - defines `Structure` class.
 
 ### terminology
-#### `Shape` vs `Structure`
+**`Shape`** vs **`Structure`**
 
 `Structure` object contains name of the structure and the structure itself as an array of `atoms`.
 Each `atom` is an object containing coordinates of the atom and a `bonds` array with all `atoms` it is connected with.
