@@ -26,7 +26,21 @@
 			this.id = id;
 			this.scale = 1;
 			this.transformAttr = "";
-			this.styleAttr = "stroke: black; stroke-width: " + (service.BOND_WIDTH * this.scale) + "; fill: none;";
+			this.style = {
+				"path": {
+					"stroke": "black",
+					"stroke-width": service.BOND_WIDTH * this.scale,
+					"fill": "none"
+				},				
+				"circle:hover": {
+					"opacity": "0.3",
+					"stroke": "black",
+					"stroke-width": service.BOND_WIDTH * this.scale,
+				},
+				"circle": {
+					"opacity": "0",
+				}
+			}
 		}
 		
 		/**
@@ -90,9 +104,20 @@
 		Shape.prototype.generateUse = function () {
 			return "<use xmlns:xlink='http://www.w3.org/1999/xlink' xlink:href='#" + this.id +
 				"' transform='" + this.transformAttr +
-				"' " + "style='" + this.styleAttr +
 				"'></use>";
 		};
+		
+		Shape.prototype.generateStyle = function () {
+			var attr = "<style type=\"text/css\">";
+			angular.forEach(this.style, function (value, key) {
+				attr += key + "{";
+				angular.forEach(value, function (value, key) {
+					attr += key + ":" + value + ";";
+				});
+				attr += "}"
+			});
+			return attr + "</style>";
+		}
 		
 		/**
 		 * Generates 'use' element and wraps the content with 'svg' tags.
@@ -123,16 +148,23 @@
 		 */
 		service.draw = function (input, id) {
 			var shape,
-				output = parseInput(input);
-			shape = new Shape(genPaths(), id);
+				output = parseInput(input),
+				paths = output.paths,
+				circles = output.circles;
+			shape = new Shape(genElements(), id);
+			shape.element = shape.generateStyle() + shape.element;
 			return shape.wrap("g").wrap("defs");
 			
 			// generates a string from the output array and wraps each line with 'path' tags.
-			function genPaths() {
-				var result = "";
-				output.forEach(function (path) {
-					result += "<path d='" + path + "'></path>";
+			function genElements() {
+				var result = "", coords;
+				paths.forEach(function (path) {
+					result += "<path d='" + path + "'></path>";					
 				});
+				circles.forEach(function (circle) {
+					result += "<circle cx='" + circle[0] + "' cy='" + circle[1] + "' r='" + circle[2] + "' ></circle>";
+				});
+				
 				return result;
 			}
 		}
@@ -145,11 +177,21 @@
 		 *					 so it can be regarded as a distinct line)
 		 */
 		function parseInput(input) {
-			var output = [],
+			var output = [], circles = [], circR = service.BOND_LENGTH * 0.12,
 				// sets the coordinates of the root element
-				len = output.push(["M", input[0].coords]); // 'M' for 'moveto' - sets pen to the coordinates
+				// 'M' for 'moveto' - sets pen to the coordinates
+				len = output.push(["M", input[0].coords]);
+				
+			circles.push([
+				input[0].coords[0],
+				input[0].coords[1],
+				circR
+			]);
 			connect(input[0].coords, input[0].bonds, output[len - 1]);
-			return stringifyOutput();
+			return {
+				paths: stringifyPaths(),
+				circles: circles
+			}
 			
 			/**
 			 * Recursively translates the input, until it finds an element with an empty 'bonds' array.
@@ -161,12 +203,22 @@
 				var i, newLen, newRoot;
 				// if length of the bonds is 0, then do nothing
 				if (bonds.length > 0) {
+					circles.push([
+						circles[circles.length - 1][0] + bonds[0].coords[0],
+						circles[circles.length - 1][1] + bonds[0].coords[1],
+						circR
+					]);
 					currentLine.push("l"); // 'l' for lineto - draws line to the specified coordinates
 					currentLine.push(bonds[0].coords);
 					connect(bonds[0].coords, bonds[0].bonds, currentLine);
 				}				
 				for (i = 1; i < bonds.length; i += 1) {
 					newRoot = bonds[i].coords;
+					circles.push([
+						root[0] + bonds[i].coords[0],
+						root[1] + bonds[i].coords[1],
+						circR
+					]);
 					newLen = output.push(["M", root, "l", newRoot]);
 					connect(newRoot, bonds[i].bonds, output[newLen - 1]);
 				}
@@ -177,7 +229,7 @@
 			 * Basically, it translates each array of coordinates into its string representation.
 			 * @returns {string[]}
 			 */
-			function stringifyOutput() {
+			function stringifyPaths() {
 				var result = [], i, j, line, point, lineStr;
 				for (i = 0; i < output.length; i += 1) {
 					line = output[i];

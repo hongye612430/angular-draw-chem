@@ -41,12 +41,22 @@ describe("DrawChemEditor directive tests", function () {
 	});
 	
 	it("should choose a scaffold", function () {
+		var custom = DrawChemStructures.custom[0];
 		DrawChem.runEditor("test");
 		expect(DrawChem.showEditor()).toEqual(true);
-		DrawChemStructures.custom.forEach(function (custom) {
-			temp.find("#dc-" + custom.name).click();
-			expect(element.isolateScope().chosenStructure).toEqual(custom.structure);
-		});		
+		temp.find("#dc-" + custom.name).click();
+		expect(element.isolateScope().chosenStructure).toEqual(custom.structure);		
+	});
+	
+	it("should store the current structure (as Structure object)", function () {
+		var custom = DrawChemStructures.custom[0];
+		DrawChem.runEditor("test");
+		expect(DrawChem.showEditor()).toEqual(true);
+		temp.find("#dc-" + custom.name).click();
+		expect(element.isolateScope().chosenStructure).toEqual(custom.structure);
+		expect(element.isolateScope().currentStructure).toBeUndefined();
+		temp.find(".dc-editor-dialog-content").click();
+		expect(element.isolateScope().currentStructure).toEqual(custom.structure);	
 	});
 	
 	it("should set the content", function () {
@@ -78,11 +88,34 @@ describe("DrawChemEditor directive tests", function () {
 				"<svg>" +
 					"<defs>" +
 						"<g id=\"cmpd1\">" +
-							"<path d=\"M 0 0 l 17.32 10.00 l 0 20 l -17.32 10.00 l -17.32 -10 l 0 -20 \"></path>" +
-							"<path d=\"M 0 0 l -17.32 10.00 \"></path>" +
+							"<style type=\"text/css\">" +
+								"path{" +
+									"stroke:black;" +
+									"stroke-width:0.8;" +
+									"fill:none;" +
+								"}" +
+								"circle:hover{" +
+									"opacity:0.3;" +
+									"stroke:black;" +
+									"stroke-width:0.8;" +
+								"}" +
+								"circle{" +
+									"opacity:0;" +
+								"}" +
+							"</style>" +
+							"<path d=\"M 0 0 l 17.32 10 l 0 20 l -17.32 10 l -17.32 -10 l 0 -20 \"></path>" +
+							"<path d=\"M 0 0 l -17.32 10 \"></path>" +
+							"<circle cx=\"0\" cy=\"0\" r=\"2.4\"></circle>" +
+							"<circle cx=\"17.32\" cy=\"10\" r=\"2.4\"></circle>" +
+							"<circle cx=\"17.32\" cy=\"30\" r=\"2.4\"></circle>" +
+							"<circle cx=\"0\" cy=\"40\" r=\"2.4\"></circle>" +
+							"<circle cx=\"-17.32\" cy=\"30\" r=\"2.4\"></circle>" +
+							"<circle cx=\"-17.32\" cy=\"10\" r=\"2.4\"></circle>" +
+							"<circle cx=\"-17.32\" cy=\"10\" r=\"2.4\"></circle>" +
 						"</g>" +
 					"</defs>" +
-					"<use xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"#cmpd1\" transform=\"translate(NaN)\" style=\"stroke: black; stroke-width: 0.8; fill: none;\"></use>" +
+					"<use xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"#cmpd1\"" +
+						" transform=\"translate(NaN)\"></use>" +
 				"</svg>"
 			);		
 	});
@@ -99,11 +132,34 @@ describe("DrawChemEditor directive tests", function () {
 				"<svg>" +
 					"<defs>" +
 						"<g id=\"cmpd1\">" +
-							"<path d=\"M 0 0 l 17.32 10.00 l 0 20 l -17.32 10.00 l -17.32 -10 l 0 -20 \"></path>" +
-							"<path d=\"M 0 0 l -17.32 10.00 \"></path>" +
+							"<style type=\"text/css\">" +
+								"path{" +
+									"stroke:black;" +
+									"stroke-width:0.8;" +
+									"fill:none;" +
+								"}" +
+								"circle:hover{" +
+									"opacity:0.3;" +
+									"stroke:black;" +
+									"stroke-width:0.8;" +
+								"}" +
+								"circle{" +
+									"opacity:0;" +
+								"}" +
+							"</style>" +
+							"<path d=\"M 0 0 l 17.32 10 l 0 20 l -17.32 10 l -17.32 -10 l 0 -20 \"></path>" +
+							"<path d=\"M 0 0 l -17.32 10 \"></path>" +
+							"<circle cx=\"0\" cy=\"0\" r=\"2.4\"></circle>" +
+							"<circle cx=\"17.32\" cy=\"10\" r=\"2.4\"></circle>" +
+							"<circle cx=\"17.32\" cy=\"30\" r=\"2.4\"></circle>" +
+							"<circle cx=\"0\" cy=\"40\" r=\"2.4\"></circle>" +
+							"<circle cx=\"-17.32\" cy=\"30\" r=\"2.4\"></circle>" +
+							"<circle cx=\"-17.32\" cy=\"10\" r=\"2.4\"></circle>" +
+							"<circle cx=\"-17.32\" cy=\"10\" r=\"2.4\"></circle>" +
 						"</g>" +
 					"</defs>" +
-					"<use xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"#cmpd1\" transform=\"translate(NaN)\" style=\"stroke: black; stroke-width: 0.8; fill: none;\"></use>" +
+					"<use xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"#cmpd1\"" +
+					" transform=\"translate(NaN)\"></use>" +
 				"</svg>"
 			);
 		temp.find(".dc-custom-button").click();

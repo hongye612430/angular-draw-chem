@@ -12,28 +12,24 @@
 		/**
 		 * Stores all predefined structures.
 		 */
-		service.custom = [
+		service.custom = [			
 			{
 				name: "benzene",
-				decorate: {
-					shape: "circle",
-					r: 0.6 * LEN
-				},
 				structure: [
 					{
 						coords: [0, 0],
 						bonds: [
 							{
-								coords: [(LEN * Math.sqrt(3) / 2).toFixed(2), (LEN / 2).toFixed(2)],
+								coords: [parseFloat((LEN * Math.sqrt(3) / 2).toFixed(2)), parseFloat((LEN / 2).toFixed(2))],
 								bonds: [
 									{
 										coords: [0, LEN],
 										bonds: [
 											{
-												coords: [-(LEN * Math.sqrt(3) / 2).toFixed(2), (LEN / 2).toFixed(2)],
+												coords: [parseFloat(-(LEN * Math.sqrt(3) / 2).toFixed(2)), parseFloat((LEN / 2).toFixed(2))],
 												bonds: [
 													{
-														coords: [-(LEN * Math.sqrt(3) / 2).toFixed(2), -(LEN / 2).toFixed(2)],
+														coords: [parseFloat(-(LEN * Math.sqrt(3) / 2).toFixed(2)), parseFloat(-(LEN / 2).toFixed(2))],
 														bonds: [
 															{
 																coords: [0, -LEN],
@@ -48,7 +44,21 @@
 								]
 							},
 							{
-								coords: [-(LEN * Math.sqrt(3) / 2).toFixed(2), (LEN / 2).toFixed(2)],
+								coords: [parseFloat(-(LEN * Math.sqrt(3) / 2).toFixed(2)), parseFloat((LEN / 2).toFixed(2))],
+								bonds: []
+							}
+						]
+					}
+				]
+			},
+			{
+				name: "single bond",
+				structure: [
+					{
+						coords: [0, 0],
+						bonds: [
+							{
+								coords: [parseFloat((LEN * Math.sqrt(3) / 2).toFixed(2)), parseFloat((LEN / 2).toFixed(2))],
 								bonds: []
 							}
 						]

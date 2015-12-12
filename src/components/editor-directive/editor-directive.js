@@ -57,6 +57,11 @@
 				scope.chosenStructure;
 				
 				/**
+				 * Stores the current structure.
+				 */
+				scope.currentStructure;
+				
+				/**
 				 * Stores all predefined structures.
 				 */
 				scope.customButtons = [];
@@ -77,16 +82,23 @@
 				 * Draws chosen shape.
 				 */
 				scope.drawShape = function ($event) {
-					var drawn = DrawChemShapes.draw(scope.chosenStructure, "cmpd1").transform("translate", innerCoords()).generate();
+					modifyCurrentStructure();
+					var drawn = DrawChemShapes.draw(scope.currentStructure, "cmpd1").transform("translate", innerCoords()).generate();
 					DrawChem.setContent(drawn);
 					
 					function innerCoords() {
 						var content = element.find("dc-content")[0],
 							coords = [								
-								$event.clientX - content.getBoundingClientRect().left,
-								$event.clientY - content.getBoundingClientRect().top
+								parseFloat(($event.clientX - content.getBoundingClientRect().left - 2).toFixed(2)),
+								parseFloat(($event.clientY - content.getBoundingClientRect().top - 2).toFixed(2))
 							]
 						return coords;
+					}
+					
+					function modifyCurrentStructure() {
+						if (DrawChem.getContent() === "") {
+							scope.currentStructure = angular.copy(scope.chosenStructure);
+						}
 					}
 				}
 			}

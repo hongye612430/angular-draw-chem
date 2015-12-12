@@ -53,7 +53,7 @@ module.exports = function(grunt) {
     },
 	clean: {
 		buildJs: ["src/components/angular-draw-chem.js"],
-		buildCss: ["src/components/editor/draw-chem-editor.css"]
+		buildCss: ["src/components/static/draw-chem-editor.css"]
 	},
 	sass: {
 		buildCss: {
