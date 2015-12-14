@@ -1,50 +1,36 @@
 describe("DrawChemShapes service tests", function () {
 	beforeEach(module("mmAngularDrawChem"));
 	
-	var DrawChemShapes, DrawChemStructures;
+	var DrawChemShapes, DrawChemStructures, DrawChemConst, Atom;
 	
-	beforeEach(inject(function (_DrawChemShapes_, _DrawChemStructures_) {		
+	beforeEach(inject(function (_DrawChemShapes_, _DrawChemStructures_, _DrawChemConst_, _DCAtom_) {
+		Atom = _DCAtom_.Atom;
 		DrawChemShapes = _DrawChemShapes_;
+		DrawChemConst = _DrawChemConst_;
 		DrawChemStructures = _DrawChemStructures_;
+		BOND_N = DrawChemConst.BOND_N,
+		BOND_S = DrawChemConst.BOND_S,
+		BOND_W = DrawChemConst.BOND_W,
+		BOND_E = DrawChemConst.BOND_E,
+		BOND_NE = DrawChemConst.BOND_NE,
+		BOND_NW = DrawChemConst.BOND_NW,
+		BOND_SE = DrawChemConst.BOND_SE,
+		BOND_SW = DrawChemConst.BOND_SW;
 	}));
 	
 	it("should draw an object based on the input", function () {
 		var input = [
-			{
-				coords: [10, 10],
-				bonds: [
-					{
-						coords: [15, 15],
-						bonds: [
-							{
-								coords: [20, 20],
-								bonds: [
-									{
-										coords: [30, 30],
-										bonds: []
-									}
-								]
-							},
-							{
-								coords: [25, 25],
-								bonds: []
-							}
-						]
-					},
-					{
-						coords: [5, 10],
-						bonds: []
-					},
-					{
-						coords: [-5, 16],
-						bonds: []
-					},
-					{
-						coords: [4, 2],
-						bonds: []
-					}
-				]
-			}
+			new Atom([10, 10], [
+				new Atom([15, 15], [
+					new Atom([20, 20], [
+						new Atom([30, 30], [])
+					]),
+					new Atom([25, 25], [])
+				]),
+				new Atom([5, 10], []),
+				new Atom([-5, 16], []),
+				new Atom([4, 2], [])
+			])
 		];
 		expect(DrawChemShapes.draw(input, "cmpd1").generate()).toEqual(
 			"<svg>" +
@@ -88,10 +74,13 @@ describe("DrawChemShapes service tests", function () {
 	
 	it("should combine structure objects", function () {
 		var benzene = DrawChemStructures.benzene(),
-			singleBond = DrawChemStructures.singleBond();
-			
-		benzene.setTransform("translate", [100, 100]);
+			singleBond = DrawChemStructures.singleBond(),
+			toCompare = DrawChemStructures.benzene().getStructure();
+		toCompare[0].setCoords([100, 100]);
+		toCompare[0].addBond(singleBond.getStructure()[0].getBonds()[0]);
+		benzene.getStructure()[0].setCoords([100, 100]);
 		currentClick = [101, 99];
 		DrawChemShapes.modifyStructure(benzene, singleBond, currentClick);
+		expect(benzene.getStructure()).toEqual(toCompare);
 	});
 });

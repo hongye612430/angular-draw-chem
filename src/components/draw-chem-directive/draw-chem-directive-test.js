@@ -45,7 +45,7 @@ describe("DrawChemEditor directive tests", function () {
 		DrawChem.runEditor("test");
 		expect(DrawChem.showEditor()).toEqual(true);
 		temp.find("#dc-" + custom.name).click();
-		expect(element.isolateScope().chosenStructure).toEqual(custom.structure);		
+		expect(element.isolateScope().chosenStructure).toEqual(custom);		
 	});
 	
 	it("should store the current structure (as a Structure object)", function () {
@@ -53,10 +53,14 @@ describe("DrawChemEditor directive tests", function () {
 		DrawChem.runEditor("test");
 		expect(DrawChem.showEditor()).toEqual(true);
 		temp.find("#dc-" + custom.name).click();
-		expect(element.isolateScope().chosenStructure).toEqual(custom.structure);
+		expect(element.isolateScope().chosenStructure).toEqual(custom);
 		expect(element.isolateScope().currentStructure).toBeUndefined();
-		temp.find(".dc-editor-dialog-content").click();
-		expect(element.isolateScope().currentStructure).toEqual(custom.structure);	
+		temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "click",
+			clientX: 2,
+			clientY: 2
+		});
+		expect(element.isolateScope().currentStructure).toEqual(custom);	
 	});
 	
 	it("should set the content after clicking on the 'transfer' button", function () {
@@ -81,8 +85,12 @@ describe("DrawChemEditor directive tests", function () {
 		DrawChem.runEditor("test");
 		expect(DrawChem.showEditor()).toEqual(true);
 		temp.find("#dc-" + custom.name).click();
-		expect(element.isolateScope().chosenStructure).toEqual(custom.structure);
-		temp.find(".dc-editor-dialog-content").click();
+		expect(element.isolateScope().chosenStructure).toEqual(custom);
+		temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "click",
+			clientX: 2,
+			clientY: 2
+		});
 		expect(temp.find(".dc-editor-dialog-content").html())
 			.toEqual(
 				"<svg>" +
@@ -115,7 +123,7 @@ describe("DrawChemEditor directive tests", function () {
 						"</g>" +
 					"</defs>" +
 					"<use xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"#cmpd1\"" +
-						" transform=\"translate(NaN)\"></use>" +
+						" transform=\"\"></use>" +
 				"</svg>"
 			);		
 	});
@@ -125,8 +133,12 @@ describe("DrawChemEditor directive tests", function () {
 		DrawChem.runEditor("test");
 		expect(DrawChem.showEditor()).toEqual(true);		
 		temp.find("#dc-" + custom.name).click();
-		expect(element.isolateScope().chosenStructure).toEqual(custom.structure);
-		temp.find(".dc-editor-dialog-content").click();
+		expect(element.isolateScope().chosenStructure).toEqual(custom);
+		temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "click",
+			clientX: 2,
+			clientY: 2
+		});
 		expect(temp.find(".dc-editor-dialog-content").html())
 			.toEqual(
 				"<svg>" +
@@ -159,10 +171,68 @@ describe("DrawChemEditor directive tests", function () {
 						"</g>" +
 					"</defs>" +
 					"<use xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"#cmpd1\"" +
-					" transform=\"translate(NaN)\"></use>" +
+					" transform=\"\"></use>" +
 				"</svg>"
 			);
 		temp.find(".dc-custom-button").click();
 		expect(temp.find(".dc-editor-dialog-content").html()).toEqual("");
+	});
+	
+	it("should render a modified structure", function () {
+		var custom = DrawChemStructures.benzene(),
+			add = DrawChemStructures.singleBond();
+		DrawChem.runEditor("test");
+		expect(DrawChem.showEditor()).toEqual(true);		
+		temp.find("#dc-" + custom.name).click();
+		expect(element.isolateScope().chosenStructure).toEqual(custom);
+		temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "click",
+			clientX: 2,
+			clientY: 2
+		});
+		temp.find("#dc-" + add.name).click();
+		expect(element.isolateScope().chosenStructure).toEqual(add);
+		temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "click",
+			clientX: 2,
+			clientY: 2
+		});
+		expect(temp.find(".dc-editor-dialog-content").html())
+			.toEqual(
+				"<svg>" +
+					"<defs>" +
+						"<g id=\"cmpd1\">" +
+							"<style type=\"text/css\">" +
+								"path{" +
+									"stroke:black;" +
+									"stroke-width:0.8;" +
+									"fill:none;" +
+								"}" +
+								"circle:hover{" +
+									"opacity:0.3;" +
+									"stroke:black;" +
+									"stroke-width:0.8;" +
+								"}" +
+								"circle{" +
+									"opacity:0;" +
+								"}" +
+							"</style>" +
+							"<path d=\"M 0 0 l 17.32 10 l 0 20 l -17.32 10 l -17.32 -10 l 0 -20 \"></path>" +
+							"<path d=\"M 0 0 l -17.32 10 \"></path>" +
+							"<path d=\"M 0 0 l 0 -20 \"></path>" +
+							"<circle cx=\"0\" cy=\"0\" r=\"2.4\"></circle>" +
+							"<circle cx=\"17.32\" cy=\"10\" r=\"2.4\"></circle>" +
+							"<circle cx=\"17.32\" cy=\"30\" r=\"2.4\"></circle>" +
+							"<circle cx=\"0\" cy=\"40\" r=\"2.4\"></circle>" +
+							"<circle cx=\"-17.32\" cy=\"30\" r=\"2.4\"></circle>" +
+							"<circle cx=\"-17.32\" cy=\"10\" r=\"2.4\"></circle>" +
+							"<circle cx=\"-17.32\" cy=\"10\" r=\"2.4\"></circle>" +
+							"<circle cx=\"0\" cy=\"-20\" r=\"2.4\"></circle>" +
+						"</g>" +
+					"</defs>" +
+					"<use xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"#cmpd1\"" +
+					" transform=\"\"></use>" +
+				"</svg>"
+			);
 	});
 });

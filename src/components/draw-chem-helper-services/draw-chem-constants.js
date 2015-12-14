@@ -18,6 +18,9 @@
 		// the default bond width
 		service.BOND_WIDTH = parseFloat((service.BOND_LENGTH * service.WIDTH_TO_LENGTH).toFixed(2));
 		
+		// the default r of a circle around an atom
+		service.CIRC_R = service.BOND_LENGTH * 0.12;
+		
 		// bond in north direction
 		service.BOND_N = [0, -service.BOND_LENGTH];
 		// bond in south direction

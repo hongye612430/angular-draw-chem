@@ -15,6 +15,7 @@ describe("DrawChemStructures service tests", function () {
 			var customInstance = custom();
 			expect(customInstance.name).toBeDefined();
 			expect(customInstance.structure).toBeDefined();
+			expect(customInstance.origin).toBeDefined();
 		});
 	});
 })

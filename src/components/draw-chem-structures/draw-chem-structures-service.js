@@ -3,12 +3,13 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemStructures", DrawChemStructures);
 		
-	DrawChemStructures.$inject = ["DrawChemConst", "DCStructure"];
+	DrawChemStructures.$inject = ["DrawChemConst", "DCStructure", "DCAtom"];
 	
-	function DrawChemStructures(DrawChemConst, DCStructure) {
+	function DrawChemStructures(DrawChemConst, DCStructure, DCAtom) {
 		
 		var service = {},
 			benzene,
+			Atom = DCAtom.Atom,
 			singleBond,
 			BOND_N = DrawChemConst.BOND_N,
 			BOND_S = DrawChemConst.BOND_S,
@@ -23,56 +24,29 @@
 			return new DCStructure.Structure(
 				"benzene",
 				[
-					{
-						coords: [0, 0],
-						bonds: [
-							{
-								coords: BOND_SE,
-								bonds: [
-									{
-										coords: BOND_S,
-										bonds: [
-											{
-												coords: BOND_SW,
-												bonds: [
-													{
-														coords: BOND_NW,
-														bonds: [
-															{
-																coords: BOND_N,
-																bonds: []
-															}
-														]
-													}
-												]
-											}
-										]
-									}
-								]
-							},
-							{
-								coords: BOND_SW,
-								bonds: []
-							}
-						]
-					}
+					new Atom([0, 0], [
+						new Atom(BOND_SE, [
+							new Atom(BOND_S, [
+								new Atom(BOND_SW, [
+									new Atom(BOND_NW, [
+										new Atom(BOND_N, [])
+									])
+								])
+							])
+						]),
+						new Atom(BOND_SW, [])
+					])					
 				]
 			);
 		};
 		
 		service.singleBond = function () {
 			return new DCStructure.Structure(
-				"single bond",
+				"single-bond",
 				[
-					{
-						coords: [0, 0],
-						bonds: [
-							{
-								coords: BOND_NW,
-								bonds: []
-							}
-						]
-					}
+					new Atom([0, 0], [
+						new Atom(BOND_N, [])
+					])
 				]
 			);
 		};

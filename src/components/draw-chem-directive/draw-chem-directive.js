@@ -74,7 +74,7 @@
 					scope.customButtons.push({
 						name: customInstance.name,
 						choose: function () {
-							scope.chosenStructure = customInstance.structure;
+							scope.chosenStructure = customInstance;
 						}
 					});
 				});
@@ -86,8 +86,8 @@
 					var clickCoords = innerCoords(),
 						drawn = "";
 						
-					modifyCurrentStructure();
-					drawn = DrawChemShapes.draw(scope.currentStructure, "cmpd1").transform("translate", clickCoords).generate();
+					modifyCurrentStructure();					
+					drawn = DrawChemShapes.draw(scope.currentStructure.getStructure(), "cmpd1").generate();					
 					DrawChem.setContent(drawn);
 					
 					function innerCoords() {
@@ -104,6 +104,7 @@
 							DrawChemShapes.modifyStructure(scope.currentStructure, scope.chosenStructure, clickCoords);
 						} else {
 							scope.currentStructure = angular.copy(scope.chosenStructure);
+							scope.currentStructure.getStructure()[0].setCoords(clickCoords);
 						}
 					}
 				}

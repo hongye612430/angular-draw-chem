@@ -1,4 +1,4 @@
-describe("DrawChemEditor directive tests", function () {
+describe("DCStructure service tests", function () {
 	beforeEach(module("mmAngularDrawChem"));
 	
 	var DCStructure;
@@ -16,5 +16,9 @@ describe("DrawChemEditor directive tests", function () {
 		expect(structure.structure).toEqual([]);
 		structure.setTransform("translate", [10, 10]);
 		expect(structure.getTransform("translate")).toEqual([10, 10]);
+		structure.setOrigin([100, 10]);
+		expect(structure.getOrigin()).toEqual([100, 10]);
 	});
+	
+	
 });

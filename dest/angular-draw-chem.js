@@ -81,7 +81,7 @@
 					scope.customButtons.push({
 						name: customInstance.name,
 						choose: function () {
-							scope.chosenStructure = customInstance.structure;
+							scope.chosenStructure = customInstance;
 						}
 					});
 				});
@@ -93,8 +93,8 @@
 					var clickCoords = innerCoords(),
 						drawn = "";
 						
-					modifyCurrentStructure();
-					drawn = DrawChemShapes.draw(scope.currentStructure, "cmpd1").transform("translate", clickCoords).generate();
+					modifyCurrentStructure();					
+					drawn = DrawChemShapes.draw(scope.currentStructure.getStructure(), "cmpd1").generate();					
 					DrawChem.setContent(drawn);
 					
 					function innerCoords() {
@@ -111,11 +111,79 @@
 							DrawChemShapes.modifyStructure(scope.currentStructure, scope.chosenStructure, clickCoords);
 						} else {
 							scope.currentStructure = angular.copy(scope.chosenStructure);
+							scope.currentStructure.getStructure()[0].setCoords(clickCoords);
 						}
 					}
 				}
 			}
 		}
+	}
+})();
+(function () {
+	"use strict";
+	angular.module("mmAngularDrawChem")
+		.factory("DCAtom", DCAtom);
+	
+	function DCAtom() {
+		
+		var service = {};
+		
+		/**
+		* Creates a new Atom.
+		* @class
+		* @param {Number[]} - an array with coordinates of the atom
+		* @param {Atom[]} - an array of atoms this atom is connected with
+		*/
+		function Atom(coords, bonds) {
+			this.coords = coords;	
+			this.bonds = bonds;
+		}
+		
+		/**
+		 * Sets coordinates of the atom.
+		 * @param {Number[]} coords - an array with coordinates of the atom
+		 */
+		Atom.prototype.setCoords = function (coords) {
+			this.coords = coords;
+		};
+		
+		/**
+		 * Gets coordinates of the atom.
+		 * @returns {Number[]}
+		 */
+		Atom.prototype.getCoords = function () {
+			return this.coords;
+		};
+		
+		/**
+		 * Gets an array of all atoms this atom is connected with
+		 * @returns {Atom[]}
+		 */
+		Atom.prototype.getBonds = function () {
+			return this.bonds;
+		}
+		
+		/**
+		 * Adds a new atom to the bonds array.
+		 * @param {Atom} atom - a new Atom object to be added
+		 */
+		Atom.prototype.addBond = function (atom) {
+			this.bonds.push(atom);
+		}
+		
+		/**
+		 * Adds new bonds.
+		 * @param {Atom[]} bonds - an array of bonds to be added
+		 */
+		Atom.prototype.addBonds = function (bonds) {
+			bonds.forEach(function (atom) {
+				this.bonds.push(atom);
+			}, this);
+		}
+		
+		service.Atom = Atom;
+		
+		return service;
 	}
 })();
 (function () {
@@ -259,15 +327,23 @@
 		var service = {};
 		
 		/**
-		* Creates a new DCStructure.
+		* Creates a new Structure.
 		* @class
+		* @param {string} name - name of the structure
+		* @param {Atom[]} structure - an array of atoms
 		*/
 		function Structure(name, structure) {
-			this.name = name;
+			this.name = name;			
 			this.structure = structure;
 			this.transform = [];
-		}
+			this.origin = [];
+		}		
 		
+		/**
+		 * Sets the specified transform (translate, scale, etc.)
+		 * @param {string} name - a name of the transform
+		 * @param {number[]} content - an array with the coordinates
+		 */
 		Structure.prototype.setTransform = function (name, content) {
 			this.transform.push(
 				{
@@ -277,6 +353,10 @@
 			);
 		}
 		
+		/**
+		 * Gets the specified transform.
+		 * @returns {number[]}
+		 */
 		Structure.prototype.getTransform = function (name) {
 			var i, transform = this.transform;
 			for (i = 0; i < transform.length; i += 1) {
@@ -284,6 +364,38 @@
 					return transform[i].content;
 				}
 			}
+		}
+		
+		/**
+		 * Sets coordinates of the first atom.
+		 * @param {number[]} origin - an array with coordinates
+		 */
+		Structure.prototype.setOrigin = function (origin) {
+			this.origin = origin;
+		}
+		
+		/**
+		 * Gets the coordinates of the first atom.
+		 * @returns {number[]}
+		 */
+		Structure.prototype.getOrigin = function () {
+			return this.origin;
+		}
+		
+		/**
+		 * Sets the structure array.
+		 * @param {Atom[]} content - an array of atoms and their connections
+		 */
+		Structure.prototype.setStructure = function (structure) {
+			this.structure = structure;
+		}
+		
+		/**
+		 * Gets the structure array.
+		 * @returns {Atom[]}
+		 */
+		Structure.prototype.getStructure = function () {
+			return this.structure;
 		}
 		
 		service.Structure = Structure;
@@ -310,6 +422,9 @@
 		
 		// the default bond width
 		service.BOND_WIDTH = parseFloat((service.BOND_LENGTH * service.WIDTH_TO_LENGTH).toFixed(2));
+		
+		// the default r of a circle around an atom
+		service.CIRC_R = service.BOND_LENGTH * 0.12;
 		
 		// bond in north direction
 		service.BOND_N = [0, -service.BOND_LENGTH];
@@ -500,8 +615,38 @@
 		var service = {};
 		
 		/**
+		 * Modifies the structure.
+		 * @param {Structure} base - structure to be modified,
+		 * @param {Structure} mod - structure to be added,
+		 * @param {Number[]} mousePos - position of the mouse when 'click' was made
+		 */
+		service.modifyStructure = function (base, mod, mousePos) {
+			var origin = base.getStructure()[0].getCoords(),				
+				clickX = mousePos[0],
+				clickY = mousePos[1];
+			return modStructure(base.getStructure(), origin);
+			
+			function modStructure(struct, absPos) {
+				var i, newPos;
+				for(i = 0; i < struct.length; i += 1) {
+					if (isWithin(absPos[0], clickX) && isWithin(absPos[1], clickY)) {
+						struct[i].addBonds(mod.getStructure()[0].getBonds());						
+						return base;
+					}
+					newPos = [struct[i].getCoords()[0] + absPos[0], struct[i].getCoords()[1] + absPos[1]];
+					modStructure(struct[i].getBonds(), newPos);
+				}
+			}
+			
+			function isWithin(point, click) {
+				var tolerance = DrawChemConst.CIRC_R;
+				return Math.abs(point - click) <= tolerance;
+			}
+		};
+		
+		/**
 		 * Generates the desired output based on given input.
-		 * @param {Structure} input - an object containing all information needed to render the shape
+		 * @param {Atom[]} input - an object containing all information needed to render the shape
 		 * @param {string} id - id of the object to be created (will be used inside 'g' tag and in 'use' tag)
 		 */
 		service.draw = function (input, id) {
@@ -529,23 +674,23 @@
 		
 		/**
 		 * Translates the input into an svg-suitable set of coordinates.
-		 * @param {Structure[]} input - an input object
+		 * @param {Atom[]} input - an input object
 		 * @returns {string} output as an array of arrays
 		 *					 (each array defines set of coordinates for the 'path' tag,
 		 *					 so it can be regarded as a distinct line)
 		 */
 		function parseInput(input) {
-			var output = [], circles = [], circR = DrawChemConst.BOND_LENGTH * 0.12,
+			var output = [], circles = [], circR = DrawChemConst.CIRC_R,
 				// sets the coordinates of the root element
 				// 'M' for 'moveto' - sets pen to the coordinates
-				len = output.push(["M", input[0].coords]);
+				len = output.push(["M", input[0].getCoords()]);
 				
 			circles.push([
-				input[0].coords[0],
-				input[0].coords[1],
+				input[0].getCoords()[0],
+				input[0].getCoords()[1],
 				circR
 			]);
-			connect(input[0].coords, input[0].bonds, output[len - 1]);
+			connect(input[0].getCoords(), input[0].getBonds(), output[len - 1]);
 			return {
 				paths: stringifyPaths(),
 				circles: circles
@@ -562,23 +707,23 @@
 				// if length of the bonds is 0, then do nothing
 				if (bonds.length > 0) {
 					circles.push([
-						circles[circles.length - 1][0] + bonds[0].coords[0],
-						circles[circles.length - 1][1] + bonds[0].coords[1],
+						circles[circles.length - 1][0] + bonds[0].getCoords()[0],
+						circles[circles.length - 1][1] + bonds[0].getCoords()[1],
 						circR
 					]);
 					currentLine.push("l"); // 'l' for lineto - draws line to the specified coordinates
-					currentLine.push(bonds[0].coords);
-					connect(bonds[0].coords, bonds[0].bonds, currentLine);
+					currentLine.push(bonds[0].getCoords());
+					connect(bonds[0].getCoords(), bonds[0].getBonds(), currentLine);
 				}				
 				for (i = 1; i < bonds.length; i += 1) {
-					newRoot = bonds[i].coords;
+					newRoot = bonds[i].getCoords();
 					circles.push([
-						root[0] + bonds[i].coords[0],
-						root[1] + bonds[i].coords[1],
+						root[0] + newRoot[0],
+						root[1] + newRoot[1],
 						circR
 					]);
 					newLen = output.push(["M", root, "l", newRoot]);
-					connect(newRoot, bonds[i].bonds, output[newLen - 1]);
+					connect(newRoot, bonds[i].getBonds(), output[newLen - 1]);
 				}
 			}
 			
@@ -614,12 +759,13 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemStructures", DrawChemStructures);
 		
-	DrawChemStructures.$inject = ["DrawChemConst", "DCStructure"];
+	DrawChemStructures.$inject = ["DrawChemConst", "DCStructure", "DCAtom"];
 	
-	function DrawChemStructures(DrawChemConst, DCStructure) {
+	function DrawChemStructures(DrawChemConst, DCStructure, DCAtom) {
 		
 		var service = {},
 			benzene,
+			Atom = DCAtom.Atom,
 			singleBond,
 			BOND_N = DrawChemConst.BOND_N,
 			BOND_S = DrawChemConst.BOND_S,
@@ -634,56 +780,29 @@
 			return new DCStructure.Structure(
 				"benzene",
 				[
-					{
-						coords: [0, 0],
-						bonds: [
-							{
-								coords: BOND_SE,
-								bonds: [
-									{
-										coords: BOND_S,
-										bonds: [
-											{
-												coords: BOND_SW,
-												bonds: [
-													{
-														coords: BOND_NW,
-														bonds: [
-															{
-																coords: BOND_N,
-																bonds: []
-															}
-														]
-													}
-												]
-											}
-										]
-									}
-								]
-							},
-							{
-								coords: BOND_SW,
-								bonds: []
-							}
-						]
-					}
+					new Atom([0, 0], [
+						new Atom(BOND_SE, [
+							new Atom(BOND_S, [
+								new Atom(BOND_SW, [
+									new Atom(BOND_NW, [
+										new Atom(BOND_N, [])
+									])
+								])
+							])
+						]),
+						new Atom(BOND_SW, [])
+					])					
 				]
 			);
 		};
 		
 		service.singleBond = function () {
 			return new DCStructure.Structure(
-				"single bond",
+				"single-bond",
 				[
-					{
-						coords: [0, 0],
-						bonds: [
-							{
-								coords: BOND_NW,
-								bonds: []
-							}
-						]
-					}
+					new Atom([0, 0], [
+						new Atom(BOND_N, [])
+					])
 				]
 			);
 		};
