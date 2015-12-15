@@ -19,17 +19,25 @@
 			var origin = base.getStructure()[0].getCoords(),				
 				clickX = mousePos[0],
 				clickY = mousePos[1];
-			return modStructure(base.getStructure(), origin);
+			if (isWithin(origin[0], clickX) && isWithin(origin[1], clickY)) {
+				base
+					.getStructure()[0]
+					.addBonds(mod.getStructure()[0].getBonds());						
+				return base;
+			} else {
+				return modStructure(base.getStructure()[0].getBonds(), origin);
+			}
 			
-			function modStructure(struct, absPos) {
-				var i, newPos;
+			function modStructure(struct, pos) {
+				var i, absPos;
 				for(i = 0; i < struct.length; i += 1) {
+					absPos = [struct[i].getCoords()[0] + pos[0], struct[i].getCoords()[1] + pos[1]];
 					if (isWithin(absPos[0], clickX) && isWithin(absPos[1], clickY)) {
 						struct[i].addBonds(mod.getStructure()[0].getBonds());						
 						return base;
+					} else {
+						modStructure(struct[i].getBonds(), absPos);
 					}
-					newPos = [struct[i].getCoords()[0] + absPos[0], struct[i].getCoords()[1] + absPos[1]];
-					modStructure(struct[i].getBonds(), newPos);
 				}
 			}
 			

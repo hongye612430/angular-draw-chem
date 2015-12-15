@@ -234,5 +234,49 @@ describe("DrawChemEditor directive tests", function () {
 					" transform=\"\"></use>" +
 				"</svg>"
 			);
+		temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "click",
+			clientX: 17,
+			clientY: 11
+		});
+		expect(temp.find(".dc-editor-dialog-content").html())
+			.toEqual(
+				"<svg>" +
+					"<defs>" +
+						"<g id=\"cmpd1\">" +
+							"<style type=\"text/css\">" +
+								"path{" +
+									"stroke:black;" +
+									"stroke-width:0.8;" +
+									"fill:none;" +
+								"}" +
+								"circle:hover{" +
+									"opacity:0.3;" +
+									"stroke:black;" +
+									"stroke-width:0.8;" +
+								"}" +
+								"circle{" +
+									"opacity:0;" +
+								"}" +
+							"</style>" +
+							"<path d=\"M 0 0 l 17.32 10 l 0 20 l -17.32 10 l -17.32 -10 l 0 -20 \"></path>" +
+							"<path d=\"M 17.32 10 l 0 -20 \"></path>" +
+							"<path d=\"M 0 0 l -17.32 10 \"></path>" +							
+							"<path d=\"M 0 0 l 0 -20 \"></path>" +							
+							"<circle cx=\"0\" cy=\"0\" r=\"2.4\"></circle>" +
+							"<circle cx=\"17.32\" cy=\"10\" r=\"2.4\"></circle>" +
+							"<circle cx=\"17.32\" cy=\"30\" r=\"2.4\"></circle>" +
+							"<circle cx=\"0\" cy=\"40\" r=\"2.4\"></circle>" +
+							"<circle cx=\"-17.32\" cy=\"30\" r=\"2.4\"></circle>" +
+							"<circle cx=\"-17.32\" cy=\"10\" r=\"2.4\"></circle>" +
+							"<circle cx=\"17.32\" cy=\"-10\" r=\"2.4\"></circle>" +
+							"<circle cx=\"-17.32\" cy=\"10\" r=\"2.4\"></circle>" +
+							"<circle cx=\"0\" cy=\"-20\" r=\"2.4\"></circle>" +
+						"</g>" +
+					"</defs>" +
+					"<use xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"#cmpd1\"" +
+					" transform=\"\"></use>" +
+				"</svg>"
+			);
 	});
 });

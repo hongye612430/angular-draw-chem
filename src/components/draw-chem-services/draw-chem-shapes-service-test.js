@@ -76,10 +76,16 @@ describe("DrawChemShapes service tests", function () {
 		var benzene = DrawChemStructures.benzene(),
 			singleBond = DrawChemStructures.singleBond(),
 			toCompare = DrawChemStructures.benzene().getStructure();
+			
 		toCompare[0].setCoords([100, 100]);
 		toCompare[0].addBond(singleBond.getStructure()[0].getBonds()[0]);
 		benzene.getStructure()[0].setCoords([100, 100]);
 		currentClick = [101, 99];
+		DrawChemShapes.modifyStructure(benzene, singleBond, currentClick);
+		expect(benzene.getStructure()).toEqual(toCompare);		
+		
+		toCompare[0].getBonds()[0].addBond(singleBond.getStructure()[0].getBonds()[0]);
+		currentClick = [118, 109];
 		DrawChemShapes.modifyStructure(benzene, singleBond, currentClick);
 		expect(benzene.getStructure()).toEqual(toCompare);
 	});
