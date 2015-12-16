@@ -73,10 +73,14 @@
 		
 		/**
 		 * Gets the structure array.
-		 * @returns {Atom[]}
+		 * @returns {Atom[]|Atom}
 		 */
-		Structure.prototype.getStructure = function () {
-			return this.structure;
+		Structure.prototype.getStructure = function (index) {
+			if (arguments.length === 0) {
+				return this.structure;
+			} else {
+				return this.structure[index];
+			}
 		}
 		
 		service.Structure = Structure;

@@ -84,10 +84,12 @@
 				 */
 				scope.drawShape = function ($event) {
 					var clickCoords = innerCoords(),
+						translate,
 						drawn = "";
-						
-					modifyCurrentStructure();					
-					drawn = DrawChemShapes.draw(scope.currentStructure.getStructure(), "cmpd1").generate();					
+					modifyCurrentStructure();
+					drawn = DrawChemShapes.draw(scope.currentStructure.getStructure(), "cmpd1")
+						.transform("translate", translate)
+						.generate();
 					DrawChem.setContent(drawn);
 					
 					function innerCoords() {
@@ -101,10 +103,12 @@
 					
 					function modifyCurrentStructure() {
 						if (DrawChem.getContent() !== "") {
-							DrawChemShapes.modifyStructure(scope.currentStructure, scope.chosenStructure, clickCoords);
+							translate = scope.currentStructure.getTransform("translate");
+							DrawChemShapes.modifyStructure(scope.currentStructure, angular.copy(scope.chosenStructure), clickCoords);
 						} else {
+							translate = clickCoords;
 							scope.currentStructure = angular.copy(scope.chosenStructure);
-							scope.currentStructure.getStructure()[0].setCoords(clickCoords);
+							scope.currentStructure.setTransform("translate", translate);							
 						}
 					}
 				}

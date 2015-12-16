@@ -60,6 +60,7 @@ describe("DrawChemEditor directive tests", function () {
 			clientX: 2,
 			clientY: 2
 		});
+		custom.setTransform("translate", [0, 0]);
 		expect(element.isolateScope().currentStructure).toEqual(custom);	
 	});
 	
@@ -111,8 +112,8 @@ describe("DrawChemEditor directive tests", function () {
 									"opacity:0;" +
 								"}" +
 							"</style>" +
-							"<path d=\"M 0 0 l 17.32 10 l 0 20 l -17.32 10 l -17.32 -10 l 0 -20 \"></path>" +
-							"<path d=\"M 0 0 l -17.32 10 \"></path>" +
+							"<path d=\"M 0 0 L 17.32 10 L 17.32 30 L 0 40 L -17.32 30 L -17.32 10 \"></path>" +
+							"<path d=\"M 0 0 L -17.32 10 \"></path>" +
 							"<circle cx=\"0\" cy=\"0\" r=\"2.4\"></circle>" +
 							"<circle cx=\"17.32\" cy=\"10\" r=\"2.4\"></circle>" +
 							"<circle cx=\"17.32\" cy=\"30\" r=\"2.4\"></circle>" +
@@ -123,7 +124,7 @@ describe("DrawChemEditor directive tests", function () {
 						"</g>" +
 					"</defs>" +
 					"<use xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"#cmpd1\"" +
-						" transform=\"\"></use>" +
+						" transform=\"translate(0,0)\"></use>" +
 				"</svg>"
 			);		
 	});
@@ -139,41 +140,6 @@ describe("DrawChemEditor directive tests", function () {
 			clientX: 2,
 			clientY: 2
 		});
-		expect(temp.find(".dc-editor-dialog-content").html())
-			.toEqual(
-				"<svg>" +
-					"<defs>" +
-						"<g id=\"cmpd1\">" +
-							"<style type=\"text/css\">" +
-								"path{" +
-									"stroke:black;" +
-									"stroke-width:0.8;" +
-									"fill:none;" +
-								"}" +
-								"circle:hover{" +
-									"opacity:0.3;" +
-									"stroke:black;" +
-									"stroke-width:0.8;" +
-								"}" +
-								"circle{" +
-									"opacity:0;" +
-								"}" +
-							"</style>" +
-							"<path d=\"M 0 0 l 17.32 10 l 0 20 l -17.32 10 l -17.32 -10 l 0 -20 \"></path>" +
-							"<path d=\"M 0 0 l -17.32 10 \"></path>" +
-							"<circle cx=\"0\" cy=\"0\" r=\"2.4\"></circle>" +
-							"<circle cx=\"17.32\" cy=\"10\" r=\"2.4\"></circle>" +
-							"<circle cx=\"17.32\" cy=\"30\" r=\"2.4\"></circle>" +
-							"<circle cx=\"0\" cy=\"40\" r=\"2.4\"></circle>" +
-							"<circle cx=\"-17.32\" cy=\"30\" r=\"2.4\"></circle>" +
-							"<circle cx=\"-17.32\" cy=\"10\" r=\"2.4\"></circle>" +
-							"<circle cx=\"-17.32\" cy=\"10\" r=\"2.4\"></circle>" +
-						"</g>" +
-					"</defs>" +
-					"<use xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"#cmpd1\"" +
-					" transform=\"\"></use>" +
-				"</svg>"
-			);
 		temp.find(".dc-custom-button").click();
 		expect(temp.find(".dc-editor-dialog-content").html()).toEqual("");
 	});
@@ -187,15 +153,15 @@ describe("DrawChemEditor directive tests", function () {
 		expect(element.isolateScope().chosenStructure).toEqual(custom);
 		temp.find(".dc-editor-dialog-content").triggerHandler({
 			type : "click",
-			clientX: 2,
-			clientY: 2
+			clientX: 100,
+			clientY: 100
 		});
 		temp.find("#dc-" + add.name).click();
 		expect(element.isolateScope().chosenStructure).toEqual(add);
 		temp.find(".dc-editor-dialog-content").triggerHandler({
 			type : "click",
-			clientX: 2,
-			clientY: 2
+			clientX: 101,
+			clientY: 99
 		});
 		expect(temp.find(".dc-editor-dialog-content").html())
 			.toEqual(
@@ -217,9 +183,9 @@ describe("DrawChemEditor directive tests", function () {
 									"opacity:0;" +
 								"}" +
 							"</style>" +
-							"<path d=\"M 0 0 l 17.32 10 l 0 20 l -17.32 10 l -17.32 -10 l 0 -20 \"></path>" +
-							"<path d=\"M 0 0 l -17.32 10 \"></path>" +
-							"<path d=\"M 0 0 l 0 -20 \"></path>" +
+							"<path d=\"M 0 0 L 17.32 10 L 17.32 30 L 0 40 L -17.32 30 L -17.32 10 \"></path>" +
+							"<path d=\"M 0 0 L -17.32 10 \"></path>" +
+							"<path d=\"M 0 0 L 0 -20 \"></path>" +
 							"<circle cx=\"0\" cy=\"0\" r=\"2.4\"></circle>" +
 							"<circle cx=\"17.32\" cy=\"10\" r=\"2.4\"></circle>" +
 							"<circle cx=\"17.32\" cy=\"30\" r=\"2.4\"></circle>" +
@@ -231,13 +197,13 @@ describe("DrawChemEditor directive tests", function () {
 						"</g>" +
 					"</defs>" +
 					"<use xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"#cmpd1\"" +
-					" transform=\"\"></use>" +
+					" transform=\"translate(98,98)\"></use>" +
 				"</svg>"
 			);
 		temp.find(".dc-editor-dialog-content").triggerHandler({
 			type : "click",
-			clientX: 17,
-			clientY: 11
+			clientX: 118,
+			clientY: 110
 		});
 		expect(temp.find(".dc-editor-dialog-content").html())
 			.toEqual(
@@ -259,10 +225,10 @@ describe("DrawChemEditor directive tests", function () {
 									"opacity:0;" +
 								"}" +
 							"</style>" +
-							"<path d=\"M 0 0 l 17.32 10 l 0 20 l -17.32 10 l -17.32 -10 l 0 -20 \"></path>" +
-							"<path d=\"M 17.32 10 l 0 -20 \"></path>" +
-							"<path d=\"M 0 0 l -17.32 10 \"></path>" +							
-							"<path d=\"M 0 0 l 0 -20 \"></path>" +							
+							"<path d=\"M 0 0 L 17.32 10 L 17.32 30 L 0 40 L -17.32 30 L -17.32 10 \"></path>" +
+							"<path d=\"M 17.32 10 L 17.32 -10 \"></path>" +
+							"<path d=\"M 0 0 L -17.32 10 \"></path>" +					
+							"<path d=\"M 0 0 L 0 -20 \"></path>" +							
 							"<circle cx=\"0\" cy=\"0\" r=\"2.4\"></circle>" +
 							"<circle cx=\"17.32\" cy=\"10\" r=\"2.4\"></circle>" +
 							"<circle cx=\"17.32\" cy=\"30\" r=\"2.4\"></circle>" +
@@ -275,7 +241,108 @@ describe("DrawChemEditor directive tests", function () {
 						"</g>" +
 					"</defs>" +
 					"<use xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"#cmpd1\"" +
-					" transform=\"\"></use>" +
+					" transform=\"translate(98,98)\"></use>" +
+				"</svg>"
+			);
+	});
+	
+	it("should be able to draw further, on the recently added structure", function () {
+		var custom = DrawChemStructures.benzene(),
+			add = DrawChemStructures.singleBond();
+		DrawChem.runEditor("test");
+		expect(DrawChem.showEditor()).toEqual(true);		
+		temp.find("#dc-" + custom.name).click();
+		expect(element.isolateScope().chosenStructure).toEqual(custom);
+		temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "click",
+			clientX: 100,
+			clientY: 100
+		});
+		temp.find("#dc-" + add.name).click();
+		expect(element.isolateScope().chosenStructure).toEqual(add);
+		temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "click",
+			clientX: 101,
+			clientY: 99
+		});
+		expect(temp.find(".dc-editor-dialog-content").html())
+			.toEqual(
+				"<svg>" +
+					"<defs>" +
+						"<g id=\"cmpd1\">" +
+							"<style type=\"text/css\">" +
+								"path{" +
+									"stroke:black;" +
+									"stroke-width:0.8;" +
+									"fill:none;" +
+								"}" +
+								"circle:hover{" +
+									"opacity:0.3;" +
+									"stroke:black;" +
+									"stroke-width:0.8;" +
+								"}" +
+								"circle{" +
+									"opacity:0;" +
+								"}" +
+							"</style>" +
+							"<path d=\"M 0 0 L 17.32 10 L 17.32 30 L 0 40 L -17.32 30 L -17.32 10 \"></path>" +
+							"<path d=\"M 0 0 L -17.32 10 \"></path>" +
+							"<path d=\"M 0 0 L 0 -20 \"></path>" +
+							"<circle cx=\"0\" cy=\"0\" r=\"2.4\"></circle>" +
+							"<circle cx=\"17.32\" cy=\"10\" r=\"2.4\"></circle>" +
+							"<circle cx=\"17.32\" cy=\"30\" r=\"2.4\"></circle>" +
+							"<circle cx=\"0\" cy=\"40\" r=\"2.4\"></circle>" +
+							"<circle cx=\"-17.32\" cy=\"30\" r=\"2.4\"></circle>" +
+							"<circle cx=\"-17.32\" cy=\"10\" r=\"2.4\"></circle>" +
+							"<circle cx=\"-17.32\" cy=\"10\" r=\"2.4\"></circle>" +
+							"<circle cx=\"0\" cy=\"-20\" r=\"2.4\"></circle>" +
+						"</g>" +
+					"</defs>" +
+					"<use xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"#cmpd1\"" +
+					" transform=\"translate(98,98)\"></use>" +
+				"</svg>"
+			);
+		temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "click",
+			clientX: 100,
+			clientY: 79
+		});
+		expect(temp.find(".dc-editor-dialog-content").html())
+			.toEqual(
+				"<svg>" +
+					"<defs>" +
+						"<g id=\"cmpd1\">" +
+							"<style type=\"text/css\">" +
+								"path{" +
+									"stroke:black;" +
+									"stroke-width:0.8;" +
+									"fill:none;" +
+								"}" +
+								"circle:hover{" +
+									"opacity:0.3;" +
+									"stroke:black;" +
+									"stroke-width:0.8;" +
+								"}" +
+								"circle{" +
+									"opacity:0;" +
+								"}" +
+							"</style>" +
+							"<path d=\"M 0 0 L 17.32 10 L 17.32 30 L 0 40 L -17.32 30 L -17.32 10 \"></path>" +
+							"<path d=\"M 0 0 L -17.32 10 \"></path>" +
+							"<path d=\"M 0 0 L 0 -20 L 0 -40 \"></path>" +
+							"<circle cx=\"0\" cy=\"0\" r=\"2.4\"></circle>" +
+							"<circle cx=\"17.32\" cy=\"10\" r=\"2.4\"></circle>" +
+							"<circle cx=\"17.32\" cy=\"30\" r=\"2.4\"></circle>" +
+							"<circle cx=\"0\" cy=\"40\" r=\"2.4\"></circle>" +
+							"<circle cx=\"-17.32\" cy=\"30\" r=\"2.4\"></circle>" +
+							"<circle cx=\"-17.32\" cy=\"10\" r=\"2.4\"></circle>" +
+							"<circle cx=\"-17.32\" cy=\"10\" r=\"2.4\"></circle>" +
+							"<circle cx=\"0\" cy=\"-20\" r=\"2.4\"></circle>" +
+							"<circle cx=\"0\" cy=\"-40\" r=\"2.4\"></circle>" +
+						"</g>" +
+					"</defs>" +
+					"<use xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"#cmpd1\"" +
+					" transform=\"translate(98,98)\"></use>" +
 				"</svg>"
 			);
 	});

@@ -78,7 +78,7 @@
 				this.transformAttr += " ";
 			}
 			this.transformAttr += transform + "(" + value[0];
-			if (value[1]) {
+			if (value.length > 1) {
 				this.transformAttr += "," + value[1];
 			}			
 			this.transformAttr += ")";

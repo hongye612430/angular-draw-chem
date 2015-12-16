@@ -16,24 +16,17 @@
 		 * @param {Number[]} mousePos - position of the mouse when 'click' was made
 		 */
 		service.modifyStructure = function (base, mod, mousePos) {
-			var origin = base.getStructure()[0].getCoords(),				
-				clickX = mousePos[0],
-				clickY = mousePos[1];
-			if (isWithin(origin[0], clickX) && isWithin(origin[1], clickY)) {
-				base
-					.getStructure()[0]
-					.addBonds(mod.getStructure()[0].getBonds());						
-				return base;
-			} else {
-				return modStructure(base.getStructure()[0].getBonds(), origin);
-			}
+			var origin = base.getTransform("translate"),
+				modStr = mod.getStructure(0).getBonds();
+				
+			modStructure(base.getStructure(), origin);
 			
 			function modStructure(struct, pos) {
 				var i, absPos;
 				for(i = 0; i < struct.length; i += 1) {
-					absPos = [struct[i].getCoords()[0] + pos[0], struct[i].getCoords()[1] + pos[1]];
-					if (isWithin(absPos[0], clickX) && isWithin(absPos[1], clickY)) {
-						struct[i].addBonds(mod.getStructure()[0].getBonds());						
+					absPos = [struct[i].getCoords("x") + pos[0], struct[i].getCoords("y") + pos[1]];
+					if (isWithin(absPos[0], mousePos[0]) && isWithin(absPos[1], mousePos[1])) {
+						struct[i].addBonds(modStr);		
 						return base;
 					} else {
 						modStructure(struct[i].getBonds(), absPos);
@@ -43,7 +36,7 @@
 			
 			function isWithin(point, click) {
 				var tolerance = DrawChemConst.CIRC_R;
-				return Math.abs(point - click) <= tolerance;
+				return Math.abs(point - click) < tolerance;
 			}
 		};
 		
@@ -89,8 +82,8 @@
 				len = output.push(["M", input[0].getCoords()]);
 				
 			circles.push([
-				input[0].getCoords()[0],
-				input[0].getCoords()[1],
+				input[0].getCoords("x"),
+				input[0].getCoords("y"),
 				circR
 			]);
 			connect(input[0].getCoords(), input[0].getBonds(), output[len - 1]);
@@ -106,27 +99,30 @@
 			 * @param {Array} - an array of coordinates with 'M' and 'l' commands
 			 */
 			function connect(root, bonds, currentLine) {
-				var i, newLen, newRoot;
+				var i, newLen, absPos,
+					prevAbsPos = [
+						circles[circles.length - 1][0],
+						circles[circles.length - 1][1]
+					];
 				// if length of the bonds is 0, then do nothing
 				if (bonds.length > 0) {
-					circles.push([
-						circles[circles.length - 1][0] + bonds[0].getCoords()[0],
-						circles[circles.length - 1][1] + bonds[0].getCoords()[1],
-						circR
-					]);
-					currentLine.push("l"); // 'l' for lineto - draws line to the specified coordinates
-					currentLine.push(bonds[0].getCoords());
+					absPos = [
+						prevAbsPos[0] + bonds[0].getCoords("x"),
+						prevAbsPos[1] + bonds[0].getCoords("y")
+					];
+					circles.push([absPos[0], absPos[1], circR]);
+					currentLine.push("L"); // 'l' for lineto - draws line to the specified coordinates
+					currentLine.push(absPos);
 					connect(bonds[0].getCoords(), bonds[0].getBonds(), currentLine);
 				}				
 				for (i = 1; i < bonds.length; i += 1) {
-					newRoot = bonds[i].getCoords();
-					circles.push([
-						root[0] + newRoot[0],
-						root[1] + newRoot[1],
-						circR
-					]);
-					newLen = output.push(["M", root, "l", newRoot]);
-					connect(newRoot, bonds[i].getBonds(), output[newLen - 1]);
+					absPos = [
+						prevAbsPos[0] + bonds[i].getCoords("x"),
+						prevAbsPos[1] + bonds[i].getCoords("y")
+					];
+					circles.push([absPos[0], absPos[1], circR]);
+					newLen = output.push(["M", prevAbsPos, "L", absPos]);
+					connect(absPos, bonds[i].getBonds(), output[newLen - 1]);
 				}
 			}
 			

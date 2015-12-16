@@ -51,16 +51,16 @@ describe("DrawChemShapes service tests", function () {
 								"opacity:0;" +
 							"}" +
 						"</style>" +
-						"<path d='M 10 10 l 15 15 l 20 20 l 30 30 '></path>" +
-						"<path d='M 15 15 l 25 25 '></path>" +	
-						"<path d='M 10 10 l 5 10 '></path>" +
-						"<path d='M 10 10 l -5 16 '></path>" +
-						"<path d='M 10 10 l 4 2 '></path>" +
+						"<path d='M 10 10 L 25 25 L 45 45 L 75 75 '></path>" +
+						"<path d='M 25 25 L 50 50 '></path>" +	
+						"<path d='M 10 10 L 15 20 '></path>" +
+						"<path d='M 10 10 L 5 26 '></path>" +
+						"<path d='M 10 10 L 14 12 '></path>" +
 						"<circle cx='10' cy='10' r='2.4' ></circle>" +
 						"<circle cx='25' cy='25' r='2.4' ></circle>" +
 						"<circle cx='45' cy='45' r='2.4' ></circle>" +
 						"<circle cx='75' cy='75' r='2.4' ></circle>" +
-						"<circle cx='40' cy='40' r='2.4' ></circle>" +
+						"<circle cx='50' cy='50' r='2.4' ></circle>" +
 						"<circle cx='15' cy='20' r='2.4' ></circle>" +
 						"<circle cx='5' cy='26' r='2.4' ></circle>" +
 						"<circle cx='14' cy='12' r='2.4' ></circle>" +
@@ -75,18 +75,18 @@ describe("DrawChemShapes service tests", function () {
 	it("should combine structure objects", function () {
 		var benzene = DrawChemStructures.benzene(),
 			singleBond = DrawChemStructures.singleBond(),
-			toCompare = DrawChemStructures.benzene().getStructure();
-			
-		toCompare[0].setCoords([100, 100]);
-		toCompare[0].addBond(singleBond.getStructure()[0].getBonds()[0]);
-		benzene.getStructure()[0].setCoords([100, 100]);
-		currentClick = [101, 99];
-		DrawChemShapes.modifyStructure(benzene, singleBond, currentClick);
-		expect(benzene.getStructure()).toEqual(toCompare);		
+			toCompareBenz = DrawChemStructures.benzene().getStructure(0),
+			toCompareSb = DrawChemStructures.singleBond().getStructure(0);
 		
-		toCompare[0].getBonds()[0].addBond(singleBond.getStructure()[0].getBonds()[0]);
+		benzene.setTransform("translate", [100, 100]);
+		currentClick = [101, 99];
+		toCompareBenz.addBonds(toCompareSb.getBonds());
+		DrawChemShapes.modifyStructure(benzene, singleBond, currentClick);
+		expect(benzene.getStructure(0)).toEqual(toCompareBenz);
+		
+		toCompareBenz.getBonds(0).addBonds(toCompareSb.getBonds());
 		currentClick = [118, 109];
 		DrawChemShapes.modifyStructure(benzene, singleBond, currentClick);
-		expect(benzene.getStructure()).toEqual(toCompare);
+		expect(benzene.getStructure(0)).toEqual(toCompareBenz);
 	});
 });

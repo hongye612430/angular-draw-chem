@@ -20,6 +20,18 @@ describe("DCAtom service tests", function () {
 		expect(atom.getBonds()).toEqual([newAtom]);
 	});
 	
+	it("should return the specified coordinate", function () {
+		var atom = new Atom([0, 0], []);
+		expect(atom.getCoords("x")).toEqual(0);
+	});
+	
+	it("should return an atom at the specified index", function () {
+		var atom = new Atom([0, 0], [
+			new Atom([10, 10], [])
+		]);
+		expect(atom.getBonds(0).getCoords()).toEqual([10, 10]);
+	});
+	
 	it("should add a whole new structure to the bonds", function () {
 		var atom = new Atom([0, 0], []),
 			str = new Structure("custom", [

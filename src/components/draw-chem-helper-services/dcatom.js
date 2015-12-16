@@ -28,18 +28,28 @@
 		
 		/**
 		 * Gets coordinates of the atom.
-		 * @returns {Number[]}
+		 * @returns {Number[]|Number}
 		 */
-		Atom.prototype.getCoords = function () {
-			return this.coords;
+		Atom.prototype.getCoords = function (coord) {
+			if (coord === "x") {
+				return this.coords[0];
+			} else if (coord === "y") {
+				return this.coords[1];
+			} else {
+				return this.coords;
+			}
 		};
 		
 		/**
 		 * Gets an array of all atoms this atom is connected with
-		 * @returns {Atom[]}
+		 * @returns {Atom[]|Atom}
 		 */
-		Atom.prototype.getBonds = function () {
-			return this.bonds;
+		Atom.prototype.getBonds = function (index) {
+			if (arguments.length === 0) {
+				return this.bonds;
+			} else {
+				return this.bonds[index];	
+			}			
 		}
 		
 		/**
