@@ -17,7 +17,8 @@ The project consists of the following components:
 4. `DrawChemStructures` factory - defines basic structures, such as single bond, basic molecules (benzene, cyclohexane, etc.),
 5. `DrawChemShapes` factory - contains key functionalities for transforming a `Structure` object into `Shape` object (see terminology),
 6. `DCShape` factory - defines `Shape` class,
-7. `DCStructure` factory - defines `Structure` class.
+7. `DCStructure` factory - defines `Structure` class,
+8. `DCAtom` factory - defines `Atom` class.
 
 ### terminology
 **`Shape`** vs **`Structure`**
