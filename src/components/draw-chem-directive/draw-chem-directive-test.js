@@ -60,7 +60,6 @@ describe("DrawChemEditor directive tests", function () {
 			clientX: 2,
 			clientY: 2
 		});
-		custom.setTransform("translate", [0, 0]);
 		expect(element.isolateScope().currentStructure).toEqual(custom);	
 	});
 	
@@ -95,7 +94,6 @@ describe("DrawChemEditor directive tests", function () {
 		expect(temp.find(".dc-editor-dialog-content").html())
 			.toEqual(
 				"<svg>" +
-					"<defs>" +
 						"<g id=\"cmpd1\">" +
 							"<style type=\"text/css\">" +
 								"path{" +
@@ -122,9 +120,6 @@ describe("DrawChemEditor directive tests", function () {
 							"<circle cx=\"-17.32\" cy=\"10\" r=\"2.4\"></circle>" +
 							"<circle cx=\"-17.32\" cy=\"10\" r=\"2.4\"></circle>" +
 						"</g>" +
-					"</defs>" +
-					"<use xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"#cmpd1\"" +
-						" transform=\"translate(0,0)\"></use>" +
 				"</svg>"
 			);		
 	});
@@ -166,7 +161,6 @@ describe("DrawChemEditor directive tests", function () {
 		expect(temp.find(".dc-editor-dialog-content").html())
 			.toEqual(
 				"<svg>" +
-					"<defs>" +
 						"<g id=\"cmpd1\">" +
 							"<style type=\"text/css\">" +
 								"path{" +
@@ -183,21 +177,18 @@ describe("DrawChemEditor directive tests", function () {
 									"opacity:0;" +
 								"}" +
 							"</style>" +
-							"<path d=\"M 0 0 L 17.32 10 L 17.32 30 L 0 40 L -17.32 30 L -17.32 10 \"></path>" +
-							"<path d=\"M 0 0 L -17.32 10 \"></path>" +
-							"<path d=\"M 0 0 L 0 -20 \"></path>" +
-							"<circle cx=\"0\" cy=\"0\" r=\"2.4\"></circle>" +
-							"<circle cx=\"17.32\" cy=\"10\" r=\"2.4\"></circle>" +
-							"<circle cx=\"17.32\" cy=\"30\" r=\"2.4\"></circle>" +
-							"<circle cx=\"0\" cy=\"40\" r=\"2.4\"></circle>" +
-							"<circle cx=\"-17.32\" cy=\"30\" r=\"2.4\"></circle>" +
-							"<circle cx=\"-17.32\" cy=\"10\" r=\"2.4\"></circle>" +
-							"<circle cx=\"-17.32\" cy=\"10\" r=\"2.4\"></circle>" +
-							"<circle cx=\"0\" cy=\"-20\" r=\"2.4\"></circle>" +
+							"<path d=\"M 98 98 L 115.32 108 L 115.32 128 L 98 138 L 80.68 128 L 80.68 108 \"></path>" +							
+							"<path d=\"M 98 98 L 80.68 108 \"></path>" +
+							"<path d=\"M 98 98 L 98 78 \"></path>" +
+							"<circle cx=\"98\" cy=\"98\" r=\"2.4\"></circle>" +
+							"<circle cx=\"115.32\" cy=\"108\" r=\"2.4\"></circle>" +
+							"<circle cx=\"115.32\" cy=\"128\" r=\"2.4\"></circle>" +
+							"<circle cx=\"98\" cy=\"138\" r=\"2.4\"></circle>" +
+							"<circle cx=\"80.68\" cy=\"128\" r=\"2.4\"></circle>" +
+							"<circle cx=\"80.68\" cy=\"108\" r=\"2.4\"></circle>" +
+							"<circle cx=\"80.68\" cy=\"108\" r=\"2.4\"></circle>" +
+							"<circle cx=\"98\" cy=\"78\" r=\"2.4\"></circle>" +
 						"</g>" +
-					"</defs>" +
-					"<use xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"#cmpd1\"" +
-					" transform=\"translate(98,98)\"></use>" +
 				"</svg>"
 			);
 		temp.find(".dc-editor-dialog-content").triggerHandler({
@@ -208,7 +199,6 @@ describe("DrawChemEditor directive tests", function () {
 		expect(temp.find(".dc-editor-dialog-content").html())
 			.toEqual(
 				"<svg>" +
-					"<defs>" +
 						"<g id=\"cmpd1\">" +
 							"<style type=\"text/css\">" +
 								"path{" +
@@ -225,23 +215,20 @@ describe("DrawChemEditor directive tests", function () {
 									"opacity:0;" +
 								"}" +
 							"</style>" +
-							"<path d=\"M 0 0 L 17.32 10 L 17.32 30 L 0 40 L -17.32 30 L -17.32 10 \"></path>" +
-							"<path d=\"M 17.32 10 L 17.32 -10 \"></path>" +
-							"<path d=\"M 0 0 L -17.32 10 \"></path>" +					
-							"<path d=\"M 0 0 L 0 -20 \"></path>" +							
-							"<circle cx=\"0\" cy=\"0\" r=\"2.4\"></circle>" +
-							"<circle cx=\"17.32\" cy=\"10\" r=\"2.4\"></circle>" +
-							"<circle cx=\"17.32\" cy=\"30\" r=\"2.4\"></circle>" +
-							"<circle cx=\"0\" cy=\"40\" r=\"2.4\"></circle>" +
-							"<circle cx=\"-17.32\" cy=\"30\" r=\"2.4\"></circle>" +
-							"<circle cx=\"-17.32\" cy=\"10\" r=\"2.4\"></circle>" +
-							"<circle cx=\"17.32\" cy=\"-10\" r=\"2.4\"></circle>" +
-							"<circle cx=\"-17.32\" cy=\"10\" r=\"2.4\"></circle>" +
-							"<circle cx=\"0\" cy=\"-20\" r=\"2.4\"></circle>" +
+							"<path d=\"M 98 98 L 115.32 108 L 115.32 128 L 98 138 L 80.68 128 L 80.68 108 \"></path>" +
+							"<path d=\"M 115.32 108 L 115.32 88 \"></path>" +
+							"<path d=\"M 98 98 L 80.68 108 \"></path>" +
+							"<path d=\"M 98 98 L 98 78 \"></path>" +
+							"<circle cx=\"98\" cy=\"98\" r=\"2.4\"></circle>" +
+							"<circle cx=\"115.32\" cy=\"108\" r=\"2.4\"></circle>" +
+							"<circle cx=\"115.32\" cy=\"128\" r=\"2.4\"></circle>" +
+							"<circle cx=\"98\" cy=\"138\" r=\"2.4\"></circle>" +
+							"<circle cx=\"80.68\" cy=\"128\" r=\"2.4\"></circle>" +
+							"<circle cx=\"80.68\" cy=\"108\" r=\"2.4\"></circle>" +
+							"<circle cx=\"115.32\" cy=\"88\" r=\"2.4\"></circle>" +
+							"<circle cx=\"80.68\" cy=\"108\" r=\"2.4\"></circle>" +
+							"<circle cx=\"98\" cy=\"78\" r=\"2.4\"></circle>" +
 						"</g>" +
-					"</defs>" +
-					"<use xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"#cmpd1\"" +
-					" transform=\"translate(98,98)\"></use>" +
 				"</svg>"
 			);
 	});
@@ -268,7 +255,6 @@ describe("DrawChemEditor directive tests", function () {
 		expect(temp.find(".dc-editor-dialog-content").html())
 			.toEqual(
 				"<svg>" +
-					"<defs>" +
 						"<g id=\"cmpd1\">" +
 							"<style type=\"text/css\">" +
 								"path{" +
@@ -285,21 +271,18 @@ describe("DrawChemEditor directive tests", function () {
 									"opacity:0;" +
 								"}" +
 							"</style>" +
-							"<path d=\"M 0 0 L 17.32 10 L 17.32 30 L 0 40 L -17.32 30 L -17.32 10 \"></path>" +
-							"<path d=\"M 0 0 L -17.32 10 \"></path>" +
-							"<path d=\"M 0 0 L 0 -20 \"></path>" +
-							"<circle cx=\"0\" cy=\"0\" r=\"2.4\"></circle>" +
-							"<circle cx=\"17.32\" cy=\"10\" r=\"2.4\"></circle>" +
-							"<circle cx=\"17.32\" cy=\"30\" r=\"2.4\"></circle>" +
-							"<circle cx=\"0\" cy=\"40\" r=\"2.4\"></circle>" +
-							"<circle cx=\"-17.32\" cy=\"30\" r=\"2.4\"></circle>" +
-							"<circle cx=\"-17.32\" cy=\"10\" r=\"2.4\"></circle>" +
-							"<circle cx=\"-17.32\" cy=\"10\" r=\"2.4\"></circle>" +
-							"<circle cx=\"0\" cy=\"-20\" r=\"2.4\"></circle>" +
+							"<path d=\"M 98 98 L 115.32 108 L 115.32 128 L 98 138 L 80.68 128 L 80.68 108 \"></path>" +							
+							"<path d=\"M 98 98 L 80.68 108 \"></path>" +
+							"<path d=\"M 98 98 L 98 78 \"></path>" +
+							"<circle cx=\"98\" cy=\"98\" r=\"2.4\"></circle>" +
+							"<circle cx=\"115.32\" cy=\"108\" r=\"2.4\"></circle>" +
+							"<circle cx=\"115.32\" cy=\"128\" r=\"2.4\"></circle>" +
+							"<circle cx=\"98\" cy=\"138\" r=\"2.4\"></circle>" +
+							"<circle cx=\"80.68\" cy=\"128\" r=\"2.4\"></circle>" +
+							"<circle cx=\"80.68\" cy=\"108\" r=\"2.4\"></circle>" +
+							"<circle cx=\"80.68\" cy=\"108\" r=\"2.4\"></circle>" +
+							"<circle cx=\"98\" cy=\"78\" r=\"2.4\"></circle>" +
 						"</g>" +
-					"</defs>" +
-					"<use xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"#cmpd1\"" +
-					" transform=\"translate(98,98)\"></use>" +
 				"</svg>"
 			);
 		temp.find(".dc-editor-dialog-content").triggerHandler({
@@ -310,7 +293,6 @@ describe("DrawChemEditor directive tests", function () {
 		expect(temp.find(".dc-editor-dialog-content").html())
 			.toEqual(
 				"<svg>" +
-					"<defs>" +
 						"<g id=\"cmpd1\">" +
 							"<style type=\"text/css\">" +
 								"path{" +
@@ -327,22 +309,19 @@ describe("DrawChemEditor directive tests", function () {
 									"opacity:0;" +
 								"}" +
 							"</style>" +
-							"<path d=\"M 0 0 L 17.32 10 L 17.32 30 L 0 40 L -17.32 30 L -17.32 10 \"></path>" +
-							"<path d=\"M 0 0 L -17.32 10 \"></path>" +
-							"<path d=\"M 0 0 L 0 -20 L 0 -40 \"></path>" +
-							"<circle cx=\"0\" cy=\"0\" r=\"2.4\"></circle>" +
-							"<circle cx=\"17.32\" cy=\"10\" r=\"2.4\"></circle>" +
-							"<circle cx=\"17.32\" cy=\"30\" r=\"2.4\"></circle>" +
-							"<circle cx=\"0\" cy=\"40\" r=\"2.4\"></circle>" +
-							"<circle cx=\"-17.32\" cy=\"30\" r=\"2.4\"></circle>" +
-							"<circle cx=\"-17.32\" cy=\"10\" r=\"2.4\"></circle>" +
-							"<circle cx=\"-17.32\" cy=\"10\" r=\"2.4\"></circle>" +
-							"<circle cx=\"0\" cy=\"-20\" r=\"2.4\"></circle>" +
-							"<circle cx=\"0\" cy=\"-40\" r=\"2.4\"></circle>" +
+							"<path d=\"M 98 98 L 115.32 108 L 115.32 128 L 98 138 L 80.68 128 L 80.68 108 \"></path>" +							
+							"<path d=\"M 98 98 L 80.68 108 \"></path>" +
+							"<path d=\"M 98 98 L 98 78 L 98 58 \"></path>" +
+							"<circle cx=\"98\" cy=\"98\" r=\"2.4\"></circle>" +
+							"<circle cx=\"115.32\" cy=\"108\" r=\"2.4\"></circle>" +
+							"<circle cx=\"115.32\" cy=\"128\" r=\"2.4\"></circle>" +
+							"<circle cx=\"98\" cy=\"138\" r=\"2.4\"></circle>" +
+							"<circle cx=\"80.68\" cy=\"128\" r=\"2.4\"></circle>" +
+							"<circle cx=\"80.68\" cy=\"108\" r=\"2.4\"></circle>" +
+							"<circle cx=\"80.68\" cy=\"108\" r=\"2.4\"></circle>" +
+							"<circle cx=\"98\" cy=\"78\" r=\"2.4\"></circle>" +
+							"<circle cx=\"98\" cy=\"58\" r=\"2.4\"></circle>" +
 						"</g>" +
-					"</defs>" +
-					"<use xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"#cmpd1\"" +
-					" transform=\"translate(98,98)\"></use>" +
 				"</svg>"
 			);
 	});

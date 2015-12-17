@@ -34,10 +34,9 @@ describe("DrawChemShapes service tests", function () {
 		];
 		expect(DrawChemShapes.draw(input, "cmpd1").generate()).toEqual(
 			"<svg>" +
-				"<defs>" +
-					"<g id='cmpd1' >" +
-						"<style type=\"text/css\">" +
-							"path{" +
+				"<g id='cmpd1' >" +
+					"<style type=\"text/css\">" +
+						"path{" +
 								"stroke:black;" +
 								"stroke-width:0.8;" +
 								"fill:none;" +
@@ -65,9 +64,6 @@ describe("DrawChemShapes service tests", function () {
 						"<circle cx='5' cy='26' r='2.4' ></circle>" +
 						"<circle cx='14' cy='12' r='2.4' ></circle>" +
 					"</g>" +
-				"</defs>" +
-				"<use xmlns:xlink='http://www.w3.org/1999/xlink' " +
-					 "xlink:href='#cmpd1' transform=''></use>" +
 			"</svg>"
 		);
 	});
@@ -76,10 +72,11 @@ describe("DrawChemShapes service tests", function () {
 		var benzene = DrawChemStructures.benzene(),
 			singleBond = DrawChemStructures.singleBond(),
 			toCompareBenz = DrawChemStructures.benzene().getStructure(0),
-			toCompareSb = DrawChemStructures.singleBond().getStructure(0);
+			toCompareSb = DrawChemStructures.singleBond().getStructure(0);		
 		
-		benzene.setTransform("translate", [100, 100]);
+		benzene.getStructure(0).setCoords([100, 100]);
 		currentClick = [101, 99];
+		toCompareBenz.setCoords([100, 100]);
 		toCompareBenz.addBonds(toCompareSb.getBonds());
 		DrawChemShapes.modifyStructure(benzene, singleBond, currentClick);
 		expect(benzene.getStructure(0)).toEqual(toCompareBenz);

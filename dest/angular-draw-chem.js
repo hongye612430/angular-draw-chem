@@ -91,12 +91,9 @@
 				 */
 				scope.drawShape = function ($event) {
 					var clickCoords = innerCoords(),
-						translate,
 						drawn = "";
 					modifyCurrentStructure();
-					drawn = DrawChemShapes.draw(scope.currentStructure.getStructure(), "cmpd1")
-						.transform("translate", translate)
-						.generate();
+					drawn = DrawChemShapes.draw(scope.currentStructure.getStructure(), "cmpd1").generate();
 					DrawChem.setContent(drawn);
 					
 					function innerCoords() {
@@ -110,12 +107,10 @@
 					
 					function modifyCurrentStructure() {
 						if (DrawChem.getContent() !== "") {
-							translate = scope.currentStructure.getTransform("translate");
 							DrawChemShapes.modifyStructure(scope.currentStructure, angular.copy(scope.chosenStructure), clickCoords);
 						} else {
-							translate = clickCoords;
 							scope.currentStructure = angular.copy(scope.chosenStructure);
-							scope.currentStructure.setTransform("translate", translate);							
+							scope.currentStructure.getStructure(0).setCoords(clickCoords);
 						}
 					}
 				}
@@ -322,7 +317,7 @@
 		 * @returns {string}
 		 */
 		Shape.prototype.generate = function () {
-			this.element += this.generateUse();
+			//this.element += this.generateUse();
 			return this.wrap("svg").element;
 		};
 		
@@ -639,22 +634,31 @@
 		 * @param {Number[]} mousePos - position of the mouse when 'click' was made
 		 */
 		service.modifyStructure = function (base, mod, mousePos) {
-			var origin = base.getTransform("translate"),
+			var found = false,
+				origin = base.getStructure(0).getCoords(),
 				modStr = mod.getStructure(0).getBonds();
-				
-			modStructure(base.getStructure(), origin);
+			
+			if (isWithin(origin[0], mousePos[0]) && isWithin(origin[1], mousePos[1])) {
+				base.getStructure(0).addBonds(modStr);
+				return base;
+			} else {
+				modStructure(base.getStructure(0).getBonds(), origin);
+			}			
 			
 			function modStructure(struct, pos) {
 				var i, absPos;
 				for(i = 0; i < struct.length; i += 1) {
 					absPos = [struct[i].getCoords("x") + pos[0], struct[i].getCoords("y") + pos[1]];
 					if (isWithin(absPos[0], mousePos[0]) && isWithin(absPos[1], mousePos[1])) {
-						struct[i].addBonds(modStr);		
+						if (!found) {
+							struct[i].addBonds(modStr);
+							found = true;
+						}						
 						return base;
 					} else {
 						modStructure(struct[i].getBonds(), absPos);
 					}
-				}
+				}				
 			}
 			
 			function isWithin(point, click) {
@@ -675,7 +679,7 @@
 				circles = output.circles;
 			shape = new DCShape.Shape(genElements(), id);
 			shape.element = shape.generateStyle() + shape.element;
-			return shape.wrap("g").wrap("defs");
+			return shape.wrap("g");
 			
 			// generates a string from the output array and wraps each line with 'path' tags.
 			function genElements() {

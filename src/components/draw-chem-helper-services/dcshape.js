@@ -120,7 +120,7 @@
 		 * @returns {string}
 		 */
 		Shape.prototype.generate = function () {
-			this.element += this.generateUse();
+			//this.element += this.generateUse();
 			return this.wrap("svg").element;
 		};
 		

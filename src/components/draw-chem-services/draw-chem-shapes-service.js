@@ -16,22 +16,31 @@
 		 * @param {Number[]} mousePos - position of the mouse when 'click' was made
 		 */
 		service.modifyStructure = function (base, mod, mousePos) {
-			var origin = base.getTransform("translate"),
+			var found = false,
+				origin = base.getStructure(0).getCoords(),
 				modStr = mod.getStructure(0).getBonds();
-				
-			modStructure(base.getStructure(), origin);
+			
+			if (isWithin(origin[0], mousePos[0]) && isWithin(origin[1], mousePos[1])) {
+				base.getStructure(0).addBonds(modStr);
+				return base;
+			} else {
+				modStructure(base.getStructure(0).getBonds(), origin);
+			}			
 			
 			function modStructure(struct, pos) {
 				var i, absPos;
 				for(i = 0; i < struct.length; i += 1) {
 					absPos = [struct[i].getCoords("x") + pos[0], struct[i].getCoords("y") + pos[1]];
 					if (isWithin(absPos[0], mousePos[0]) && isWithin(absPos[1], mousePos[1])) {
-						struct[i].addBonds(modStr);		
+						if (!found) {
+							struct[i].addBonds(modStr);
+							found = true;
+						}						
 						return base;
 					} else {
 						modStructure(struct[i].getBonds(), absPos);
 					}
-				}
+				}				
 			}
 			
 			function isWithin(point, click) {
@@ -52,7 +61,7 @@
 				circles = output.circles;
 			shape = new DCShape.Shape(genElements(), id);
 			shape.element = shape.generateStyle() + shape.element;
-			return shape.wrap("g").wrap("defs");
+			return shape.wrap("g");
 			
 			// generates a string from the output array and wraps each line with 'path' tags.
 			function genElements() {
