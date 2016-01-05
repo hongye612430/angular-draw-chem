@@ -1,5 +1,6 @@
 *.komodoproject
 ~.*
+terminal-exec.sh
 .npmignore
 gh-pages
 .sass-cache
