@@ -93,7 +93,7 @@
 					var clickCoords = innerCoords(),
 						drawn = "";
 					modifyCurrentStructure();
-					drawn = DrawChemShapes.draw(scope.currentStructure.getStructure(), "cmpd1").generate();
+					drawn = DrawChemShapes.draw(scope.currentStructure.getDefault().getStructure(), "cmpd1").generate();
 					DrawChem.setContent(drawn);
 					
 					function innerCoords() {
@@ -107,10 +107,10 @@
 					
 					function modifyCurrentStructure() {
 						if (DrawChem.getContent() !== "") {
-							DrawChemShapes.modifyStructure(scope.currentStructure, angular.copy(scope.chosenStructure), clickCoords);
+							DrawChemShapes.modifyStructure(scope.currentStructure.getDefault(), angular.copy(scope.chosenStructure), clickCoords);
 						} else {
 							scope.currentStructure = angular.copy(scope.chosenStructure);
-							scope.currentStructure.getStructure(0).setCoords(clickCoords);
+							scope.currentStructure.getDefault().getStructure(0).setCoords(clickCoords);
 						}
 					}
 				}
@@ -133,9 +133,11 @@
 		* @param {Number[]} - an array with coordinates of the atom
 		* @param {Atom[]} - an array of atoms this atom is connected with
 		*/
-		function Atom(coords, bonds) {
+		function Atom(coords, bonds, info, next) {
 			this.coords = coords;	
 			this.bonds = bonds;
+			this.info = info;
+			this.next = next;
 		}
 		
 		/**
@@ -145,6 +147,52 @@
 		Atom.prototype.setCoords = function (coords) {
 			this.coords = coords;
 		};
+		
+		/**
+		 * Gets additional info.
+		 * @returns {String}
+		 */
+		Atom.prototype.getInfo = function () {
+			return this.info;
+		}
+		
+		/**
+		 * Sets coordinates of a preceding atom.
+		 * @param {Number[]} coords - an array with coordinates of the atom
+		 */
+		Atom.prototype.setPreceding = function (coords) {
+			this.preceding = coords;
+		};
+		
+		/**
+		 * Gets coordinates of the atom.
+		 * @returns {Number[]|Number}
+		 */
+		Atom.prototype.getPreceding = function (coord) {
+			if (coord === "x") {
+				return this.preceding[0];
+			} else if (coord === "y") {
+				return this.preceding[1];
+			} else {
+				return this.preceding;
+			}
+		};
+		
+		/**
+		 * Gets symbol of the next bond.
+		 * @returns {String}
+		 */
+		Atom.prototype.getNext = function () {
+			return this.next;
+		}
+		
+		/**
+		 * Sets symbol of the next bond.
+		 * @param {String} - symbol of the next bond
+		 */
+		Atom.prototype.setNext = function (symbol) {
+			this.next = symbol;
+		}
 		
 		/**
 		 * Gets coordinates of the atom.
@@ -167,7 +215,7 @@
 		Atom.prototype.getBonds = function (index) {
 			if (arguments.length === 0) {
 				return this.bonds;
-			} else {
+			} else {				
 				return this.bonds[index];	
 			}			
 		}
@@ -411,6 +459,14 @@
 			}
 		}
 		
+		/**
+		 * Gets the name of the structure.
+		 * @returns {String}
+		 */
+		Structure.prototype.getName = function () {
+			return this.name;
+		}
+		
 		service.Structure = Structure;
 		
 		return service;
@@ -634,11 +690,12 @@
 		 * @param {Number[]} mousePos - position of the mouse when 'click' was made
 		 */
 		service.modifyStructure = function (base, mod, mousePos) {
-			var found = false,
-				origin = base.getStructure(0).getCoords(),
-				modStr = mod.getStructure(0).getBonds();
+			var modStr,
+				found = false,
+				origin = base.getStructure(0).getCoords();				
 			
 			if (isWithin(origin[0], mousePos[0]) && isWithin(origin[1], mousePos[1])) {
+				modStr = chooseMod(base.getStructure(0));
 				base.getStructure(0).addBonds(modStr);
 				return base;
 			} else {
@@ -651,6 +708,7 @@
 					absPos = [struct[i].getCoords("x") + pos[0], struct[i].getCoords("y") + pos[1]];
 					if (isWithin(absPos[0], mousePos[0]) && isWithin(absPos[1], mousePos[1])) {
 						if (!found) {
+							modStr = chooseMod(struct[i]);
 							struct[i].addBonds(modStr);
 							found = true;
 						}						
@@ -664,6 +722,19 @@
 			function isWithin(point, click) {
 				var tolerance = DrawChemConst.CIRC_R;
 				return Math.abs(point - click) < tolerance;
+			}
+			
+			function chooseMod(currentAtom) {
+				var i;
+				if (mod.defs.length === 1) {
+					return mod.getDefault().getStructure(0).getBonds();
+				} else {
+					for(i = 0; i < mod.defs.length; i += 1) {
+						if (currentAtom.getNext() === mod.defs[i].getName()) {
+							return mod.defs[i].getStructure(0).getBonds();
+						}
+					}
+				}				
 			}
 		};
 		
@@ -730,8 +801,8 @@
 					prevAbsPos = [
 						circles[circles.length - 1][0],
 						circles[circles.length - 1][1]
-					];
-				// if length of the bonds is 0, then do nothing
+					];				
+				// if length of the bonds is 0, then do nothing				
 				if (bonds.length > 0) {
 					absPos = [
 						prevAbsPos[0] + bonds[0].getCoords("x"),
@@ -739,8 +810,16 @@
 					];
 					circles.push([absPos[0], absPos[1], circR]);
 					currentLine.push("L"); // 'l' for lineto - draws line to the specified coordinates
-					currentLine.push(absPos);
-					connect(bonds[0].getCoords(), bonds[0].getBonds(), currentLine);
+					currentLine.push(absPos);					
+					if (bonds[0].getInfo() === "Z") {
+						currentLine.push("Z");
+						if (bonds[0].getBonds().length > 0) {
+							newLen = output.push(["M", absPos]);
+							connect(absPos, bonds[0].getBonds(), output[newLen - 1]);
+						}
+					} else {
+						connect(bonds[0].getCoords(), bonds[0].getBonds(), currentLine);
+					}
 				}				
 				for (i = 1; i < bonds.length; i += 1) {
 					absPos = [
@@ -803,34 +882,105 @@
 			BOND_SW = DrawChemConst.BOND_SW;
 			
 		service.benzene = function () {
-			return new DCStructure.Structure(
-				"benzene",
-				[
-					new Atom([0, 0], [
-						new Atom(BOND_SE, [
-							new Atom(BOND_S, [
-								new Atom(BOND_SW, [
-									new Atom(BOND_NW, [
-										new Atom(BOND_N, [])
-									])
-								])
-							])
-						]),
-						new Atom(BOND_SW, [])
-					])					
+			return {
+				name: "benzene",
+				getDefault: function () {
+					return this.defs[0];
+				},
+				defs: [
+					new DCStructure.Structure(
+						"N",
+						[
+							new Atom([0, 0], [
+								new Atom(BOND_SE, [
+									new Atom(BOND_S, [
+										new Atom(BOND_SW, [
+											new Atom(BOND_NW, [
+												new Atom(BOND_N, [], "Z", "NW")
+											], "", "SW")
+										], "", "S")
+									], "", "SE")
+								], "", "NE")
+							], "", "N")					
+						]
+					)
 				]
-			);
+			}
 		};
 		
 		service.singleBond = function () {
-			return new DCStructure.Structure(
-				"single-bond",
-				[
-					new Atom([0, 0], [
-						new Atom(BOND_N, [])
-					])
+			return {
+				name: "single-bond",
+				getDefault: function () {
+					return this.defs[0];
+				},
+				defs: [
+					new DCStructure.Structure(
+						"N",
+						[
+							new Atom([0, 0], [
+								new Atom(BOND_N, [], "", "NE")
+							], "", "SW")
+						]
+					),
+					new DCStructure.Structure(
+						"NE",
+						[
+							new Atom([0, 0], [
+								new Atom(BOND_NE, [], "", "SE")
+							], "", "NW")
+						]
+					),
+					new DCStructure.Structure(
+						"E",
+						[
+							new Atom([0, 0], [
+								new Atom(BOND_E, [], "", "SE")
+							], "", "NW")
+						]
+					),
+					new DCStructure.Structure(
+						"SE",
+						[
+							new Atom([0, 0], [
+								new Atom(BOND_SE, [], "", "NE")
+							], "", "SW")
+						]
+					),
+					new DCStructure.Structure(
+						"S",
+						[
+							new Atom([0, 0], [
+								new Atom(BOND_S, [], "", "SW")
+							], "", "NE")
+						]
+					),
+					new DCStructure.Structure(
+						"SW",
+						[
+							new Atom([0, 0], [
+								new Atom(BOND_SW, [], "", "NW")
+							], "", "SE")
+						]
+					),
+					new DCStructure.Structure(
+						"W",
+						[
+							new Atom([0, 0], [
+								new Atom(BOND_W, [], "", "SW")
+							], "", "NE")
+						]
+					),
+					new DCStructure.Structure(
+						"NW",
+						[
+							new Atom([0, 0], [
+								new Atom(BOND_NW, [], "", "SW")
+							], "", "SE")
+						]
+					)
 				]
-			);
+			}
 		};
 		
 		

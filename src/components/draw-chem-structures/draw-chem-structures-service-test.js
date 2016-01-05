@@ -14,8 +14,7 @@ describe("DrawChemStructures service tests", function () {
 		DrawChemStructures.custom.forEach(function (custom) {
 			var customInstance = custom();
 			expect(customInstance.name).toBeDefined();
-			expect(customInstance.structure).toBeDefined();
-			expect(customInstance.origin).toBeDefined();
+			expect(customInstance.defs).toBeDefined();
 		});
 	});
 })

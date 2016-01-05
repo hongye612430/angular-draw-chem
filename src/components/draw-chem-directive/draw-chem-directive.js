@@ -86,7 +86,7 @@
 					var clickCoords = innerCoords(),
 						drawn = "";
 					modifyCurrentStructure();
-					drawn = DrawChemShapes.draw(scope.currentStructure.getStructure(), "cmpd1").generate();
+					drawn = DrawChemShapes.draw(scope.currentStructure.getDefault().getStructure(), "cmpd1").generate();
 					DrawChem.setContent(drawn);
 					
 					function innerCoords() {
@@ -100,10 +100,10 @@
 					
 					function modifyCurrentStructure() {
 						if (DrawChem.getContent() !== "") {
-							DrawChemShapes.modifyStructure(scope.currentStructure, angular.copy(scope.chosenStructure), clickCoords);
+							DrawChemShapes.modifyStructure(scope.currentStructure.getDefault(), angular.copy(scope.chosenStructure), clickCoords);
 						} else {
 							scope.currentStructure = angular.copy(scope.chosenStructure);
-							scope.currentStructure.getStructure(0).setCoords(clickCoords);
+							scope.currentStructure.getDefault().getStructure(0).setCoords(clickCoords);
 						}
 					}
 				}

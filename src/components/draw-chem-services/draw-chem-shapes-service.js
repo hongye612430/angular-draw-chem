@@ -16,11 +16,12 @@
 		 * @param {Number[]} mousePos - position of the mouse when 'click' was made
 		 */
 		service.modifyStructure = function (base, mod, mousePos) {
-			var found = false,
-				origin = base.getStructure(0).getCoords(),
-				modStr = mod.getStructure(0).getBonds();
+			var modStr,
+				found = false,
+				origin = base.getStructure(0).getCoords();				
 			
 			if (isWithin(origin[0], mousePos[0]) && isWithin(origin[1], mousePos[1])) {
+				modStr = chooseMod(base.getStructure(0));
 				base.getStructure(0).addBonds(modStr);
 				return base;
 			} else {
@@ -33,6 +34,7 @@
 					absPos = [struct[i].getCoords("x") + pos[0], struct[i].getCoords("y") + pos[1]];
 					if (isWithin(absPos[0], mousePos[0]) && isWithin(absPos[1], mousePos[1])) {
 						if (!found) {
+							modStr = chooseMod(struct[i]);
 							struct[i].addBonds(modStr);
 							found = true;
 						}						
@@ -46,6 +48,19 @@
 			function isWithin(point, click) {
 				var tolerance = DrawChemConst.CIRC_R;
 				return Math.abs(point - click) < tolerance;
+			}
+			
+			function chooseMod(currentAtom) {
+				var i;
+				if (mod.defs.length === 1) {
+					return mod.getDefault().getStructure(0).getBonds();
+				} else {
+					for(i = 0; i < mod.defs.length; i += 1) {
+						if (currentAtom.getNext() === mod.defs[i].getName()) {
+							return mod.defs[i].getStructure(0).getBonds();
+						}
+					}
+				}				
 			}
 		};
 		
@@ -112,8 +127,8 @@
 					prevAbsPos = [
 						circles[circles.length - 1][0],
 						circles[circles.length - 1][1]
-					];
-				// if length of the bonds is 0, then do nothing
+					];				
+				// if length of the bonds is 0, then do nothing				
 				if (bonds.length > 0) {
 					absPos = [
 						prevAbsPos[0] + bonds[0].getCoords("x"),
@@ -121,8 +136,16 @@
 					];
 					circles.push([absPos[0], absPos[1], circR]);
 					currentLine.push("L"); // 'l' for lineto - draws line to the specified coordinates
-					currentLine.push(absPos);
-					connect(bonds[0].getCoords(), bonds[0].getBonds(), currentLine);
+					currentLine.push(absPos);					
+					if (bonds[0].getInfo() === "Z") {
+						currentLine.push("Z");
+						if (bonds[0].getBonds().length > 0) {
+							newLen = output.push(["M", absPos]);
+							connect(absPos, bonds[0].getBonds(), output[newLen - 1]);
+						}
+					} else {
+						connect(bonds[0].getCoords(), bonds[0].getBonds(), currentLine);
+					}
 				}				
 				for (i = 1; i < bonds.length; i += 1) {
 					absPos = [

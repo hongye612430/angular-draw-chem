@@ -13,9 +13,11 @@
 		* @param {Number[]} - an array with coordinates of the atom
 		* @param {Atom[]} - an array of atoms this atom is connected with
 		*/
-		function Atom(coords, bonds) {
+		function Atom(coords, bonds, info, next) {
 			this.coords = coords;	
 			this.bonds = bonds;
+			this.info = info;
+			this.next = next;
 		}
 		
 		/**
@@ -25,6 +27,52 @@
 		Atom.prototype.setCoords = function (coords) {
 			this.coords = coords;
 		};
+		
+		/**
+		 * Gets additional info.
+		 * @returns {String}
+		 */
+		Atom.prototype.getInfo = function () {
+			return this.info;
+		}
+		
+		/**
+		 * Sets coordinates of a preceding atom.
+		 * @param {Number[]} coords - an array with coordinates of the atom
+		 */
+		Atom.prototype.setPreceding = function (coords) {
+			this.preceding = coords;
+		};
+		
+		/**
+		 * Gets coordinates of the atom.
+		 * @returns {Number[]|Number}
+		 */
+		Atom.prototype.getPreceding = function (coord) {
+			if (coord === "x") {
+				return this.preceding[0];
+			} else if (coord === "y") {
+				return this.preceding[1];
+			} else {
+				return this.preceding;
+			}
+		};
+		
+		/**
+		 * Gets symbol of the next bond.
+		 * @returns {String}
+		 */
+		Atom.prototype.getNext = function () {
+			return this.next;
+		}
+		
+		/**
+		 * Sets symbol of the next bond.
+		 * @param {String} - symbol of the next bond
+		 */
+		Atom.prototype.setNext = function (symbol) {
+			this.next = symbol;
+		}
 		
 		/**
 		 * Gets coordinates of the atom.
@@ -47,7 +95,7 @@
 		Atom.prototype.getBonds = function (index) {
 			if (arguments.length === 0) {
 				return this.bonds;
-			} else {
+			} else {				
 				return this.bonds[index];	
 			}			
 		}

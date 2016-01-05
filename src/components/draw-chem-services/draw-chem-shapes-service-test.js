@@ -69,19 +69,19 @@ describe("DrawChemShapes service tests", function () {
 	});
 	
 	it("should combine structure objects", function () {
-		var benzene = DrawChemStructures.benzene(),
+		var benzene = DrawChemStructures.benzene().getDefault(),
 			singleBond = DrawChemStructures.singleBond(),
-			toCompareBenz = DrawChemStructures.benzene().getStructure(0),
-			toCompareSb = DrawChemStructures.singleBond().getStructure(0);		
+			toCompareBenz = DrawChemStructures.benzene().getDefault().getStructure(0),
+			toCompareSb = DrawChemStructures.singleBond();		
 		
 		benzene.getStructure(0).setCoords([100, 100]);
 		currentClick = [101, 99];
 		toCompareBenz.setCoords([100, 100]);
-		toCompareBenz.addBonds(toCompareSb.getBonds());
+		toCompareBenz.addBonds(toCompareSb.defs[0].getStructure(0).getBonds());
 		DrawChemShapes.modifyStructure(benzene, singleBond, currentClick);
 		expect(benzene.getStructure(0)).toEqual(toCompareBenz);
 		
-		toCompareBenz.getBonds(0).addBonds(toCompareSb.getBonds());
+		toCompareBenz.getBonds(0).addBonds(toCompareSb.defs[1].getStructure(0).getBonds());
 		currentClick = [118, 109];
 		DrawChemShapes.modifyStructure(benzene, singleBond, currentClick);
 		expect(benzene.getStructure(0)).toEqual(toCompareBenz);

@@ -83,6 +83,14 @@
 			}
 		}
 		
+		/**
+		 * Gets the name of the structure.
+		 * @returns {String}
+		 */
+		Structure.prototype.getName = function () {
+			return this.name;
+		}
+		
 		service.Structure = Structure;
 		
 		return service;
