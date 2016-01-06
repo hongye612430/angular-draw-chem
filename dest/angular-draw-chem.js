@@ -87,26 +87,23 @@
 				});
 				
 				/**
-				 * Draws chosen shape.
+				 * 
 				 */
-				scope.drawShape = function ($event) {
-					var clickCoords = innerCoords(), // coordinates of the mouse click
+				scope.doOnMouseDown = function ($event) {
+					var clickCoords = innerCoords($event); // coordinates of the mouse click
+				}
+				
+				/**
+				 *
+				 */
+				scope.doOnMouseUp = function ($event) {					
+					var clickCoords = innerCoords($event), // coordinates of the mouse click
 						drawn = "";
 					modifyCurrentStructure();
 					drawn = DrawChemShapes.draw(
 						scope.currentStructure.getDefault().getStructure(), "cmpd1", scope.currentStructure.decorate
 					).generate();
 					DrawChem.setContent(drawn);
-					
-					function innerCoords() {
-						// calculates the coordinates of the click; takes margin of the enclosing div into account
-						var content = element.find("dc-content")[0],
-							coords = [								
-								parseFloat(($event.clientX - content.getBoundingClientRect().left - 2).toFixed(2)),
-								parseFloat(($event.clientY - content.getBoundingClientRect().top - 2).toFixed(2))
-							]
-						return coords;
-					}
 					
 					function modifyCurrentStructure() {
 						if (DrawChem.getContent() !== "") {
@@ -118,6 +115,23 @@
 							scope.currentStructure.getDefault().getStructure(0).setCoords(clickCoords);
 						}
 					}
+				}
+				
+				/**
+				 *
+				 */
+				scope.doOnMouseMove = function ($event) {
+					
+				}
+				
+				function innerCoords($event) {
+					// calculates the coordinates of the click; takes margin of the enclosing div into account
+					var content = element.find("dc-content")[0],
+						coords = [								
+							parseFloat(($event.clientX - content.getBoundingClientRect().left - 2).toFixed(2)),
+							parseFloat(($event.clientY - content.getBoundingClientRect().top - 2).toFixed(2))
+						]
+					return coords;
 				}
 			}
 		}
@@ -724,7 +738,7 @@
 		service.modifyStructure = function (base, mod, mousePos) {
 			var modStr,
 				found = false,
-				origin = base.getStructure(0).getCoords();				
+				origin = base.getStructure(0).getCoords();		
 			
 			if (isWithin(origin[0], mousePos[0]) && isWithin(origin[1], mousePos[1])) {
 				modStr = chooseMod(base.getStructure(0));
@@ -812,6 +826,14 @@
 				}
 			}
 		};
+		
+		/**
+		 * Checks if the mouse pointer is within a circle of an atom.
+		 */
+		service.isWithin = function (structure, point, click) {
+			var tolerance = DrawChemConst.CIRC_R;
+			return Math.abs(point[0] - click[0]) < tolerance && Math.abs(point[1] - click[1]) < tolerance;
+		}
 		
 		/**
 		 * Generates the desired output based on given input.

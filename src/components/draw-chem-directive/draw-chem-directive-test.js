@@ -56,7 +56,7 @@ describe("DrawChemEditor directive tests", function () {
 		expect(element.isolateScope().chosenStructure.getDefault()).toEqual(custom.getDefault());
 		expect(element.isolateScope().currentStructure).toBeUndefined();
 		temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "click",
+			type : "mouseup",
 			clientX: 2,
 			clientY: 2
 		});
@@ -87,7 +87,7 @@ describe("DrawChemEditor directive tests", function () {
 		temp.find("#dc-" + custom.name).click();
 		expect(element.isolateScope().chosenStructure.getDefault()).toEqual(custom.getDefault());
 		temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "click",
+			type : "mouseup",
 			clientX: 2,
 			clientY: 2
 		});
@@ -135,7 +135,7 @@ describe("DrawChemEditor directive tests", function () {
 		temp.find("#dc-" + custom.name).click();
 		expect(element.isolateScope().chosenStructure.getDefault()).toEqual(custom.getDefault());
 		temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "click",
+			type : "mouseup",
 			clientX: 2,
 			clientY: 2
 		});
@@ -151,14 +151,14 @@ describe("DrawChemEditor directive tests", function () {
 		temp.find("#dc-" + custom.name).click();
 		expect(element.isolateScope().chosenStructure.getDefault()).toEqual(custom.getDefault());
 		temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "click",
+			type : "mouseup",
 			clientX: 100,
 			clientY: 100
 		});
 		temp.find("#dc-" + add.name).click();
 		expect(element.isolateScope().chosenStructure.getDefault()).toEqual(add.getDefault());
 		temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "click",
+			type : "mouseup",
 			clientX: 101,
 			clientY: 99
 		});
@@ -200,7 +200,7 @@ describe("DrawChemEditor directive tests", function () {
 				"</svg>"
 			);
 		temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "click",
+			type : "mouseup",
 			clientX: 118,
 			clientY: 110
 		});
@@ -253,14 +253,14 @@ describe("DrawChemEditor directive tests", function () {
 		temp.find("#dc-" + custom.name).click();
 		expect(element.isolateScope().chosenStructure.getDefault()).toEqual(custom.getDefault());
 		temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "click",
+			type : "mouseup",
 			clientX: 100,
 			clientY: 100
 		});
 		temp.find("#dc-" + add.name).click();
 		expect(element.isolateScope().chosenStructure.getDefault()).toEqual(add.getDefault());
 		temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "click",
+			type : "mouseup",
 			clientX: 101,
 			clientY: 99
 		});
@@ -302,7 +302,7 @@ describe("DrawChemEditor directive tests", function () {
 				"</svg>"
 			);
 		temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "click",
+			type : "mouseup",
 			clientX: 100,
 			clientY: 79
 		});
@@ -345,7 +345,7 @@ describe("DrawChemEditor directive tests", function () {
 				"</svg>"
 			);
 		temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "click",
+			type : "mouseup",
 			clientX: 99,
 			clientY: 80
 		});
