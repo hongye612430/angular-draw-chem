@@ -1,0 +1,16 @@
+<div ng-show="showEditor">
+	<div class="dc-editor-overlay" ng-click="closeEditor()"></div>
+	<div class="dc-editor-dialog" ng-style="dialogStyle">
+		<div class="dc-editor-close" ng-click="closeEditor()">X</div>
+		<div class="dc-wrap">
+			<div id="#dc-tools-h" class="dc-tools-h">
+				<span ng-repeat="custom in customButtons">
+					<button id="dc-{{custom.name}}" class="dc-custom-button" ng-click="custom.choose()" ng-bind="custom.name"></button>
+				</span>
+				<button id="dc-clear" class="dc-custom-button" ng-click="clear()">clear</button>
+				<button id="dc-transfer" class="dc-custom-button" ng-click="transfer()">transfer</button>
+			</div>
+			<dc-content class="dc-editor-dialog-content" ng-click="drawShape($event)" ng-bind-html="content()"></dc-content>
+		</div>
+	</div>
+</div>
