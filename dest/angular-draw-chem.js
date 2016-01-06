@@ -93,7 +93,9 @@
 					var clickCoords = innerCoords(),
 						drawn = "";
 					modifyCurrentStructure();
-					drawn = DrawChemShapes.draw(scope.currentStructure.getDefault().getStructure(), "cmpd1").generate();
+					drawn = DrawChemShapes.draw(
+						scope.currentStructure.getDefault().getStructure(), "cmpd1", scope.currentStructure.decorate
+					).generate();
 					DrawChem.setContent(drawn);
 					
 					function innerCoords() {
@@ -273,13 +275,18 @@
 					"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
 					"fill": "none"
 				},				
-				"circle:hover": {
+				"circle.atom:hover": {
 					"opacity": "0.3",
 					"stroke": "black",
 					"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
 				},
-				"circle": {
+				"circle.atom": {
 					"opacity": "0",
+				},
+				"circle.arom": {
+					"stroke": "black",
+					"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
+					"fill": "none"
 				}
 			}
 		}
@@ -510,7 +517,18 @@
 		// bond in south-east direction
 		service.BOND_SE = [parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2)), service.BOND_LENGTH / 2];
 		// bond in south-west direction
-		service.BOND_SW = [-parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2)), service.BOND_LENGTH / 2];
+		service.BOND_SW = [-parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2)), service.BOND_LENGTH / 2];		
+		// bonds as array
+		service.BONDS = [
+			{ direction: "N", bond: service.BOND_N },
+			{ direction: "S", bond: service.BOND_S },
+			{ direction: "E", bond: service.BOND_E },
+			{ direction: "W", bond: service.BOND_W },
+			{ direction: "NE", bond: service.BOND_NE },
+			{ direction: "NW", bond: service.BOND_NW },
+			{ direction: "SE", bond: service.BOND_SE },
+			{ direction: "SW", bond: service.BOND_SW },
+		]
 		
 		return service;		
 	}		
@@ -725,16 +743,59 @@
 			}
 			
 			function chooseMod(currentAtom) {
-				var i;
+				var i, at;
 				if (mod.defs.length === 1) {
 					return mod.getDefault().getStructure(0).getBonds();
 				} else {
 					for(i = 0; i < mod.defs.length; i += 1) {
-						if (currentAtom.getNext() === mod.defs[i].getName()) {
-							return mod.defs[i].getStructure(0).getBonds();
+						at = mod.defs[i];
+						if (currentAtom.getNext() === at.getName()) {
+							calcNext(currentAtom, at);
+							return at.getStructure(0).getBonds();
 						}
 					}
-				}				
+				}
+			}
+			
+			function calcNext(current, drawn) {
+				var inX = current.getCoords("x"),
+					inY = current.getCoords("y"),
+					inBond = checkBond(),
+					outBond = drawn.getName();
+				if (inBond === "N" && outBond === "NE") {
+					current.setNext("NW");
+				} else if (inBond === "N" && outBond === "NW") {
+					current.setNext("NE");
+				} else if (inBond === "S" && outBond === "SE") {
+					current.setNext("SW");
+				} else if (inBond === "S" && outBond === "SW") {
+					current.setNext("SE");
+				} else if (inBond === "SW" && outBond === "S") {
+					current.setNext("NW");
+				} else if (inBond === "SW" && outBond === "NW") {
+					current.setNext("S");
+				} else if (inBond === "SE" && outBond === "S") {
+					current.setNext("NE");
+				} else if (inBond === "SE" && outBond === "NE") {
+					current.setNext("S");
+				} else if (inBond === "NW" && outBond === "SW") {
+					current.setNext("N");
+				} else if (inBond === "NW" && outBond === "N") {
+					current.setNext("SW");
+				} else if (inBond === "NE" && outBond === "N") {
+					current.setNext("SE");
+				} else if (inBond === "NE" && outBond === "SE") {
+					current.setNext("N");
+				} 
+				
+				function checkBond() {
+					var i, bonds = DrawChemConst.BONDS;
+					for(i = 0; i < bonds.length; i += 1) {
+						if (bonds[i].bond[0] === inX && bonds[i].bond[1] === inY) {
+							return bonds[i].direction;
+						}
+					}
+				}
 			}
 		};
 		
@@ -743,7 +804,7 @@
 		 * @param {Atom[]} input - an object containing all information needed to render the shape
 		 * @param {string} id - id of the object to be created (will be used inside 'g' tag and in 'use' tag)
 		 */
-		service.draw = function (input, id) {
+		service.draw = function (input, id, decorate) {
 			var shape,
 				output = parseInput(input),
 				paths = output.paths,
@@ -759,8 +820,14 @@
 					result += "<path d='" + path + "'></path>";					
 				});
 				circles.forEach(function (circle) {
-					result += "<circle cx='" + circle[0] + "' cy='" + circle[1] + "' r='" + circle[2] + "' ></circle>";
+					result += "<circle class='atom' cx='" + circle[0] + "' cy='" + circle[1] + "' r='" + circle[2] + "' ></circle>";
 				});
+				if (decorate === "aromatic") {
+					result += "<circle class='arom' cx='" + input[0].getCoords("x") +
+						"' cy='" + (input[0].getCoords("y") + DrawChemConst.BOND_LENGTH) +
+						"' r='" + DrawChemConst.BOND_LENGTH * 0.45 +
+						"' ></circle>";
+				}
 				
 				return result;
 			}
@@ -887,6 +954,34 @@
 				getDefault: function () {
 					return this.defs[0];
 				},
+				decorate: "aromatic",
+				defs: [
+					new DCStructure.Structure(
+						"N",
+						[
+							new Atom([0, 0], [
+								new Atom(BOND_SE, [
+									new Atom(BOND_S, [
+										new Atom(BOND_SW, [
+											new Atom(BOND_NW, [
+												new Atom(BOND_N, [], "Z", "NW")
+											], "", "SW")
+										], "", "S")
+									], "", "SE")
+								], "", "NE")
+							], "", "N")					
+						]
+					)
+				]
+			}
+		};
+		
+		service.cyclohexane = function () {
+			return {
+				name: "cyclohexane",
+				getDefault: function () {
+					return this.defs[0];
+				},
 				defs: [
 					new DCStructure.Structure(
 						"N",
@@ -987,7 +1082,7 @@
 		/**
 		 * Stores all predefined structures.
 		 */
-		service.custom = [service.benzene, service.singleBond];
+		service.custom = [service.benzene, service.cyclohexane, service.singleBond];
 		
 		return service;
 	}

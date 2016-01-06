@@ -26,6 +26,34 @@
 				getDefault: function () {
 					return this.defs[0];
 				},
+				decorate: "aromatic",
+				defs: [
+					new DCStructure.Structure(
+						"N",
+						[
+							new Atom([0, 0], [
+								new Atom(BOND_SE, [
+									new Atom(BOND_S, [
+										new Atom(BOND_SW, [
+											new Atom(BOND_NW, [
+												new Atom(BOND_N, [], "Z", "NW")
+											], "", "SW")
+										], "", "S")
+									], "", "SE")
+								], "", "NE")
+							], "", "N")					
+						]
+					)
+				]
+			}
+		};
+		
+		service.cyclohexane = function () {
+			return {
+				name: "cyclohexane",
+				getDefault: function () {
+					return this.defs[0];
+				},
 				defs: [
 					new DCStructure.Structure(
 						"N",
@@ -126,7 +154,7 @@
 		/**
 		 * Stores all predefined structures.
 		 */
-		service.custom = [service.benzene, service.singleBond];
+		service.custom = [service.benzene, service.cyclohexane, service.singleBond];
 		
 		return service;
 	}

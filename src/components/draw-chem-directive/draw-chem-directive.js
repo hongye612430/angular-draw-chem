@@ -86,7 +86,9 @@
 					var clickCoords = innerCoords(),
 						drawn = "";
 					modifyCurrentStructure();
-					drawn = DrawChemShapes.draw(scope.currentStructure.getDefault().getStructure(), "cmpd1").generate();
+					drawn = DrawChemShapes.draw(
+						scope.currentStructure.getDefault().getStructure(), "cmpd1", scope.currentStructure.decorate
+					).generate();
 					DrawChem.setContent(drawn);
 					
 					function innerCoords() {

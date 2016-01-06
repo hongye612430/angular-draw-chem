@@ -36,7 +36,18 @@
 		// bond in south-east direction
 		service.BOND_SE = [parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2)), service.BOND_LENGTH / 2];
 		// bond in south-west direction
-		service.BOND_SW = [-parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2)), service.BOND_LENGTH / 2];
+		service.BOND_SW = [-parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2)), service.BOND_LENGTH / 2];		
+		// bonds as array
+		service.BONDS = [
+			{ direction: "N", bond: service.BOND_N },
+			{ direction: "S", bond: service.BOND_S },
+			{ direction: "E", bond: service.BOND_E },
+			{ direction: "W", bond: service.BOND_W },
+			{ direction: "NE", bond: service.BOND_NE },
+			{ direction: "NW", bond: service.BOND_NW },
+			{ direction: "SE", bond: service.BOND_SE },
+			{ direction: "SW", bond: service.BOND_SW },
+		]
 		
 		return service;		
 	}		

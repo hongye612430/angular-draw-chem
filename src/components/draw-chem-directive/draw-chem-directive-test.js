@@ -101,22 +101,28 @@ describe("DrawChemEditor directive tests", function () {
 									"stroke-width:0.8;" +
 									"fill:none;" +
 								"}" +
-								"circle:hover{" +
+								"circle.atom:hover{" +
 									"opacity:0.3;" +
 									"stroke:black;" +
 									"stroke-width:0.8;" +
 								"}" +
-								"circle{" +
+								"circle.atom{" +
 									"opacity:0;" +
+								"}" +
+								"circle.arom{" +
+									"stroke:black;" +
+									"stroke-width:0.8;" +
+									"fill:none;" +
 								"}" +
 							"</style>" +
 							"<path d=\"M 0 0 L 17.32 10 L 17.32 30 L 0 40 L -17.32 30 L -17.32 10 Z \"></path>" +
-							"<circle cx=\"0\" cy=\"0\" r=\"2.4\"></circle>" +
-							"<circle cx=\"17.32\" cy=\"10\" r=\"2.4\"></circle>" +
-							"<circle cx=\"17.32\" cy=\"30\" r=\"2.4\"></circle>" +
-							"<circle cx=\"0\" cy=\"40\" r=\"2.4\"></circle>" +
-							"<circle cx=\"-17.32\" cy=\"30\" r=\"2.4\"></circle>" +
-							"<circle cx=\"-17.32\" cy=\"10\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"0\" cy=\"0\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"17.32\" cy=\"10\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"17.32\" cy=\"30\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"0\" cy=\"40\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"-17.32\" cy=\"30\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"-17.32\" cy=\"10\" r=\"2.4\"></circle>" +
+							"<circle class=\"arom\" cx=\"0\" cy=\"20\" r=\"9\"></circle>" +
 						"</g>" +
 				"</svg>"
 			);		
@@ -166,24 +172,30 @@ describe("DrawChemEditor directive tests", function () {
 									"stroke-width:0.8;" +
 									"fill:none;" +
 								"}" +
-								"circle:hover{" +
+								"circle.atom:hover{" +
 									"opacity:0.3;" +
 									"stroke:black;" +
 									"stroke-width:0.8;" +
 								"}" +
-								"circle{" +
+								"circle.atom{" +
 									"opacity:0;" +
+								"}" +
+								"circle.arom{" +
+									"stroke:black;" +
+									"stroke-width:0.8;" +
+									"fill:none;" +
 								"}" +
 							"</style>" +
 							"<path d=\"M 98 98 L 115.32 108 L 115.32 128 L 98 138 L 80.68 128 L 80.68 108 Z \"></path>" +	
 							"<path d=\"M 98 98 L 98 78 \"></path>" +
-							"<circle cx=\"98\" cy=\"98\" r=\"2.4\"></circle>" +
-							"<circle cx=\"115.32\" cy=\"108\" r=\"2.4\"></circle>" +
-							"<circle cx=\"115.32\" cy=\"128\" r=\"2.4\"></circle>" +
-							"<circle cx=\"98\" cy=\"138\" r=\"2.4\"></circle>" +
-							"<circle cx=\"80.68\" cy=\"128\" r=\"2.4\"></circle>" +
-							"<circle cx=\"80.68\" cy=\"108\" r=\"2.4\"></circle>" +
-							"<circle cx=\"98\" cy=\"78\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"98\" cy=\"98\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"108\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"128\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"98\" cy=\"138\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"128\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"108\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"98\" cy=\"78\" r=\"2.4\"></circle>" +
+							"<circle class=\"arom\" cx=\"98\" cy=\"118\" r=\"9\"></circle>" +
 						"</g>" +
 				"</svg>"
 			);
@@ -202,26 +214,32 @@ describe("DrawChemEditor directive tests", function () {
 									"stroke-width:0.8;" +
 									"fill:none;" +
 								"}" +
-								"circle:hover{" +
+								"circle.atom:hover{" +
 									"opacity:0.3;" +
 									"stroke:black;" +
 									"stroke-width:0.8;" +
 								"}" +
-								"circle{" +
+								"circle.atom{" +
 									"opacity:0;" +
+								"}" +
+								"circle.arom{" +
+									"stroke:black;" +
+									"stroke-width:0.8;" +
+									"fill:none;" +
 								"}" +
 							"</style>" +
 							"<path d=\"M 98 98 L 115.32 108 L 115.32 128 L 98 138 L 80.68 128 L 80.68 108 Z \"></path>" +
 							"<path d=\"M 115.32 108 L 132.64 98 \"></path>" +
 							"<path d=\"M 98 98 L 98 78 \"></path>" +
-							"<circle cx=\"98\" cy=\"98\" r=\"2.4\"></circle>" +
-							"<circle cx=\"115.32\" cy=\"108\" r=\"2.4\"></circle>" +
-							"<circle cx=\"115.32\" cy=\"128\" r=\"2.4\"></circle>" +
-							"<circle cx=\"98\" cy=\"138\" r=\"2.4\"></circle>" +
-							"<circle cx=\"80.68\" cy=\"128\" r=\"2.4\"></circle>" +
-							"<circle cx=\"80.68\" cy=\"108\" r=\"2.4\"></circle>" +
-							"<circle cx=\"132.64\" cy=\"98\" r=\"2.4\"></circle>" +
-							"<circle cx=\"98\" cy=\"78\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"98\" cy=\"98\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"108\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"128\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"98\" cy=\"138\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"128\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"108\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"132.64\" cy=\"98\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"98\" cy=\"78\" r=\"2.4\"></circle>" +
+							"<circle class=\"arom\" cx=\"98\" cy=\"118\" r=\"9\"></circle>" +
 						"</g>" +
 				"</svg>"
 			);
@@ -256,24 +274,30 @@ describe("DrawChemEditor directive tests", function () {
 									"stroke-width:0.8;" +
 									"fill:none;" +
 								"}" +
-								"circle:hover{" +
+								"circle.atom:hover{" +
 									"opacity:0.3;" +
 									"stroke:black;" +
 									"stroke-width:0.8;" +
 								"}" +
-								"circle{" +
+								"circle.atom{" +
 									"opacity:0;" +
+								"}" +
+								"circle.arom{" +
+									"stroke:black;" +
+									"stroke-width:0.8;" +
+									"fill:none;" +
 								"}" +
 							"</style>" +
 							"<path d=\"M 98 98 L 115.32 108 L 115.32 128 L 98 138 L 80.68 128 L 80.68 108 Z \"></path>" +
 							"<path d=\"M 98 98 L 98 78 \"></path>" +
-							"<circle cx=\"98\" cy=\"98\" r=\"2.4\"></circle>" +
-							"<circle cx=\"115.32\" cy=\"108\" r=\"2.4\"></circle>" +
-							"<circle cx=\"115.32\" cy=\"128\" r=\"2.4\"></circle>" +
-							"<circle cx=\"98\" cy=\"138\" r=\"2.4\"></circle>" +
-							"<circle cx=\"80.68\" cy=\"128\" r=\"2.4\"></circle>" +
-							"<circle cx=\"80.68\" cy=\"108\" r=\"2.4\"></circle>" +
-							"<circle cx=\"98\" cy=\"78\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"98\" cy=\"98\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"108\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"128\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"98\" cy=\"138\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"128\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"108\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"98\" cy=\"78\" r=\"2.4\"></circle>" +
+							"<circle class=\"arom\" cx=\"98\" cy=\"118\" r=\"9\"></circle>" +
 						"</g>" +
 				"</svg>"
 			);
@@ -292,25 +316,76 @@ describe("DrawChemEditor directive tests", function () {
 									"stroke-width:0.8;" +
 									"fill:none;" +
 								"}" +
-								"circle:hover{" +
+								"circle.atom:hover{" +
 									"opacity:0.3;" +
 									"stroke:black;" +
 									"stroke-width:0.8;" +
 								"}" +
-								"circle{" +
+								"circle.atom{" +
 									"opacity:0;" +
+								"}" +
+								"circle.arom{" +
+									"stroke:black;" +
+									"stroke-width:0.8;" +
+									"fill:none;" +
 								"}" +
 							"</style>" +
 							"<path d=\"M 98 98 L 115.32 108 L 115.32 128 L 98 138 L 80.68 128 L 80.68 108 Z \"></path>" +
 							"<path d=\"M 98 98 L 98 78 L 115.32 68 \"></path>" +
-							"<circle cx=\"98\" cy=\"98\" r=\"2.4\"></circle>" +
-							"<circle cx=\"115.32\" cy=\"108\" r=\"2.4\"></circle>" +
-							"<circle cx=\"115.32\" cy=\"128\" r=\"2.4\"></circle>" +
-							"<circle cx=\"98\" cy=\"138\" r=\"2.4\"></circle>" +
-							"<circle cx=\"80.68\" cy=\"128\" r=\"2.4\"></circle>" +
-							"<circle cx=\"80.68\" cy=\"108\" r=\"2.4\"></circle>" +
-							"<circle cx=\"98\" cy=\"78\" r=\"2.4\"></circle>" +
-							"<circle cx=\"115.32\" cy=\"68\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"98\" cy=\"98\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"108\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"128\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"98\" cy=\"138\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"128\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"108\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"98\" cy=\"78\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"68\" r=\"2.4\"></circle>" +
+							"<circle class=\"arom\" cx=\"98\" cy=\"118\" r=\"9\"></circle>" +
+						"</g>" +
+				"</svg>"
+			);
+		temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "click",
+			clientX: 99,
+			clientY: 80
+		});
+		expect(temp.find(".dc-editor-dialog-content").html())
+			.toEqual(
+				"<svg>" +
+						"<g id=\"cmpd1\">" +
+							"<style type=\"text/css\">" +
+								"path{" +
+									"stroke:black;" +
+									"stroke-width:0.8;" +
+									"fill:none;" +
+								"}" +
+								"circle.atom:hover{" +
+									"opacity:0.3;" +
+									"stroke:black;" +
+									"stroke-width:0.8;" +
+								"}" +
+								"circle.atom{" +
+									"opacity:0;" +
+								"}" +
+								"circle.arom{" +
+									"stroke:black;" +
+									"stroke-width:0.8;" +
+									"fill:none;" +
+								"}" +
+							"</style>" +
+							"<path d=\"M 98 98 L 115.32 108 L 115.32 128 L 98 138 L 80.68 128 L 80.68 108 Z \"></path>" +
+							"<path d=\"M 98 98 L 98 78 L 115.32 68 \"></path>" +
+							"<path d=\"M 98 78 L 80.68 68 \"></path>" +
+							"<circle class=\"atom\" cx=\"98\" cy=\"98\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"108\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"128\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"98\" cy=\"138\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"128\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"108\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"98\" cy=\"78\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"68\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"68\" r=\"2.4\"></circle>" +
+							"<circle class=\"arom\" cx=\"98\" cy=\"118\" r=\"9\"></circle>" +
 						"</g>" +
 				"</svg>"
 			);

@@ -28,13 +28,18 @@
 					"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
 					"fill": "none"
 				},				
-				"circle:hover": {
+				"circle.atom:hover": {
 					"opacity": "0.3",
 					"stroke": "black",
 					"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
 				},
-				"circle": {
+				"circle.atom": {
 					"opacity": "0",
+				},
+				"circle.arom": {
+					"stroke": "black",
+					"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
+					"fill": "none"
 				}
 			}
 		}

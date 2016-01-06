@@ -41,13 +41,18 @@ describe("DrawChemShapes service tests", function () {
 								"stroke-width:0.8;" +
 								"fill:none;" +
 							"}" +
-							"circle:hover{" +
+							"circle.atom:hover{" +
 								"opacity:0.3;" +
 								"stroke:black;" +
 								"stroke-width:0.8;" +
 							"}" +
-							"circle{" +
+							"circle.atom{" +
 								"opacity:0;" +
+							"}" +
+							"circle.arom{" +
+								"stroke:black;" +
+								"stroke-width:0.8;" +
+								"fill:none;" +
 							"}" +
 						"</style>" +
 						"<path d='M 10 10 L 25 25 L 45 45 L 75 75 '></path>" +
@@ -55,35 +60,16 @@ describe("DrawChemShapes service tests", function () {
 						"<path d='M 10 10 L 15 20 '></path>" +
 						"<path d='M 10 10 L 5 26 '></path>" +
 						"<path d='M 10 10 L 14 12 '></path>" +
-						"<circle cx='10' cy='10' r='2.4' ></circle>" +
-						"<circle cx='25' cy='25' r='2.4' ></circle>" +
-						"<circle cx='45' cy='45' r='2.4' ></circle>" +
-						"<circle cx='75' cy='75' r='2.4' ></circle>" +
-						"<circle cx='50' cy='50' r='2.4' ></circle>" +
-						"<circle cx='15' cy='20' r='2.4' ></circle>" +
-						"<circle cx='5' cy='26' r='2.4' ></circle>" +
-						"<circle cx='14' cy='12' r='2.4' ></circle>" +
+						"<circle class='atom' cx='10' cy='10' r='2.4' ></circle>" +
+						"<circle class='atom' cx='25' cy='25' r='2.4' ></circle>" +
+						"<circle class='atom' cx='45' cy='45' r='2.4' ></circle>" +
+						"<circle class='atom' cx='75' cy='75' r='2.4' ></circle>" +
+						"<circle class='atom' cx='50' cy='50' r='2.4' ></circle>" +
+						"<circle class='atom' cx='15' cy='20' r='2.4' ></circle>" +
+						"<circle class='atom' cx='5' cy='26' r='2.4' ></circle>" +
+						"<circle class='atom' cx='14' cy='12' r='2.4' ></circle>" +
 					"</g>" +
 			"</svg>"
 		);
-	});
-	
-	it("should combine structure objects", function () {
-		var benzene = DrawChemStructures.benzene().getDefault(),
-			singleBond = DrawChemStructures.singleBond(),
-			toCompareBenz = DrawChemStructures.benzene().getDefault().getStructure(0),
-			toCompareSb = DrawChemStructures.singleBond();		
-		
-		benzene.getStructure(0).setCoords([100, 100]);
-		currentClick = [101, 99];
-		toCompareBenz.setCoords([100, 100]);
-		toCompareBenz.addBonds(toCompareSb.defs[0].getStructure(0).getBonds());
-		DrawChemShapes.modifyStructure(benzene, singleBond, currentClick);
-		expect(benzene.getStructure(0)).toEqual(toCompareBenz);
-		
-		toCompareBenz.getBonds(0).addBonds(toCompareSb.defs[1].getStructure(0).getBonds());
-		currentClick = [118, 109];
-		DrawChemShapes.modifyStructure(benzene, singleBond, currentClick);
-		expect(benzene.getStructure(0)).toEqual(toCompareBenz);
 	});
 });
