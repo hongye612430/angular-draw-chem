@@ -19,6 +19,7 @@ The project consists of the following components:
 6. `DCShape` factory - defines `Shape` class,
 7. `DCStructure` factory - defines `Structure` class,
 8. `DCAtom` factory - defines `Atom` class.
+9. `DrawChemConst` - service that contains all constants, e.g. BOND_LENGTH, BOND_WIDTH, etc.
 
 ### terminology
 **`Shape`** vs **`Structure`**
@@ -28,5 +29,5 @@ Each `atom` is an object containing coordinates of the atom and a `bonds` array 
 
 `Shape` object contains the desired structure as a set of `svg` elements (paths, circles, etc.).
 
-### License
+### license
 MIT
