@@ -3,9 +3,9 @@
 	angular.module("mmAngularDrawChem")
 		.directive("drawChemEditor", DrawChemEditor);
 	
-	DrawChemEditor.$inject = ["DrawChemShapes", "DrawChemStructures", "DrawChem", "$sce", "$window"];
+	DrawChemEditor.$inject = ["DrawChemShapes", "DrawChemStructures", "DrawChem", "$sce", "$window", "DrawChemConst"];
 	
-	function DrawChemEditor(DrawChemShapes, DrawChemStructures, DrawChem, $sce, $window) {
+	function DrawChemEditor(DrawChemShapes, DrawChemStructures, DrawChem, $sce, $window, DrawChemConst) {
 		return {
 			templateUrl: "draw-chem-editor.html",
 			scope: {
@@ -17,10 +17,10 @@
 				 */
 				scope.dialogStyle = {};
 				if (attrs.width) {
-					scope.dialogStyle.width = attrs.width;
+					scope.dialogStyle.width = attrs.width;					
 				}
 				if (attrs.height) {
-					scope.dialogStyle.height = attrs.height;
+					scope.dialogStyle.height = attrs.height;					
 				}
 				
 				/**
