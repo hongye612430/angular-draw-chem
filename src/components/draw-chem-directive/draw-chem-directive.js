@@ -83,7 +83,7 @@
 				 * Draws chosen shape.
 				 */
 				scope.drawShape = function ($event) {
-					var clickCoords = innerCoords(),
+					var clickCoords = innerCoords(), // coordinates of the mouse click
 						drawn = "";
 					modifyCurrentStructure();
 					drawn = DrawChemShapes.draw(
@@ -92,6 +92,7 @@
 					DrawChem.setContent(drawn);
 					
 					function innerCoords() {
+						// calculates the coordinates of the click; takes margin of the enclosing div into account
 						var content = element.find("dc-content")[0],
 							coords = [								
 								parseFloat(($event.clientX - content.getBoundingClientRect().left - 2).toFixed(2)),
@@ -102,8 +103,10 @@
 					
 					function modifyCurrentStructure() {
 						if (DrawChem.getContent() !== "") {
+							// if the content is not empty, then modify current structure
 							DrawChemShapes.modifyStructure(scope.currentStructure.getDefault(), angular.copy(scope.chosenStructure), clickCoords);
 						} else {
+							// if the content is empty, then copy the chosen structure and assign it as current structure
 							scope.currentStructure = angular.copy(scope.chosenStructure);
 							scope.currentStructure.getDefault().getStructure(0).setCoords(clickCoords);
 						}
