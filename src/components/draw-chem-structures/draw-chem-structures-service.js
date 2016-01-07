@@ -3,13 +3,14 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemStructures", DrawChemStructures);
 		
-	DrawChemStructures.$inject = ["DrawChemConst", "DCStructure", "DCAtom"];
+	DrawChemStructures.$inject = ["DrawChemConst", "DCStructure", "DCStructureCluster", "DCAtom"];
 	
-	function DrawChemStructures(DrawChemConst, DCStructure, DCAtom) {
-		
+	function DrawChemStructures(DrawChemConst, DCStructure, DCStructureCluster, DCAtom) {
+
 		var service = {},
 			benzene,
 			Atom = DCAtom.Atom,
+			StructureCluster = DCStructureCluster.StructureCluster,
 			singleBond,
 			BOND_N = DrawChemConst.BOND_N,
 			BOND_S = DrawChemConst.BOND_S,
@@ -21,12 +22,8 @@
 			BOND_SW = DrawChemConst.BOND_SW;
 			
 		service.benzene = function () {
-			return {
-				name: "benzene",
-				getDefault: function () {
-					return this.defs[0];
-				},
-				defs: [
+			var name = "benzene",
+				defs = [
 					new DCStructure.Structure(
 						"N",
 						[
@@ -44,17 +41,15 @@
 						],
 						"aromatic"
 					)
-				]
-			}
+				],
+				cluster = new StructureCluster(name, defs);
+				
+			return cluster;
 		};
 		
 		service.cyclohexane = function () {
-			return {
-				name: "cyclohexane",
-				getDefault: function () {
-					return this.defs[0];
-				},
-				defs: [
+			var name = "cyclohexane",
+				defs = [
 					new DCStructure.Structure(
 						"N",
 						[
@@ -71,17 +66,15 @@
 							], "", "N")					
 						]
 					)
-				]
-			}
+				],
+				cluster = new StructureCluster(name, defs);
+				
+			return cluster;
 		};
 		
 		service.singleBond = function () {
-			return {
-				name: "single-bond",
-				getDefault: function () {
-					return this.defs[0];
-				},
-				defs: [
+			var name = "single-bond",
+				defs = [
 					new DCStructure.Structure(
 						"N",
 						[
@@ -146,8 +139,10 @@
 							], "", "SE")
 						]
 					)
-				]
-			}
+				],
+				cluster = new StructureCluster(name, defs);
+				
+			return cluster;
 		};
 		
 		
