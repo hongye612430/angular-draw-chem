@@ -391,4 +391,182 @@ describe("DrawChemEditor directive tests", function () {
 				"</svg>"
 			);
 	});
+	
+	it("should be able to choose an atom on 'mousedown' and draw on 'mouseup', if the 'mouseup' is within the enclosing circle", function () {
+		var custom = DrawChemStructures.benzene(),
+			add = DrawChemStructures.singleBond();
+		DrawChem.runEditor("test");
+		expect(DrawChem.showEditor()).toEqual(true);		
+		temp.find("#dc-" + custom.name).click();
+		expect(element.isolateScope().chosenStructure.getDefault()).toEqual(custom.getDefault());
+		temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "mouseup",
+			clientX: 100,
+			clientY: 100
+		});
+		temp.find("#dc-" + add.name).click();
+		expect(element.isolateScope().chosenStructure.getDefault()).toEqual(add.getDefault());
+		temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "mousedown",
+			clientX: 101,
+			clientY: 99
+		});
+		temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "mouseup",
+			clientX: 100,
+			clientY: 101
+		});
+		expect(temp.find(".dc-editor-dialog-content").html())
+			.toEqual(
+				"<svg>" +
+						"<g id=\"cmpd1\">" +
+							"<style type=\"text/css\">" +
+								"path{" +
+									"stroke:black;" +
+									"stroke-width:0.8;" +
+									"fill:none;" +
+								"}" +
+								"circle.atom:hover{" +
+									"opacity:0.3;" +
+									"stroke:black;" +
+									"stroke-width:0.8;" +
+								"}" +
+								"circle.atom{" +
+									"opacity:0;" +
+								"}" +
+								"circle.arom{" +
+									"stroke:black;" +
+									"stroke-width:0.8;" +
+									"fill:none;" +
+								"}" +
+							"</style>" +
+							"<path d=\"M 98 98 L 115.32 108 L 115.32 128 L 98 138 L 80.68 128 L 80.68 108 Z \"></path>" +
+							"<path d=\"M 98 98 L 98 78 \"></path>" +
+							"<circle class=\"atom\" cx=\"98\" cy=\"98\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"108\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"128\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"98\" cy=\"138\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"128\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"108\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"98\" cy=\"78\" r=\"2.4\"></circle>" +
+							"<circle class=\"arom\" cx=\"98\" cy=\"118\" r=\"9\"></circle>" +
+						"</g>" +
+				"</svg>"
+			);		
+	});
+	
+	it("should be able to choose an atom on 'mousedown' and draw on 'mouseup', if the 'mouseup' is outside of the enclosing circle", function () {
+		var custom = DrawChemStructures.benzene(),
+			add = DrawChemStructures.singleBond();
+		DrawChem.runEditor("test");
+		expect(DrawChem.showEditor()).toEqual(true);		
+		temp.find("#dc-" + custom.name).click();
+		expect(element.isolateScope().chosenStructure.getDefault()).toEqual(custom.getDefault());
+		temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "mouseup",
+			clientX: 100,
+			clientY: 100
+		});
+		temp.find("#dc-" + add.name).click();
+		expect(element.isolateScope().chosenStructure.getDefault()).toEqual(add.getDefault());
+		temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "mousedown",
+			clientX: 101,
+			clientY: 99
+		});
+		temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "mouseup",
+			clientX: 100,
+			clientY: -90
+		});
+		// expects 'N' bond
+		expect(temp.find(".dc-editor-dialog-content").html())
+			.toEqual(
+				"<svg>" +
+						"<g id=\"cmpd1\">" +
+							"<style type=\"text/css\">" +
+								"path{" +
+									"stroke:black;" +
+									"stroke-width:0.8;" +
+									"fill:none;" +
+								"}" +
+								"circle.atom:hover{" +
+									"opacity:0.3;" +
+									"stroke:black;" +
+									"stroke-width:0.8;" +
+								"}" +
+								"circle.atom{" +
+									"opacity:0;" +
+								"}" +
+								"circle.arom{" +
+									"stroke:black;" +
+									"stroke-width:0.8;" +
+									"fill:none;" +
+								"}" +
+							"</style>" +
+							"<path d=\"M 98 98 L 115.32 108 L 115.32 128 L 98 138 L 80.68 128 L 80.68 108 Z \"></path>" +
+							"<path d=\"M 98 98 L 98 78 \"></path>" +
+							"<circle class=\"atom\" cx=\"98\" cy=\"98\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"108\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"128\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"98\" cy=\"138\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"128\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"108\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"98\" cy=\"78\" r=\"2.4\"></circle>" +
+							"<circle class=\"arom\" cx=\"98\" cy=\"118\" r=\"9\"></circle>" +
+						"</g>" +
+				"</svg>"
+			);
+		
+		temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "mousedown",
+			clientX: 101,
+			clientY: 99
+		});
+		temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "mouseup",
+			clientX: 100,
+			clientY: 190
+		});
+		// expects 'S' bond
+		expect(temp.find(".dc-editor-dialog-content").html())
+			.toEqual(
+				"<svg>" +
+						"<g id=\"cmpd1\">" +
+							"<style type=\"text/css\">" +
+								"path{" +
+									"stroke:black;" +
+									"stroke-width:0.8;" +
+									"fill:none;" +
+								"}" +
+								"circle.atom:hover{" +
+									"opacity:0.3;" +
+									"stroke:black;" +
+									"stroke-width:0.8;" +
+								"}" +
+								"circle.atom{" +
+									"opacity:0;" +
+								"}" +
+								"circle.arom{" +
+									"stroke:black;" +
+									"stroke-width:0.8;" +
+									"fill:none;" +
+								"}" +
+							"</style>" +
+							"<path d=\"M 98 98 L 115.32 108 L 115.32 128 L 98 138 L 80.68 128 L 80.68 108 Z \"></path>" +
+							"<path d=\"M 98 98 L 98 78 \"></path>" +
+							"<path d=\"M 98 98 L 98 118 \"></path>" +
+							"<circle class=\"atom\" cx=\"98\" cy=\"98\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"108\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"128\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"98\" cy=\"138\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"128\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"108\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"98\" cy=\"78\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"98\" cy=\"118\" r=\"2.4\"></circle>" +
+							"<circle class=\"arom\" cx=\"98\" cy=\"118\" r=\"9\"></circle>" +
+						"</g>" +
+				"</svg>"
+			);	
+	});
 });
