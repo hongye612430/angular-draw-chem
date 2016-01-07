@@ -85,7 +85,7 @@
 				});
 				
 				/**
-				 * 
+				 * Action to perform on 'mousedown' event.
 				 */
 				scope.doOnMouseDown = function ($event) {
 					var clickCoords = innerCoords($event);						
@@ -97,7 +97,7 @@
 				}
 				
 				/**
-				 *
+				 * Action to perform on 'mouseup' event.
 				 */
 				scope.doOnMouseUp = function ($event) {				
 					var clickCoords = innerCoords($event), // coordinates of the mouse click
@@ -125,14 +125,20 @@
 				}
 				
 				/**
-				 *
+				 * Action to perform on 'mousemove' event.
 				 */
 				scope.doOnMouseMove = function ($event) {
 									
 				}
 				
+				/**
+				 * Calculates the coordinates of the mouse pointer during an event.
+				 * Takes into account the margin of the enclosing div.
+				 * @params {Event} $event - an Event object
+				 * @returns {Number[]}
+				 */
 				function innerCoords($event) {
-					// calculates the coordinates of the click; takes margin of the enclosing div into account
+					// 
 					var content = element.find("dc-content")[0],
 						coords = [								
 							parseFloat(($event.clientX - content.getBoundingClientRect().left - 2).toFixed(2)),
@@ -141,6 +147,9 @@
 					return coords;
 				}
 				
+				/**
+				 * Resets to default values associated with mouse events.
+				 */
 				function resetMouseFlags() {
 					mouseDown = false;
 					downOnAtom = false;

@@ -107,10 +107,8 @@
 				function check(arg1, arg2, arg3, arg4) {
 					return mousePos[0] > (down[0] + arg1) && mousePos[0] <= (down[0] + arg2) &&
 						mousePos[1] >= (down[1] + arg3) && mousePos[1] <= (down[1] + arg4);
-				}
-				
-			}
-			
+				}				
+			}			
 			
 			/**
 			 * Chooses a suitable modification from mod object.
