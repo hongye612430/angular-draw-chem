@@ -92,43 +92,36 @@
 					mouseDown = true;
 					if (DrawChem.getContent() !== "") {
 						downAtomCoords = DrawChemShapes.isWithin(scope.currentStructure, clickCoords);
-						downOnAtom = true;
+						downOnAtom = true;						
 					}
 				}
 				
 				/**
 				 * Action to perform on 'mouseup' event.
 				 */
-				scope.doOnMouseUp = function ($event) {				
-					var clickCoords = innerCoords($event), // coordinates of the mouse click
-						drawn = "";
-					modifyCurrentStructure();
-					drawn = DrawChemShapes.draw(scope.currentStructure, "cmpd1").generate();
-					DrawChem.setContent(drawn);
-					resetMouseFlags();
-					
-					function modifyCurrentStructure() {
-						if (DrawChem.getContent() !== "") {
-							// if the content is not empty, then modify current structure
-							DrawChemShapes.modifyStructure(
-								scope.currentStructure,
-								angular.copy(scope.chosenStructure),
-								clickCoords,
-								downAtomCoords
-							);
-						} else {
-							// if the content is empty, then copy the chosen structure and assign it as a current structure
-							scope.currentStructure = angular.copy(scope.chosenStructure).getDefault();
-							scope.currentStructure.setOrigin(clickCoords);
-						}
+				scope.doOnMouseUp = function ($event) {
+					var clickCoords = innerCoords($event);
+					if (DrawChem.getContent() !== "") {
+						scope.currentStructure = modifyStructure(scope.currentStructure, clickCoords);						
+					} else {
+						scope.currentStructure = angular.copy(scope.chosenStructure).getDefault();
+						scope.currentStructure.setOrigin(clickCoords);
 					}
+					draw(scope.currentStructure);
+					resetMouseFlags();
 				}
 				
 				/**
 				 * Action to perform on 'mousemove' event.
 				 */
 				scope.doOnMouseMove = function ($event) {
-									
+					var clickCoords, updatedCurrentStructure, frozenCurrentStructure;
+					if (downOnAtom) {
+						clickCoords = innerCoords($event);
+						frozenCurrentStructure = angular.copy(scope.currentStructure);
+						updatedCurrentStructure = modifyStructure(frozenCurrentStructure, clickCoords);
+						draw(updatedCurrentStructure);
+					}							
 				}
 				
 				/**
@@ -154,6 +147,31 @@
 					mouseDown = false;
 					downOnAtom = false;
 					downAtomCoords = undefined;
+				}
+				
+				/**
+				 * Draws the specified structure.
+				 * @params {Structure} structure - a Structure object to draw.
+				 */
+				function draw(structure) {
+					var drawn = "";					
+					drawn = DrawChemShapes.draw(structure, "cmpd1").generate();
+					DrawChem.setContent(drawn);					
+				}
+				
+				/**
+				 * Modifies the specified structure by adding a new structure to it.
+				 * @params {Structure} structure - a Structure object to modify,
+				 * @params {Number[]} clickCoords - coordinates of the mouse pointer
+				 * @returns {Structure}
+				 */
+				function modifyStructure(structure, clickCoords) {
+					return DrawChemShapes.modifyStructure(
+							structure,
+							angular.copy(scope.chosenStructure),
+							clickCoords,
+							downAtomCoords
+						);
 				}
 			}
 		}

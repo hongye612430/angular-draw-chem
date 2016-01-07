@@ -24,6 +24,8 @@
 			
 			modStructure(base.getStructure(), origin);
 			
+			return base;
+			
 			/**
 			* Recursively looks for an atom to modify.
 			* @param {Atom[]} base - array of atoms,
