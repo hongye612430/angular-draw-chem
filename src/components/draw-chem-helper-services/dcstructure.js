@@ -10,20 +10,21 @@
 		/**
 		* Creates a new Structure.
 		* @class
-		* @param {string} name - name of the structure
+		* @param {String} name - name of the structure
 		* @param {Atom[]} structure - an array of atoms
 		*/
-		function Structure(name, structure) {
+		function Structure(name, structure, decorate) {
 			this.name = name;			
 			this.structure = structure;
 			this.transform = [];
 			this.origin = [];
+			this.decorate = decorate;
 		}		
 		
 		/**
 		 * Sets the specified transform (translate, scale, etc.)
-		 * @param {string} name - a name of the transform
-		 * @param {number[]} content - an array with the coordinates
+		 * @param {String} name - a name of the transform
+		 * @param {Number[]} content - an array with the coordinates
 		 */
 		Structure.prototype.setTransform = function (name, content) {
 			this.transform.push(
@@ -36,7 +37,7 @@
 		
 		/**
 		 * Gets the specified transform.
-		 * @returns {number[]}
+		 * @returns {Number[]}
 		 */
 		Structure.prototype.getTransform = function (name) {
 			var i, transform = this.transform;
@@ -49,7 +50,7 @@
 		
 		/**
 		 * Sets coordinates of the first atom.
-		 * @param {number[]} origin - an array with coordinates
+		 * @param {Number[]} origin - an array with coordinates
 		 */
 		Structure.prototype.setOrigin = function (origin) {
 			this.origin = origin;
@@ -57,10 +58,16 @@
 		
 		/**
 		 * Gets the coordinates of the first atom.
-		 * @returns {number[]}
+		 * @returns {Number[]}
 		 */
-		Structure.prototype.getOrigin = function () {
-			return this.origin;
+		Structure.prototype.getOrigin = function (coord) {
+			if (coord === "x") {
+				return this.origin[0];
+			} else if (coord === "y") {
+				return this.origin[1];
+			} else {
+				return this.origin;
+			}
 		}
 		
 		/**
@@ -89,6 +96,14 @@
 		 */
 		Structure.prototype.getName = function () {
 			return this.name;
+		}
+		
+		/**
+		 * Gets the decorate element.
+		 * @returns {String}
+		 */
+		Structure.prototype.getDecorate = function () {
+			return this.decorate;
 		}
 		
 		service.Structure = Structure;

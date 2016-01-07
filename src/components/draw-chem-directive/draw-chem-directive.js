@@ -12,6 +12,11 @@
 				showEditor: "="
 			},
 			link: function (scope, element, attrs) {
+				
+				var downAtomCoords,
+					mouseDown = false,
+					downOnAtom = false;
+				
 				/**
 				 * Sets width and height of the dialog box based on corresponding attributes.
 				 */
@@ -83,29 +88,38 @@
 				 * 
 				 */
 				scope.doOnMouseDown = function ($event) {
-					var clickCoords = innerCoords($event); // coordinates of the mouse click
+					var clickCoords = innerCoords($event);						
+					mouseDown = true;
+					if (DrawChem.getContent() !== "") {
+						downAtomCoords = DrawChemShapes.isWithin(scope.currentStructure, clickCoords);
+						downOnAtom = true;
+					}
 				}
 				
 				/**
 				 *
 				 */
-				scope.doOnMouseUp = function ($event) {					
+				scope.doOnMouseUp = function ($event) {				
 					var clickCoords = innerCoords($event), // coordinates of the mouse click
 						drawn = "";
 					modifyCurrentStructure();
-					drawn = DrawChemShapes.draw(
-						scope.currentStructure.getDefault().getStructure(), "cmpd1", scope.currentStructure.decorate
-					).generate();
+					drawn = DrawChemShapes.draw(scope.currentStructure, "cmpd1").generate();
 					DrawChem.setContent(drawn);
+					resetMouseFlags();
 					
 					function modifyCurrentStructure() {
 						if (DrawChem.getContent() !== "") {
 							// if the content is not empty, then modify current structure
-							DrawChemShapes.modifyStructure(scope.currentStructure.getDefault(), angular.copy(scope.chosenStructure), clickCoords);
+							DrawChemShapes.modifyStructure(
+								scope.currentStructure,
+								angular.copy(scope.chosenStructure),
+								clickCoords,
+								downAtomCoords
+							);
 						} else {
-							// if the content is empty, then copy the chosen structure and assign it as current structure
-							scope.currentStructure = angular.copy(scope.chosenStructure);
-							scope.currentStructure.getDefault().getStructure(0).setCoords(clickCoords);
+							// if the content is empty, then copy the chosen structure and assign it as a current structure
+							scope.currentStructure = angular.copy(scope.chosenStructure).getDefault();
+							scope.currentStructure.setOrigin(clickCoords);
 						}
 					}
 				}
@@ -114,7 +128,7 @@
 				 *
 				 */
 				scope.doOnMouseMove = function ($event) {
-					
+									
 				}
 				
 				function innerCoords($event) {
@@ -125,6 +139,12 @@
 							parseFloat(($event.clientY - content.getBoundingClientRect().top - 2).toFixed(2))
 						]
 					return coords;
+				}
+				
+				function resetMouseFlags() {
+					mouseDown = false;
+					downOnAtom = false;
+					downAtomCoords = undefined;
 				}
 			}
 		}

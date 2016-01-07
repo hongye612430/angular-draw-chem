@@ -1,13 +1,14 @@
 describe("DrawChemShapes service tests", function () {
 	beforeEach(module("mmAngularDrawChem"));
 	
-	var DrawChemShapes, DrawChemStructures, DrawChemConst, Atom;
+	var DrawChemShapes, DrawChemStructures, DrawChemConst, Atom, Structure;
 	
-	beforeEach(inject(function (_DrawChemShapes_, _DrawChemStructures_, _DrawChemConst_, _DCAtom_) {
+	beforeEach(inject(function (_DrawChemShapes_, _DrawChemStructures_, _DrawChemConst_, _DCAtom_, _DCStructure_) {
 		Atom = _DCAtom_.Atom;
 		DrawChemShapes = _DrawChemShapes_;
 		DrawChemConst = _DrawChemConst_;
 		DrawChemStructures = _DrawChemStructures_;
+		Structure = _DCStructure_.Structure;
 		BOND_N = DrawChemConst.BOND_N,
 		BOND_S = DrawChemConst.BOND_S,
 		BOND_W = DrawChemConst.BOND_W,
@@ -19,7 +20,7 @@ describe("DrawChemShapes service tests", function () {
 	}));
 	
 	it("should draw an object based on the input", function () {
-		var input = [
+		var input = new Structure("test", [
 			new Atom([10, 10], [
 				new Atom([15, 15], [
 					new Atom([20, 20], [
@@ -31,7 +32,8 @@ describe("DrawChemShapes service tests", function () {
 				new Atom([-5, 16], []),
 				new Atom([4, 2], [])
 			])
-		];
+		]);
+		input.setOrigin([10, 10]);
 		expect(DrawChemShapes.draw(input, "cmpd1").generate()).toEqual(
 			"<svg>" +
 				"<g id='cmpd1' >" +

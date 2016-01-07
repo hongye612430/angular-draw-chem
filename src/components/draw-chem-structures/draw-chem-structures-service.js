@@ -26,7 +26,6 @@
 				getDefault: function () {
 					return this.defs[0];
 				},
-				decorate: "aromatic",
 				defs: [
 					new DCStructure.Structure(
 						"N",
@@ -42,7 +41,8 @@
 									], "", "SE")
 								], "", "NE")
 							], "", "N")					
-						]
+						],
+						"aromatic"
 					)
 				]
 			}

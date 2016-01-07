@@ -19,6 +19,11 @@
 				showEditor: "="
 			},
 			link: function (scope, element, attrs) {
+				
+				var downAtomCoords,
+					mouseDown = false,
+					downOnAtom = false;
+				
 				/**
 				 * Sets width and height of the dialog box based on corresponding attributes.
 				 */
@@ -90,29 +95,38 @@
 				 * 
 				 */
 				scope.doOnMouseDown = function ($event) {
-					var clickCoords = innerCoords($event); // coordinates of the mouse click
+					var clickCoords = innerCoords($event);						
+					mouseDown = true;
+					if (DrawChem.getContent() !== "") {
+						downAtomCoords = DrawChemShapes.isWithin(scope.currentStructure, clickCoords);
+						downOnAtom = true;
+					}
 				}
 				
 				/**
 				 *
 				 */
-				scope.doOnMouseUp = function ($event) {					
+				scope.doOnMouseUp = function ($event) {				
 					var clickCoords = innerCoords($event), // coordinates of the mouse click
 						drawn = "";
 					modifyCurrentStructure();
-					drawn = DrawChemShapes.draw(
-						scope.currentStructure.getDefault().getStructure(), "cmpd1", scope.currentStructure.decorate
-					).generate();
+					drawn = DrawChemShapes.draw(scope.currentStructure, "cmpd1").generate();
 					DrawChem.setContent(drawn);
+					resetMouseFlags();
 					
 					function modifyCurrentStructure() {
 						if (DrawChem.getContent() !== "") {
 							// if the content is not empty, then modify current structure
-							DrawChemShapes.modifyStructure(scope.currentStructure.getDefault(), angular.copy(scope.chosenStructure), clickCoords);
+							DrawChemShapes.modifyStructure(
+								scope.currentStructure,
+								angular.copy(scope.chosenStructure),
+								clickCoords,
+								downAtomCoords
+							);
 						} else {
-							// if the content is empty, then copy the chosen structure and assign it as current structure
-							scope.currentStructure = angular.copy(scope.chosenStructure);
-							scope.currentStructure.getDefault().getStructure(0).setCoords(clickCoords);
+							// if the content is empty, then copy the chosen structure and assign it as a current structure
+							scope.currentStructure = angular.copy(scope.chosenStructure).getDefault();
+							scope.currentStructure.setOrigin(clickCoords);
 						}
 					}
 				}
@@ -121,7 +135,7 @@
 				 *
 				 */
 				scope.doOnMouseMove = function ($event) {
-					
+									
 				}
 				
 				function innerCoords($event) {
@@ -132,6 +146,12 @@
 							parseFloat(($event.clientY - content.getBoundingClientRect().top - 2).toFixed(2))
 						]
 					return coords;
+				}
+				
+				function resetMouseFlags() {
+					mouseDown = false;
+					downOnAtom = false;
+					downAtomCoords = undefined;
 				}
 			}
 		}
@@ -410,20 +430,21 @@
 		/**
 		* Creates a new Structure.
 		* @class
-		* @param {string} name - name of the structure
+		* @param {String} name - name of the structure
 		* @param {Atom[]} structure - an array of atoms
 		*/
-		function Structure(name, structure) {
+		function Structure(name, structure, decorate) {
 			this.name = name;			
 			this.structure = structure;
 			this.transform = [];
 			this.origin = [];
+			this.decorate = decorate;
 		}		
 		
 		/**
 		 * Sets the specified transform (translate, scale, etc.)
-		 * @param {string} name - a name of the transform
-		 * @param {number[]} content - an array with the coordinates
+		 * @param {String} name - a name of the transform
+		 * @param {Number[]} content - an array with the coordinates
 		 */
 		Structure.prototype.setTransform = function (name, content) {
 			this.transform.push(
@@ -436,7 +457,7 @@
 		
 		/**
 		 * Gets the specified transform.
-		 * @returns {number[]}
+		 * @returns {Number[]}
 		 */
 		Structure.prototype.getTransform = function (name) {
 			var i, transform = this.transform;
@@ -449,7 +470,7 @@
 		
 		/**
 		 * Sets coordinates of the first atom.
-		 * @param {number[]} origin - an array with coordinates
+		 * @param {Number[]} origin - an array with coordinates
 		 */
 		Structure.prototype.setOrigin = function (origin) {
 			this.origin = origin;
@@ -457,10 +478,16 @@
 		
 		/**
 		 * Gets the coordinates of the first atom.
-		 * @returns {number[]}
+		 * @returns {Number[]}
 		 */
-		Structure.prototype.getOrigin = function () {
-			return this.origin;
+		Structure.prototype.getOrigin = function (coord) {
+			if (coord === "x") {
+				return this.origin[0];
+			} else if (coord === "y") {
+				return this.origin[1];
+			} else {
+				return this.origin;
+			}
 		}
 		
 		/**
@@ -489,6 +516,14 @@
 		 */
 		Structure.prototype.getName = function () {
 			return this.name;
+		}
+		
+		/**
+		 * Gets the decorate element.
+		 * @returns {String}
+		 */
+		Structure.prototype.getDecorate = function () {
+			return this.decorate;
 		}
 		
 		service.Structure = Structure;
@@ -733,63 +768,137 @@
 		 * Modifies the structure.
 		 * @param {Structure} base - structure to be modified,
 		 * @param {Structure} mod - structure to be added,
-		 * @param {Number[]} mousePos - position of the mouse when 'click' was made
+		 * @param {Number[]} mousePos - position of the mouse when 'mouseup' event occurred
+		 * @param {Number[]|undefined} down - position of the mouse when 'mousedown' event occurred
+		 * @returns {Structure}
 		 */
-		service.modifyStructure = function (base, mod, mousePos) {
+		service.modifyStructure = function (base, mod, mousePos, down) {
 			var modStr,
 				found = false,
-				origin = base.getStructure(0).getCoords();		
+				origin = base.getOrigin();	
 			
-			if (isWithin(origin[0], mousePos[0]) && isWithin(origin[1], mousePos[1])) {
-				modStr = chooseMod(base.getStructure(0));
-				base.getStructure(0).addBonds(modStr);
-				return base;
-			} else {
-				modStructure(base.getStructure(0).getBonds(), origin);
-			}			
+			modStructure(base.getStructure(), origin);
 			
+			/**
+			* Recursively looks for an atom to modify.
+			* @param {Atom[]} base - array of atoms,
+			* @param {Number[]} pos - absolute coordinates of an atom
+			*/
 			function modStructure(struct, pos) {
 				var i, absPos;
 				for(i = 0; i < struct.length; i += 1) {
 					absPos = [struct[i].getCoords("x") + pos[0], struct[i].getCoords("y") + pos[1]];
-					if (isWithin(absPos[0], mousePos[0]) && isWithin(absPos[1], mousePos[1])) {
-						if (!found) {
+					if (!found && isWithin(absPos, mousePos)) {
+						// if 'mouseup' was within a circle around an atom
+						// and if a valid atom has not already been found
 							modStr = chooseMod(struct[i]);
 							struct[i].addBonds(modStr);
 							found = true;
-						}						
-						return base;
-					} else {
-						modStructure(struct[i].getBonds(), absPos);
+							return base;										
 					}
+					
+					if (!found && compareCoords(down, absPos, 5)) {
+						// if 'mousedown' was within a circle around an atom
+						// and if a valid atom has not already been found
+						modStr = chooseDirectionManually(struct[i]);
+						struct[i].addBonds(modStr);
+						found = true;
+						return base;
+					}
+					
+					// if none of the above was true, then continue looking down the structure tree
+					modStructure(struct[i].getBonds(), absPos);					
 				}				
 			}
 			
-			function isWithin(point, click) {
-				var tolerance = DrawChemConst.CIRC_R;
-				return Math.abs(point - click) < tolerance;
+			/**
+			 * Compares coordinates in two arrays. Returns false if at least one of them is undefined or if any pair of the coordinates is inequal.
+			 * Returns true if they are equal.
+			 * @param {Number[]} arr1 - an array of coordinates,
+			 * @param {Number[]} arr2 - an array of coordinates,
+			 * @param {Number} prec - precision,
+			 * @returns {Boolean}
+			 */
+			function compareCoords(arr1, arr2, prec) {				
+				if (typeof arr1 === "undefined" || typeof arr2 === "undefined") {
+					return false;
+				}
+				return arr1[0].toFixed(prec) === arr2[0].toFixed(prec) && arr1[1].toFixed(prec) === arr2[1].toFixed(prec);
 			}
 			
-			function chooseMod(currentAtom) {
-				var i, at;
+			/**
+			 * Lets the user decide in which of the eight directions the next bond is going to be pointing.
+			 * Draws a circle around a chosen atom and divides it into eight equal parts. Checks to which part the coordinates
+			 * associated with the 'mouseup' event belong and chooses the suitable bond.
+			 * @param {Atom} current - currently active Atom object
+			 * @returns {Atom[]}
+			 */
+			function chooseDirectionManually(current) {
+				var alpha = Math.PI / 4,
+					r = Math.sqrt(Math.pow((mousePos[0] - down[0]), 2) + Math.pow((mousePos[1] - down[1]), 2)),
+					x = Math.sin(alpha / 2) * r,
+					y = Math.cos(alpha / 2) * r,
+					output;
+				if (check(-x, x, -r, -y)) {
+					output = "N";
+				} else if (check(x, y, -y, -x)) {
+					output = "NE";
+				} else if (check(y, r, -x, x)) {
+					output = "E";
+				} else if (check(x, y, x, y)) {
+					output = "SE";
+				} else if (check(-x, x, y, r)) {
+					output = "S";
+				} else if (check(-y, -x, x, y)) {
+					output = "SW";
+				} else if (check(-r, -y, -x, x)) {
+					output = "W";
+				} else if (check(-y, -x, -y, -x)) {
+					output = "NW";
+				}
+				
+				return chooseMod(current, output);
+			
+				function check(arg1, arg2, arg3, arg4) {
+					return mousePos[0] > (down[0] + arg1) && mousePos[0] <= (down[0] + arg2) &&
+						mousePos[1] >= (down[1] + arg3) && mousePos[1] <= (down[1] + arg4);
+				}
+				
+			}
+			
+			
+			/**
+			 * Chooses a suitable modification from mod object.
+			 * @param {Atom} current - currently active Atom object
+			 * @param {String|undefined} - outgoing direction (either manually or automatically set)
+			 * @returns {Atom[]}
+			 */
+			function chooseMod(current, output) {
+				var i, at, name, toCompare;			
 				if (mod.defs.length === 1) {
 					return mod.getDefault().getStructure(0).getBonds();
 				} else {
 					for(i = 0; i < mod.defs.length; i += 1) {
 						at = mod.defs[i];
-						if (currentAtom.getNext() === at.getName()) {
-							calcNext(currentAtom, at);
+						name = at.getName();
+						toCompare = output || current.getNext();
+						if (toCompare === name) {							
+							changeNext(current, name);
 							return at.getStructure(0).getBonds();
 						}
 					}
 				}
 			}
 			
-			function calcNext(current, drawn) {
+			/**
+			 * Sets a next bond on an Atom object.
+			 * @param {Atom} current - Atom object to be modified
+			 * @param {String} outBond - direction of the recently added Atom
+			 */
+			function changeNext(current, outBond) {
 				var inX = current.getCoords("x"),
 					inY = current.getCoords("y"),
-					inBond = checkBond(),
-					outBond = drawn.getName();
+					inBond = checkBond();
 				if (inBond === "N" && outBond === "NE") {
 					current.setNext("NW");
 				} else if (inBond === "N" && outBond === "NW") {
@@ -829,18 +938,38 @@
 		
 		/**
 		 * Checks if the mouse pointer is within a circle of an atom.
+		 * @param {Structure} structure - a Structure object on which search is performed
+		 * @param {Number[]} mousePos - set of coordinates against which the search is performed
 		 */
-		service.isWithin = function (structure, point, click) {
-			var tolerance = DrawChemConst.CIRC_R;
-			return Math.abs(point[0] - click[0]) < tolerance && Math.abs(point[1] - click[1]) < tolerance;
+		service.isWithin = function (structure, mousePos) {
+			var found = false,
+				clickedAtomCoords,
+				origin = structure.getOrigin();
+				
+			checkDeeper(structure.getStructure(), origin);
+			
+			return clickedAtomCoords;
+			
+			function checkDeeper(struct, pos) {
+				var i, absPos;
+				for(i = 0; i < struct.length; i += 1) {
+					absPos = [struct[i].getCoords("x") + pos[0], struct[i].getCoords("y") + pos[1]];
+					if (!found && isWithin(absPos, mousePos)) {
+						found = true;
+						clickedAtomCoords = absPos;
+					} else {
+						checkDeeper(struct[i].getBonds(), absPos);
+					}
+				}	
+			}
 		}
 		
 		/**
 		 * Generates the desired output based on given input.
-		 * @param {Atom[]} input - an object containing all information needed to render the shape
-		 * @param {string} id - id of the object to be created (will be used inside 'g' tag and in 'use' tag)
+		 * @param {Structure} input - a Structure object containing all information needed to render the shape
+		 * @param {String} id - id of the object to be created (will be used inside 'g' tag and in 'use' tag)
 		 */
-		service.draw = function (input, id, decorate) {
+		service.draw = function (input, id) {
 			var shape,
 				output = parseInput(input),
 				paths = output.paths,
@@ -858,9 +987,9 @@
 				circles.forEach(function (circle) {
 					result += "<circle class='atom' cx='" + circle[0] + "' cy='" + circle[1] + "' r='" + circle[2] + "' ></circle>";
 				});
-				if (decorate === "aromatic") {
-					result += "<circle class='arom' cx='" + input[0].getCoords("x") +
-						"' cy='" + (input[0].getCoords("y") + DrawChemConst.BOND_LENGTH) +
+				if (input.getDecorate() === "aromatic") {
+					result += "<circle class='arom' cx='" + input.getOrigin("x") +
+						"' cy='" + (input.getOrigin("y") + DrawChemConst.BOND_LENGTH) +
 						"' r='" + DrawChemConst.BOND_LENGTH * 0.45 +
 						"' ></circle>";
 				}
@@ -871,23 +1000,23 @@
 		
 		/**
 		 * Translates the input into an svg-suitable set of coordinates.
-		 * @param {Atom[]} input - an input object
-		 * @returns {string} output as an array of arrays
-		 *					 (each array defines set of coordinates for the 'path' tag,
-		 *					 so it can be regarded as a distinct line)
+		 * @param {Structure} input - an input object
+		 * @returns {Object}
 		 */
 		function parseInput(input) {
 			var output = [], circles = [], circR = DrawChemConst.CIRC_R,
 				// sets the coordinates of the root element
 				// 'M' for 'moveto' - sets pen to the coordinates
-				len = output.push(["M", input[0].getCoords()]);
+				len = output.push(["M", input.getOrigin()]);
 				
 			circles.push([
-				input[0].getCoords("x"),
-				input[0].getCoords("y"),
+				input.getOrigin("x"),
+				input.getOrigin("y"),
 				circR
 			]);
-			connect(input[0].getCoords(), input[0].getBonds(), output[len - 1]);
+			
+			connect(input.getOrigin(), input.getStructure(0).getBonds(), output[len - 1]);
+			
 			return {
 				paths: stringifyPaths(),
 				circles: circles
@@ -938,7 +1067,7 @@
 			/**
 			 * Transforms output into an array of strings.
 			 * Basically, it translates each array of coordinates into its string representation.
-			 * @returns {string[]}
+			 * @returns {String[]}
 			 */
 			function stringifyPaths() {
 				var result = [], i, j, line, point, lineStr;
@@ -959,7 +1088,18 @@
 			}
 		}
 		
-		return service;			
+		return service;
+		
+		/**
+		 * Checks if a point is inside an area delimited by a circle around a centre.
+		 * @param {Number[]} center - coordinates of the center of a circle
+		 * @param {Number[]} point - coordinates of a point to be validated
+		 * @returns {Boolean}
+		 */
+		function isWithin(center, point) {
+			var tolerance = DrawChemConst.CIRC_R;
+			return Math.abs(center[0] - point[0]) < tolerance && Math.abs(center[1] - point[1]) < tolerance;
+		}
 	}
 })();
 (function () {
@@ -990,7 +1130,6 @@
 				getDefault: function () {
 					return this.defs[0];
 				},
-				decorate: "aromatic",
 				defs: [
 					new DCStructure.Structure(
 						"N",
@@ -1006,7 +1145,8 @@
 									], "", "SE")
 								], "", "NE")
 							], "", "N")					
-						]
+						],
+						"aromatic"
 					)
 				]
 			}

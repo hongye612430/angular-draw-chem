@@ -60,7 +60,8 @@ describe("DrawChemEditor directive tests", function () {
 			clientX: 2,
 			clientY: 2
 		});
-		expect(element.isolateScope().currentStructure.getDefault()).toEqual(custom.getDefault());	
+		custom.getDefault().setOrigin([0, 0]);
+		expect(element.isolateScope().currentStructure).toEqual(custom.getDefault());	
 	});
 	
 	it("should set the content after clicking on the 'transfer' button", function () {
