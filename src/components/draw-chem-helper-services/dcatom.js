@@ -24,6 +24,35 @@
 			this.calculateNext();
 		}
 		
+		Atom.getOppositeBond = function (bond) {
+			switch (bond) {
+				case "N":
+					return "S";
+				case "NE1":
+					return "SW1";
+				case "NE2":
+					return "SW2";
+				case "E":
+					return "W";
+				case "SE1":
+					return "NW1";
+				case "SE2":
+					return "NW2";
+				case "S":
+					return "N";
+				case "SW1":
+					return "NE1";
+				case "SW2":
+					return "NE2";
+				case "W":
+					return "E";
+				case "NW1":
+					return "SE1";
+				case "NW2":
+					return "SE2";					
+			}
+		}
+		
 		Atom.prototype.attachBond = function (bond) {
 			this.attachedBonds.push(bond);
 		};

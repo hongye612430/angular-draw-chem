@@ -3,11 +3,11 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemShapes", DrawChemShapes);
 		
-	DrawChemShapes.$inject = ["DCShape", "DrawChemConst"];
+	DrawChemShapes.$inject = ["DCShape", "DrawChemConst", "DCAtom"];
 	
-	function DrawChemShapes(DCShape, DrawChemConst) {
+	function DrawChemShapes(DCShape, DrawChemConst, DCAtom) {
 		
-		var service = {};
+		var service = {}, Atom = DCAtom.Atom;
 		
 		/**
 		 * Modifies the structure.
@@ -35,13 +35,11 @@
 				var i, absPos;
 				for(i = 0; i < struct.length; i += 1) {
 					absPos = [struct[i].getCoords("x") + pos[0], struct[i].getCoords("y") + pos[1]];
-					if (!found && isWithin(absPos, mousePos)) {
+					if (!found && insideCircle(absPos, mousePos)) {
 						// if 'mouseup' was within a circle around an atom
 						// and if a valid atom has not already been found
-							modStr = chooseMod(struct[i]);							
-							if (modStr !== null) {
-								struct[i].addBonds(modStr);
-							}
+							modStr = chooseMod(struct[i]);
+							updateBonds(struct[i], modStr, absPos);							
 							found = true;
 							return base;										
 					}
@@ -50,16 +48,46 @@
 						// if 'mousedown' was within a circle around an atom
 						// and if a valid atom has not already been found
 						modStr = chooseDirectionManually(struct[i]);
-						if (modStr !== null) {
-							struct[i].addBonds(modStr);
-						}
+						updateBonds(struct[i], modStr, absPos);
 						found = true;
 						return base;
 					}
 					
 					// if none of the above was true, then continue looking down the structure tree
 					modStructure(struct[i].getBonds(), absPos);					
-				}				
+				}
+				
+				/**
+				 * Updates bonds array in an Atom object.
+				 * @param {Atom} atom - an Atom object to update
+				 * @param {Atom[]} modStr - an array of Atom objects to attach
+				 * @param {Number[]} absPos - absolute position of the atom to update
+				 */
+				function updateBonds(atom, modStr, absPos) {
+					if (modStr !== null) {
+						modifyExisting(modStr, absPos);
+						atom.addBonds(modStr.getStructure(0).getBonds());
+					}
+				}
+				
+				/**
+				 * Checks if an atom already exists. If it does, that atoms attachedBonds array is updated.
+				 * @param {Atom[]} modStr - an array of Atom objects
+				 * @param {Number[]} absPos - absolute position of the atom to update
+				 */
+				function modifyExisting(modStr, absPos) {					
+					var i, newAbsPos, atom, newName,
+						struct = modStr.getStructure(0).getBonds();
+					for(i = 0; i < struct.length; i += 1) {
+						newAbsPos = [struct[i].getCoords("x") + absPos[0], struct[i].getCoords("y") + absPos[1]];
+						atom = service.isWithin(base, newAbsPos).foundAtom;
+						if (typeof atom !== "undefined") {
+							newName = Atom.getOppositeBond(modStr.getName());
+							atom.attachBond(newName);
+							return atom.calculateNext();
+						}
+					}
+				}
 			}
 			
 			/**
@@ -148,7 +176,7 @@
 						if (toCompare === name) {
 							current.attachBond(name);
 							current.calculateNext();
-							return at.getStructure(0).getBonds();
+							return at;
 						}
 					}
 				}
@@ -156,26 +184,28 @@
 		}
 		
 		/**
-		 * Checks if the mouse pointer is within a circle of an atom.
+		 * Checks if the mouse pointer is within a circle of an atom. If the atom is found, a function is called on it (if supplied).
 		 * @param {Structure} structure - a Structure object on which search is performed
 		 * @param {Number[]} position - set of coordinates against which the search is performed
+		 * @returns {Atom}
 		 */
 		service.isWithin = function (structure, position) {
 			var found = false,
-				foundAtomCoords,
+				foundObj = {},
 				origin = structure.getOrigin();
 				
 			checkDeeper(structure.getStructure(), origin);
 			
-			return foundAtomCoords;
+			return foundObj;
 			
 			function checkDeeper(struct, pos) {
 				var i, absPos;
 				for(i = 0; i < struct.length; i += 1) {
 					absPos = [struct[i].getCoords("x") + pos[0], struct[i].getCoords("y") + pos[1]];
-					if (!found && isWithin(absPos, position)) {
+					if (!found && insideCircle(absPos, position)) {
 						found = true;
-						foundAtomCoords = absPos;
+						foundObj.foundAtom = struct[i];
+						foundObj.absPos = absPos;
 					} else {
 						checkDeeper(struct[i].getBonds(), absPos);
 					}
@@ -310,12 +340,12 @@
 		return service;
 		
 		/**
-		 * Checks if a point is inside an area delimited by a circle around a centre.
+		 * Checks if a point is inside an area delimited by a circle.
 		 * @param {Number[]} center - coordinates of the center of a circle
 		 * @param {Number[]} point - coordinates of a point to be validated
 		 * @returns {Boolean}
 		 */
-		function isWithin(center, point) {
+		function insideCircle(center, point) {
 			var tolerance = DrawChemConst.CIRC_R;
 			return Math.abs(center[0] - point[0]) < tolerance && Math.abs(center[1] - point[1]) < tolerance;
 		}

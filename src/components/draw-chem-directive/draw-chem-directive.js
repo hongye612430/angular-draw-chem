@@ -91,8 +91,8 @@
 					var clickCoords = innerCoords($event);						
 					mouseDown = true;
 					if (DrawChem.getContent() !== "") {
-						downAtomCoords = DrawChemShapes.isWithin(scope.currentStructure, clickCoords);
-						downOnAtom = true;						
+						downAtomCoords = DrawChemShapes.isWithin(scope.currentStructure, clickCoords).absPos;
+						downOnAtom = true;
 					}
 				}
 				
