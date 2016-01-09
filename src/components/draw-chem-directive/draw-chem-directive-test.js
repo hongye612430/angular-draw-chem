@@ -332,7 +332,7 @@ describe("DrawChemEditor directive tests", function () {
 								"}" +
 							"</style>" +
 							"<path d=\"M 98 98 L 115.32 108 L 115.32 128 L 98 138 L 80.68 128 L 80.68 108 Z \"></path>" +
-							"<path d=\"M 98 98 L 98 78 L 115.32 68 \"></path>" +
+							"<path d=\"M 98 98 L 98 78 L 80.68 68 \"></path>" +
 							"<circle class=\"atom\" cx=\"98\" cy=\"98\" r=\"2.4\"></circle>" +
 							"<circle class=\"atom\" cx=\"115.32\" cy=\"108\" r=\"2.4\"></circle>" +
 							"<circle class=\"atom\" cx=\"115.32\" cy=\"128\" r=\"2.4\"></circle>" +
@@ -340,7 +340,7 @@ describe("DrawChemEditor directive tests", function () {
 							"<circle class=\"atom\" cx=\"80.68\" cy=\"128\" r=\"2.4\"></circle>" +
 							"<circle class=\"atom\" cx=\"80.68\" cy=\"108\" r=\"2.4\"></circle>" +
 							"<circle class=\"atom\" cx=\"98\" cy=\"78\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"115.32\" cy=\"68\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"68\" r=\"2.4\"></circle>" +
 							"<circle class=\"arom\" cx=\"98\" cy=\"118\" r=\"9\"></circle>" +
 						"</g>" +
 				"</svg>"
@@ -375,8 +375,8 @@ describe("DrawChemEditor directive tests", function () {
 								"}" +
 							"</style>" +
 							"<path d=\"M 98 98 L 115.32 108 L 115.32 128 L 98 138 L 80.68 128 L 80.68 108 Z \"></path>" +
-							"<path d=\"M 98 98 L 98 78 L 115.32 68 \"></path>" +
-							"<path d=\"M 98 78 L 80.68 68 \"></path>" +
+							"<path d=\"M 98 98 L 98 78 L 80.68 68 \"></path>" +
+							"<path d=\"M 98 78 L 115.32 68 \"></path>" +
 							"<circle class=\"atom\" cx=\"98\" cy=\"98\" r=\"2.4\"></circle>" +
 							"<circle class=\"atom\" cx=\"115.32\" cy=\"108\" r=\"2.4\"></circle>" +
 							"<circle class=\"atom\" cx=\"115.32\" cy=\"128\" r=\"2.4\"></circle>" +
@@ -384,8 +384,8 @@ describe("DrawChemEditor directive tests", function () {
 							"<circle class=\"atom\" cx=\"80.68\" cy=\"128\" r=\"2.4\"></circle>" +
 							"<circle class=\"atom\" cx=\"80.68\" cy=\"108\" r=\"2.4\"></circle>" +
 							"<circle class=\"atom\" cx=\"98\" cy=\"78\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"115.32\" cy=\"68\" r=\"2.4\"></circle>" +
 							"<circle class=\"atom\" cx=\"80.68\" cy=\"68\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"68\" r=\"2.4\"></circle>" +
 							"<circle class=\"arom\" cx=\"98\" cy=\"118\" r=\"9\"></circle>" +
 						"</g>" +
 				"</svg>"

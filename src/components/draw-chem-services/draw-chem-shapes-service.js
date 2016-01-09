@@ -38,8 +38,10 @@
 					if (!found && isWithin(absPos, mousePos)) {
 						// if 'mouseup' was within a circle around an atom
 						// and if a valid atom has not already been found
-							modStr = chooseMod(struct[i]);
-							struct[i].addBonds(modStr);
+							modStr = chooseMod(struct[i]);							
+							if (modStr !== null) {
+								struct[i].addBonds(modStr);
+							}
 							found = true;
 							return base;										
 					}
@@ -48,7 +50,9 @@
 						// if 'mousedown' was within a circle around an atom
 						// and if a valid atom has not already been found
 						modStr = chooseDirectionManually(struct[i]);
-						struct[i].addBonds(modStr);
+						if (modStr !== null) {
+							struct[i].addBonds(modStr);
+						}
 						found = true;
 						return base;
 					}
@@ -81,27 +85,37 @@
 			 * @returns {Atom[]}
 			 */
 			function chooseDirectionManually(current) {
-				var alpha = Math.PI / 4,
+				var alpha = Math.PI / 6,
 					r = Math.sqrt(Math.pow((mousePos[0] - down[0]), 2) + Math.pow((mousePos[1] - down[1]), 2)),
 					x = Math.sin(alpha / 2) * r,
+					x1 = Math.cos(3 * alpha / 2) * r,
 					y = Math.cos(alpha / 2) * r,
+					y1 = Math.sin(3 * alpha / 2) * r,
 					output;
 				if (check(-x, x, -r, -y)) {
 					output = "N";
-				} else if (check(x, y, -y, -x)) {
-					output = "NE";
+				} else if (check(x, x1, -y, -y1)) {
+					output = "NE1";
+				} else if (check(x1, y, -y1, -x)) {
+					output = "NE2";
 				} else if (check(y, r, -x, x)) {
 					output = "E";
-				} else if (check(x, y, x, y)) {
-					output = "SE";
+				} else if (check(x1, y, x, y1)) {
+					output = "SE1";
+				} else if (check(x, x1, y1, y)) {
+					output = "SE2";
 				} else if (check(-x, x, y, r)) {
 					output = "S";
-				} else if (check(-y, -x, x, y)) {
-					output = "SW";
+				} else if (check(-x1, -x, y1, y)) {
+					output = "SW1";
+				} else if (check(-y, -x1, x, y1)) {
+					output = "SW2";
 				} else if (check(-r, -y, -x, x)) {
 					output = "W";
-				} else if (check(-y, -x, -y, -x)) {
-					output = "NW";
+				} else if (check(-y, -x1, -y1, -x)) {
+					output = "NW1";
+				} else if (check(-x1, -x, -y, -y1)) {
+					output = "NW2";
 				}
 				
 				return chooseMod(current, output);
@@ -119,89 +133,49 @@
 			 * @returns {Atom[]}
 			 */
 			function chooseMod(current, output) {
-				var i, at, name, toCompare;			
+				var i, at, name, toCompare, next;
 				if (mod.defs.length === 1) {
 					return mod.getDefault().getStructure(0).getBonds();
 				} else {
 					for(i = 0; i < mod.defs.length; i += 1) {
 						at = mod.defs[i];
+						next = current.getNext();
+						if (next === "max") {
+							return null;
+						}
 						name = at.getName();
-						toCompare = output || current.getNext();
-						if (toCompare === name) {							
-							changeNext(current, name);
+						toCompare = output || next;
+						if (toCompare === name) {
+							current.attachBond(name);
+							current.calculateNext();
 							return at.getStructure(0).getBonds();
 						}
 					}
 				}
 			}
-			
-			/**
-			 * Sets a next bond on an Atom object.
-			 * @param {Atom} current - Atom object to be modified
-			 * @param {String} outBond - direction of the recently added Atom
-			 */
-			function changeNext(current, outBond) {
-				var inX = current.getCoords("x"),
-					inY = current.getCoords("y"),
-					inBond = checkBond();
-				if (inBond === "N" && outBond === "NE") {
-					current.setNext("NW");
-				} else if (inBond === "N" && outBond === "NW") {
-					current.setNext("NE");
-				} else if (inBond === "S" && outBond === "SE") {
-					current.setNext("SW");
-				} else if (inBond === "S" && outBond === "SW") {
-					current.setNext("SE");
-				} else if (inBond === "SW" && outBond === "S") {
-					current.setNext("NW");
-				} else if (inBond === "SW" && outBond === "NW") {
-					current.setNext("S");
-				} else if (inBond === "SE" && outBond === "S") {
-					current.setNext("NE");
-				} else if (inBond === "SE" && outBond === "NE") {
-					current.setNext("S");
-				} else if (inBond === "NW" && outBond === "SW") {
-					current.setNext("N");
-				} else if (inBond === "NW" && outBond === "N") {
-					current.setNext("SW");
-				} else if (inBond === "NE" && outBond === "N") {
-					current.setNext("SE");
-				} else if (inBond === "NE" && outBond === "SE") {
-					current.setNext("N");
-				} 
-				
-				function checkBond() {
-					var i, bonds = DrawChemConst.BONDS;
-					for(i = 0; i < bonds.length; i += 1) {
-						if (bonds[i].bond[0] === inX && bonds[i].bond[1] === inY) {
-							return bonds[i].direction;
-						}
-					}
-				}
-			}
-		};
+		}
 		
 		/**
 		 * Checks if the mouse pointer is within a circle of an atom.
 		 * @param {Structure} structure - a Structure object on which search is performed
-		 * @param {Number[]} mousePos - set of coordinates against which the search is performed
+		 * @param {Number[]} position - set of coordinates against which the search is performed
 		 */
-		service.isWithin = function (structure, mousePos) {
+		service.isWithin = function (structure, position) {
 			var found = false,
-				clickedAtomCoords,
+				foundAtomCoords,
 				origin = structure.getOrigin();
 				
 			checkDeeper(structure.getStructure(), origin);
 			
-			return clickedAtomCoords;
+			return foundAtomCoords;
 			
 			function checkDeeper(struct, pos) {
 				var i, absPos;
 				for(i = 0; i < struct.length; i += 1) {
 					absPos = [struct[i].getCoords("x") + pos[0], struct[i].getCoords("y") + pos[1]];
-					if (!found && isWithin(absPos, mousePos)) {
+					if (!found && isWithin(absPos, position)) {
 						found = true;
-						clickedAtomCoords = absPos;
+						foundAtomCoords = absPos;
 					} else {
 						checkDeeper(struct[i].getBonds(), absPos);
 					}

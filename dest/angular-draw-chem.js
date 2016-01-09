@@ -188,8 +188,10 @@
 	"use strict";
 	angular.module("mmAngularDrawChem")
 		.factory("DCAtom", DCAtom);
+		
+	DCAtom.$inject = ["DrawChemConst"];
 	
-	function DCAtom() {
+	function DCAtom(DrawChemConst) {
 		
 		var service = {};
 		
@@ -199,12 +201,109 @@
 		* @param {Number[]} - an array with coordinates of the atom
 		* @param {Atom[]} - an array of atoms this atom is connected with
 		*/
-		function Atom(coords, bonds, info, next) {
+		function Atom(coords, bonds, info, attachedBonds) {
 			this.coords = coords;	
 			this.bonds = bonds;
 			this.info = info;
-			this.next = next;
+			this.attachedBonds = attachedBonds || [];
+			this.next = "";
+			this.calculateNext();
 		}
+		
+		Atom.prototype.attachBond = function (bond) {
+			this.attachedBonds.push(bond);
+		};
+		
+		/**
+		 * Calculates direction of the bond that should be attached next.
+		 */
+		Atom.prototype.calculateNext = function () {
+			if (this.attachedBonds.length === 1) {
+				this.next = checkIfLenOne.call(this);
+			} else if (this.attachedBonds.length === 2) {
+				this.next = checkIfLenTwo.call(this);
+			} else if (this.attachedBonds.length > 2 && this.attachedBonds.length < 12) {
+				this.next = check.call(this);
+			} else if (this.attachedBonds.length >= 12) {
+				this.next = "max";
+			} else {
+				this.next = "";
+			}
+			
+			function checkIfLenOne() {
+				var str = this.attachedBonds[0];
+				switch (str) {
+					case "N":
+						return "SE1";
+					case "NE1":
+						return "SE2";
+					case "NE2":
+						return "S";
+					case "E":
+						return "SW1";
+					case "SE1":
+						return "SW2";
+					case "SE2":
+						return "W";
+					case "S":
+						return "NW1";
+					case "SW1":
+						return "NW2";
+					case "SW2":
+						return "N";
+					case "W":
+						return "NE1";
+					case "NW1":
+						return "NE2";
+					case "NW2":
+						return "E";					
+				}
+			}
+			
+			function checkIfLenTwo() {
+				if (contains.call(this, "N", "SE1")) {
+					return "SW2";
+				} else if (contains.call(this, "NE1", "SE2")) {
+					return "W";
+				} else if (contains.call(this, "NE2", "S")) {
+					return "NW1";
+				} else if (contains.call(this, "E", "SW1")) {
+					return "NW2";
+				} else if (contains.call(this, "SE1", "SW2")) {
+					return "N";
+				} else if (contains.call(this, "SE2", "W")) {
+					return "NE1";
+				} else if (contains.call(this, "S", "NW1")) {
+					return "NE2";
+				} else if (contains.call(this, "SW1", "NW2")) {
+					return "E";
+				} else if (contains.call(this, "SW2", "N")) {
+					return "SE1";
+				} else if (contains.call(this, "W", "NE1")) {
+					return "SE2";
+				} else if (contains.call(this, "NW1", "NE2")) {
+					return "S";
+				} else if (contains.call(this, "NW2", "E")) {
+					return "SW1";
+				} else {
+					check.call(this);
+				}
+				
+				function contains(d1, d2) {
+					return (this.attachedBonds[0] === d1 && this.attachedBonds[1] === d2) ||
+						(this.attachedBonds[0] === d2 && this.attachedBonds[1] === d1);
+				}
+			}
+			
+			function check() {
+				var i, bonds = DrawChemConst.BONDS;
+				for(i = 0; i < bonds.length; i += 1) {
+					if (this.attachedBonds.indexOf(bonds[i].direction) < 0) {
+						return bonds[i].direction;
+					}
+				}
+			}
+		};
 		
 		/**
 		 * Sets coordinates of the atom.
@@ -220,6 +319,14 @@
 		 */
 		Atom.prototype.getInfo = function () {
 			return this.info;
+		}
+		
+		/**
+		 * Gets attached bonds.
+		 * @returns {String[]}
+		 */
+		Atom.prototype.getAttachedBonds = function () {
+			return this.attachedBonds;
 		}
 		
 		/**
@@ -633,24 +740,36 @@
 			service.BOND_E = [parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2)), 0];
 			// bond in west direction
 			service.BOND_W = [-parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2)), 0];
-			// bond in north-east direction
-			service.BOND_NE = [parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2)), -service.BOND_LENGTH / 2];
-			// bond in north-west direction
-			service.BOND_NW = [-parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2)), -service.BOND_LENGTH / 2];
-			// bond in south-east direction
-			service.BOND_SE = [parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2)), service.BOND_LENGTH / 2];
-			// bond in south-west direction
-			service.BOND_SW = [-parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2)), service.BOND_LENGTH / 2];		
+			// bond in north-east direction (first clock-wise)
+			service.BOND_NE1 = [service.BOND_LENGTH / 2, -parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2))],
+			// bond in north-east direction (second clock-wise)
+			service.BOND_NE2 = [parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2)), -service.BOND_LENGTH / 2];
+			// bond in south-east direction (first clock-wise)
+			service.BOND_SE1 = [parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2)), service.BOND_LENGTH / 2],
+			// bond in south-east direction (second clock-wise)
+			service.BOND_SE2 = [service.BOND_LENGTH / 2, parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2))];
+			// bond in south-west direction (first clock-wise)
+			service.BOND_SW1 = [-service.BOND_LENGTH / 2, parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2))];
+			// bond in south-west direction (second clock-wise)
+			service.BOND_SW2 = [-parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2)), service.BOND_LENGTH / 2];
+			// bond in north-west direction (first clock-wise)
+			service.BOND_NW1 = [-parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2)), -service.BOND_LENGTH / 2];
+			// bond in north-west direction (second clock-wise)	
+			service.BOND_NW2 = [-service.BOND_LENGTH / 2, -parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2))];					
 			// bonds as array
 			service.BONDS = [
 				{ direction: "N", bond: service.BOND_N },
 				{ direction: "S", bond: service.BOND_S },
 				{ direction: "E", bond: service.BOND_E },
 				{ direction: "W", bond: service.BOND_W },
-				{ direction: "NE", bond: service.BOND_NE },
-				{ direction: "NW", bond: service.BOND_NW },
-				{ direction: "SE", bond: service.BOND_SE },
-				{ direction: "SW", bond: service.BOND_SW },
+				{ direction: "NE1", bond: service.BOND_NE1 },
+				{ direction: "NE2", bond: service.BOND_NE2 },
+				{ direction: "NW1", bond: service.BOND_NW1 },
+				{ direction: "NW2", bond: service.BOND_NW2 },
+				{ direction: "SE1", bond: service.BOND_SE1 },
+				{ direction: "SE2", bond: service.BOND_SE2 },
+				{ direction: "SW1", bond: service.BOND_SW1 },
+				{ direction: "SW2", bond: service.BOND_SW2 }
 			];	
 		}		
 		
@@ -854,8 +973,10 @@
 					if (!found && isWithin(absPos, mousePos)) {
 						// if 'mouseup' was within a circle around an atom
 						// and if a valid atom has not already been found
-							modStr = chooseMod(struct[i]);
-							struct[i].addBonds(modStr);
+							modStr = chooseMod(struct[i]);							
+							if (modStr !== null) {
+								struct[i].addBonds(modStr);
+							}
 							found = true;
 							return base;										
 					}
@@ -864,7 +985,9 @@
 						// if 'mousedown' was within a circle around an atom
 						// and if a valid atom has not already been found
 						modStr = chooseDirectionManually(struct[i]);
-						struct[i].addBonds(modStr);
+						if (modStr !== null) {
+							struct[i].addBonds(modStr);
+						}
 						found = true;
 						return base;
 					}
@@ -897,27 +1020,37 @@
 			 * @returns {Atom[]}
 			 */
 			function chooseDirectionManually(current) {
-				var alpha = Math.PI / 4,
+				var alpha = Math.PI / 6,
 					r = Math.sqrt(Math.pow((mousePos[0] - down[0]), 2) + Math.pow((mousePos[1] - down[1]), 2)),
 					x = Math.sin(alpha / 2) * r,
+					x1 = Math.cos(3 * alpha / 2) * r,
 					y = Math.cos(alpha / 2) * r,
+					y1 = Math.sin(3 * alpha / 2) * r,
 					output;
 				if (check(-x, x, -r, -y)) {
 					output = "N";
-				} else if (check(x, y, -y, -x)) {
-					output = "NE";
+				} else if (check(x, x1, -y, -y1)) {
+					output = "NE1";
+				} else if (check(x1, y, -y1, -x)) {
+					output = "NE2";
 				} else if (check(y, r, -x, x)) {
 					output = "E";
-				} else if (check(x, y, x, y)) {
-					output = "SE";
+				} else if (check(x1, y, x, y1)) {
+					output = "SE1";
+				} else if (check(x, x1, y1, y)) {
+					output = "SE2";
 				} else if (check(-x, x, y, r)) {
 					output = "S";
-				} else if (check(-y, -x, x, y)) {
-					output = "SW";
+				} else if (check(-x1, -x, y1, y)) {
+					output = "SW1";
+				} else if (check(-y, -x1, x, y1)) {
+					output = "SW2";
 				} else if (check(-r, -y, -x, x)) {
 					output = "W";
-				} else if (check(-y, -x, -y, -x)) {
-					output = "NW";
+				} else if (check(-y, -x1, -y1, -x)) {
+					output = "NW1";
+				} else if (check(-x1, -x, -y, -y1)) {
+					output = "NW2";
 				}
 				
 				return chooseMod(current, output);
@@ -935,89 +1068,49 @@
 			 * @returns {Atom[]}
 			 */
 			function chooseMod(current, output) {
-				var i, at, name, toCompare;			
+				var i, at, name, toCompare, next;
 				if (mod.defs.length === 1) {
 					return mod.getDefault().getStructure(0).getBonds();
 				} else {
 					for(i = 0; i < mod.defs.length; i += 1) {
 						at = mod.defs[i];
+						next = current.getNext();
+						if (next === "max") {
+							return null;
+						}
 						name = at.getName();
-						toCompare = output || current.getNext();
-						if (toCompare === name) {							
-							changeNext(current, name);
+						toCompare = output || next;
+						if (toCompare === name) {
+							current.attachBond(name);
+							current.calculateNext();
 							return at.getStructure(0).getBonds();
 						}
 					}
 				}
 			}
-			
-			/**
-			 * Sets a next bond on an Atom object.
-			 * @param {Atom} current - Atom object to be modified
-			 * @param {String} outBond - direction of the recently added Atom
-			 */
-			function changeNext(current, outBond) {
-				var inX = current.getCoords("x"),
-					inY = current.getCoords("y"),
-					inBond = checkBond();
-				if (inBond === "N" && outBond === "NE") {
-					current.setNext("NW");
-				} else if (inBond === "N" && outBond === "NW") {
-					current.setNext("NE");
-				} else if (inBond === "S" && outBond === "SE") {
-					current.setNext("SW");
-				} else if (inBond === "S" && outBond === "SW") {
-					current.setNext("SE");
-				} else if (inBond === "SW" && outBond === "S") {
-					current.setNext("NW");
-				} else if (inBond === "SW" && outBond === "NW") {
-					current.setNext("S");
-				} else if (inBond === "SE" && outBond === "S") {
-					current.setNext("NE");
-				} else if (inBond === "SE" && outBond === "NE") {
-					current.setNext("S");
-				} else if (inBond === "NW" && outBond === "SW") {
-					current.setNext("N");
-				} else if (inBond === "NW" && outBond === "N") {
-					current.setNext("SW");
-				} else if (inBond === "NE" && outBond === "N") {
-					current.setNext("SE");
-				} else if (inBond === "NE" && outBond === "SE") {
-					current.setNext("N");
-				} 
-				
-				function checkBond() {
-					var i, bonds = DrawChemConst.BONDS;
-					for(i = 0; i < bonds.length; i += 1) {
-						if (bonds[i].bond[0] === inX && bonds[i].bond[1] === inY) {
-							return bonds[i].direction;
-						}
-					}
-				}
-			}
-		};
+		}
 		
 		/**
 		 * Checks if the mouse pointer is within a circle of an atom.
 		 * @param {Structure} structure - a Structure object on which search is performed
-		 * @param {Number[]} mousePos - set of coordinates against which the search is performed
+		 * @param {Number[]} position - set of coordinates against which the search is performed
 		 */
-		service.isWithin = function (structure, mousePos) {
+		service.isWithin = function (structure, position) {
 			var found = false,
-				clickedAtomCoords,
+				foundAtomCoords,
 				origin = structure.getOrigin();
 				
 			checkDeeper(structure.getStructure(), origin);
 			
-			return clickedAtomCoords;
+			return foundAtomCoords;
 			
 			function checkDeeper(struct, pos) {
 				var i, absPos;
 				for(i = 0; i < struct.length; i += 1) {
 					absPos = [struct[i].getCoords("x") + pos[0], struct[i].getCoords("y") + pos[1]];
-					if (!found && isWithin(absPos, mousePos)) {
+					if (!found && isWithin(absPos, position)) {
 						found = true;
-						clickedAtomCoords = absPos;
+						foundAtomCoords = absPos;
 					} else {
 						checkDeeper(struct[i].getBonds(), absPos);
 					}
@@ -1181,10 +1274,14 @@
 			BOND_S = DrawChemConst.BOND_S,
 			BOND_W = DrawChemConst.BOND_W,
 			BOND_E = DrawChemConst.BOND_E,
-			BOND_NE = DrawChemConst.BOND_NE,
-			BOND_NW = DrawChemConst.BOND_NW,
-			BOND_SE = DrawChemConst.BOND_SE,
-			BOND_SW = DrawChemConst.BOND_SW;
+			BOND_NE1 = DrawChemConst.BOND_NE1,
+			BOND_NE2 = DrawChemConst.BOND_NE2,
+			BOND_NW1 = DrawChemConst.BOND_NW1,
+			BOND_NW2 = DrawChemConst.BOND_NW2,
+			BOND_SE1 = DrawChemConst.BOND_SE1,
+			BOND_SE2 = DrawChemConst.BOND_SE2,
+			BOND_SW1 = DrawChemConst.BOND_SW1,
+			BOND_SW2 = DrawChemConst.BOND_SW2;
 			
 		service.benzene = function () {
 			var name = "benzene",
@@ -1193,16 +1290,16 @@
 						"N",
 						[
 							new Atom([0, 0], [
-								new Atom(BOND_SE, [
+								new Atom(BOND_SE1, [
 									new Atom(BOND_S, [
-										new Atom(BOND_SW, [
-											new Atom(BOND_NW, [
-												new Atom(BOND_N, [], "Z", "NW")
-											], "", "SW")
-										], "", "S")
-									], "", "SE")
-								], "", "NE")
-							], "", "N")					
+										new Atom(BOND_SW2, [
+											new Atom(BOND_NW1, [
+												new Atom(BOND_N, [], "Z", ["S", "NE2"])
+											], "", ["SE1", "N"])
+										], "", ["NE2", "NW1"])
+									], "", ["N", "SW2"])
+								], "", ["NW1", "S"])
+							], "", ["SE1", "SW2"])			
 						],
 						"aromatic"
 					)
@@ -1219,16 +1316,16 @@
 						"N",
 						[
 							new Atom([0, 0], [
-								new Atom(BOND_SE, [
+								new Atom(BOND_SE1, [
 									new Atom(BOND_S, [
-										new Atom(BOND_SW, [
-											new Atom(BOND_NW, [
-												new Atom(BOND_N, [], "Z", "NW")
-											], "", "SW")
-										], "", "S")
-									], "", "SE")
-								], "", "NE")
-							], "", "N")					
+										new Atom(BOND_SW2, [
+											new Atom(BOND_NW1, [
+												new Atom(BOND_N, [], "Z", ["S", "NE2"])
+											], "", ["SE1", "N"])
+										], "", ["NE2", "NW1"])
+									], "", ["N", "SW2"])
+								], "", ["NW1", "S"])
+							], "", ["SE1", "SW2"])			
 						]
 					)
 				],
@@ -1244,64 +1341,96 @@
 						"N",
 						[
 							new Atom([0, 0], [
-								new Atom(BOND_N, [], "", "NE")
-							], "", "SW")
+								new Atom(BOND_N, [], "", ["S"])
+							], "", ["N"])
 						]
 					),
 					new DCStructure.Structure(
-						"NE",
+						"NE1",
 						[
 							new Atom([0, 0], [
-								new Atom(BOND_NE, [], "", "SE")
-							], "", "NW")
+								new Atom(BOND_NE1, [], "", ["SW1"])
+							], "", ["NE1"])
+						]
+					),
+					new DCStructure.Structure(
+						"NE2",
+						[
+							new Atom([0, 0], [
+								new Atom(BOND_NE2, [], "", ["SW2"])
+							], "", ["NE2"])
 						]
 					),
 					new DCStructure.Structure(
 						"E",
 						[
 							new Atom([0, 0], [
-								new Atom(BOND_E, [], "", "SE")
-							], "", "NW")
+								new Atom(BOND_E, [], "", ["W"])
+							], "", ["E"])
 						]
 					),
 					new DCStructure.Structure(
-						"SE",
+						"SE1",
 						[
 							new Atom([0, 0], [
-								new Atom(BOND_SE, [], "", "NE")
-							], "", "SW")
+								new Atom(BOND_SE1, [], "", ["NW1"])
+							], "", ["SE1"])
+						]
+					),
+					new DCStructure.Structure(
+						"SE2",
+						[
+							new Atom([0, 0], [
+								new Atom(BOND_SE2, [], "", ["NW2"])
+							], "", ["SE2"])
 						]
 					),
 					new DCStructure.Structure(
 						"S",
 						[
 							new Atom([0, 0], [
-								new Atom(BOND_S, [], "", "SW")
-							], "", "NE")
+								new Atom(BOND_S, [], "", ["N"])
+							], "", ["S"])
 						]
 					),
 					new DCStructure.Structure(
-						"SW",
+						"SW1",
 						[
 							new Atom([0, 0], [
-								new Atom(BOND_SW, [], "", "NW")
-							], "", "SE")
+								new Atom(BOND_SW1, [], "", ["NE1"])
+							], "", ["SW1"])
 						]
 					),
+					new DCStructure.Structure(
+						"SW2",
+						[
+							new Atom([0, 0], [
+								new Atom(BOND_SW2, [], "", ["NE2"])
+							], "", ["SW2"])
+						]
+					),					
 					new DCStructure.Structure(
 						"W",
 						[
 							new Atom([0, 0], [
-								new Atom(BOND_W, [], "", "SW")
-							], "", "NE")
+								new Atom(BOND_W, [], "", ["E"])
+							], "", ["W"])
 						]
 					),
 					new DCStructure.Structure(
-						"NW",
+						"NW1",
 						[
 							new Atom([0, 0], [
-								new Atom(BOND_NW, [], "", "SW")
-							], "", "SE")
+								new Atom(BOND_NW1, [], "", ["SE1"])
+							], "", ["NW1"])
+						]
+					),
+					new DCStructure.Structure(
+						"NW2",
+						[
+							new Atom([0, 0], [
+								new Atom(BOND_NW2, [], "", ["SE2"])
+							], "", ["NW2"])
 						]
 					)
 				],

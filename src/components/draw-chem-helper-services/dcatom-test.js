@@ -44,4 +44,10 @@ describe("DCAtom service tests", function () {
 			str.getStructure()
 		);
 	});
+	
+	it("should hold no more than 12 attached bonds", function () {
+		var atom = new Atom([0, 0], [], "", ["a", "b", "c", "d", "e", "f", "g", "h", "i", "f", "g", "h"]);
+		atom.attachBond("aa");
+		expect(atom.getNext()).toEqual("max");
+	});
 });
