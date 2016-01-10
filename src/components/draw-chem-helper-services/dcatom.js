@@ -24,8 +24,12 @@
 			this.calculateNext();
 		}
 		
-		Atom.getOppositeBond = function (bond) {
-			switch (bond) {
+		/**
+		 * Calculates direction of an opposite bond.
+		 * @param {String} direction - direction of a bond
+		 */
+		Atom.getOppositeDirection = function (direction) {
+			switch (direction) {
 				case "N":
 					return "S";
 				case "NE1":
@@ -53,6 +57,10 @@
 			}
 		}
 		
+		/**
+		 * Adds a bond to the attachedBonds array.
+		 * @param {String} bond - direction of a bond
+		 */
 		Atom.prototype.attachBond = function (bond) {
 			this.attachedBonds.push(bond);
 		};

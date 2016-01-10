@@ -112,7 +112,7 @@
 						scope.currentStructure = modifyStructure(scope.currentStructure, clickCoords);						
 					} else {
 						scope.currentStructure = angular.copy(scope.chosenStructure).getDefault();
-						scope.currentStructure.setOrigin(clickCoords);
+						scope.currentStructure.setOrigin(clickCoords);						
 					}
 					draw(scope.currentStructure);
 					resetMouseFlags();
@@ -210,8 +210,12 @@
 			this.calculateNext();
 		}
 		
-		Atom.getOppositeBond = function (bond) {
-			switch (bond) {
+		/**
+		 * Calculates direction of an opposite bond.
+		 * @param {String} direction - direction of a bond
+		 */
+		Atom.getOppositeDirection = function (direction) {
+			switch (direction) {
 				case "N":
 					return "S";
 				case "NE1":
@@ -239,6 +243,10 @@
 			}
 		}
 		
+		/**
+		 * Adds a bond to the attachedBonds array.
+		 * @param {String} bond - direction of a bond
+		 */
 		Atom.prototype.attachBond = function (bond) {
 			this.attachedBonds.push(bond);
 		};
@@ -635,7 +643,7 @@
 			this.structure = structure;
 			this.transform = [];
 			this.origin = [];
-			this.decorate = decorate;
+			this.decorate = decorate || {};
 		}		
 		
 		/**
@@ -671,6 +679,12 @@
 		 */
 		Structure.prototype.setOrigin = function (origin) {
 			this.origin = origin;
+			angular.forEach(this.decorate, function (value, key) {
+				value.forEach(function (element) {
+					element[0] += origin[0];
+					element[1] += origin[1];
+				});
+			});
 		}
 		
 		/**
@@ -717,10 +731,21 @@
 		
 		/**
 		 * Gets the decorate element.
-		 * @returns {String}
+		 * @returns {Object}
 		 */
-		Structure.prototype.getDecorate = function () {
-			return this.decorate;
+		Structure.prototype.getDecorate = function (decorate) {
+			return this.decorate[decorate];
+		}
+		
+		/**
+		 * Sets the decorate element.
+		 * @param {String} decorate - an element to add to the array
+		 */
+		Structure.prototype.addDecorate = function (decorate, coords) {
+			if (typeof this.decorate[decorate] === "undefined") {
+				this.decorate[decorate] = [];
+			}
+			this.decorate[decorate].push(coords);
 		}
 		
 		service.Structure = Structure;
@@ -755,6 +780,9 @@
 			// https://en.wikipedia.org/wiki/Wikipedia:Manual_of_Style/Chemistry/Structure_drawing
 			service.WIDTH_TO_LENGTH = 0.04;
 			
+			// the default r of an aromatic circle
+			service.AROMATIC_R = service.BOND_LENGTH * 0.45;
+			
 			// the default bond width
 			service.BOND_WIDTH = parseFloat((service.BOND_LENGTH * service.WIDTH_TO_LENGTH).toFixed(2));
 			
@@ -788,19 +816,28 @@
 			// bonds as array
 			service.BONDS = [
 				{ direction: "N", bond: service.BOND_N },
-				{ direction: "S", bond: service.BOND_S },
-				{ direction: "E", bond: service.BOND_E },
-				{ direction: "W", bond: service.BOND_W },
 				{ direction: "NE1", bond: service.BOND_NE1 },
 				{ direction: "NE2", bond: service.BOND_NE2 },
-				{ direction: "NW1", bond: service.BOND_NW1 },
-				{ direction: "NW2", bond: service.BOND_NW2 },
+				{ direction: "E", bond: service.BOND_E },
 				{ direction: "SE1", bond: service.BOND_SE1 },
 				{ direction: "SE2", bond: service.BOND_SE2 },
+				{ direction: "S", bond: service.BOND_S },
 				{ direction: "SW1", bond: service.BOND_SW1 },
-				{ direction: "SW2", bond: service.BOND_SW2 }
-			];	
-		}		
+				{ direction: "SW2", bond: service.BOND_SW2 },
+				{ direction: "W", bond: service.BOND_W },				
+				{ direction: "NW1", bond: service.BOND_NW1 },
+				{ direction: "NW2", bond: service.BOND_NW2 }
+			];
+			
+			service.getBondByDirection = function (direction) {
+				var i;
+				for (i = 0; i < service.BONDS.length; i += 1) {
+					if (service.BONDS[i].direction === direction) {
+						return service.BONDS[i];
+					}
+				}
+			}
+		}
 		
 		return service;		
 	}		
@@ -976,7 +1013,7 @@
 		/**
 		 * Modifies the structure.
 		 * @param {Structure} base - structure to be modified,
-		 * @param {Structure} mod - structure to be added,
+		 * @param {StructureCluster} mod - StructureCluster containing appropriate Structure objects,
 		 * @param {Number[]} mousePos - position of the mouse when 'mouseup' event occurred
 		 * @param {Number[]|undefined} down - position of the mouse when 'mousedown' event occurred
 		 * @returns {Structure}
@@ -1002,8 +1039,9 @@
 					if (!found && insideCircle(absPos, mousePos)) {
 						// if 'mouseup' was within a circle around an atom
 						// and if a valid atom has not already been found
-							modStr = chooseMod(struct[i]);
-							updateBonds(struct[i], modStr, absPos);							
+							modStr = chooseMod(struct[i]);							
+							updateBonds(struct[i], modStr, absPos);
+							updateDecorate(modStr, absPos);
 							found = true;
 							return base;										
 					}
@@ -1013,12 +1051,26 @@
 						// and if a valid atom has not already been found
 						modStr = chooseDirectionManually(struct[i]);
 						updateBonds(struct[i], modStr, absPos);
+						updateDecorate(modStr, absPos);
 						found = true;
 						return base;
 					}
 					
 					// if none of the above was true, then continue looking down the structure tree
 					modStructure(struct[i].getBonds(), absPos);					
+				}
+				
+				/**
+				 * Updates decorate elements (e.g. aromatic rings) in the structure.
+				 * @param {Structure} modStr - Structure object which may contain decorate elements
+				 * @param {Number[]} abs - absolute coordinates
+				 */
+				function updateDecorate(modStr, abs) {
+					var coords;
+					if (modStr !== null && typeof modStr.getDecorate("aromatic") !== "undefined") {
+						coords = DrawChemConst.getBondByDirection(modStr.getName()).bond;
+						return base.addDecorate("aromatic", [coords[0] + abs[0], coords[1] + abs[1]]);
+					}					
 				}
 				
 				/**
@@ -1046,7 +1098,7 @@
 						newAbsPos = [struct[i].getCoords("x") + absPos[0], struct[i].getCoords("y") + absPos[1]];
 						atom = service.isWithin(base, newAbsPos).foundAtom;
 						if (typeof atom !== "undefined") {
-							newName = Atom.getOppositeBond(modStr.getName());
+							newName = Atom.getOppositeDirection(modStr.getName());
 							atom.attachBond(newName);
 							return atom.calculateNext();
 						}
@@ -1200,11 +1252,13 @@
 				circles.forEach(function (circle) {
 					result += "<circle class='atom' cx='" + circle[0] + "' cy='" + circle[1] + "' r='" + circle[2] + "' ></circle>";
 				});
-				if (input.getDecorate() === "aromatic") {
-					result += "<circle class='arom' cx='" + input.getOrigin("x") +
-						"' cy='" + (input.getOrigin("y") + DrawChemConst.BOND_LENGTH) +
-						"' r='" + DrawChemConst.BOND_LENGTH * 0.45 +
+				if (input.getDecorate("aromatic")) {
+					input.getDecorate("aromatic").forEach(function (coords) {
+						result += "<circle class='arom' cx='" + coords[0] +
+						"' cy='" + coords[1] +
+						"' r='" + DrawChemConst.AROMATIC_R +
 						"' ></circle>";
+					})					
 				}
 				
 				return result;
@@ -1256,15 +1310,8 @@
 					circles.push([absPos[0], absPos[1], circR]);
 					currentLine.push("L"); // 'l' for lineto - draws line to the specified coordinates
 					currentLine.push(absPos);					
-					if (bonds[0].getInfo() === "Z") {
-						currentLine.push("Z");
-						if (bonds[0].getBonds().length > 0) {
-							newLen = output.push(["M", absPos]);
-							connect(absPos, bonds[0].getBonds(), output[newLen - 1]);
-						}
-					} else {
-						connect(bonds[0].getCoords(), bonds[0].getBonds(), currentLine);
-					}
+					
+					connect(bonds[0].getCoords(), bonds[0].getBonds(), currentLine);
 				}				
 				for (i = 1; i < bonds.length; i += 1) {
 					absPos = [
@@ -1325,179 +1372,51 @@
 	function DrawChemStructures(DrawChemConst, DCStructure, DCStructureCluster, DCAtom) {
 
 		var service = {},
-			benzene,
 			Atom = DCAtom.Atom,
+			Structure = DCStructure.Structure,
 			StructureCluster = DCStructureCluster.StructureCluster,
-			singleBond,
-			BOND_N = DrawChemConst.BOND_N,
-			BOND_S = DrawChemConst.BOND_S,
-			BOND_W = DrawChemConst.BOND_W,
-			BOND_E = DrawChemConst.BOND_E,
-			BOND_NE1 = DrawChemConst.BOND_NE1,
-			BOND_NE2 = DrawChemConst.BOND_NE2,
-			BOND_NW1 = DrawChemConst.BOND_NW1,
-			BOND_NW2 = DrawChemConst.BOND_NW2,
-			BOND_SE1 = DrawChemConst.BOND_SE1,
-			BOND_SE2 = DrawChemConst.BOND_SE2,
-			BOND_SW1 = DrawChemConst.BOND_SW1,
-			BOND_SW2 = DrawChemConst.BOND_SW2;
-			
+			BONDS = DrawChemConst.BONDS;
+		
+		/**
+		 * Generates benzene structures in each defined direction.
+		 * @returns {StructureCluster}
+		 */
 		service.benzene = function () {
-			var name = "benzene",
-				defs = [
-					new DCStructure.Structure(
-						"N",
-						[
-							new Atom([0, 0], [
-								new Atom(BOND_SE1, [
-									new Atom(BOND_S, [
-										new Atom(BOND_SW2, [
-											new Atom(BOND_NW1, [
-												new Atom(BOND_N, [], "Z", ["S", "NE2"])
-											], "", ["SE1", "N"])
-										], "", ["NE2", "NW1"])
-									], "", ["N", "SW2"])
-								], "", ["NW1", "S"])
-							], "", ["SE1", "SW2"])			
-						],
-						"aromatic"
-					)
-				],
-				cluster = new StructureCluster(name, defs);
+			var cluster,
+				name = "benzene",
+				defs = generateSixMemberedRings("aromatic");
 				
+			cluster = new StructureCluster(name, defs);
 			return cluster;
 		};
 		
+		/**
+		 * Generates cyclohexane structures in each defined direction.
+		 * @returns {StructureCluster}
+		 */
 		service.cyclohexane = function () {
-			var name = "cyclohexane",
-				defs = [
-					new DCStructure.Structure(
-						"N",
-						[
-							new Atom([0, 0], [
-								new Atom(BOND_SE1, [
-									new Atom(BOND_S, [
-										new Atom(BOND_SW2, [
-											new Atom(BOND_NW1, [
-												new Atom(BOND_N, [], "Z", ["S", "NE2"])
-											], "", ["SE1", "N"])
-										], "", ["NE2", "NW1"])
-									], "", ["N", "SW2"])
-								], "", ["NW1", "S"])
-							], "", ["SE1", "SW2"])			
-						]
-					)
-				],
-				cluster = new StructureCluster(name, defs);
+			var cluster,
+				name = "cyclohexane",
+				defs = generateSixMemberedRings();
 				
+			cluster = new StructureCluster(name, defs);
+			
 			return cluster;
 		};
 		
+		/**
+		 * Generates single bond structures in each defined direction.
+		 * @returns {StructureCluster}
+		 */
 		service.singleBond = function () {
-			var name = "single-bond",
-				defs = [
-					new DCStructure.Structure(
-						"N",
-						[
-							new Atom([0, 0], [
-								new Atom(BOND_N, [], "", ["S"])
-							], "", ["N"])
-						]
-					),
-					new DCStructure.Structure(
-						"NE1",
-						[
-							new Atom([0, 0], [
-								new Atom(BOND_NE1, [], "", ["SW1"])
-							], "", ["NE1"])
-						]
-					),
-					new DCStructure.Structure(
-						"NE2",
-						[
-							new Atom([0, 0], [
-								new Atom(BOND_NE2, [], "", ["SW2"])
-							], "", ["NE2"])
-						]
-					),
-					new DCStructure.Structure(
-						"E",
-						[
-							new Atom([0, 0], [
-								new Atom(BOND_E, [], "", ["W"])
-							], "", ["E"])
-						]
-					),
-					new DCStructure.Structure(
-						"SE1",
-						[
-							new Atom([0, 0], [
-								new Atom(BOND_SE1, [], "", ["NW1"])
-							], "", ["SE1"])
-						]
-					),
-					new DCStructure.Structure(
-						"SE2",
-						[
-							new Atom([0, 0], [
-								new Atom(BOND_SE2, [], "", ["NW2"])
-							], "", ["SE2"])
-						]
-					),
-					new DCStructure.Structure(
-						"S",
-						[
-							new Atom([0, 0], [
-								new Atom(BOND_S, [], "", ["N"])
-							], "", ["S"])
-						]
-					),
-					new DCStructure.Structure(
-						"SW1",
-						[
-							new Atom([0, 0], [
-								new Atom(BOND_SW1, [], "", ["NE1"])
-							], "", ["SW1"])
-						]
-					),
-					new DCStructure.Structure(
-						"SW2",
-						[
-							new Atom([0, 0], [
-								new Atom(BOND_SW2, [], "", ["NE2"])
-							], "", ["SW2"])
-						]
-					),					
-					new DCStructure.Structure(
-						"W",
-						[
-							new Atom([0, 0], [
-								new Atom(BOND_W, [], "", ["E"])
-							], "", ["W"])
-						]
-					),
-					new DCStructure.Structure(
-						"NW1",
-						[
-							new Atom([0, 0], [
-								new Atom(BOND_NW1, [], "", ["SE1"])
-							], "", ["NW1"])
-						]
-					),
-					new DCStructure.Structure(
-						"NW2",
-						[
-							new Atom([0, 0], [
-								new Atom(BOND_NW2, [], "", ["SE2"])
-							], "", ["NW2"])
-						]
-					)
-				],
-				cluster = new StructureCluster(name, defs);
+			var cluster,
+				name = "single-bond",
+				defs = generateSingleBonds();
+				
+			cluster = new StructureCluster(name, defs);
 				
 			return cluster;
-		};
-		
+		};		
 		
 		/**
 		 * Stores all predefined structures.
@@ -1505,5 +1424,127 @@
 		service.custom = [service.benzene, service.cyclohexane, service.singleBond];
 		
 		return service;
+		
+		/**
+		 * Generates six-membered rings (60 deg between bonds) in each of defined direction.
+		 * @param {String} decorate - indicates decorate element (e.g. aromatic ring)
+		 * @returns {Structure[]}
+		 */
+		function generateSixMemberedRings(decorate) {
+			var i, direction, result = [];
+			for (i = 0; i < BONDS.length; i += 1) {
+				direction = BONDS[i].direction;				
+				result.push(generateRing(direction));
+			}
+			
+			return result;
+			
+			/**
+			 * Generates a six-membered ring in the specified direction.
+			 * This may be a little bit confusing, but in this function, the direction parameter (e.g. N, NE1)
+			 * is associated not only with the bond direction,
+			 * but is also used to indicate the relative position of an atom.
+			 * @param {String} direction - direction of the ring
+			 * @returns {Structure}
+			 */
+			function generateRing(direction) {
+				var firstAtom, structure, bond,
+					dirs = calcDirections(direction),
+					opposite = Atom.getOppositeDirection(direction);
+				
+				firstAtom = new Atom([0, 0], [], "", dirs.current);
+				genAtoms(firstAtom, dirs, 6);
+				structure = new Structure(opposite, [firstAtom]);
+				if (typeof decorate !== "undefined") {
+					bond = DrawChemConst.getBondByDirection(opposite).bond;
+					structure.addDecorate(decorate, [bond[0], bond[1]]);
+				}
+				
+				return structure;
+				
+				/**
+				 * Recursievely generates atoms.
+				 * @param {Atom} atom - atom to which next atom will be added.
+				 * @param {Object} dirs - keeps track of attached bonds, next bond and next atom
+				 * @param {Number} depth - current depth of the structure tree				 
+				 */
+				function genAtoms(atom, dirs, depth) {
+					var newDirs = calcDirections(dirs.nextDirection), newAtom;
+					if (depth === 1) {
+						return atom.addBond(new Atom(dirs.nextBond, [], ""));
+					}
+					newAtom = new Atom(dirs.nextBond, [], "", newDirs.current);
+					atom.addBond(newAtom);
+					genAtoms(newAtom, newDirs, depth - 1);
+				}
+				
+				/**
+				 * Calculates attached bonds, next bond and next atom.
+				 * @param {String} direction - direction based on which calculations are made
+				 * @returns {Object}
+				 */
+				function calcDirections(direction) {
+					var i, left, right, next;
+					
+					for (i = 0; i < BONDS.length; i += 1) {
+						if (BONDS[i].direction === direction) {
+							left = moveToLeft(BONDS, i, 4);
+							right = moveToRight(BONDS, i, 4);
+							next = moveToRight(BONDS, i, 2);
+							break;
+						}
+					}
+					
+					return {
+						// attached bonds
+						current: [BONDS[left].direction, BONDS[right].direction],
+						// next bond
+						nextBond: BONDS[right].bond,
+						// next direction
+						nextDirection: BONDS[next].direction
+					};
+					
+					// this way, the array can be used circularly
+					function moveToLeft(array, index, d) {
+						if (index - d < 0) {
+							return index - d + array.length;
+						}
+						return index - d;
+					}
+					
+					// this way, the array can be used circularly
+					function moveToRight(array, index, d) {
+						if (index + d > array.length - 1) {
+							return index + d - array.length;
+						}
+						return index + d;
+					}
+				}
+			}
+		}
+		
+		/**
+		 * Generates single bonds in all defined directions.
+		 * @returns {Structure[]}
+		 */
+		function generateSingleBonds() {
+			var i, bond, direction, result = [];
+			for (i = 0; i < BONDS.length; i += 1) {
+				bond = BONDS[i].bond;
+				direction = BONDS[i].direction;
+				result.push(
+					new Structure(
+						direction,
+						[
+							new Atom([0, 0], [
+								new Atom(bond, [], "", [Atom.getOppositeDirection(direction)])
+							], "", [direction])
+						]
+					)
+				);
+			}
+			
+			return result;
+		}
 	}
 })();

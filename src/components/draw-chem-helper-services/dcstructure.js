@@ -18,7 +18,7 @@
 			this.structure = structure;
 			this.transform = [];
 			this.origin = [];
-			this.decorate = decorate;
+			this.decorate = decorate || {};
 		}		
 		
 		/**
@@ -54,6 +54,12 @@
 		 */
 		Structure.prototype.setOrigin = function (origin) {
 			this.origin = origin;
+			angular.forEach(this.decorate, function (value, key) {
+				value.forEach(function (element) {
+					element[0] += origin[0];
+					element[1] += origin[1];
+				});
+			});
 		}
 		
 		/**
@@ -100,10 +106,21 @@
 		
 		/**
 		 * Gets the decorate element.
-		 * @returns {String}
+		 * @returns {Object}
 		 */
-		Structure.prototype.getDecorate = function () {
-			return this.decorate;
+		Structure.prototype.getDecorate = function (decorate) {
+			return this.decorate[decorate];
+		}
+		
+		/**
+		 * Sets the decorate element.
+		 * @param {String} decorate - an element to add to the array
+		 */
+		Structure.prototype.addDecorate = function (decorate, coords) {
+			if (typeof this.decorate[decorate] === "undefined") {
+				this.decorate[decorate] = [];
+			}
+			this.decorate[decorate].push(coords);
 		}
 		
 		service.Structure = Structure;

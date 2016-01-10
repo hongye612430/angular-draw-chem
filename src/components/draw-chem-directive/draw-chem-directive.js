@@ -105,7 +105,7 @@
 						scope.currentStructure = modifyStructure(scope.currentStructure, clickCoords);						
 					} else {
 						scope.currentStructure = angular.copy(scope.chosenStructure).getDefault();
-						scope.currentStructure.setOrigin(clickCoords);
+						scope.currentStructure.setOrigin(clickCoords);						
 					}
 					draw(scope.currentStructure);
 					resetMouseFlags();

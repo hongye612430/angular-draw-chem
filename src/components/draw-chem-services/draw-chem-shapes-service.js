@@ -12,7 +12,7 @@
 		/**
 		 * Modifies the structure.
 		 * @param {Structure} base - structure to be modified,
-		 * @param {Structure} mod - structure to be added,
+		 * @param {StructureCluster} mod - StructureCluster containing appropriate Structure objects,
 		 * @param {Number[]} mousePos - position of the mouse when 'mouseup' event occurred
 		 * @param {Number[]|undefined} down - position of the mouse when 'mousedown' event occurred
 		 * @returns {Structure}
@@ -38,8 +38,9 @@
 					if (!found && insideCircle(absPos, mousePos)) {
 						// if 'mouseup' was within a circle around an atom
 						// and if a valid atom has not already been found
-							modStr = chooseMod(struct[i]);
-							updateBonds(struct[i], modStr, absPos);							
+							modStr = chooseMod(struct[i]);							
+							updateBonds(struct[i], modStr, absPos);
+							updateDecorate(modStr, absPos);
 							found = true;
 							return base;										
 					}
@@ -49,12 +50,26 @@
 						// and if a valid atom has not already been found
 						modStr = chooseDirectionManually(struct[i]);
 						updateBonds(struct[i], modStr, absPos);
+						updateDecorate(modStr, absPos);
 						found = true;
 						return base;
 					}
 					
 					// if none of the above was true, then continue looking down the structure tree
 					modStructure(struct[i].getBonds(), absPos);					
+				}
+				
+				/**
+				 * Updates decorate elements (e.g. aromatic rings) in the structure.
+				 * @param {Structure} modStr - Structure object which may contain decorate elements
+				 * @param {Number[]} abs - absolute coordinates
+				 */
+				function updateDecorate(modStr, abs) {
+					var coords;
+					if (modStr !== null && typeof modStr.getDecorate("aromatic") !== "undefined") {
+						coords = DrawChemConst.getBondByDirection(modStr.getName()).bond;
+						return base.addDecorate("aromatic", [coords[0] + abs[0], coords[1] + abs[1]]);
+					}					
 				}
 				
 				/**
@@ -82,7 +97,7 @@
 						newAbsPos = [struct[i].getCoords("x") + absPos[0], struct[i].getCoords("y") + absPos[1]];
 						atom = service.isWithin(base, newAbsPos).foundAtom;
 						if (typeof atom !== "undefined") {
-							newName = Atom.getOppositeBond(modStr.getName());
+							newName = Atom.getOppositeDirection(modStr.getName());
 							atom.attachBond(newName);
 							return atom.calculateNext();
 						}
@@ -236,11 +251,13 @@
 				circles.forEach(function (circle) {
 					result += "<circle class='atom' cx='" + circle[0] + "' cy='" + circle[1] + "' r='" + circle[2] + "' ></circle>";
 				});
-				if (input.getDecorate() === "aromatic") {
-					result += "<circle class='arom' cx='" + input.getOrigin("x") +
-						"' cy='" + (input.getOrigin("y") + DrawChemConst.BOND_LENGTH) +
-						"' r='" + DrawChemConst.BOND_LENGTH * 0.45 +
+				if (input.getDecorate("aromatic")) {
+					input.getDecorate("aromatic").forEach(function (coords) {
+						result += "<circle class='arom' cx='" + coords[0] +
+						"' cy='" + coords[1] +
+						"' r='" + DrawChemConst.AROMATIC_R +
 						"' ></circle>";
+					})					
 				}
 				
 				return result;
@@ -292,15 +309,8 @@
 					circles.push([absPos[0], absPos[1], circR]);
 					currentLine.push("L"); // 'l' for lineto - draws line to the specified coordinates
 					currentLine.push(absPos);					
-					if (bonds[0].getInfo() === "Z") {
-						currentLine.push("Z");
-						if (bonds[0].getBonds().length > 0) {
-							newLen = output.push(["M", absPos]);
-							connect(absPos, bonds[0].getBonds(), output[newLen - 1]);
-						}
-					} else {
-						connect(bonds[0].getCoords(), bonds[0].getBonds(), currentLine);
-					}
+					
+					connect(bonds[0].getCoords(), bonds[0].getBonds(), currentLine);
 				}				
 				for (i = 1; i < bonds.length; i += 1) {
 					absPos = [
