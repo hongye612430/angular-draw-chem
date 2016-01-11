@@ -10,9 +10,9 @@
 	angular.module("mmAngularDrawChem")
 		.directive("drawChemEditor", DrawChemEditor);
 	
-	DrawChemEditor.$inject = ["DrawChemShapes", "DrawChemStructures", "DrawChem", "$sce", "$window", "DrawChemConst"];
+	DrawChemEditor.$inject = ["DrawChemShapes", "DrawChemStructures", "DrawChem", "$sce", "$window", "DrawChemConst", "DrawChemCache"];
 	
-	function DrawChemEditor(DrawChemShapes, DrawChemStructures, DrawChem, $sce, $window, DrawChemConst) {
+	function DrawChemEditor(DrawChemShapes, DrawChemStructures, DrawChem, $sce, $window, DrawChemConst, DrawChemCache) {
 		return {
 			templateUrl: "draw-chem-editor.html",
 			scope: {
@@ -21,6 +21,7 @@
 			link: function (scope, element, attrs) {
 				
 				var downAtomCoords,
+					currentStructure,
 					mouseDown = false,
 					downOnAtom = false;
 				
@@ -43,10 +44,30 @@
 				}
 				
 				/**
-				 * Returns content to be bound in the dialog box.
+				 * Returns content which will be bound in the dialog box.
 				 */
 				scope.content = function () {
 					return $sce.trustAsHtml(DrawChem.getContent());
+				}
+				
+				/**
+				 * Undoes a change associated with the most recent 'mouseup' event.
+				 */
+				scope.undo = function () {
+					DrawChemCache.moveLeftInStructures();
+					if (DrawChemCache.getCurrentPosition() === -1) {
+						DrawChem.clearContent();
+					} else {
+						draw(DrawChemCache.getCurrentStructure());
+					}
+				}
+				
+				/**
+				 * Reverses the most recent 'undo' action.
+				 */
+				scope.forward = function () {
+					DrawChemCache.moveRightInStructures();
+					draw(DrawChemCache.getCurrentStructure());
 				}
 				
 				/**
@@ -67,11 +88,6 @@
 				 * Stores the chosen structure.
 				 */
 				scope.chosenStructure;
-				
-				/**
-				 * Stores the current structure.
-				 */
-				scope.currentStructure;
 				
 				/**
 				 * Stores all predefined structures.
@@ -95,10 +111,14 @@
 				 * Action to perform on 'mousedown' event.
 				 */
 				scope.doOnMouseDown = function ($event) {
-					var clickCoords = innerCoords($event);						
+					var clickCoords = innerCoords($event);
+					
+					currentStructure = DrawChemCache.getCurrentPosition() < DrawChemCache.getStructureLength() - 1 ?
+							angular.copy(DrawChemCache.getCurrentStructure()): currentStructure;
+							
 					mouseDown = true;
 					if (DrawChem.getContent() !== "") {
-						downAtomCoords = DrawChemShapes.isWithin(scope.currentStructure, clickCoords).absPos;
+						downAtomCoords = DrawChemShapes.isWithin(currentStructure, clickCoords).absPos;
 						downOnAtom = true;
 					}
 				}
@@ -107,14 +127,21 @@
 				 * Action to perform on 'mouseup' event.
 				 */
 				scope.doOnMouseUp = function ($event) {
-					var clickCoords = innerCoords($event);
+					var structure,						
+						clickCoords = innerCoords($event);
+						
+					currentStructure = DrawChemCache.getCurrentPosition() < DrawChemCache.getStructureLength() - 1 ?
+							angular.copy(DrawChemCache.getCurrentStructure()): currentStructure;
+						
 					if (DrawChem.getContent() !== "") {
-						scope.currentStructure = modifyStructure(scope.currentStructure, clickCoords);						
+						structure = modifyStructure(currentStructure, clickCoords);					
 					} else {
-						scope.currentStructure = angular.copy(scope.chosenStructure).getDefault();
-						scope.currentStructure.setOrigin(clickCoords);						
+						structure = angular.copy(scope.chosenStructure.getDefault());
+						structure.setOrigin(clickCoords);
+						currentStructure = structure;
 					}
-					draw(scope.currentStructure);
+					DrawChemCache.addStructure(angular.copy(structure));
+					draw(structure);
 					resetMouseFlags();
 				}
 				
@@ -125,7 +152,8 @@
 					var clickCoords, updatedCurrentStructure, frozenCurrentStructure;
 					if (downOnAtom) {
 						clickCoords = innerCoords($event);
-						frozenCurrentStructure = angular.copy(scope.currentStructure);
+						frozenCurrentStructure = DrawChemCache.getCurrentPosition() < DrawChemCache.getStructureLength() - 1 ?
+							angular.copy(DrawChemCache.getCurrentStructure()): angular.copy(currentStructure);
 						updatedCurrentStructure = modifyStructure(frozenCurrentStructure, clickCoords);
 						draw(updatedCurrentStructure);
 					}							
@@ -174,11 +202,11 @@
 				 */
 				function modifyStructure(structure, clickCoords) {
 					return DrawChemShapes.modifyStructure(
-							structure,
-							angular.copy(scope.chosenStructure),
-							clickCoords,
-							downAtomCoords
-						);
+						structure,
+						angular.copy(scope.chosenStructure),
+						clickCoords,
+						downAtomCoords
+					);
 				}
 			}
 		}
@@ -752,6 +780,66 @@
 		
 		return service;
 	}
+})();
+(function () {
+	"use strict";
+	angular.module("mmAngularDrawChem")
+		.factory("DrawChemCache", DrawChemCache);
+	
+	function DrawChemCache() {
+		
+		var service = {},
+			namedStructures = {},			
+			cachedStructures = [],
+			structurePointer = -1,
+			maxCapacity = 10;
+		
+		service.addStructure = function (structure) {
+			if (structurePointer < cachedStructures.length - 1) {
+				cachedStructures = cachedStructures.slice(0, structurePointer + 1);				
+			}
+			cachedStructures.push(structure);
+			service.moveRightInStructures();
+			
+			if (cachedStructures.length > 10) {
+				cachedStructures.shift();
+			}						
+		};
+		
+		service.getCurrentPosition = function () {
+			return structurePointer;
+		}
+		
+		service.getStructureLength = function () {
+			return cachedStructures.length;
+		};
+		
+		service.removeLastStructure = function () {
+			return cachedStructures.pop();
+		};
+		
+		service.removeFirstStructure = function () {
+			return cachedStructures.shift();
+		};
+		
+		service.getCurrentStructure = function () {
+			return cachedStructures[structurePointer];
+		};
+		
+		service.moveLeftInStructures = function () {
+			if (structurePointer > -1) {
+				structurePointer -= 1;
+			}
+		};
+		
+		service.moveRightInStructures = function () {
+			if (structurePointer < cachedStructures.length - 1) {
+				structurePointer += 1;
+			}
+		}
+		
+		return service;		
+	}		
 })();
 (function () {
 	"use strict";
