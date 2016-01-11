@@ -9,17 +9,37 @@
         <link rel="stylesheet" href="stylesheets/bootstrap.min.css">
         <link rel="stylesheet" href="stylesheets/main.min.css">
         <link rel="stylesheet" href="stylesheets/draw-chem-editor.min.css">
-        <base href="/angular-draw-chem/">
     </head>
     <body ng-app="angularDrawChemSite">
         <div class="container">
-            <strong>Unstable and not yet fully functional!</strong>
-            <p>
-                You can draw a benzene or cyclohexane ring, then continue with single bonds. Other combinations are not yet supported.
-            </p>
-            <div ng-controller="TestCtrl as ctrl">
-                <button ng-click="ctrl.click()">Editor</button>            
+            <div class="mm-info">
+                <div class="alert alert-danger">
+                    <strong>Unstable and not yet fully functional!</strong>
+                </div>
+                <div class="alert alert-info">
+                    <p>                    
+                        <div ng-controller="TestCtrl as ctrl">
+                            <strong>Try it:</strong>
+                            <button class="btn btn-default" ng-click="ctrl.click()">Editor</button> 
+                        </div>
+                    </p>
+                    <p>
+                        Soon:
+                        <ul>
+                            <li>
+                                new types of bonds
+                            </li>
+                            <li>
+                                heteroatoms
+                            </li>
+                            <li>
+                                new predefined structures
+                            </li>
+                        </ul>
+                    </p>
+                </div>
             </div>
+            
             <!--div ng-controller="TestCtrl2 as ctrl">
                 <button ng-click="ctrl.click()">Editor</button>
                 From modal: <span ng-bind-html="ctrl.input()"></span>            
@@ -34,7 +54,7 @@
         </div>
         <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.0-beta.2/angular.min.js"></script>
         <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.0-beta.2/angular-sanitize.min.js"></script>
-        <script src="javascripts/angular-draw-chem.min.js"></script>
+        <script src="javascripts/angular-draw-chem.js"></script>
         <script src="javascripts/app.min.js"></script>
         <script>
             (function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
