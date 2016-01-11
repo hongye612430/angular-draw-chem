@@ -8,213 +8,6 @@
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
-		.directive("drawChemEditor", DrawChemEditor);
-	
-	DrawChemEditor.$inject = ["DrawChemShapes", "DrawChemStructures", "DrawChem", "$sce", "$window", "DrawChemConst", "DrawChemCache"];
-	
-	function DrawChemEditor(DrawChemShapes, DrawChemStructures, DrawChem, $sce, $window, DrawChemConst, DrawChemCache) {
-		return {
-			templateUrl: "draw-chem-editor.html",
-			scope: {
-				showEditor: "="
-			},
-			link: function (scope, element, attrs) {
-				
-				var downAtomCoords,
-					currentStructure,
-					mouseDown = false,
-					downOnAtom = false;
-				
-				/**
-				 * Sets width and height of the dialog box based on corresponding attributes.
-				 */
-				scope.dialogStyle = {};
-				if (attrs.width) {
-					scope.dialogStyle.width = attrs.width;					
-				}
-				if (attrs.height) {
-					scope.dialogStyle.height = attrs.height;					
-				}
-				
-				/**
-				 * Closes the editor.
-				 */
-				scope.closeEditor = function () {
-					DrawChem.closeEditor();
-				}
-				
-				/**
-				 * Returns content which will be bound in the dialog box.
-				 */
-				scope.content = function () {
-					return $sce.trustAsHtml(DrawChem.getContent());
-				}
-				
-				/**
-				 * Undoes a change associated with the most recent 'mouseup' event.
-				 */
-				scope.undo = function () {
-					DrawChemCache.moveLeftInStructures();
-					if (DrawChemCache.getCurrentPosition() === -1) {
-						DrawChem.clearContent();
-					} else {
-						draw(DrawChemCache.getCurrentStructure());
-					}
-				}
-				
-				/**
-				 * Reverses the most recent 'undo' action.
-				 */
-				scope.forward = function () {
-					DrawChemCache.moveRightInStructures();
-					draw(DrawChemCache.getCurrentStructure());
-				}
-				
-				/**
-				 * Clears the content.
-				 */
-				scope.clear = function () {
-					DrawChem.clearContent();
-				}
-				
-				/**
-				 * Transfers the content.
-				 */
-				scope.transfer = function () {
-					DrawChem.transferContent();
-				}
-				
-				/**
-				 * Stores the chosen structure.
-				 */
-				scope.chosenStructure;
-				
-				/**
-				 * Stores all predefined structures.
-				 */
-				scope.customButtons = [];
-				
-				/**
-				 * Adds all predefined shapes to the scope.
-				 */
-				angular.forEach(DrawChemStructures.custom, function (custom) {
-					var customInstance = custom();
-					scope.customButtons.push({
-						name: customInstance.name,
-						choose: function () {
-							scope.chosenStructure = customInstance;
-						}
-					});
-				});
-				
-				/**
-				 * Action to perform on 'mousedown' event.
-				 */
-				scope.doOnMouseDown = function ($event) {
-					var clickCoords = innerCoords($event);
-					
-					currentStructure = DrawChemCache.getCurrentPosition() < DrawChemCache.getStructureLength() - 1 ?
-							angular.copy(DrawChemCache.getCurrentStructure()): currentStructure;
-							
-					mouseDown = true;
-					if (DrawChem.getContent() !== "") {
-						downAtomCoords = DrawChemShapes.isWithin(currentStructure, clickCoords).absPos;
-						downOnAtom = true;
-					}
-				}
-				
-				/**
-				 * Action to perform on 'mouseup' event.
-				 */
-				scope.doOnMouseUp = function ($event) {
-					var structure,						
-						clickCoords = innerCoords($event);
-						
-					currentStructure = DrawChemCache.getCurrentPosition() < DrawChemCache.getStructureLength() - 1 ?
-							angular.copy(DrawChemCache.getCurrentStructure()): currentStructure;
-						
-					if (DrawChem.getContent() !== "") {
-						structure = modifyStructure(currentStructure, clickCoords);					
-					} else {
-						structure = angular.copy(scope.chosenStructure.getDefault());
-						structure.setOrigin(clickCoords);
-						currentStructure = structure;
-					}
-					DrawChemCache.addStructure(angular.copy(structure));
-					draw(structure);
-					resetMouseFlags();
-				}
-				
-				/**
-				 * Action to perform on 'mousemove' event.
-				 */
-				scope.doOnMouseMove = function ($event) {
-					var clickCoords, updatedCurrentStructure, frozenCurrentStructure;
-					if (downOnAtom) {
-						clickCoords = innerCoords($event);
-						frozenCurrentStructure = DrawChemCache.getCurrentPosition() < DrawChemCache.getStructureLength() - 1 ?
-							angular.copy(DrawChemCache.getCurrentStructure()): angular.copy(currentStructure);
-						updatedCurrentStructure = modifyStructure(frozenCurrentStructure, clickCoords);
-						draw(updatedCurrentStructure);
-					}							
-				}
-				
-				/**
-				 * Calculates the coordinates of the mouse pointer during an event.
-				 * Takes into account the margin of the enclosing div.
-				 * @params {Event} $event - an Event object
-				 * @returns {Number[]}
-				 */
-				function innerCoords($event) {
-					// 
-					var content = element.find("dc-content")[0],
-						coords = [								
-							parseFloat(($event.clientX - content.getBoundingClientRect().left - 2).toFixed(2)),
-							parseFloat(($event.clientY - content.getBoundingClientRect().top - 2).toFixed(2))
-						]
-					return coords;
-				}
-				
-				/**
-				 * Resets to default values associated with mouse events.
-				 */
-				function resetMouseFlags() {
-					mouseDown = false;
-					downOnAtom = false;
-					downAtomCoords = undefined;
-				}
-				
-				/**
-				 * Draws the specified structure.
-				 * @params {Structure} structure - a Structure object to draw.
-				 */
-				function draw(structure) {
-					var drawn = "";					
-					drawn = DrawChemShapes.draw(structure, "cmpd1").generate();
-					DrawChem.setContent(drawn);					
-				}
-				
-				/**
-				 * Modifies the specified structure by adding a new structure to it.
-				 * @params {Structure} structure - a Structure object to modify,
-				 * @params {Number[]} clickCoords - coordinates of the mouse pointer
-				 * @returns {Structure}
-				 */
-				function modifyStructure(structure, clickCoords) {
-					return DrawChemShapes.modifyStructure(
-						structure,
-						angular.copy(scope.chosenStructure),
-						clickCoords,
-						downAtomCoords
-					);
-				}
-			}
-		}
-	}
-})();
-(function () {
-	"use strict";
-	angular.module("mmAngularDrawChem")
 		.factory("DCAtom", DCAtom);
 		
 	DCAtom.$inject = ["DrawChemConst"];
@@ -784,6 +577,213 @@
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
+		.directive("drawChemEditor", DrawChemEditor);
+	
+	DrawChemEditor.$inject = ["DrawChemShapes", "DrawChemStructures", "DrawChem", "$sce", "$window", "DrawChemConst", "DrawChemCache"];
+	
+	function DrawChemEditor(DrawChemShapes, DrawChemStructures, DrawChem, $sce, $window, DrawChemConst, DrawChemCache) {
+		return {
+			templateUrl: "draw-chem-editor.html",
+			scope: {
+				showEditor: "="
+			},
+			link: function (scope, element, attrs) {
+				
+				var downAtomCoords,
+					currentStructure,
+					mouseDown = false,
+					downOnAtom = false;
+				
+				/**
+				 * Sets width and height of the dialog box based on corresponding attributes.
+				 */
+				scope.dialogStyle = {};
+				if (attrs.width) {
+					scope.dialogStyle.width = attrs.width;					
+				}
+				if (attrs.height) {
+					scope.dialogStyle.height = attrs.height;					
+				}
+				
+				/**
+				 * Closes the editor.
+				 */
+				scope.closeEditor = function () {
+					DrawChem.closeEditor();
+				}
+				
+				/**
+				 * Returns content which will be bound in the dialog box.
+				 */
+				scope.content = function () {
+					return $sce.trustAsHtml(DrawChem.getContent());
+				}
+				
+				/**
+				 * Undoes a change associated with the most recent 'mouseup' event.
+				 */
+				scope.undo = function () {
+					DrawChemCache.moveLeftInStructures();
+					if (DrawChemCache.getCurrentPosition() === -1) {
+						DrawChem.clearContent();
+					} else {
+						draw(DrawChemCache.getCurrentStructure());
+					}
+				}
+				
+				/**
+				 * Reverses the most recent 'undo' action.
+				 */
+				scope.forward = function () {
+					DrawChemCache.moveRightInStructures();
+					draw(DrawChemCache.getCurrentStructure());
+				}
+				
+				/**
+				 * Clears the content.
+				 */
+				scope.clear = function () {
+					DrawChem.clearContent();
+				}
+				
+				/**
+				 * Transfers the content.
+				 */
+				scope.transfer = function () {
+					DrawChem.transferContent();
+				}
+				
+				/**
+				 * Stores the chosen structure.
+				 */
+				scope.chosenStructure;
+				
+				/**
+				 * Stores all predefined structures.
+				 */
+				scope.customButtons = [];
+				
+				/**
+				 * Adds all predefined shapes to the scope.
+				 */
+				angular.forEach(DrawChemStructures.custom, function (custom) {
+					var customInstance = custom();
+					scope.customButtons.push({
+						name: customInstance.name,
+						choose: function () {
+							scope.chosenStructure = customInstance;
+						}
+					});
+				});
+				
+				/**
+				 * Action to perform on 'mousedown' event.
+				 */
+				scope.doOnMouseDown = function ($event) {
+					var clickCoords = innerCoords($event);
+					
+					currentStructure = DrawChemCache.getCurrentPosition() < DrawChemCache.getStructureLength() - 1 ?
+							angular.copy(DrawChemCache.getCurrentStructure()): currentStructure;
+							
+					mouseDown = true;
+					if (DrawChem.getContent() !== "") {
+						downAtomCoords = DrawChemShapes.isWithin(currentStructure, clickCoords).absPos;
+						downOnAtom = true;
+					}
+				}
+				
+				/**
+				 * Action to perform on 'mouseup' event.
+				 */
+				scope.doOnMouseUp = function ($event) {
+					var structure,						
+						clickCoords = innerCoords($event);
+						
+					currentStructure = DrawChemCache.getCurrentPosition() < DrawChemCache.getStructureLength() - 1 ?
+							angular.copy(DrawChemCache.getCurrentStructure()): currentStructure;
+						
+					if (DrawChem.getContent() !== "") {
+						structure = modifyStructure(currentStructure, clickCoords);					
+					} else {
+						structure = angular.copy(scope.chosenStructure.getDefault());
+						structure.setOrigin(clickCoords);
+						currentStructure = structure;
+					}
+					DrawChemCache.addStructure(angular.copy(structure));
+					draw(structure);
+					resetMouseFlags();
+				}
+				
+				/**
+				 * Action to perform on 'mousemove' event.
+				 */
+				scope.doOnMouseMove = function ($event) {
+					var clickCoords, updatedCurrentStructure, frozenCurrentStructure;
+					if (downOnAtom) {
+						clickCoords = innerCoords($event);
+						frozenCurrentStructure = DrawChemCache.getCurrentPosition() < DrawChemCache.getStructureLength() - 1 ?
+							angular.copy(DrawChemCache.getCurrentStructure()): angular.copy(currentStructure);
+						updatedCurrentStructure = modifyStructure(frozenCurrentStructure, clickCoords);
+						draw(updatedCurrentStructure);
+					}							
+				}
+				
+				/**
+				 * Calculates the coordinates of the mouse pointer during an event.
+				 * Takes into account the margin of the enclosing div.
+				 * @params {Event} $event - an Event object
+				 * @returns {Number[]}
+				 */
+				function innerCoords($event) {
+					// 
+					var content = element.find("dc-content")[0],
+						coords = [								
+							parseFloat(($event.clientX - content.getBoundingClientRect().left - 2).toFixed(2)),
+							parseFloat(($event.clientY - content.getBoundingClientRect().top - 2).toFixed(2))
+						]
+					return coords;
+				}
+				
+				/**
+				 * Resets to default values associated with mouse events.
+				 */
+				function resetMouseFlags() {
+					mouseDown = false;
+					downOnAtom = false;
+					downAtomCoords = undefined;
+				}
+				
+				/**
+				 * Draws the specified structure.
+				 * @params {Structure} structure - a Structure object to draw.
+				 */
+				function draw(structure) {
+					var drawn = "";					
+					drawn = DrawChemShapes.draw(structure, "cmpd1").generate();
+					DrawChem.setContent(drawn);					
+				}
+				
+				/**
+				 * Modifies the specified structure by adding a new structure to it.
+				 * @params {Structure} structure - a Structure object to modify,
+				 * @params {Number[]} clickCoords - coordinates of the mouse pointer
+				 * @returns {Structure}
+				 */
+				function modifyStructure(structure, clickCoords) {
+					return DrawChemShapes.modifyStructure(
+						structure,
+						angular.copy(scope.chosenStructure),
+						clickCoords,
+						downAtomCoords
+					);
+				}
+			}
+		}
+	}
+})();
+(function () {
+	"use strict";
+	angular.module("mmAngularDrawChem")
 		.factory("DrawChemCache", DrawChemCache);
 	
 	function DrawChemCache() {
@@ -929,6 +929,192 @@
 		
 		return service;		
 	}		
+})();
+(function () {
+	"use strict";
+	angular.module("mmAngularDrawChem")
+		.factory("DrawChemStructures", DrawChemStructures);
+		
+	DrawChemStructures.$inject = ["DrawChemConst", "DCStructure", "DCStructureCluster", "DCAtom"];
+	
+	function DrawChemStructures(DrawChemConst, DCStructure, DCStructureCluster, DCAtom) {
+
+		var service = {},
+			Atom = DCAtom.Atom,
+			Structure = DCStructure.Structure,
+			StructureCluster = DCStructureCluster.StructureCluster,
+			BONDS = DrawChemConst.BONDS;
+		
+		/**
+		 * Generates benzene structures in each defined direction.
+		 * @returns {StructureCluster}
+		 */
+		service.benzene = function () {
+			var cluster,
+				name = "benzene",
+				defs = generateSixMemberedRings("aromatic");
+				
+			cluster = new StructureCluster(name, defs);
+			return cluster;
+		};
+		
+		/**
+		 * Generates cyclohexane structures in each defined direction.
+		 * @returns {StructureCluster}
+		 */
+		service.cyclohexane = function () {
+			var cluster,
+				name = "cyclohexane",
+				defs = generateSixMemberedRings();
+				
+			cluster = new StructureCluster(name, defs);
+			
+			return cluster;
+		};
+		
+		/**
+		 * Generates single bond structures in each defined direction.
+		 * @returns {StructureCluster}
+		 */
+		service.singleBond = function () {
+			var cluster,
+				name = "single-bond",
+				defs = generateSingleBonds();
+				
+			cluster = new StructureCluster(name, defs);
+				
+			return cluster;
+		};		
+		
+		/**
+		 * Stores all predefined structures.
+		 */
+		service.custom = [service.benzene, service.cyclohexane, service.singleBond];
+		
+		return service;
+		
+		/**
+		 * Generates six-membered rings (60 deg between bonds) in each of defined direction.
+		 * @param {String} decorate - indicates decorate element (e.g. aromatic ring)
+		 * @returns {Structure[]}
+		 */
+		function generateSixMemberedRings(decorate) {
+			var i, direction, result = [];
+			for (i = 0; i < BONDS.length; i += 1) {
+				direction = BONDS[i].direction;				
+				result.push(generateRing(direction));
+			}
+			
+			return result;
+			
+			/**
+			 * Generates a six-membered ring in the specified direction.
+			 * This may be a little bit confusing, but in this function, the direction parameter (e.g. N, NE1)
+			 * is associated not only with the bond direction,
+			 * but is also used to indicate the relative position of an atom.
+			 * @param {String} direction - direction of the ring
+			 * @returns {Structure}
+			 */
+			function generateRing(direction) {
+				var firstAtom, structure, bond,
+					dirs = calcDirections(direction),
+					opposite = Atom.getOppositeDirection(direction);
+				
+				firstAtom = new Atom([0, 0], [], "", dirs.current);
+				genAtoms(firstAtom, dirs, 6);
+				structure = new Structure(opposite, [firstAtom]);
+				if (typeof decorate !== "undefined") {
+					bond = DrawChemConst.getBondByDirection(opposite).bond;
+					structure.addDecorate(decorate, [bond[0], bond[1]]);
+				}
+				
+				return structure;
+				
+				/**
+				 * Recursievely generates atoms.
+				 * @param {Atom} atom - atom to which next atom will be added.
+				 * @param {Object} dirs - keeps track of attached bonds, next bond and next atom
+				 * @param {Number} depth - current depth of the structure tree				 
+				 */
+				function genAtoms(atom, dirs, depth) {
+					var newDirs = calcDirections(dirs.nextDirection), newAtom;
+					if (depth === 1) {
+						return atom.addBond(new Atom(dirs.nextBond, [], ""));
+					}
+					newAtom = new Atom(dirs.nextBond, [], "", newDirs.current);
+					atom.addBond(newAtom);
+					genAtoms(newAtom, newDirs, depth - 1);
+				}
+				
+				/**
+				 * Calculates attached bonds, next bond and next atom.
+				 * @param {String} direction - direction based on which calculations are made
+				 * @returns {Object}
+				 */
+				function calcDirections(direction) {
+					var i, left, right, next;
+					
+					for (i = 0; i < BONDS.length; i += 1) {
+						if (BONDS[i].direction === direction) {
+							left = moveToLeft(BONDS, i, 4);
+							right = moveToRight(BONDS, i, 4);
+							next = moveToRight(BONDS, i, 2);
+							break;
+						}
+					}
+					
+					return {
+						// attached bonds
+						current: [BONDS[left].direction, BONDS[right].direction],
+						// next bond
+						nextBond: BONDS[right].bond,
+						// next direction
+						nextDirection: BONDS[next].direction
+					};
+					
+					// this way, the array can be used circularly
+					function moveToLeft(array, index, d) {
+						if (index - d < 0) {
+							return index - d + array.length;
+						}
+						return index - d;
+					}
+					
+					// this way, the array can be used circularly
+					function moveToRight(array, index, d) {
+						if (index + d > array.length - 1) {
+							return index + d - array.length;
+						}
+						return index + d;
+					}
+				}
+			}
+		}
+		
+		/**
+		 * Generates single bonds in all defined directions.
+		 * @returns {Structure[]}
+		 */
+		function generateSingleBonds() {
+			var i, bond, direction, result = [];
+			for (i = 0; i < BONDS.length; i += 1) {
+				bond = BONDS[i].bond;
+				direction = BONDS[i].direction;
+				result.push(
+					new Structure(
+						direction,
+						[
+							new Atom([0, 0], [
+								new Atom(bond, [], "", [Atom.getOppositeDirection(direction)])
+							], "", [direction])
+						]
+					)
+				);
+			}
+			
+			return result;
+		}
+	}
 })();
 (function () {
 	"use strict";
@@ -1447,192 +1633,6 @@
 		function insideCircle(center, point) {
 			var tolerance = DrawChemConst.CIRC_R;
 			return Math.abs(center[0] - point[0]) < tolerance && Math.abs(center[1] - point[1]) < tolerance;
-		}
-	}
-})();
-(function () {
-	"use strict";
-	angular.module("mmAngularDrawChem")
-		.factory("DrawChemStructures", DrawChemStructures);
-		
-	DrawChemStructures.$inject = ["DrawChemConst", "DCStructure", "DCStructureCluster", "DCAtom"];
-	
-	function DrawChemStructures(DrawChemConst, DCStructure, DCStructureCluster, DCAtom) {
-
-		var service = {},
-			Atom = DCAtom.Atom,
-			Structure = DCStructure.Structure,
-			StructureCluster = DCStructureCluster.StructureCluster,
-			BONDS = DrawChemConst.BONDS;
-		
-		/**
-		 * Generates benzene structures in each defined direction.
-		 * @returns {StructureCluster}
-		 */
-		service.benzene = function () {
-			var cluster,
-				name = "benzene",
-				defs = generateSixMemberedRings("aromatic");
-				
-			cluster = new StructureCluster(name, defs);
-			return cluster;
-		};
-		
-		/**
-		 * Generates cyclohexane structures in each defined direction.
-		 * @returns {StructureCluster}
-		 */
-		service.cyclohexane = function () {
-			var cluster,
-				name = "cyclohexane",
-				defs = generateSixMemberedRings();
-				
-			cluster = new StructureCluster(name, defs);
-			
-			return cluster;
-		};
-		
-		/**
-		 * Generates single bond structures in each defined direction.
-		 * @returns {StructureCluster}
-		 */
-		service.singleBond = function () {
-			var cluster,
-				name = "single-bond",
-				defs = generateSingleBonds();
-				
-			cluster = new StructureCluster(name, defs);
-				
-			return cluster;
-		};		
-		
-		/**
-		 * Stores all predefined structures.
-		 */
-		service.custom = [service.benzene, service.cyclohexane, service.singleBond];
-		
-		return service;
-		
-		/**
-		 * Generates six-membered rings (60 deg between bonds) in each of defined direction.
-		 * @param {String} decorate - indicates decorate element (e.g. aromatic ring)
-		 * @returns {Structure[]}
-		 */
-		function generateSixMemberedRings(decorate) {
-			var i, direction, result = [];
-			for (i = 0; i < BONDS.length; i += 1) {
-				direction = BONDS[i].direction;				
-				result.push(generateRing(direction));
-			}
-			
-			return result;
-			
-			/**
-			 * Generates a six-membered ring in the specified direction.
-			 * This may be a little bit confusing, but in this function, the direction parameter (e.g. N, NE1)
-			 * is associated not only with the bond direction,
-			 * but is also used to indicate the relative position of an atom.
-			 * @param {String} direction - direction of the ring
-			 * @returns {Structure}
-			 */
-			function generateRing(direction) {
-				var firstAtom, structure, bond,
-					dirs = calcDirections(direction),
-					opposite = Atom.getOppositeDirection(direction);
-				
-				firstAtom = new Atom([0, 0], [], "", dirs.current);
-				genAtoms(firstAtom, dirs, 6);
-				structure = new Structure(opposite, [firstAtom]);
-				if (typeof decorate !== "undefined") {
-					bond = DrawChemConst.getBondByDirection(opposite).bond;
-					structure.addDecorate(decorate, [bond[0], bond[1]]);
-				}
-				
-				return structure;
-				
-				/**
-				 * Recursievely generates atoms.
-				 * @param {Atom} atom - atom to which next atom will be added.
-				 * @param {Object} dirs - keeps track of attached bonds, next bond and next atom
-				 * @param {Number} depth - current depth of the structure tree				 
-				 */
-				function genAtoms(atom, dirs, depth) {
-					var newDirs = calcDirections(dirs.nextDirection), newAtom;
-					if (depth === 1) {
-						return atom.addBond(new Atom(dirs.nextBond, [], ""));
-					}
-					newAtom = new Atom(dirs.nextBond, [], "", newDirs.current);
-					atom.addBond(newAtom);
-					genAtoms(newAtom, newDirs, depth - 1);
-				}
-				
-				/**
-				 * Calculates attached bonds, next bond and next atom.
-				 * @param {String} direction - direction based on which calculations are made
-				 * @returns {Object}
-				 */
-				function calcDirections(direction) {
-					var i, left, right, next;
-					
-					for (i = 0; i < BONDS.length; i += 1) {
-						if (BONDS[i].direction === direction) {
-							left = moveToLeft(BONDS, i, 4);
-							right = moveToRight(BONDS, i, 4);
-							next = moveToRight(BONDS, i, 2);
-							break;
-						}
-					}
-					
-					return {
-						// attached bonds
-						current: [BONDS[left].direction, BONDS[right].direction],
-						// next bond
-						nextBond: BONDS[right].bond,
-						// next direction
-						nextDirection: BONDS[next].direction
-					};
-					
-					// this way, the array can be used circularly
-					function moveToLeft(array, index, d) {
-						if (index - d < 0) {
-							return index - d + array.length;
-						}
-						return index - d;
-					}
-					
-					// this way, the array can be used circularly
-					function moveToRight(array, index, d) {
-						if (index + d > array.length - 1) {
-							return index + d - array.length;
-						}
-						return index + d;
-					}
-				}
-			}
-		}
-		
-		/**
-		 * Generates single bonds in all defined directions.
-		 * @returns {Structure[]}
-		 */
-		function generateSingleBonds() {
-			var i, bond, direction, result = [];
-			for (i = 0; i < BONDS.length; i += 1) {
-				bond = BONDS[i].bond;
-				direction = BONDS[i].direction;
-				result.push(
-					new Structure(
-						direction,
-						[
-							new Atom([0, 0], [
-								new Atom(bond, [], "", [Atom.getOppositeDirection(direction)])
-							], "", [direction])
-						]
-					)
-				);
-			}
-			
-			return result;
 		}
 	}
 })();
