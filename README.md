@@ -16,11 +16,12 @@ The project consists of the following components:
 3. `DrawChemConstants` factory - contains constant values, such as bond length, bond width, etc.,
 4. `DrawChemStructures` factory - defines basic structures, such as single bond, basic molecules (benzene, cyclohexane, etc.),
 5. `DrawChemShapes` factory - contains key functionalities for transforming a `Structure` object into `Shape` object (see terminology),
-6. `DCShape` factory - defines `Shape` class, which encapsulates svg-relevant data,
-7. `DCAtom` factory - defines `Atom` class, which encapsulates data about a single atom,
-8. `DCStructure` factory - defines `Structure` class, which encapsulates a structure tree (how the atoms are connected with each other),
-9. `DCStructureCluster` factory - defines `StructureCluster` class, which enables grouping of multiple `Structure` objects; used for predefined structures,
-10. `DrawChemConst` factory - contains all constants, e.g. BOND_LENGTH, BOND_WIDTH, etc.
+6. `DrawChemCache` factory - caching service for Structure objects,
+7. `DCShape` factory - defines `Shape` class, which encapsulates svg-relevant data,
+8. `DCAtom` factory - defines `Atom` class, which encapsulates data about a single atom,
+9. `DCStructure` factory - defines `Structure` class, which encapsulates a structure tree (how the atoms are connected with each other),
+10. `DCStructureCluster` factory - defines `StructureCluster` class, which enables grouping of multiple `Structure` objects; used for predefined structures,
+11. `DrawChemConst` factory - contains all constants, e.g. BOND_LENGTH, BOND_WIDTH, etc.
 
 ### terminology
 **`Shape`** vs **`Structure`**
