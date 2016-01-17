@@ -16,12 +16,16 @@
                 <div class="alert alert-danger">
                     <strong>Unstable and not yet fully functional!</strong>
                 </div>
-                <div class="alert alert-info">
+                <div class="alert alert-info" ng-controller="TestCtrl as ctrl">
                     <p>                    
-                        <div ng-controller="TestCtrl as ctrl">
+                        <div>
                             <strong>Try it:</strong>
                             <button class="btn btn-default" ng-click="ctrl.click()">Editor</button> 
-                        </div>
+                        </div>                        
+                    </p>
+                    <p>
+                        <strong>Output:</strong>
+                        <div class="mm-structure" ng-bind-html="ctrl.input()"></div>                        
                     </p>
                     <p>
                         Soon:
@@ -39,11 +43,6 @@
                     </p>
                 </div>
             </div>
-            
-            <!--div ng-controller="TestCtrl2 as ctrl">
-                <button ng-click="ctrl.click()">Editor</button>
-                From modal: <span ng-bind-html="ctrl.input()"></span>            
-            </div-->
             <div ng-controller="EditorCtrl as ctrl">
                 <div draw-chem-editor show-editor="ctrl.showEditor()" width="1000px" height="500px"></div>
             </div>
