@@ -2,8 +2,10 @@
 	"use strict";
 	angular.module("mmAngularDrawChem")
 		.factory("DCStructureCluster", DCStructureCluster);
+		
+	DCStructureCluster.$inject = ["DrawChemShapes"];
 	
-	function DCStructureCluster() {
+	function DCStructureCluster(DrawChemShapes) {
 		
 		var service = {};
 		
@@ -25,6 +27,16 @@
 		
 		StructureCluster.prototype.getDefault = function () {
 			return this.defaultStructure;
+		};
+		
+		StructureCluster.prototype.getStructure = function (mouseCoords1, mouseCoords2) {
+			var i,
+				direction = DrawChemShapes.getDirection(mouseCoords1, mouseCoords2);
+			for (i = 0; i < this.defs.length; i += 1) {
+				if (this.defs[i].getName() === direction) {
+					return this.defs[i];
+				}
+			}
 		};
 		
 		service.StructureCluster = StructureCluster;

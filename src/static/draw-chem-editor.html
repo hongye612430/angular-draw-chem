@@ -7,6 +7,8 @@
 				<span ng-repeat="custom in customButtons">
 					<button id="dc-{{custom.name}}" class="dc-custom-button" ng-click="custom.choose()" ng-bind="custom.name"></button>
 				</span>
+				<button id="dc-label" class="dc-custom-button" ng-click="changeLabel()">label</button>
+				<input type="text" ng-model="label" />
 				<button id="dc-undo" class="dc-custom-button" ng-click="undo()">undo</button>
 				<button id="dc-forward" class="dc-custom-button" ng-click="forward()">forward</button>
 				<button id="dc-clear" class="dc-custom-button" ng-click="clear()">clear</button>

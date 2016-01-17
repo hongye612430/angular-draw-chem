@@ -9,6 +9,21 @@
 		
 		var service = {};
 		
+		service.initialDefsFull =
+			"<defs>" +
+				"<filter id=\"solid1\">" +
+					"<feFlood flood-color=\"#ffffff\"/ result=\"white\" />" +
+					"<feComposite operator=\"over\" in2=\"white\" in=\"SourceGraphic\"/>" +
+				"</filter>" +
+			"</defs>";
+		service.initialDefsMini =
+			"<defs>" +
+				"<filter id=\"solid2\">" +
+					"<feFlood flood-color=\"#ffffff\"/ result=\"white\" />" +
+					"<feComposite operator=\"over\" in2=\"white\" in=\"SourceGraphic\"/>" +
+				"</filter>" +
+			"</defs>";
+		
 		/**
 		 * Creates a new Shape. This helper class has methods
 		 * for wrapping an svg element (e.g. path) with other elements (e.g. g, defs).		 
@@ -41,6 +56,11 @@
 					"stroke": "black",
 					"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
 					"fill": "none"
+				},
+				"text": {
+					"font-family": "Times New Roman",
+					"stroke-width": 0.5,
+					"stroke": "black"
 				}
 			};
 			this.styleMini = {
@@ -53,6 +73,11 @@
 					"stroke": "black",
 					"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
 					"fill": "none"
+				},
+				"text": {
+					"font-family": "Times New Roman",
+					"stroke-width": 0.5,
+					"stroke": "black"
 				}
 			}
 		}

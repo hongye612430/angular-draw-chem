@@ -21,6 +21,7 @@
 			this.info = info;
 			this.attachedBonds = attachedBonds || [];
 			this.next = "";
+			this.label = "";
 			this.calculateNext();
 		}
 		
@@ -208,6 +209,14 @@
 		 */
 		Atom.prototype.getNext = function () {
 			return this.next;
+		}
+		
+		Atom.prototype.setLabel = function (label) {
+			this.label = label;
+		}
+		
+		Atom.prototype.getLabel = function () {
+			return this.label;
 		}
 		
 		/**

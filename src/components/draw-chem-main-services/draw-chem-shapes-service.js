@@ -135,45 +135,7 @@
 			 * @returns {Atom[]}
 			 */
 			function chooseDirectionManually(current) {
-				var alpha = Math.PI / 6,
-					r = Math.sqrt(Math.pow((mousePos[0] - down[0]), 2) + Math.pow((mousePos[1] - down[1]), 2)),
-					x = Math.sin(alpha / 2) * r,
-					x1 = Math.cos(3 * alpha / 2) * r,
-					y = Math.cos(alpha / 2) * r,
-					y1 = Math.sin(3 * alpha / 2) * r,
-					output;
-				if (check(-x, x, -r, -y)) {
-					output = "N";
-				} else if (check(x, x1, -y, -y1)) {
-					output = "NE1";
-				} else if (check(x1, y, -y1, -x)) {
-					output = "NE2";
-				} else if (check(y, r, -x, x)) {
-					output = "E";
-				} else if (check(x1, y, x, y1)) {
-					output = "SE1";
-				} else if (check(x, x1, y1, y)) {
-					output = "SE2";
-				} else if (check(-x, x, y, r)) {
-					output = "S";
-				} else if (check(-x1, -x, y1, y)) {
-					output = "SW1";
-				} else if (check(-y, -x1, x, y1)) {
-					output = "SW2";
-				} else if (check(-r, -y, -x, x)) {
-					output = "W";
-				} else if (check(-y, -x1, -y1, -x)) {
-					output = "NW1";
-				} else if (check(-x1, -x, -y, -y1)) {
-					output = "NW2";
-				}
-				
-				return chooseMod(current, output);
-			
-				function check(arg1, arg2, arg3, arg4) {
-					return mousePos[0] > (down[0] + arg1) && mousePos[0] <= (down[0] + arg2) &&
-						mousePos[1] >= (down[1] + arg3) && mousePos[1] <= (down[1] + arg4);
-				}				
+				return chooseMod(current, service.getDirection(mousePos, down));
 			}			
 			
 			/**
@@ -245,13 +207,14 @@
 				output = parseInput(input),
 				paths = output.paths,
 				circles = output.circles,
+				labels = output.labels,
 				minMax = output.minMax;
 			shape = new DCShape.Shape(genElements().full, genElements().mini, id);
 			shape.elementFull = shape.generateStyle("full") + shape.elementFull;
 			shape.elementMini = shape.generateStyle("mini") + shape.elementMini;
 			shape.setMinMax(minMax);
-			shape.wrap("full", "g");
-			shape.wrap("mini", "g");
+			shape.elementMini = DCShape.initialDefsMini + shape.elementMini;
+			shape.elementFull = DCShape.initialDefsFull + shape.elementFull;
 			return shape;
 			
 			/**
@@ -267,6 +230,12 @@
 				});
 				circles.forEach(function (circle) {
 					full += "<circle class='atom' cx='" + circle[0] + "' cy='" + circle[1] + "' r='" + circle[2] + "' ></circle>";
+				});
+				labels.forEach(function (label) {
+					aux = "<text filter='url(#solid1)' x='" + label.x +  "' y='" + label.y + "'>" + label.label + "</text>";
+					full += aux;
+					aux = "<text filter='url(#solid2)' x='" + label.x +  "' y='" + label.y + "'>" + label.label + "</text>";
+					mini += aux;
 				});
 				if (input.getDecorate("aromatic")) {
 					input.getDecorate("aromatic").forEach(function (coords) {
@@ -291,7 +260,7 @@
 			* @returns {Object}
 			*/
 		    function parseInput(input) {
-				var output = [], circles = [],
+				var output = [], circles = [], labels = [],
 					origin = input.getOrigin(),
 					minMax = {
 						minX: origin[0],
@@ -315,6 +284,7 @@
 				return {
 					paths: stringifyPaths(),
 					circles: circles,
+					labels: labels,
 					minMax: minMax
 				};
 			   
@@ -337,36 +307,50 @@
 							prevAbsPos[1] + bonds[0].getCoords("y")
 						];
 						updateMinMax(absPos);
+						updateLabel(absPos, bonds[0]);
 						circles.push([absPos[0], absPos[1], circR]);
 						currentLine.push("L"); // 'l' for lineto - draws line to the specified coordinates
-						currentLine.push(absPos);					
-						connect(bonds[0].getCoords(), bonds[0].getBonds(), currentLine);
-						
+						currentLine.push(absPos);						
+						connect(bonds[0].getCoords(), bonds[0].getBonds(), currentLine);						
 						for (i = 1; i < bonds.length; i += 1) {
 							absPos = [
 								prevAbsPos[0] + bonds[i].getCoords("x"),
 								prevAbsPos[1] + bonds[i].getCoords("y")
 							];
 							updateMinMax(absPos);
+							updateLabel(absPos, bonds[i]);
 							circles.push([absPos[0], absPos[1], circR]);
 							newLen = output.push(["M", prevAbsPos, "L", absPos]);
 							connect(absPos, bonds[i].getBonds(), output[newLen - 1]);
 						}
-					}					
-				}
-				
-				function updateMinMax(absPos) {
-					if (absPos[0] > minMax.maxX) {
-						minMax.maxX = absPos[0];
 					}
-					if (absPos[0] < minMax.minX) {
-						minMax.minX = absPos[0];
+					
+					function updateLabel(absPos, atom) {
+						var label = atom.getLabel();
+						if (label !== "") {
+							labels.push(
+								{
+									x: absPos[0] - DrawChemConst.BOND_LENGTH * 0.15,
+									y: absPos[1] + DrawChemConst.BOND_LENGTH * 0.15,
+									label: label
+								}
+							);
+						}
 					}
-					if (absPos[1] > minMax.maxY) {
-						minMax.maxY = absPos[1];
-					}
-					if (absPos[1] < minMax.minY) {
-						minMax.minY = absPos[1];
+					
+					function updateMinMax(absPos) {
+						if (absPos[0] > minMax.maxX) {
+							minMax.maxX = absPos[0];
+						}
+						if (absPos[0] < minMax.minX) {
+							minMax.minX = absPos[0];
+						}
+						if (absPos[1] > minMax.maxY) {
+							minMax.maxY = absPos[1];
+						}
+						if (absPos[1] < minMax.minY) {
+							minMax.minY = absPos[1];
+						}
 					}
 				}
 			   
@@ -393,6 +377,46 @@
 				   return result;
 			   }
 		   }
+		}
+		
+		service.getDirection = function (pos1, pos2) {
+			var alpha = Math.PI / 6,
+				r = Math.sqrt(Math.pow((pos1[0] - pos2[0]), 2) + Math.pow((pos1[1] - pos2[1]), 2)),
+				x = Math.sin(alpha / 2) * r,
+				x1 = Math.cos(3 * alpha / 2) * r,
+				y = Math.cos(alpha / 2) * r,
+				y1 = Math.sin(3 * alpha / 2) * r;
+				
+			if (check(-x, x, -r, -y)) {
+				return "N";
+			} else if (check(x, x1, -y, -y1)) {
+				return "NE1";
+			} else if (check(x1, y, -y1, -x)) {
+				return "NE2";
+			} else if (check(y, r, -x, x)) {
+				return "E";
+			} else if (check(x1, y, x, y1)) {
+				return "SE1";
+			} else if (check(x, x1, y1, y)) {
+				return "SE2";
+			} else if (check(-x, x, y, r)) {
+				return "S";
+			} else if (check(-x1, -x, y1, y)) {
+				return "SW1";
+			} else if (check(-y, -x1, x, y1)) {
+				return "SW2";
+			} else if (check(-r, -y, -x, x)) {
+				return "W";
+			} else if (check(-y, -x1, -y1, -x)) {
+				return "NW1";
+			} else if (check(-x1, -x, -y, -y1)) {
+				return "NW2";
+			}
+			
+			function check(arg1, arg2, arg3, arg4) {
+				return pos1[0] > (pos2[0] + arg1) && pos1[0] <= (pos2[0] + arg2) &&
+					pos1[1] >= (pos2[1] + arg3) && pos1[1] <= (pos2[1] + arg4);
+			}
 		}
 		
 		return service;

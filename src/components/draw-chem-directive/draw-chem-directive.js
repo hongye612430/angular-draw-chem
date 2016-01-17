@@ -14,8 +14,18 @@
 			link: function (scope, element, attrs) {
 				
 				var downAtomCoords,
+					downClickCoords,
+					changeLabel = false,
+					movedOnEmpty = false,
 					mouseDown = false,
 					downOnAtom = false;
+					
+				scope.label = "";
+				
+				scope.changeLabel = function () {
+					changeLabel = true;
+					scope.chosenStructure = undefined;
+				}
 				
 				/**
 				 * Sets width and height of the dialog box based on corresponding attributes.
@@ -80,10 +90,10 @@
 					if (structure !== null) {
 						shape = DrawChemShapes.draw(structure, "cmpd1");
 						attr = {
-							"viewBox": (shape.minMax.minX - 10) + " " +
-								(shape.minMax.minY - 10) + " " +
-								(shape.minMax.maxX - shape.minMax.minX + 20) + " " +
-								(shape.minMax.maxY - shape.minMax.minY + 20),
+							"viewBox": (shape.minMax.minX - 20) + " " +
+								(shape.minMax.minY - 20) + " " +
+								(shape.minMax.maxX - shape.minMax.minX + 40) + " " +
+								(shape.minMax.maxY - shape.minMax.minY + 40),
 							"height": "100%",
 							"width": "100%"
 						};
@@ -121,10 +131,10 @@
 				 * Action to perform on 'mousedown' event.
 				 */
 				scope.doOnMouseDown = function ($event) {
-					var clickCoords = innerCoords($event);		
+					downClickCoords = innerCoords($event);		
 					mouseDown = true;
 					if (DrawChemCache.getCurrentStructure() !== null) {
-						downAtomCoords = DrawChemShapes.isWithin(DrawChemCache.getCurrentStructure(), clickCoords).absPos;
+						downAtomCoords = DrawChemShapes.isWithin(DrawChemCache.getCurrentStructure(), downClickCoords).absPos;						
 						if (typeof downAtomCoords !== "undefined") {
 							downOnAtom = true;
 						}
@@ -135,19 +145,34 @@
 				 * Action to perform on 'mouseup' event.
 				 */
 				scope.doOnMouseUp = function ($event) {
-					var structure,						
-						clickCoords = innerCoords($event),
+					var structure,
+						atom,
+						mouseCoords = innerCoords($event),						
 						currentStructure = DrawChemCache.getCurrentStructure();
-						
-					if (DrawChemCache.getCurrentStructure() !== null) {
-						structure = modifyStructure(currentStructure, clickCoords);					
+					
+					if (changeLabel) {
+						structure = angular.copy(currentStructure);
+						atom = DrawChemShapes.isWithin(structure, mouseCoords).foundAtom;
+						atom.setLabel(scope.label);
 					} else {
-						structure = angular.copy(scope.chosenStructure.getDefault());
-						structure.setOrigin(clickCoords);
+						if (DrawChemCache.getCurrentStructure() !== null) {
+							structure = modifyStructure(currentStructure, mouseCoords);					
+						} else if (typeof scope.chosenStructure !== "undefined") {
+							if (movedOnEmpty) {
+								structure = angular.copy(scope.chosenStructure.getStructure(mouseCoords, downClickCoords));
+								structure.setOrigin(downClickCoords);
+							} else {
+								structure = angular.copy(scope.chosenStructure.getDefault());
+								structure.setOrigin(mouseCoords);
+							}
+						}
 					}
-					DrawChemCache.addStructure(angular.copy(structure));
-					draw(structure);
-					resetMouseFlags();
+					
+					if (typeof structure !== "undefined") {
+						DrawChemCache.addStructure(angular.copy(structure));
+						draw(structure);
+						resetMouseFlags();
+					}
 				}
 				
 				/**
@@ -155,13 +180,19 @@
 				 */
 				scope.doOnMouseMove = function ($event) {
 					var mouseCoords = innerCoords($event),
-						updatedCurrentStructure,
-						frozenCurrentStructure;
-					if (downOnAtom) {
+						updatedCurrentStructure,						
+						frozenCurrentStructure,
+						structure;
+					if (downOnAtom && typeof scope.chosenStructure !== "undefined") {
 						frozenCurrentStructure = DrawChemCache.getCurrentStructure();
 						updatedCurrentStructure = modifyStructure(frozenCurrentStructure, mouseCoords, true);
 						draw(updatedCurrentStructure);
-					}				
+					} else if (mouseDown && typeof scope.chosenStructure !== "undefined" && DrawChemCache.getCurrentStructure() === null) {
+						structure = angular.copy(scope.chosenStructure.getStructure(mouseCoords, downClickCoords));
+						structure.setOrigin(downClickCoords);
+						movedOnEmpty = true;
+						draw(structure);
+					}
 				}
 				
 				/**
@@ -184,9 +215,12 @@
 				 * Resets to default values associated with mouse events.
 				 */
 				function resetMouseFlags() {
-					mouseDown = false;
+					mouseDown = false;					
 					downOnAtom = false;
+					movedOnEmpty = false;
+					changeLabel = false;
 					downAtomCoords = undefined;
+					downClickCoords = undefined;
 				}
 				
 				/**
