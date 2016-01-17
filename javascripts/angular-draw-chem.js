@@ -28,6 +28,7 @@
 			this.info = info;
 			this.attachedBonds = attachedBonds || [];
 			this.next = "";
+			this.label = "";
 			this.calculateNext();
 		}
 		
@@ -217,6 +218,14 @@
 			return this.next;
 		}
 		
+		Atom.prototype.setLabel = function (label) {
+			this.label = label;
+		}
+		
+		Atom.prototype.getLabel = function () {
+			return this.label;
+		}
+		
 		/**
 		 * Sets symbol of the next bond.
 		 * @param {String} - symbol of the next bond
@@ -285,6 +294,21 @@
 		
 		var service = {};
 		
+		service.initialDefsFull =
+			"<defs>" +
+				"<filter id=\"solid1\">" +
+					"<feFlood flood-color=\"#ffffff\"/ result=\"white\" />" +
+					"<feComposite operator=\"over\" in2=\"white\" in=\"SourceGraphic\"/>" +
+				"</filter>" +
+			"</defs>";
+		service.initialDefsMini =
+			"<defs>" +
+				"<filter id=\"solid2\">" +
+					"<feFlood flood-color=\"#ffffff\"/ result=\"white\" />" +
+					"<feComposite operator=\"over\" in2=\"white\" in=\"SourceGraphic\"/>" +
+				"</filter>" +
+			"</defs>";
+		
 		/**
 		 * Creates a new Shape. This helper class has methods
 		 * for wrapping an svg element (e.g. path) with other elements (e.g. g, defs).		 
@@ -317,6 +341,11 @@
 					"stroke": "black",
 					"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
 					"fill": "none"
+				},
+				"text": {
+					"font-family": "Times New Roman",
+					"stroke-width": 0.5,
+					"stroke": "black"
 				}
 			};
 			this.styleMini = {
@@ -329,6 +358,11 @@
 					"stroke": "black",
 					"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
 					"fill": "none"
+				},
+				"text": {
+					"font-family": "Times New Roman",
+					"stroke-width": 0.5,
+					"stroke": "black"
 				}
 			}
 		}
@@ -441,8 +475,10 @@
 	"use strict";
 	angular.module("mmAngularDrawChem")
 		.factory("DCStructureCluster", DCStructureCluster);
+		
+	DCStructureCluster.$inject = ["DrawChemShapes"];
 	
-	function DCStructureCluster() {
+	function DCStructureCluster(DrawChemShapes) {
 		
 		var service = {};
 		
@@ -464,6 +500,16 @@
 		
 		StructureCluster.prototype.getDefault = function () {
 			return this.defaultStructure;
+		};
+		
+		StructureCluster.prototype.getStructure = function (mouseCoords1, mouseCoords2) {
+			var i,
+				direction = DrawChemShapes.getDirection(mouseCoords1, mouseCoords2);
+			for (i = 0; i < this.defs.length; i += 1) {
+				if (this.defs[i].getName() === direction) {
+					return this.defs[i];
+				}
+			}
 		};
 		
 		service.StructureCluster = StructureCluster;
@@ -617,8 +663,18 @@
 			link: function (scope, element, attrs) {
 				
 				var downAtomCoords,
+					downClickCoords,
+					changeLabel = false,
+					movedOnEmpty = false,
 					mouseDown = false,
 					downOnAtom = false;
+					
+				scope.label = "";
+				
+				scope.changeLabel = function () {
+					changeLabel = true;
+					scope.chosenStructure = undefined;
+				}
 				
 				/**
 				 * Sets width and height of the dialog box based on corresponding attributes.
@@ -683,10 +739,10 @@
 					if (structure !== null) {
 						shape = DrawChemShapes.draw(structure, "cmpd1");
 						attr = {
-							"viewBox": (shape.minMax.minX - 10) + " " +
-								(shape.minMax.minY - 10) + " " +
-								(shape.minMax.maxX - shape.minMax.minX + 20) + " " +
-								(shape.minMax.maxY - shape.minMax.minY + 20),
+							"viewBox": (shape.minMax.minX - 20) + " " +
+								(shape.minMax.minY - 20) + " " +
+								(shape.minMax.maxX - shape.minMax.minX + 40) + " " +
+								(shape.minMax.maxY - shape.minMax.minY + 40),
 							"height": "100%",
 							"width": "100%"
 						};
@@ -724,10 +780,10 @@
 				 * Action to perform on 'mousedown' event.
 				 */
 				scope.doOnMouseDown = function ($event) {
-					var clickCoords = innerCoords($event);		
+					downClickCoords = innerCoords($event);		
 					mouseDown = true;
 					if (DrawChemCache.getCurrentStructure() !== null) {
-						downAtomCoords = DrawChemShapes.isWithin(DrawChemCache.getCurrentStructure(), clickCoords).absPos;
+						downAtomCoords = DrawChemShapes.isWithin(DrawChemCache.getCurrentStructure(), downClickCoords).absPos;						
 						if (typeof downAtomCoords !== "undefined") {
 							downOnAtom = true;
 						}
@@ -738,19 +794,34 @@
 				 * Action to perform on 'mouseup' event.
 				 */
 				scope.doOnMouseUp = function ($event) {
-					var structure,						
-						clickCoords = innerCoords($event),
+					var structure,
+						atom,
+						mouseCoords = innerCoords($event),						
 						currentStructure = DrawChemCache.getCurrentStructure();
-						
-					if (DrawChemCache.getCurrentStructure() !== null) {
-						structure = modifyStructure(currentStructure, clickCoords);					
+					
+					if (changeLabel) {
+						structure = angular.copy(currentStructure);
+						atom = DrawChemShapes.isWithin(structure, mouseCoords).foundAtom;
+						atom.setLabel(scope.label);
 					} else {
-						structure = angular.copy(scope.chosenStructure.getDefault());
-						structure.setOrigin(clickCoords);
+						if (DrawChemCache.getCurrentStructure() !== null) {
+							structure = modifyStructure(currentStructure, mouseCoords);					
+						} else if (typeof scope.chosenStructure !== "undefined") {
+							if (movedOnEmpty) {
+								structure = angular.copy(scope.chosenStructure.getStructure(mouseCoords, downClickCoords));
+								structure.setOrigin(downClickCoords);
+							} else {
+								structure = angular.copy(scope.chosenStructure.getDefault());
+								structure.setOrigin(mouseCoords);
+							}
+						}
 					}
-					DrawChemCache.addStructure(angular.copy(structure));
-					draw(structure);
-					resetMouseFlags();
+					
+					if (typeof structure !== "undefined") {
+						DrawChemCache.addStructure(angular.copy(structure));
+						draw(structure);
+						resetMouseFlags();
+					}
 				}
 				
 				/**
@@ -758,13 +829,19 @@
 				 */
 				scope.doOnMouseMove = function ($event) {
 					var mouseCoords = innerCoords($event),
-						updatedCurrentStructure,
-						frozenCurrentStructure;
-					if (downOnAtom) {
+						updatedCurrentStructure,						
+						frozenCurrentStructure,
+						structure;
+					if (downOnAtom && typeof scope.chosenStructure !== "undefined") {
 						frozenCurrentStructure = DrawChemCache.getCurrentStructure();
 						updatedCurrentStructure = modifyStructure(frozenCurrentStructure, mouseCoords, true);
 						draw(updatedCurrentStructure);
-					}				
+					} else if (mouseDown && typeof scope.chosenStructure !== "undefined" && DrawChemCache.getCurrentStructure() === null) {
+						structure = angular.copy(scope.chosenStructure.getStructure(mouseCoords, downClickCoords));
+						structure.setOrigin(downClickCoords);
+						movedOnEmpty = true;
+						draw(structure);
+					}
 				}
 				
 				/**
@@ -787,9 +864,12 @@
 				 * Resets to default values associated with mouse events.
 				 */
 				function resetMouseFlags() {
-					mouseDown = false;
+					mouseDown = false;					
 					downOnAtom = false;
+					movedOnEmpty = false;
+					changeLabel = false;
 					downAtomCoords = undefined;
+					downClickCoords = undefined;
 				}
 				
 				/**
@@ -1488,45 +1568,7 @@
 			 * @returns {Atom[]}
 			 */
 			function chooseDirectionManually(current) {
-				var alpha = Math.PI / 6,
-					r = Math.sqrt(Math.pow((mousePos[0] - down[0]), 2) + Math.pow((mousePos[1] - down[1]), 2)),
-					x = Math.sin(alpha / 2) * r,
-					x1 = Math.cos(3 * alpha / 2) * r,
-					y = Math.cos(alpha / 2) * r,
-					y1 = Math.sin(3 * alpha / 2) * r,
-					output;
-				if (check(-x, x, -r, -y)) {
-					output = "N";
-				} else if (check(x, x1, -y, -y1)) {
-					output = "NE1";
-				} else if (check(x1, y, -y1, -x)) {
-					output = "NE2";
-				} else if (check(y, r, -x, x)) {
-					output = "E";
-				} else if (check(x1, y, x, y1)) {
-					output = "SE1";
-				} else if (check(x, x1, y1, y)) {
-					output = "SE2";
-				} else if (check(-x, x, y, r)) {
-					output = "S";
-				} else if (check(-x1, -x, y1, y)) {
-					output = "SW1";
-				} else if (check(-y, -x1, x, y1)) {
-					output = "SW2";
-				} else if (check(-r, -y, -x, x)) {
-					output = "W";
-				} else if (check(-y, -x1, -y1, -x)) {
-					output = "NW1";
-				} else if (check(-x1, -x, -y, -y1)) {
-					output = "NW2";
-				}
-				
-				return chooseMod(current, output);
-			
-				function check(arg1, arg2, arg3, arg4) {
-					return mousePos[0] > (down[0] + arg1) && mousePos[0] <= (down[0] + arg2) &&
-						mousePos[1] >= (down[1] + arg3) && mousePos[1] <= (down[1] + arg4);
-				}				
+				return chooseMod(current, service.getDirection(mousePos, down));
 			}			
 			
 			/**
@@ -1598,13 +1640,14 @@
 				output = parseInput(input),
 				paths = output.paths,
 				circles = output.circles,
+				labels = output.labels,
 				minMax = output.minMax;
 			shape = new DCShape.Shape(genElements().full, genElements().mini, id);
 			shape.elementFull = shape.generateStyle("full") + shape.elementFull;
 			shape.elementMini = shape.generateStyle("mini") + shape.elementMini;
 			shape.setMinMax(minMax);
-			shape.wrap("full", "g");
-			shape.wrap("mini", "g");
+			shape.elementMini = DCShape.initialDefsMini + shape.elementMini;
+			shape.elementFull = DCShape.initialDefsFull + shape.elementFull;
 			return shape;
 			
 			/**
@@ -1620,6 +1663,12 @@
 				});
 				circles.forEach(function (circle) {
 					full += "<circle class='atom' cx='" + circle[0] + "' cy='" + circle[1] + "' r='" + circle[2] + "' ></circle>";
+				});
+				labels.forEach(function (label) {
+					aux = "<text filter='url(#solid1)' x='" + label.x +  "' y='" + label.y + "'>" + label.label + "</text>";
+					full += aux;
+					aux = "<text filter='url(#solid2)' x='" + label.x +  "' y='" + label.y + "'>" + label.label + "</text>";
+					mini += aux;
 				});
 				if (input.getDecorate("aromatic")) {
 					input.getDecorate("aromatic").forEach(function (coords) {
@@ -1644,7 +1693,7 @@
 			* @returns {Object}
 			*/
 		    function parseInput(input) {
-				var output = [], circles = [],
+				var output = [], circles = [], labels = [],
 					origin = input.getOrigin(),
 					minMax = {
 						minX: origin[0],
@@ -1668,6 +1717,7 @@
 				return {
 					paths: stringifyPaths(),
 					circles: circles,
+					labels: labels,
 					minMax: minMax
 				};
 			   
@@ -1690,36 +1740,50 @@
 							prevAbsPos[1] + bonds[0].getCoords("y")
 						];
 						updateMinMax(absPos);
+						updateLabel(absPos, bonds[0]);
 						circles.push([absPos[0], absPos[1], circR]);
 						currentLine.push("L"); // 'l' for lineto - draws line to the specified coordinates
-						currentLine.push(absPos);					
-						connect(bonds[0].getCoords(), bonds[0].getBonds(), currentLine);
-						
+						currentLine.push(absPos);						
+						connect(bonds[0].getCoords(), bonds[0].getBonds(), currentLine);						
 						for (i = 1; i < bonds.length; i += 1) {
 							absPos = [
 								prevAbsPos[0] + bonds[i].getCoords("x"),
 								prevAbsPos[1] + bonds[i].getCoords("y")
 							];
 							updateMinMax(absPos);
+							updateLabel(absPos, bonds[i]);
 							circles.push([absPos[0], absPos[1], circR]);
 							newLen = output.push(["M", prevAbsPos, "L", absPos]);
 							connect(absPos, bonds[i].getBonds(), output[newLen - 1]);
 						}
-					}					
-				}
-				
-				function updateMinMax(absPos) {
-					if (absPos[0] > minMax.maxX) {
-						minMax.maxX = absPos[0];
 					}
-					if (absPos[0] < minMax.minX) {
-						minMax.minX = absPos[0];
+					
+					function updateLabel(absPos, atom) {
+						var label = atom.getLabel();
+						if (label !== "") {
+							labels.push(
+								{
+									x: absPos[0] - DrawChemConst.BOND_LENGTH * 0.15,
+									y: absPos[1] + DrawChemConst.BOND_LENGTH * 0.15,
+									label: label
+								}
+							);
+						}
 					}
-					if (absPos[1] > minMax.maxY) {
-						minMax.maxY = absPos[1];
-					}
-					if (absPos[1] < minMax.minY) {
-						minMax.minY = absPos[1];
+					
+					function updateMinMax(absPos) {
+						if (absPos[0] > minMax.maxX) {
+							minMax.maxX = absPos[0];
+						}
+						if (absPos[0] < minMax.minX) {
+							minMax.minX = absPos[0];
+						}
+						if (absPos[1] > minMax.maxY) {
+							minMax.maxY = absPos[1];
+						}
+						if (absPos[1] < minMax.minY) {
+							minMax.minY = absPos[1];
+						}
 					}
 				}
 			   
@@ -1746,6 +1810,46 @@
 				   return result;
 			   }
 		   }
+		}
+		
+		service.getDirection = function (pos1, pos2) {
+			var alpha = Math.PI / 6,
+				r = Math.sqrt(Math.pow((pos1[0] - pos2[0]), 2) + Math.pow((pos1[1] - pos2[1]), 2)),
+				x = Math.sin(alpha / 2) * r,
+				x1 = Math.cos(3 * alpha / 2) * r,
+				y = Math.cos(alpha / 2) * r,
+				y1 = Math.sin(3 * alpha / 2) * r;
+				
+			if (check(-x, x, -r, -y)) {
+				return "N";
+			} else if (check(x, x1, -y, -y1)) {
+				return "NE1";
+			} else if (check(x1, y, -y1, -x)) {
+				return "NE2";
+			} else if (check(y, r, -x, x)) {
+				return "E";
+			} else if (check(x1, y, x, y1)) {
+				return "SE1";
+			} else if (check(x, x1, y1, y)) {
+				return "SE2";
+			} else if (check(-x, x, y, r)) {
+				return "S";
+			} else if (check(-x1, -x, y1, y)) {
+				return "SW1";
+			} else if (check(-y, -x1, x, y1)) {
+				return "SW2";
+			} else if (check(-r, -y, -x, x)) {
+				return "W";
+			} else if (check(-y, -x1, -y1, -x)) {
+				return "NW1";
+			} else if (check(-x1, -x, -y, -y1)) {
+				return "NW2";
+			}
+			
+			function check(arg1, arg2, arg3, arg4) {
+				return pos1[0] > (pos2[0] + arg1) && pos1[0] <= (pos2[0] + arg2) &&
+					pos1[1] >= (pos2[1] + arg3) && pos1[1] <= (pos2[1] + arg4);
+			}
 		}
 		
 		return service;
