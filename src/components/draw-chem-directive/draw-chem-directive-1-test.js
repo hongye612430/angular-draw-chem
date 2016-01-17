@@ -109,6 +109,24 @@ describe("DrawChemEditor directive tests - part1", function () {
 			);
 	});
 	
+	it("should be able to transfer empty content", function () {
+		var parallelScope = $rootScope.$new();
+			
+		parallelScope.input = function () {
+			return DrawChem.getContent("test");
+		};
+		parallelScope.run = function () {
+			DrawChem.runEditor("test");
+		};
+		
+		parallelScope.run();
+		expect(DrawChem.showEditor()).toEqual(true);
+		expect(parallelScope.input()).toEqual("");		
+		temp.find("#dc-transfer").click();
+		expect(parallelScope.input())
+			.toEqual("");
+	});
+	
 	it("should change content of the output after clicking on the drawing area", function () {
 		var custom = DrawChemStructures.benzene();		
 		DrawChem.runEditor("test");

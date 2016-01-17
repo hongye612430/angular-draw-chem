@@ -15,11 +15,13 @@
 		 * @param {StructureCluster} mod - StructureCluster containing appropriate Structure objects,
 		 * @param {Number[]} mousePos - position of the mouse when 'mouseup' event occurred
 		 * @param {Number[]|undefined} down - position of the mouse when 'mousedown' event occurred
+		 * @param {Boolean} mouseDownAndMove - true if 'mouseonmove' and 'mousedown' are true
 		 * @returns {Structure}
 		 */
-		service.modifyStructure = function (base, mod, mousePos, down) {
+		service.modifyStructure = function (base, mod, mousePos, down, mouseDownAndMove) {
 			var modStr,
 				found = false,
+				isInsideCircle,
 				origin = base.getOrigin();	
 			
 			modStructure(base.getStructure(), origin);
@@ -35,7 +37,12 @@
 				var i, absPos;
 				for(i = 0; i < struct.length; i += 1) {
 					absPos = [struct[i].getCoords("x") + pos[0], struct[i].getCoords("y") + pos[1]];
-					if (!found && insideCircle(absPos, mousePos)) {
+					
+					if (found) { continue; }
+					
+					isInsideCircle = insideCircle(absPos, mousePos);
+					
+					if (isInsideCircle && !mouseDownAndMove) {
 						// if 'mouseup' was within a circle around an atom
 						// and if a valid atom has not already been found
 							modStr = chooseMod(struct[i]);							
@@ -45,7 +52,7 @@
 							return base;										
 					}
 					
-					if (!found && compareCoords(down, absPos, 5)) {
+					if (!isInsideCircle && compareCoords(down, absPos, 5)) {
 						// if 'mousedown' was within a circle around an atom
 						// and if a valid atom has not already been found
 						modStr = chooseDirectionManually(struct[i]);
@@ -209,11 +216,11 @@
 				foundObj = {},
 				origin = structure.getOrigin();
 				
-			checkDeeper(structure.getStructure(), origin);
+			check(structure.getStructure(), origin);
 			
 			return foundObj;
 			
-			function checkDeeper(struct, pos) {
+			function check(struct, pos) {
 				var i, absPos;
 				for(i = 0; i < struct.length; i += 1) {
 					absPos = [struct[i].getCoords("x") + pos[0], struct[i].getCoords("y") + pos[1]];
@@ -222,7 +229,7 @@
 						foundObj.foundAtom = struct[i];
 						foundObj.absPos = absPos;
 					} else {
-						checkDeeper(struct[i].getBonds(), absPos);
+						check(struct[i].getBonds(), absPos);
 					}
 				}	
 			}

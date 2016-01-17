@@ -617,7 +617,6 @@
 			link: function (scope, element, attrs) {
 				
 				var downAtomCoords,
-					currentStructure,
 					mouseDown = false,
 					downOnAtom = false;
 				
@@ -677,9 +676,12 @@
 				/**
 				 * Transfers the content.
 				 */
-				scope.transfer = function () {
+				scope.transfer = function () {					
 					var structure = DrawChemCache.getCurrentStructure(),
-						shape = DrawChemShapes.draw(structure, "cmpd1"),
+						shape, attr, content = "";
+						
+					if (structure !== null) {
+						shape = DrawChemShapes.draw(structure, "cmpd1");
 						attr = {
 							"viewBox": (shape.minMax.minX - 10) + " " +
 								(shape.minMax.minY - 10) + " " +
@@ -687,8 +689,9 @@
 								(shape.minMax.maxY - shape.minMax.minY + 20),
 							"height": "100%",
 							"width": "100%"
-						},
+						};
 						content = shape.wrap("mini", "svg", attr).getElementMini();
+					}
 					DrawChem.setContent(content);
 					DrawChem.setStructure(structure);
 					DrawChem.transferContent();
@@ -721,15 +724,13 @@
 				 * Action to perform on 'mousedown' event.
 				 */
 				scope.doOnMouseDown = function ($event) {
-					var clickCoords = innerCoords($event);
-					
-					currentStructure = DrawChemCache.getCurrentPosition() < DrawChemCache.getStructureLength() - 1 ?
-							angular.copy(DrawChemCache.getCurrentStructure()): currentStructure;
-							
+					var clickCoords = innerCoords($event);		
 					mouseDown = true;
 					if (DrawChemCache.getCurrentStructure() !== null) {
-						downAtomCoords = DrawChemShapes.isWithin(currentStructure, clickCoords).absPos;
-						downOnAtom = true;
+						downAtomCoords = DrawChemShapes.isWithin(DrawChemCache.getCurrentStructure(), clickCoords).absPos;
+						if (typeof downAtomCoords !== "undefined") {
+							downOnAtom = true;
+						}
 					}
 				}
 				
@@ -738,17 +739,14 @@
 				 */
 				scope.doOnMouseUp = function ($event) {
 					var structure,						
-						clickCoords = innerCoords($event);
-						
-					currentStructure = DrawChemCache.getCurrentPosition() < DrawChemCache.getStructureLength() - 1 ?
-							angular.copy(DrawChemCache.getCurrentStructure()): currentStructure;
+						clickCoords = innerCoords($event),
+						currentStructure = DrawChemCache.getCurrentStructure();
 						
 					if (DrawChemCache.getCurrentStructure() !== null) {
 						structure = modifyStructure(currentStructure, clickCoords);					
 					} else {
 						structure = angular.copy(scope.chosenStructure.getDefault());
 						structure.setOrigin(clickCoords);
-						currentStructure = structure;
 					}
 					DrawChemCache.addStructure(angular.copy(structure));
 					draw(structure);
@@ -759,14 +757,14 @@
 				 * Action to perform on 'mousemove' event.
 				 */
 				scope.doOnMouseMove = function ($event) {
-					var clickCoords, updatedCurrentStructure, frozenCurrentStructure;
+					var mouseCoords = innerCoords($event),
+						updatedCurrentStructure,
+						frozenCurrentStructure;
 					if (downOnAtom) {
-						clickCoords = innerCoords($event);
-						frozenCurrentStructure = DrawChemCache.getCurrentPosition() < DrawChemCache.getStructureLength() - 1 ?
-							angular.copy(DrawChemCache.getCurrentStructure()): angular.copy(currentStructure);
-						updatedCurrentStructure = modifyStructure(frozenCurrentStructure, clickCoords);
+						frozenCurrentStructure = DrawChemCache.getCurrentStructure();
+						updatedCurrentStructure = modifyStructure(frozenCurrentStructure, mouseCoords, true);
 						draw(updatedCurrentStructure);
-					}							
+					}				
 				}
 				
 				/**
@@ -808,14 +806,16 @@
 				 * Modifies the specified structure by adding a new structure to it.
 				 * @params {Structure} structure - a Structure object to modify,
 				 * @params {Number[]} clickCoords - coordinates of the mouse pointer
+				 * @params {Boolean} mouseDownAndMove - true if 'mouseonmove' and 'mousedown' are true
 				 * @returns {Structure}
 				 */
-				function modifyStructure(structure, clickCoords) {
+				function modifyStructure(structure, mouseCoords, mouseDownAndMove) {
 					return DrawChemShapes.modifyStructure(
-						structure,
+						angular.copy(structure),
 						angular.copy(scope.chosenStructure),
-						clickCoords,
-						downAtomCoords
+						mouseCoords,
+						downAtomCoords,
+						mouseDownAndMove
 					);
 				}
 			}
@@ -1368,11 +1368,13 @@
 		 * @param {StructureCluster} mod - StructureCluster containing appropriate Structure objects,
 		 * @param {Number[]} mousePos - position of the mouse when 'mouseup' event occurred
 		 * @param {Number[]|undefined} down - position of the mouse when 'mousedown' event occurred
+		 * @param {Boolean} mouseDownAndMove - true if 'mouseonmove' and 'mousedown' are true
 		 * @returns {Structure}
 		 */
-		service.modifyStructure = function (base, mod, mousePos, down) {
+		service.modifyStructure = function (base, mod, mousePos, down, mouseDownAndMove) {
 			var modStr,
 				found = false,
+				isInsideCircle,
 				origin = base.getOrigin();	
 			
 			modStructure(base.getStructure(), origin);
@@ -1388,7 +1390,12 @@
 				var i, absPos;
 				for(i = 0; i < struct.length; i += 1) {
 					absPos = [struct[i].getCoords("x") + pos[0], struct[i].getCoords("y") + pos[1]];
-					if (!found && insideCircle(absPos, mousePos)) {
+					
+					if (found) { continue; }
+					
+					isInsideCircle = insideCircle(absPos, mousePos);
+					
+					if (isInsideCircle && !mouseDownAndMove) {
 						// if 'mouseup' was within a circle around an atom
 						// and if a valid atom has not already been found
 							modStr = chooseMod(struct[i]);							
@@ -1398,7 +1405,7 @@
 							return base;										
 					}
 					
-					if (!found && compareCoords(down, absPos, 5)) {
+					if (!isInsideCircle && compareCoords(down, absPos, 5)) {
 						// if 'mousedown' was within a circle around an atom
 						// and if a valid atom has not already been found
 						modStr = chooseDirectionManually(struct[i]);
@@ -1562,11 +1569,11 @@
 				foundObj = {},
 				origin = structure.getOrigin();
 				
-			checkDeeper(structure.getStructure(), origin);
+			check(structure.getStructure(), origin);
 			
 			return foundObj;
 			
-			function checkDeeper(struct, pos) {
+			function check(struct, pos) {
 				var i, absPos;
 				for(i = 0; i < struct.length; i += 1) {
 					absPos = [struct[i].getCoords("x") + pos[0], struct[i].getCoords("y") + pos[1]];
@@ -1575,7 +1582,7 @@
 						foundObj.foundAtom = struct[i];
 						foundObj.absPos = absPos;
 					} else {
-						checkDeeper(struct[i].getBonds(), absPos);
+						check(struct[i].getBonds(), absPos);
 					}
 				}	
 			}
