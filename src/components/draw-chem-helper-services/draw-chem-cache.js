@@ -4,23 +4,24 @@
 		.factory("DrawChemCache", DrawChemCache);
 	
 	function DrawChemCache() {
-		
+
 		var service = {},
 			namedStructures = {},			
-			cachedStructures = [],
-			structurePointer = -1,
+			cachedStructures = [{structure: null, svg: ""}],
+			structurePointer = 0,
 			maxCapacity = 10;
 		
 		service.addStructure = function (structure) {
 			if (structurePointer < cachedStructures.length - 1) {
 				cachedStructures = cachedStructures.slice(0, structurePointer + 1);				
 			}
-			cachedStructures.push(structure);
-			service.moveRightInStructures();
+			cachedStructures.push({structure: structure, svg: ""});			
 			
 			if (cachedStructures.length > 10) {
 				cachedStructures.shift();
-			}						
+			}
+			
+			service.moveRightInStructures();
 		};
 		
 		service.getCurrentPosition = function () {
@@ -31,20 +32,20 @@
 			return cachedStructures.length;
 		};
 		
-		service.removeLastStructure = function () {
-			return cachedStructures.pop();
-		};
-		
-		service.removeFirstStructure = function () {
-			return cachedStructures.shift();
-		};
-		
 		service.getCurrentStructure = function () {
-			return cachedStructures[structurePointer];
+			return cachedStructures[structurePointer].structure;
+		};
+		
+		service.getCurrentSvg = function () {
+			return cachedStructures[structurePointer].svg;
+		};
+		
+		service.setCurrentSvg = function (svg) {
+			cachedStructures[structurePointer].svg = svg;
 		};
 		
 		service.moveLeftInStructures = function () {
-			if (structurePointer > -1) {
+			if (structurePointer > 0) {
 				structurePointer -= 1;
 			}
 		};

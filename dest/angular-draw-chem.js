@@ -293,12 +293,13 @@
 		 * @param {string} element - an svg element
 		 * @param {string} id - an id of the element
 		 */
-		function Shape(element, id) {
-			this.element = element;
+		function Shape(elementFull, elementMini, id) {
+			this.elementFull = elementFull;
+			this.elementMini = elementMini;
 			this.id = id;
 			this.scale = 1;
 			this.transformAttr = "";
-			this.style = {
+			this.styleFull = {
 				"path": {
 					"stroke": "black",
 					"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
@@ -317,7 +318,23 @@
 					"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
 					"fill": "none"
 				}
+			};
+			this.styleMini = {
+				"path": {
+					"stroke": "black",
+					"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
+					"fill": "none"
+				},
+				"circle.arom": {
+					"stroke": "black",
+					"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
+					"fill": "none"
+				}
 			}
+		}
+		
+		Shape.prototype.setMinMax = function (minMax) {
+			this.minMax = minMax;
 		}
 		
 		/**
@@ -326,10 +343,10 @@
 		 * @param {Object} attr - attribute of the tag
 		 * @param {string} attr.key - name of the attribute
 		 * @param {string} attr.val - value of the attribute
-		 * @returns {Shape}
 		 */
-		Shape.prototype.wrap = function (el, attr) {
+		Shape.prototype.wrap = function (which, el, attr) {
 			var customAttr = {}, tagOpen;
+			
 			if (el === "g" && !attr) {
 				attr = customAttr;
 				attr.id = this.id;
@@ -339,9 +356,17 @@
 				angular.forEach(attr, function (val, key) {
 					tagOpen += key + "='" + val + "' ";
 				});
-				this.element = tagOpen + ">" + this.element + "</" + el + ">";
+				if (which === "full") {
+					this.elementFull = tagOpen + ">" + this.elementFull + "</" + el + ">";
+				} else if (which === "mini") {
+					this.elementMini = tagOpen + ">" + this.elementMini + "</" + el + ">";
+				}
 			} else {
-				this.element = "<" + el + ">" + this.element + "</" + el + ">";
+				if (which === "full") {
+					this.elementFull = "<" + el + ">" + this.elementFull + "</" + el + ">";
+				} else if (which === "mini") {
+					this.elementMini = "<" + el + ">" + this.elementMini + "</" + el + ">";
+				}
 			}
 			return this;
 		};
@@ -367,14 +392,6 @@
 		};
 		
 		/**
-		 * Adds a specified style to styleAttr.
-		 * 
-		 */
-		Shape.prototype.style = function (style) {
-			// todo
-		};
-		
-		/**
 		 * Generates 'use' tag based on id, transformAttr, and styleAttr.
 		 * @returns {string}
 		 */
@@ -384,9 +401,16 @@
 				"'></use>";
 		};
 		
-		Shape.prototype.generateStyle = function () {
+		Shape.prototype.generateStyle = function (which) {
 			var attr = "<style type=\"text/css\">";
-			angular.forEach(this.style, function (value, key) {
+			
+			if (which === "full") {
+				which = this.styleFull;
+			} else if (which === "mini") {
+				which = this.styleMini;
+			}
+			
+			angular.forEach(which, function (value, key) {
 				attr += key + "{";
 				angular.forEach(value, function (value, key) {
 					attr += key + ":" + value + ";";
@@ -400,9 +424,12 @@
 		 * Generates 'use' element and wraps the content with 'svg' tags.
 		 * @returns {string}
 		 */
-		Shape.prototype.generate = function () {
-			//this.element += this.generateUse();
-			return this.wrap("svg").element;
+		Shape.prototype.getElementFull = function () {			
+			return this.elementFull;
+		};
+		
+		Shape.prototype.getElementMini = function () {			
+			return this.elementMini;
 		};
 		
 		service.Shape = Shape;
@@ -579,9 +606,9 @@
 	angular.module("mmAngularDrawChem")
 		.directive("drawChemEditor", DrawChemEditor);
 	
-	DrawChemEditor.$inject = ["DrawChemShapes", "DrawChemStructures", "DrawChem", "$sce", "$window", "DrawChemConst", "DrawChemCache"];
+	DrawChemEditor.$inject = ["DrawChemShapes", "DrawChemStructures", "DrawChem", "DrawChemConst", "DrawChemCache", "$sce", "$window"];
 	
-	function DrawChemEditor(DrawChemShapes, DrawChemStructures, DrawChem, $sce, $window, DrawChemConst, DrawChemCache) {
+	function DrawChemEditor(DrawChemShapes, DrawChemStructures, DrawChem, DrawChemConst, DrawChemCache, $sce, $window) {
 		return {
 			templateUrl: "draw-chem-editor.html",
 			scope: {
@@ -616,23 +643,23 @@
 				 * Returns content which will be bound in the dialog box.
 				 */
 				scope.content = function () {
-					return $sce.trustAsHtml(DrawChem.getContent());
+					return $sce.trustAsHtml(DrawChemCache.getCurrentSvg());
 				}
 				
 				/**
-				 * Undoes a change associated with the most recent 'mouseup' event.
+				 * Undoes a change associated with the recent 'mouseup' event.
 				 */
 				scope.undo = function () {
 					DrawChemCache.moveLeftInStructures();
-					if (DrawChemCache.getCurrentPosition() === -1) {
+					if (DrawChemCache.getCurrentStructure() === null) {
 						DrawChem.clearContent();
 					} else {
 						draw(DrawChemCache.getCurrentStructure());
-					}
+					}				
 				}
 				
 				/**
-				 * Reverses the most recent 'undo' action.
+				 * Reverses the recent 'undo' action.
 				 */
 				scope.forward = function () {
 					DrawChemCache.moveRightInStructures();
@@ -643,13 +670,27 @@
 				 * Clears the content.
 				 */
 				scope.clear = function () {
-					DrawChem.clearContent();
+					DrawChemCache.addStructure(null);
+					DrawChemCache.setCurrentSvg("");
 				}
 				
 				/**
 				 * Transfers the content.
 				 */
 				scope.transfer = function () {
+					var structure = DrawChemCache.getCurrentStructure(),
+						shape = DrawChemShapes.draw(structure, "cmpd1"),
+						attr = {
+							"viewBox": (shape.minMax.minX - 10) + " " +
+								(shape.minMax.minY - 10) + " " +
+								(shape.minMax.maxX - shape.minMax.minX + 20) + " " +
+								(shape.minMax.maxY - shape.minMax.minY + 20),
+							"height": "100%",
+							"width": "100%"
+						},
+						content = shape.wrap("mini", "svg", attr).getElementMini();
+					DrawChem.setContent(content);
+					DrawChem.setStructure(structure);
 					DrawChem.transferContent();
 				}
 				
@@ -686,7 +727,7 @@
 							angular.copy(DrawChemCache.getCurrentStructure()): currentStructure;
 							
 					mouseDown = true;
-					if (DrawChem.getContent() !== "") {
+					if (DrawChemCache.getCurrentStructure() !== null) {
 						downAtomCoords = DrawChemShapes.isWithin(currentStructure, clickCoords).absPos;
 						downOnAtom = true;
 					}
@@ -702,7 +743,7 @@
 					currentStructure = DrawChemCache.getCurrentPosition() < DrawChemCache.getStructureLength() - 1 ?
 							angular.copy(DrawChemCache.getCurrentStructure()): currentStructure;
 						
-					if (DrawChem.getContent() !== "") {
+					if (DrawChemCache.getCurrentStructure() !== null) {
 						structure = modifyStructure(currentStructure, clickCoords);					
 					} else {
 						structure = angular.copy(scope.chosenStructure.getDefault());
@@ -759,8 +800,8 @@
 				 */
 				function draw(structure) {
 					var drawn = "";					
-					drawn = DrawChemShapes.draw(structure, "cmpd1").generate();
-					DrawChem.setContent(drawn);					
+					drawn = DrawChemShapes.draw(structure, "cmpd1");
+					DrawChemCache.setCurrentSvg(drawn.wrap("full", "svg").getElementFull());
 				}
 				
 				/**
@@ -787,23 +828,24 @@
 		.factory("DrawChemCache", DrawChemCache);
 	
 	function DrawChemCache() {
-		
+
 		var service = {},
 			namedStructures = {},			
-			cachedStructures = [],
-			structurePointer = -1,
+			cachedStructures = [{structure: null, svg: ""}],
+			structurePointer = 0,
 			maxCapacity = 10;
 		
 		service.addStructure = function (structure) {
 			if (structurePointer < cachedStructures.length - 1) {
 				cachedStructures = cachedStructures.slice(0, structurePointer + 1);				
 			}
-			cachedStructures.push(structure);
-			service.moveRightInStructures();
+			cachedStructures.push({structure: structure, svg: ""});			
 			
 			if (cachedStructures.length > 10) {
 				cachedStructures.shift();
-			}						
+			}
+			
+			service.moveRightInStructures();
 		};
 		
 		service.getCurrentPosition = function () {
@@ -814,20 +856,20 @@
 			return cachedStructures.length;
 		};
 		
-		service.removeLastStructure = function () {
-			return cachedStructures.pop();
-		};
-		
-		service.removeFirstStructure = function () {
-			return cachedStructures.shift();
-		};
-		
 		service.getCurrentStructure = function () {
-			return cachedStructures[structurePointer];
+			return cachedStructures[structurePointer].structure;
+		};
+		
+		service.getCurrentSvg = function () {
+			return cachedStructures[structurePointer].svg;
+		};
+		
+		service.setCurrentSvg = function (svg) {
+			cachedStructures[structurePointer].svg = svg;
 		};
 		
 		service.moveLeftInStructures = function () {
-			if (structurePointer > -1) {
+			if (structurePointer > 0) {
 				structurePointer -= 1;
 			}
 		};
@@ -860,8 +902,13 @@
 		init();
 		
 		function init() {
+			
+			var calcBond;
+			
 			// the default bond length
 			service.BOND_LENGTH = service.SET_BOND_LENGTH || 20;
+			
+			calcBond = parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2));
 			
 			// proportion of the bond width to bond length
 			// 0.04 corresponds to the ACS settings in ChemDraw, according to
@@ -882,25 +929,25 @@
 			// bond in south direction
 			service.BOND_S = [0, service.BOND_LENGTH];
 			// bond in east direction
-			service.BOND_E = [parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2)), 0];
+			service.BOND_E = [service.BOND_LENGTH, 0];
 			// bond in west direction
-			service.BOND_W = [-parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2)), 0];
+			service.BOND_W = [-service.BOND_LENGTH, 0];
 			// bond in north-east direction (first clock-wise)
-			service.BOND_NE1 = [service.BOND_LENGTH / 2, -parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2))],
+			service.BOND_NE1 = [service.BOND_LENGTH / 2, -calcBond],
 			// bond in north-east direction (second clock-wise)
-			service.BOND_NE2 = [parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2)), -service.BOND_LENGTH / 2];
+			service.BOND_NE2 = [calcBond, -service.BOND_LENGTH / 2];
 			// bond in south-east direction (first clock-wise)
-			service.BOND_SE1 = [parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2)), service.BOND_LENGTH / 2],
+			service.BOND_SE1 = [calcBond, service.BOND_LENGTH / 2],
 			// bond in south-east direction (second clock-wise)
-			service.BOND_SE2 = [service.BOND_LENGTH / 2, parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2))];
+			service.BOND_SE2 = [service.BOND_LENGTH / 2, calcBond];
 			// bond in south-west direction (first clock-wise)
-			service.BOND_SW1 = [-service.BOND_LENGTH / 2, parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2))];
+			service.BOND_SW1 = [-service.BOND_LENGTH / 2, calcBond];
 			// bond in south-west direction (second clock-wise)
-			service.BOND_SW2 = [-parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2)), service.BOND_LENGTH / 2];
+			service.BOND_SW2 = [-calcBond, service.BOND_LENGTH / 2];
 			// bond in north-west direction (first clock-wise)
-			service.BOND_NW1 = [-parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2)), -service.BOND_LENGTH / 2];
+			service.BOND_NW1 = [-calcBond, -service.BOND_LENGTH / 2];
 			// bond in north-west direction (second clock-wise)	
-			service.BOND_NW2 = [-service.BOND_LENGTH / 2, -parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2))];					
+			service.BOND_NW2 = [-service.BOND_LENGTH / 2, -calcBond];					
 			// bonds as array
 			service.BONDS = [
 				{ direction: "N", bond: service.BOND_N },
@@ -1152,12 +1199,14 @@
 			if (!instanceExists(name)) {
 				instances.push({
 					name: name,
-					content: ""
+					content: "",
+					structure: null
 				});
 			}
 			inst = getInstance(name);
 			currentInstance.name = inst.name;
 			currentInstance.content = inst.content;
+			currentInstance.structure = inst.structure;
 		}
 		
 		/**
@@ -1175,6 +1224,13 @@
 			return currentInstance.content;
 		}
 		
+		service.getInstance = function (name) {			
+			if (typeof name === "undefined") {				
+				return currentInstance;
+			}
+			return getInstance(name);
+		}
+		
 		/**
 		 * Sets the content of the 'instance'. If the name of the 'instance' is not supplied,
 		 * the content of the currently active 'instance' is set and then the corresponding 'instance' in the 'instances' array is updated.
@@ -1186,7 +1242,15 @@
 			if (typeof name === "undefined") {
 				currentInstance.content = content;
 			} else {
-				setInstance(content, name);
+				setContent(content, name);
+			}
+		}
+		
+		service.setStructure = function (structure, name) {			 
+			if (typeof name === "undefined") {
+				currentInstance.structure = structure;
+			} else {
+				setStructure(structure, name);
 			}
 		}
 		
@@ -1195,7 +1259,8 @@
 		 * @public
 		 */
 		service.transferContent = function () {
-			setInstance(currentInstance.content, currentInstance.name);
+			setContent(currentInstance.content, currentInstance.name);
+			setStructure(currentInstance.structure, currentInstance.name);
 		}
 		
 		/**
@@ -1215,7 +1280,7 @@
 		 */
 		service.clearContent = function (name) {
 			if (typeof name === "string") {
-				setInstance("", name);
+				setContent("", name);
 			} else {
 				currentInstance.content = "";	
 			}			
@@ -1259,7 +1324,7 @@
 		 * @private
 		 * @param {string} - name of the 'instance' to look for
 		 */
-		function setInstance(content, name) {
+		function setContent(content, name) {
 			var i;
 			for (i = 0; i < instances.length; i++) {
 				if (instances[i].name === name) {
@@ -1269,6 +1334,19 @@
 			instances.push({
 				name: name,
 				content: content
+			});
+		}
+		
+		function setStructure(structure, name) {
+			var i;
+			for (i = 0; i < instances.length; i++) {
+				if (instances[i].name === name) {
+					return instances[i].structure = structure;
+				}
+			}
+			instances.push({
+				name: name,
+				structure: structure
 			});
 		}
 	}
@@ -1512,114 +1590,155 @@
 			var shape,
 				output = parseInput(input),
 				paths = output.paths,
-				circles = output.circles;
-			shape = new DCShape.Shape(genElements(), id);
-			shape.element = shape.generateStyle() + shape.element;
-			return shape.wrap("g");
+				circles = output.circles,
+				minMax = output.minMax;
+			shape = new DCShape.Shape(genElements().full, genElements().mini, id);
+			shape.elementFull = shape.generateStyle("full") + shape.elementFull;
+			shape.elementMini = shape.generateStyle("mini") + shape.elementMini;
+			shape.setMinMax(minMax);
+			shape.wrap("full", "g");
+			shape.wrap("mini", "g");
+			return shape;
 			
-			// generates a string from the output array and wraps each line with 'path' tags.
+			/**
+			 * Generates a string from the output array and wraps each line with 'path' tags, each circle with 'circle' tags,
+			 * and each decorate element with suitable tags.
+			 */
 			function genElements() {
-				var result = "", coords;
+				var full = "", mini = "", aux = "";
 				paths.forEach(function (path) {
-					result += "<path d='" + path + "'></path>";					
+					aux = "<path d='" + path + "'></path>";
+					full += aux;
+					mini += aux;					
 				});
 				circles.forEach(function (circle) {
-					result += "<circle class='atom' cx='" + circle[0] + "' cy='" + circle[1] + "' r='" + circle[2] + "' ></circle>";
+					full += "<circle class='atom' cx='" + circle[0] + "' cy='" + circle[1] + "' r='" + circle[2] + "' ></circle>";
 				});
 				if (input.getDecorate("aromatic")) {
 					input.getDecorate("aromatic").forEach(function (coords) {
-						result += "<circle class='arom' cx='" + coords[0] +
+						aux = "<circle class='arom' cx='" + coords[0] +
 						"' cy='" + coords[1] +
 						"' r='" + DrawChemConst.AROMATIC_R +
 						"' ></circle>";
+						full += aux;
+						mini += aux;
 					})					
 				}
 				
-				return result;
-			}
-		}
-		
-		/**
-		 * Translates the input into an svg-suitable set of coordinates.
-		 * @param {Structure} input - an input object
-		 * @returns {Object}
-		 */
-		function parseInput(input) {
-			var output = [], circles = [], circR = DrawChemConst.CIRC_R,
-				// sets the coordinates of the root element
-				// 'M' for 'moveto' - sets pen to the coordinates
-				len = output.push(["M", input.getOrigin()]);
-				
-			circles.push([
-				input.getOrigin("x"),
-				input.getOrigin("y"),
-				circR
-			]);
-			
-			connect(input.getOrigin(), input.getStructure(0).getBonds(), output[len - 1]);
-			
-			return {
-				paths: stringifyPaths(),
-				circles: circles
+				return {
+					full: full,
+					mini: mini
+				};
 			}
 			
 			/**
-			 * Recursively translates the input, until it finds an element with an empty 'bonds' array.
-			 * @param {Number[]} root - a two-element array of coordinates of the root element
-			 * @param {Structure[]} bonds - an array of Structure 'instances'
-			 * @param {Array} - an array of coordinates with 'M' and 'l' commands
-			 */
-			function connect(root, bonds, currentLine) {
-				var i, newLen, absPos,
-					prevAbsPos = [
+			* Translates the input into an svg-suitable set of coordinates.
+			* @param {Structure} input - an input object
+			* @returns {Object}
+			*/
+		    function parseInput(input) {
+				var output = [], circles = [],
+					origin = input.getOrigin(),
+					minMax = {
+						minX: origin[0],
+						minY: origin[1],
+						maxX: origin[0],
+						maxY: origin[1]
+					},
+					circR = DrawChemConst.CIRC_R,
+					// sets the coordinates of the root element
+					// 'M' for 'moveto' - sets pen to the coordinates
+					len = output.push(["M", origin]);
+				   
+				circles.push([
+				   input.getOrigin("x"),
+				   input.getOrigin("y"),
+				   circR
+				]);
+			   
+				connect(origin, input.getStructure(0).getBonds(), output[len - 1]);
+			   
+				return {
+					paths: stringifyPaths(),
+					circles: circles,
+					minMax: minMax
+				};
+			   
+				/**
+				* Recursively translates the input, until it finds an element with an empty 'bonds' array.
+				* @param {Number[]} root - a two-element array of coordinates of the root element
+				* @param {Atom[]} bonds - an array of Atom objects
+				* @param {String|Number[]} - an array of coordinates with 'M' and 'l' commands
+				*/
+				function connect(root, bonds, currentLine) {
+					var i, newLen, absPos,
+						prevAbsPos = [
 						circles[circles.length - 1][0],
 						circles[circles.length - 1][1]
 					];				
-				// if length of the bonds is 0, then do nothing				
-				if (bonds.length > 0) {
-					absPos = [
-						prevAbsPos[0] + bonds[0].getCoords("x"),
-						prevAbsPos[1] + bonds[0].getCoords("y")
-					];
-					circles.push([absPos[0], absPos[1], circR]);
-					currentLine.push("L"); // 'l' for lineto - draws line to the specified coordinates
-					currentLine.push(absPos);					
-					
-					connect(bonds[0].getCoords(), bonds[0].getBonds(), currentLine);
-				}				
-				for (i = 1; i < bonds.length; i += 1) {
-					absPos = [
-						prevAbsPos[0] + bonds[i].getCoords("x"),
-						prevAbsPos[1] + bonds[i].getCoords("y")
-					];
-					circles.push([absPos[0], absPos[1], circR]);
-					newLen = output.push(["M", prevAbsPos, "L", absPos]);
-					connect(absPos, bonds[i].getBonds(), output[newLen - 1]);
-				}
-			}
-			
-			/**
-			 * Transforms output into an array of strings.
-			 * Basically, it translates each array of coordinates into its string representation.
-			 * @returns {String[]}
-			 */
-			function stringifyPaths() {
-				var result = [], i, j, line, point, lineStr;
-				for (i = 0; i < output.length; i += 1) {
-					line = output[i];
-					lineStr = "";
-					for (j = 0; j < line.length; j += 1) {
-						point = line[j];
-						if (typeof point === "string") {
-							lineStr += point + " ";
-						} else {
-							lineStr += point[0] + " " + point[1] + " ";
+					// if length of the bonds is 0, then do nothing				
+					if (bonds.length > 0) {
+						absPos = [
+							prevAbsPos[0] + bonds[0].getCoords("x"),
+							prevAbsPos[1] + bonds[0].getCoords("y")
+						];
+						updateMinMax(absPos);
+						circles.push([absPos[0], absPos[1], circR]);
+						currentLine.push("L"); // 'l' for lineto - draws line to the specified coordinates
+						currentLine.push(absPos);					
+						connect(bonds[0].getCoords(), bonds[0].getBonds(), currentLine);
+						
+						for (i = 1; i < bonds.length; i += 1) {
+							absPos = [
+								prevAbsPos[0] + bonds[i].getCoords("x"),
+								prevAbsPos[1] + bonds[i].getCoords("y")
+							];
+							updateMinMax(absPos);
+							circles.push([absPos[0], absPos[1], circR]);
+							newLen = output.push(["M", prevAbsPos, "L", absPos]);
+							connect(absPos, bonds[i].getBonds(), output[newLen - 1]);
 						}
-					}
-					result.push(lineStr);
+					}					
 				}
-				return result;
-			}
+				
+				function updateMinMax(absPos) {
+					if (absPos[0] > minMax.maxX) {
+						minMax.maxX = absPos[0];
+					}
+					if (absPos[0] < minMax.minX) {
+						minMax.minX = absPos[0];
+					}
+					if (absPos[1] > minMax.maxY) {
+						minMax.maxY = absPos[1];
+					}
+					if (absPos[1] < minMax.minY) {
+						minMax.minY = absPos[1];
+					}
+				}
+			   
+			   /**
+				* Transforms output into an array of strings.
+				* Basically, it translates each array of coordinates into its string representation.
+				* @returns {String[]}
+				*/
+			   function stringifyPaths() {
+				   var result = [], i, j, line, point, lineStr;
+				   for (i = 0; i < output.length; i += 1) {
+					   line = output[i];
+					   lineStr = "";
+					   for (j = 0; j < line.length; j += 1) {
+						   point = line[j];
+						   if (typeof point === "string") {
+							   lineStr += point + " ";
+						   } else {
+							   lineStr += point[0] + " " + point[1] + " ";
+						   }
+					   }
+					   result.push(lineStr);
+				   }
+				   return result;
+			   }
+		   }
 		}
 		
 		return service;

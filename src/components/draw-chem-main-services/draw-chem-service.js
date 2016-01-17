@@ -34,12 +34,14 @@
 			if (!instanceExists(name)) {
 				instances.push({
 					name: name,
-					content: ""
+					content: "",
+					structure: null
 				});
 			}
 			inst = getInstance(name);
 			currentInstance.name = inst.name;
 			currentInstance.content = inst.content;
+			currentInstance.structure = inst.structure;
 		}
 		
 		/**
@@ -57,6 +59,13 @@
 			return currentInstance.content;
 		}
 		
+		service.getInstance = function (name) {			
+			if (typeof name === "undefined") {				
+				return currentInstance;
+			}
+			return getInstance(name);
+		}
+		
 		/**
 		 * Sets the content of the 'instance'. If the name of the 'instance' is not supplied,
 		 * the content of the currently active 'instance' is set and then the corresponding 'instance' in the 'instances' array is updated.
@@ -68,7 +77,15 @@
 			if (typeof name === "undefined") {
 				currentInstance.content = content;
 			} else {
-				setInstance(content, name);
+				setContent(content, name);
+			}
+		}
+		
+		service.setStructure = function (structure, name) {			 
+			if (typeof name === "undefined") {
+				currentInstance.structure = structure;
+			} else {
+				setStructure(structure, name);
 			}
 		}
 		
@@ -77,7 +94,8 @@
 		 * @public
 		 */
 		service.transferContent = function () {
-			setInstance(currentInstance.content, currentInstance.name);
+			setContent(currentInstance.content, currentInstance.name);
+			setStructure(currentInstance.structure, currentInstance.name);
 		}
 		
 		/**
@@ -97,7 +115,7 @@
 		 */
 		service.clearContent = function (name) {
 			if (typeof name === "string") {
-				setInstance("", name);
+				setContent("", name);
 			} else {
 				currentInstance.content = "";	
 			}			
@@ -141,7 +159,7 @@
 		 * @private
 		 * @param {string} - name of the 'instance' to look for
 		 */
-		function setInstance(content, name) {
+		function setContent(content, name) {
 			var i;
 			for (i = 0; i < instances.length; i++) {
 				if (instances[i].name === name) {
@@ -151,6 +169,19 @@
 			instances.push({
 				name: name,
 				content: content
+			});
+		}
+		
+		function setStructure(structure, name) {
+			var i;
+			for (i = 0; i < instances.length; i++) {
+				if (instances[i].name === name) {
+					return instances[i].structure = structure;
+				}
+			}
+			instances.push({
+				name: name,
+				structure: structure
 			});
 		}
 	}

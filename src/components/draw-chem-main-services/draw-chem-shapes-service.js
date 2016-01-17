@@ -237,114 +237,155 @@
 			var shape,
 				output = parseInput(input),
 				paths = output.paths,
-				circles = output.circles;
-			shape = new DCShape.Shape(genElements(), id);
-			shape.element = shape.generateStyle() + shape.element;
-			return shape.wrap("g");
+				circles = output.circles,
+				minMax = output.minMax;
+			shape = new DCShape.Shape(genElements().full, genElements().mini, id);
+			shape.elementFull = shape.generateStyle("full") + shape.elementFull;
+			shape.elementMini = shape.generateStyle("mini") + shape.elementMini;
+			shape.setMinMax(minMax);
+			shape.wrap("full", "g");
+			shape.wrap("mini", "g");
+			return shape;
 			
-			// generates a string from the output array and wraps each line with 'path' tags.
+			/**
+			 * Generates a string from the output array and wraps each line with 'path' tags, each circle with 'circle' tags,
+			 * and each decorate element with suitable tags.
+			 */
 			function genElements() {
-				var result = "", coords;
+				var full = "", mini = "", aux = "";
 				paths.forEach(function (path) {
-					result += "<path d='" + path + "'></path>";					
+					aux = "<path d='" + path + "'></path>";
+					full += aux;
+					mini += aux;					
 				});
 				circles.forEach(function (circle) {
-					result += "<circle class='atom' cx='" + circle[0] + "' cy='" + circle[1] + "' r='" + circle[2] + "' ></circle>";
+					full += "<circle class='atom' cx='" + circle[0] + "' cy='" + circle[1] + "' r='" + circle[2] + "' ></circle>";
 				});
 				if (input.getDecorate("aromatic")) {
 					input.getDecorate("aromatic").forEach(function (coords) {
-						result += "<circle class='arom' cx='" + coords[0] +
+						aux = "<circle class='arom' cx='" + coords[0] +
 						"' cy='" + coords[1] +
 						"' r='" + DrawChemConst.AROMATIC_R +
 						"' ></circle>";
+						full += aux;
+						mini += aux;
 					})					
 				}
 				
-				return result;
-			}
-		}
-		
-		/**
-		 * Translates the input into an svg-suitable set of coordinates.
-		 * @param {Structure} input - an input object
-		 * @returns {Object}
-		 */
-		function parseInput(input) {
-			var output = [], circles = [], circR = DrawChemConst.CIRC_R,
-				// sets the coordinates of the root element
-				// 'M' for 'moveto' - sets pen to the coordinates
-				len = output.push(["M", input.getOrigin()]);
-				
-			circles.push([
-				input.getOrigin("x"),
-				input.getOrigin("y"),
-				circR
-			]);
-			
-			connect(input.getOrigin(), input.getStructure(0).getBonds(), output[len - 1]);
-			
-			return {
-				paths: stringifyPaths(),
-				circles: circles
+				return {
+					full: full,
+					mini: mini
+				};
 			}
 			
 			/**
-			 * Recursively translates the input, until it finds an element with an empty 'bonds' array.
-			 * @param {Number[]} root - a two-element array of coordinates of the root element
-			 * @param {Structure[]} bonds - an array of Structure 'instances'
-			 * @param {Array} - an array of coordinates with 'M' and 'l' commands
-			 */
-			function connect(root, bonds, currentLine) {
-				var i, newLen, absPos,
-					prevAbsPos = [
+			* Translates the input into an svg-suitable set of coordinates.
+			* @param {Structure} input - an input object
+			* @returns {Object}
+			*/
+		    function parseInput(input) {
+				var output = [], circles = [],
+					origin = input.getOrigin(),
+					minMax = {
+						minX: origin[0],
+						minY: origin[1],
+						maxX: origin[0],
+						maxY: origin[1]
+					},
+					circR = DrawChemConst.CIRC_R,
+					// sets the coordinates of the root element
+					// 'M' for 'moveto' - sets pen to the coordinates
+					len = output.push(["M", origin]);
+				   
+				circles.push([
+				   input.getOrigin("x"),
+				   input.getOrigin("y"),
+				   circR
+				]);
+			   
+				connect(origin, input.getStructure(0).getBonds(), output[len - 1]);
+			   
+				return {
+					paths: stringifyPaths(),
+					circles: circles,
+					minMax: minMax
+				};
+			   
+				/**
+				* Recursively translates the input, until it finds an element with an empty 'bonds' array.
+				* @param {Number[]} root - a two-element array of coordinates of the root element
+				* @param {Atom[]} bonds - an array of Atom objects
+				* @param {String|Number[]} - an array of coordinates with 'M' and 'l' commands
+				*/
+				function connect(root, bonds, currentLine) {
+					var i, newLen, absPos,
+						prevAbsPos = [
 						circles[circles.length - 1][0],
 						circles[circles.length - 1][1]
 					];				
-				// if length of the bonds is 0, then do nothing				
-				if (bonds.length > 0) {
-					absPos = [
-						prevAbsPos[0] + bonds[0].getCoords("x"),
-						prevAbsPos[1] + bonds[0].getCoords("y")
-					];
-					circles.push([absPos[0], absPos[1], circR]);
-					currentLine.push("L"); // 'l' for lineto - draws line to the specified coordinates
-					currentLine.push(absPos);					
-					
-					connect(bonds[0].getCoords(), bonds[0].getBonds(), currentLine);
-				}				
-				for (i = 1; i < bonds.length; i += 1) {
-					absPos = [
-						prevAbsPos[0] + bonds[i].getCoords("x"),
-						prevAbsPos[1] + bonds[i].getCoords("y")
-					];
-					circles.push([absPos[0], absPos[1], circR]);
-					newLen = output.push(["M", prevAbsPos, "L", absPos]);
-					connect(absPos, bonds[i].getBonds(), output[newLen - 1]);
-				}
-			}
-			
-			/**
-			 * Transforms output into an array of strings.
-			 * Basically, it translates each array of coordinates into its string representation.
-			 * @returns {String[]}
-			 */
-			function stringifyPaths() {
-				var result = [], i, j, line, point, lineStr;
-				for (i = 0; i < output.length; i += 1) {
-					line = output[i];
-					lineStr = "";
-					for (j = 0; j < line.length; j += 1) {
-						point = line[j];
-						if (typeof point === "string") {
-							lineStr += point + " ";
-						} else {
-							lineStr += point[0] + " " + point[1] + " ";
+					// if length of the bonds is 0, then do nothing				
+					if (bonds.length > 0) {
+						absPos = [
+							prevAbsPos[0] + bonds[0].getCoords("x"),
+							prevAbsPos[1] + bonds[0].getCoords("y")
+						];
+						updateMinMax(absPos);
+						circles.push([absPos[0], absPos[1], circR]);
+						currentLine.push("L"); // 'l' for lineto - draws line to the specified coordinates
+						currentLine.push(absPos);					
+						connect(bonds[0].getCoords(), bonds[0].getBonds(), currentLine);
+						
+						for (i = 1; i < bonds.length; i += 1) {
+							absPos = [
+								prevAbsPos[0] + bonds[i].getCoords("x"),
+								prevAbsPos[1] + bonds[i].getCoords("y")
+							];
+							updateMinMax(absPos);
+							circles.push([absPos[0], absPos[1], circR]);
+							newLen = output.push(["M", prevAbsPos, "L", absPos]);
+							connect(absPos, bonds[i].getBonds(), output[newLen - 1]);
 						}
-					}
-					result.push(lineStr);
+					}					
 				}
-				return result;
-			}
+				
+				function updateMinMax(absPos) {
+					if (absPos[0] > minMax.maxX) {
+						minMax.maxX = absPos[0];
+					}
+					if (absPos[0] < minMax.minX) {
+						minMax.minX = absPos[0];
+					}
+					if (absPos[1] > minMax.maxY) {
+						minMax.maxY = absPos[1];
+					}
+					if (absPos[1] < minMax.minY) {
+						minMax.minY = absPos[1];
+					}
+				}
+			   
+			   /**
+				* Transforms output into an array of strings.
+				* Basically, it translates each array of coordinates into its string representation.
+				* @returns {String[]}
+				*/
+			   function stringifyPaths() {
+				   var result = [], i, j, line, point, lineStr;
+				   for (i = 0; i < output.length; i += 1) {
+					   line = output[i];
+					   lineStr = "";
+					   for (j = 0; j < line.length; j += 1) {
+						   point = line[j];
+						   if (typeof point === "string") {
+							   lineStr += point + " ";
+						   } else {
+							   lineStr += point[0] + " " + point[1] + " ";
+						   }
+					   }
+					   result.push(lineStr);
+				   }
+				   return result;
+			   }
+		   }
 		}
 		
 		return service;

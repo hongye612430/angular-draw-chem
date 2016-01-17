@@ -3,9 +3,9 @@
 	angular.module("mmAngularDrawChem")
 		.directive("drawChemEditor", DrawChemEditor);
 	
-	DrawChemEditor.$inject = ["DrawChemShapes", "DrawChemStructures", "DrawChem", "$sce", "$window", "DrawChemConst", "DrawChemCache"];
+	DrawChemEditor.$inject = ["DrawChemShapes", "DrawChemStructures", "DrawChem", "DrawChemConst", "DrawChemCache", "$sce", "$window"];
 	
-	function DrawChemEditor(DrawChemShapes, DrawChemStructures, DrawChem, $sce, $window, DrawChemConst, DrawChemCache) {
+	function DrawChemEditor(DrawChemShapes, DrawChemStructures, DrawChem, DrawChemConst, DrawChemCache, $sce, $window) {
 		return {
 			templateUrl: "draw-chem-editor.html",
 			scope: {
@@ -40,23 +40,23 @@
 				 * Returns content which will be bound in the dialog box.
 				 */
 				scope.content = function () {
-					return $sce.trustAsHtml(DrawChem.getContent());
+					return $sce.trustAsHtml(DrawChemCache.getCurrentSvg());
 				}
 				
 				/**
-				 * Undoes a change associated with the most recent 'mouseup' event.
+				 * Undoes a change associated with the recent 'mouseup' event.
 				 */
 				scope.undo = function () {
 					DrawChemCache.moveLeftInStructures();
-					if (DrawChemCache.getCurrentPosition() === -1) {
+					if (DrawChemCache.getCurrentStructure() === null) {
 						DrawChem.clearContent();
 					} else {
 						draw(DrawChemCache.getCurrentStructure());
-					}
+					}				
 				}
 				
 				/**
-				 * Reverses the most recent 'undo' action.
+				 * Reverses the recent 'undo' action.
 				 */
 				scope.forward = function () {
 					DrawChemCache.moveRightInStructures();
@@ -67,13 +67,27 @@
 				 * Clears the content.
 				 */
 				scope.clear = function () {
-					DrawChem.clearContent();
+					DrawChemCache.addStructure(null);
+					DrawChemCache.setCurrentSvg("");
 				}
 				
 				/**
 				 * Transfers the content.
 				 */
 				scope.transfer = function () {
+					var structure = DrawChemCache.getCurrentStructure(),
+						shape = DrawChemShapes.draw(structure, "cmpd1"),
+						attr = {
+							"viewBox": (shape.minMax.minX - 10) + " " +
+								(shape.minMax.minY - 10) + " " +
+								(shape.minMax.maxX - shape.minMax.minX + 20) + " " +
+								(shape.minMax.maxY - shape.minMax.minY + 20),
+							"height": "100%",
+							"width": "100%"
+						},
+						content = shape.wrap("mini", "svg", attr).getElementMini();
+					DrawChem.setContent(content);
+					DrawChem.setStructure(structure);
 					DrawChem.transferContent();
 				}
 				
@@ -110,7 +124,7 @@
 							angular.copy(DrawChemCache.getCurrentStructure()): currentStructure;
 							
 					mouseDown = true;
-					if (DrawChem.getContent() !== "") {
+					if (DrawChemCache.getCurrentStructure() !== null) {
 						downAtomCoords = DrawChemShapes.isWithin(currentStructure, clickCoords).absPos;
 						downOnAtom = true;
 					}
@@ -126,7 +140,7 @@
 					currentStructure = DrawChemCache.getCurrentPosition() < DrawChemCache.getStructureLength() - 1 ?
 							angular.copy(DrawChemCache.getCurrentStructure()): currentStructure;
 						
-					if (DrawChem.getContent() !== "") {
+					if (DrawChemCache.getCurrentStructure() !== null) {
 						structure = modifyStructure(currentStructure, clickCoords);					
 					} else {
 						structure = angular.copy(scope.chosenStructure.getDefault());
@@ -183,8 +197,8 @@
 				 */
 				function draw(structure) {
 					var drawn = "";					
-					drawn = DrawChemShapes.draw(structure, "cmpd1").generate();
-					DrawChem.setContent(drawn);					
+					drawn = DrawChemShapes.draw(structure, "cmpd1");
+					DrawChemCache.setCurrentSvg(drawn.wrap("full", "svg").getElementFull());
 				}
 				
 				/**

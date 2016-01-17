@@ -17,12 +17,13 @@
 		 * @param {string} element - an svg element
 		 * @param {string} id - an id of the element
 		 */
-		function Shape(element, id) {
-			this.element = element;
+		function Shape(elementFull, elementMini, id) {
+			this.elementFull = elementFull;
+			this.elementMini = elementMini;
 			this.id = id;
 			this.scale = 1;
 			this.transformAttr = "";
-			this.style = {
+			this.styleFull = {
 				"path": {
 					"stroke": "black",
 					"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
@@ -41,7 +42,23 @@
 					"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
 					"fill": "none"
 				}
+			};
+			this.styleMini = {
+				"path": {
+					"stroke": "black",
+					"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
+					"fill": "none"
+				},
+				"circle.arom": {
+					"stroke": "black",
+					"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
+					"fill": "none"
+				}
 			}
+		}
+		
+		Shape.prototype.setMinMax = function (minMax) {
+			this.minMax = minMax;
 		}
 		
 		/**
@@ -50,10 +67,10 @@
 		 * @param {Object} attr - attribute of the tag
 		 * @param {string} attr.key - name of the attribute
 		 * @param {string} attr.val - value of the attribute
-		 * @returns {Shape}
 		 */
-		Shape.prototype.wrap = function (el, attr) {
+		Shape.prototype.wrap = function (which, el, attr) {
 			var customAttr = {}, tagOpen;
+			
 			if (el === "g" && !attr) {
 				attr = customAttr;
 				attr.id = this.id;
@@ -63,9 +80,17 @@
 				angular.forEach(attr, function (val, key) {
 					tagOpen += key + "='" + val + "' ";
 				});
-				this.element = tagOpen + ">" + this.element + "</" + el + ">";
+				if (which === "full") {
+					this.elementFull = tagOpen + ">" + this.elementFull + "</" + el + ">";
+				} else if (which === "mini") {
+					this.elementMini = tagOpen + ">" + this.elementMini + "</" + el + ">";
+				}
 			} else {
-				this.element = "<" + el + ">" + this.element + "</" + el + ">";
+				if (which === "full") {
+					this.elementFull = "<" + el + ">" + this.elementFull + "</" + el + ">";
+				} else if (which === "mini") {
+					this.elementMini = "<" + el + ">" + this.elementMini + "</" + el + ">";
+				}
 			}
 			return this;
 		};
@@ -91,14 +116,6 @@
 		};
 		
 		/**
-		 * Adds a specified style to styleAttr.
-		 * 
-		 */
-		Shape.prototype.style = function (style) {
-			// todo
-		};
-		
-		/**
 		 * Generates 'use' tag based on id, transformAttr, and styleAttr.
 		 * @returns {string}
 		 */
@@ -108,9 +125,16 @@
 				"'></use>";
 		};
 		
-		Shape.prototype.generateStyle = function () {
+		Shape.prototype.generateStyle = function (which) {
 			var attr = "<style type=\"text/css\">";
-			angular.forEach(this.style, function (value, key) {
+			
+			if (which === "full") {
+				which = this.styleFull;
+			} else if (which === "mini") {
+				which = this.styleMini;
+			}
+			
+			angular.forEach(which, function (value, key) {
 				attr += key + "{";
 				angular.forEach(value, function (value, key) {
 					attr += key + ":" + value + ";";
@@ -124,9 +148,12 @@
 		 * Generates 'use' element and wraps the content with 'svg' tags.
 		 * @returns {string}
 		 */
-		Shape.prototype.generate = function () {
-			//this.element += this.generateUse();
-			return this.wrap("svg").element;
+		Shape.prototype.getElementFull = function () {			
+			return this.elementFull;
+		};
+		
+		Shape.prototype.getElementMini = function () {			
+			return this.elementMini;
 		};
 		
 		service.Shape = Shape;

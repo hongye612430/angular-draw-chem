@@ -1,4 +1,4 @@
-describe("DrawChemEditor directive tests", function () {
+describe("DCShape service tests", function () {
 	beforeEach(module("mmAngularDrawChem"));
 	
 	var DCShape;
@@ -8,11 +8,13 @@ describe("DrawChemEditor directive tests", function () {
 	}));
 	
 	it("should create a new Shape object", function () {
-		var element = "<path d='M 0 0 l 10 10'></path>",
+		var elementFull = "<path d='M 0 0 l 10 10'></path><circle></circle>",
+			elementMini = "<path d='M 0 0 l 10 10'></path>",
 			id = "cmpd1",
-			shape = new DCShape.Shape(element, id);
+			shape = new DCShape.Shape(elementFull, elementMini, id);
 		expect(shape).toBeDefined();
-		expect(shape.element).toEqual("<path d='M 0 0 l 10 10'></path>");
+		expect(shape.elementFull).toEqual("<path d='M 0 0 l 10 10'></path><circle></circle>");
+		expect(shape.elementMini).toEqual("<path d='M 0 0 l 10 10'></path>");
 		expect(shape.id).toEqual("cmpd1");
 	});
 });

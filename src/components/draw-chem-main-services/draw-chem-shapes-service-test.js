@@ -34,7 +34,7 @@ describe("DrawChemShapes service tests", function () {
 			])
 		]);
 		input.setOrigin([10, 10]);
-		expect(DrawChemShapes.draw(input, "cmpd1").generate()).toEqual(
+		expect(DrawChemShapes.draw(input, "cmpd1").wrap("full", "svg").getElementFull()).toEqual(
 			"<svg>" +
 				"<g id='cmpd1' >" +
 					"<style type=\"text/css\">" +

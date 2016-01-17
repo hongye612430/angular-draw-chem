@@ -8,9 +8,8 @@ describe("DrawChemCache service tests", function () {
 	}));
 
 	it("should store data in cachedStructures array and retrieve them", function () {
-		var data = "test";
-		DrawChemCache.addStructure(data);
-		expect(DrawChemCache.removeLastStructure()).toEqual(data);
+		DrawChemCache.addStructure("test");
+		expect(DrawChemCache.getCurrentStructure()).toEqual("test");
 	});
 	
 	it("should not exceed 10 elements in cachedStructures array", function () {
@@ -23,8 +22,8 @@ describe("DrawChemCache service tests", function () {
 		});		
 		
 		DrawChemCache.addStructure("test10");
-		expect(DrawChemCache.removeLastStructure()).toEqual("test10");
-		expect(DrawChemCache.removeFirstStructure()).toEqual("test1");
+		expect(DrawChemCache.getCurrentStructure()).toEqual("test10");
+		expect(DrawChemCache.getStructureLength()).toEqual(10);
 	});
 	
 	it("should remember which element in cachedStructures array is currently active", function () {
@@ -44,9 +43,9 @@ describe("DrawChemCache service tests", function () {
 		DrawChemCache.moveLeftInStructures();
 		expect(DrawChemCache.getCurrentStructure()).toEqual("test0");
 		DrawChemCache.moveLeftInStructures();
-		expect(DrawChemCache.getCurrentStructure()).toBeUndefined();
+		expect(DrawChemCache.getCurrentStructure()).toEqual(null);
 		DrawChemCache.moveLeftInStructures();
-		expect(DrawChemCache.getCurrentStructure()).toBeUndefined();
+		expect(DrawChemCache.getCurrentStructure()).toEqual(null);
 		DrawChemCache.moveRightInStructures();
 		expect(DrawChemCache.getCurrentStructure()).toEqual("test0");
 		DrawChemCache.moveRightInStructures();
@@ -78,6 +77,6 @@ describe("DrawChemCache service tests", function () {
 		expect(DrawChemCache.getCurrentStructure()).toEqual("andrzej");
 		DrawChemCache.moveLeftInStructures();
 		expect(DrawChemCache.getCurrentStructure()).toEqual("test0");
-		expect(DrawChemCache.getStructureLength()).toEqual(2);
+		expect(DrawChemCache.getStructureLength()).toEqual(3);
 	});
 });

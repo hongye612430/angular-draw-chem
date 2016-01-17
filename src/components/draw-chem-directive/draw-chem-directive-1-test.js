@@ -65,22 +65,49 @@ describe("DrawChemEditor directive tests - part1", function () {
 		expect(DrawChemCache.getCurrentStructure()).toEqual(custom.getDefault());	
 	});
 	
-	/*it("should set the content after clicking on the 'transfer' button", function () {
-		var parallelScope = $rootScope.$new();
+	it("should set the content after clicking on the 'transfer' button", function () {
+		var parallelScope = $rootScope.$new(),
+			custom = DrawChemStructures.benzene();
+			
 		parallelScope.input = function () {
 			return DrawChem.getContent("test");
-		}
+		};
 		parallelScope.run = function () {
 			DrawChem.runEditor("test");
-		}
+		};
 		
 		parallelScope.run();
 		expect(DrawChem.showEditor()).toEqual(true);
 		expect(parallelScope.input()).toEqual("");
-		DrawChem.setContent("A content");
+		temp.find("#dc-" + custom.name).click();		
+		temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "mouseup",
+			clientX: 100,
+			clientY: 100
+		});
 		temp.find("#dc-transfer").click();
-		expect(parallelScope.input()).toEqual("A content");
-	});*/
+		expect(parallelScope.input())
+			.toEqual(
+				"<svg viewBox='70.68 88 54.639999999999986 60' height='100%' width='100%' >" +
+					"<g id='cmpd1' >" +
+						"<style type=\"text/css\">" +
+							"path{" +
+								"stroke:black;" +
+								"stroke-width:0.8;" +
+								"fill:none;" +
+							"}" +
+							"circle.arom{" +
+								"stroke:black;" +
+								"stroke-width:0.8;" +
+								"fill:none;" +
+							"}" +
+						"</style>" +
+						"<path d='M 98 98 L 115.32 108 L 115.32 128 L 98 138 L 80.68 128 L 80.68 108 L 98 98 '></path>" +
+						"<circle class='arom' cx='98' cy='118' r='9' ></circle>" +
+					"</g>" +
+				"</svg>"
+			);
+	});
 	
 	it("should change content of the output after clicking on the drawing area", function () {
 		var custom = DrawChemStructures.benzene();		
@@ -142,7 +169,23 @@ describe("DrawChemEditor directive tests - part1", function () {
 			clientX: 2,
 			clientY: 2
 		});
-		temp.find(".dc-custom-button").click();
+		temp.find("#dc-clear").click();
+		expect(temp.find(".dc-editor-dialog-content").html()).toEqual("");
+	});
+	
+	it("should do nothing if undo has been clicked, but the associated input is empty", function () {
+		var custom = DrawChemStructures.benzene();		
+		DrawChem.runEditor("test");
+		expect(DrawChem.showEditor()).toEqual(true);
+		temp.find("#dc-undo").click();
+		expect(temp.find(".dc-editor-dialog-content").html()).toEqual("");
+		temp.find("#dc-" + custom.name).click();		
+		temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "mouseup",
+			clientX: 2,
+			clientY: 2
+		});
+		temp.find("#dc-undo").click();
 		expect(temp.find(".dc-editor-dialog-content").html()).toEqual("");
 	});
 	
