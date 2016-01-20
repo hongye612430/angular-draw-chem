@@ -213,8 +213,6 @@
 			shape.elementFull = shape.generateStyle("full") + shape.elementFull;
 			shape.elementMini = shape.generateStyle("mini") + shape.elementMini;
 			shape.setMinMax(minMax);
-			shape.elementMini = DCShape.initialDefsMini + shape.elementMini;
-			shape.elementFull = DCShape.initialDefsFull + shape.elementFull;
 			return shape;
 			
 			/**
@@ -232,9 +230,13 @@
 					full += "<circle class='atom' cx='" + circle[0] + "' cy='" + circle[1] + "' r='" + circle[2] + "' ></circle>";
 				});
 				labels.forEach(function (label) {
-					aux = "<text filter='url(#solid1)' x='" + label.x +  "' y='" + label.y + "'>" + label.label + "</text>";
+					aux = "<rect x='" + (label.x - label.width / 2 ) +
+						"' y='" + (label.y - label.height * 3 / 5) +
+						"' width='" + label.width +
+						"' height='" + label.height + "'></rect>" +
+						"<text x='" + label.x +  "' y='" + label.y + "'>" + label.label + "</text>";
+					
 					full += aux;
-					aux = "<text filter='url(#solid2)' x='" + label.x +  "' y='" + label.y + "'>" + label.label + "</text>";
 					mini += aux;
 				});
 				if (input.getDecorate("aromatic")) {
@@ -278,7 +280,8 @@
 				   input.getOrigin("y"),
 				   circR
 				]);
-			   
+				
+				updateLabel(origin, input.getStructure(0));
 				connect(origin, input.getStructure(0).getBonds(), output[len - 1]);
 			   
 				return {
@@ -324,33 +327,39 @@
 							connect(absPos, bonds[i].getBonds(), output[newLen - 1]);
 						}
 					}
+				}
+				
+				function updateLabel(absPos, atom) {
+					var label = atom.getLabel(),
+						labelObj,
+						width = DCShape.fontSize * label.length * 0.8,
+						height = DCShape.fontSize * 1.1;
+					if (label !== "") {
+						labelObj = {
+							x: absPos[0],
+							y: absPos[1],
+							label: label,
+							width: width,
+							height: height
+						};
+						labels.push(labelObj);
+						updateMinMax([labelObj.x - 0.7 * labelObj.width / 2, labelObj.y - 0.7 * labelObj.height * 3 / 5]);
+						updateMinMax([labelObj.x + 0.7 * labelObj.width / 2, labelObj.y + 0.7 * labelObj.height * 2 / 5]);
+					}					
+				}
 					
-					function updateLabel(absPos, atom) {
-						var label = atom.getLabel();
-						if (label !== "") {
-							labels.push(
-								{
-									x: absPos[0] - DrawChemConst.BOND_LENGTH * 0.15,
-									y: absPos[1] + DrawChemConst.BOND_LENGTH * 0.15,
-									label: label
-								}
-							);
-						}
+				function updateMinMax(absPos) {
+					if (absPos[0] > minMax.maxX) {
+						minMax.maxX = absPos[0];
 					}
-					
-					function updateMinMax(absPos) {
-						if (absPos[0] > minMax.maxX) {
-							minMax.maxX = absPos[0];
-						}
-						if (absPos[0] < minMax.minX) {
-							minMax.minX = absPos[0];
-						}
-						if (absPos[1] > minMax.maxY) {
-							minMax.maxY = absPos[1];
-						}
-						if (absPos[1] < minMax.minY) {
-							minMax.minY = absPos[1];
-						}
+					if (absPos[0] < minMax.minX) {
+						minMax.minX = absPos[0];
+					}
+					if (absPos[1] > minMax.maxY) {
+						minMax.maxY = absPos[1];
+					}
+					if (absPos[1] < minMax.minY) {
+						minMax.minY = absPos[1];
 					}
 				}
 			   
@@ -414,7 +423,7 @@
 			}
 			
 			function check(arg1, arg2, arg3, arg4) {
-				return pos1[0] > (pos2[0] + arg1) && pos1[0] <= (pos2[0] + arg2) &&
+				return pos1[0] >= (pos2[0] + arg1) && pos1[0] <= (pos2[0] + arg2) &&
 					pos1[1] >= (pos2[1] + arg3) && pos1[1] <= (pos2[1] + arg4);
 			}
 		}

@@ -9,20 +9,7 @@
 		
 		var service = {};
 		
-		service.initialDefsFull =
-			"<defs>" +
-				"<filter id=\"solid1\">" +
-					"<feFlood flood-color=\"#ffffff\"/ result=\"white\" />" +
-					"<feComposite operator=\"over\" in2=\"white\" in=\"SourceGraphic\"/>" +
-				"</filter>" +
-			"</defs>";
-		service.initialDefsMini =
-			"<defs>" +
-				"<filter id=\"solid2\">" +
-					"<feFlood flood-color=\"#ffffff\"/ result=\"white\" />" +
-					"<feComposite operator=\"over\" in2=\"white\" in=\"SourceGraphic\"/>" +
-				"</filter>" +
-			"</defs>";
+		service.fontSize = 18;
 		
 		/**
 		 * Creates a new Shape. This helper class has methods
@@ -59,8 +46,13 @@
 				},
 				"text": {
 					"font-family": "Times New Roman",
-					"stroke-width": 0.5,
-					"stroke": "black"
+					"cursor": "default",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"font-size": service.fontSize + "px"
+				},
+				"rect": {
+					"fill": "white"
 				}
 			};
 			this.styleMini = {
@@ -76,9 +68,14 @@
 				},
 				"text": {
 					"font-family": "Times New Roman",
-					"stroke-width": 0.5,
-					"stroke": "black"
-				}
+					"cursor": "default",
+					"text-anchor": "middle",
+					"alignment-baseline": "middle",
+					"font-size": service.fontSize + "px"
+				},
+				"rect": {
+					"fill": "white"
+				}				
 			}
 		}
 		

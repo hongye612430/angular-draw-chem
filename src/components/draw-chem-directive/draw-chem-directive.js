@@ -14,7 +14,8 @@
 			link: function (scope, element, attrs) {
 				
 				var downAtomCoords,
-					downClickCoords,
+					downMouseCoords,
+					chosenStructure = false,
 					changeLabel = false,
 					movedOnEmpty = false,
 					mouseDown = false,
@@ -24,7 +25,7 @@
 				
 				scope.changeLabel = function () {
 					changeLabel = true;
-					scope.chosenStructure = undefined;
+					chosenStructure = false;
 				}
 				
 				/**
@@ -123,6 +124,8 @@
 						name: customInstance.name,
 						choose: function () {
 							scope.chosenStructure = customInstance;
+							chosenStructure = true;
+							changeLabel = false;
 						}
 					});
 				});
@@ -131,10 +134,17 @@
 				 * Action to perform on 'mousedown' event.
 				 */
 				scope.doOnMouseDown = function ($event) {
-					downClickCoords = innerCoords($event);		
+					if ($event.which !== 1) {
+						return undefined;
+					}
+					downMouseCoords = innerCoords($event);
 					mouseDown = true;
-					if (DrawChemCache.getCurrentStructure() !== null) {
-						downAtomCoords = DrawChemShapes.isWithin(DrawChemCache.getCurrentStructure(), downClickCoords).absPos;						
+					if (!isContentEmpty()) {
+						checkIfDownOnAtom();
+					}
+					
+					function checkIfDownOnAtom() {
+						downAtomCoords = DrawChemShapes.isWithin(DrawChemCache.getCurrentStructure(), downMouseCoords).absPos;
 						if (typeof downAtomCoords !== "undefined") {
 							downOnAtom = true;
 						}
@@ -144,34 +154,45 @@
 				/**
 				 * Action to perform on 'mouseup' event.
 				 */
-				scope.doOnMouseUp = function ($event) {
-					var structure,
-						atom,
-						mouseCoords = innerCoords($event),						
-						currentStructure = DrawChemCache.getCurrentStructure();
+				scope.doOnMouseUp = function ($event) {					
+					var structure, mouseCoords = innerCoords($event);
 					
-					if (changeLabel) {
-						structure = angular.copy(currentStructure);
-						atom = DrawChemShapes.isWithin(structure, mouseCoords).foundAtom;
-						atom.setLabel(scope.label);
-					} else {
-						if (DrawChemCache.getCurrentStructure() !== null) {
-							structure = modifyStructure(currentStructure, mouseCoords);					
-						} else if (typeof scope.chosenStructure !== "undefined") {
-							if (movedOnEmpty) {
-								structure = angular.copy(scope.chosenStructure.getStructure(mouseCoords, downClickCoords));
-								structure.setOrigin(downClickCoords);
-							} else {
-								structure = angular.copy(scope.chosenStructure.getDefault());
-								structure.setOrigin(mouseCoords);
-							}
-						}
+					if ($event.which !== 1) {
+						return undefined;
+					}
+					
+					if (isContentEmpty()) {
+						structure = drawOnEmptyContent();
+					} else if (downOnAtom && changeLabel) {
+						structure = modifyLabel();						
+					} else if (downOnAtom && chosenStructure) {
+						structure = modifyStructure(DrawChemCache.getCurrentStructure(), mouseCoords);
 					}
 					
 					if (typeof structure !== "undefined") {
 						DrawChemCache.addStructure(angular.copy(structure));
-						draw(structure);
-						resetMouseFlags();
+						draw(structure);						
+					}
+					
+					resetMouseFlags();
+					
+					function modifyLabel() {
+						var structure = angular.copy(DrawChemCache.getCurrentStructure()),
+							atom = DrawChemShapes.isWithin(structure, downMouseCoords).foundAtom;
+						atom.setLabel(scope.label);
+						return structure;
+					}
+					
+					function drawOnEmptyContent() {
+						var structure;
+						if (movedOnEmpty) {
+							structure = angular.copy(scope.chosenStructure.getStructure(mouseCoords, downMouseCoords));
+							structure.setOrigin(downMouseCoords);
+						} else {
+							structure = angular.copy(scope.chosenStructure.getDefault());
+							structure.setOrigin(mouseCoords);
+						}
+						return structure;
 					}
 				}
 				
@@ -179,19 +200,30 @@
 				 * Action to perform on 'mousemove' event.
 				 */
 				scope.doOnMouseMove = function ($event) {
-					var mouseCoords = innerCoords($event),
-						updatedCurrentStructure,						
-						frozenCurrentStructure,
-						structure;
-					if (downOnAtom && typeof scope.chosenStructure !== "undefined") {
-						frozenCurrentStructure = DrawChemCache.getCurrentStructure();
-						updatedCurrentStructure = modifyStructure(frozenCurrentStructure, mouseCoords, true);
-						draw(updatedCurrentStructure);
-					} else if (mouseDown && typeof scope.chosenStructure !== "undefined" && DrawChemCache.getCurrentStructure() === null) {
-						structure = angular.copy(scope.chosenStructure.getStructure(mouseCoords, downClickCoords));
-						structure.setOrigin(downClickCoords);
-						movedOnEmpty = true;
+					var mouseCoords = innerCoords($event), structure;
+					
+					if (!chosenStructure && !mouseDown) {
+						return undefined;
+					}
+						
+					if (downOnAtom) {
+						structure = modifyOnNonEmptyContent();
 						draw(structure);
+					} else if (mouseDown && isContentEmpty()) {
+						structure = modifyOnEmptyContent();
+						draw(structure);
+					}
+					
+					function modifyOnNonEmptyContent() {
+						var frozenCurrentStructure = DrawChemCache.getCurrentStructure();							
+						return modifyStructure(frozenCurrentStructure, mouseCoords, true);
+					}
+					
+					function modifyOnEmptyContent() {
+						var struct = angular.copy(scope.chosenStructure.getStructure(mouseCoords, downMouseCoords));
+						struct.setOrigin(downMouseCoords);
+						movedOnEmpty = true;
+						return struct;
 					}
 				}
 				
@@ -218,9 +250,8 @@
 					mouseDown = false;					
 					downOnAtom = false;
 					movedOnEmpty = false;
-					changeLabel = false;
 					downAtomCoords = undefined;
-					downClickCoords = undefined;
+					downMouseCoords = undefined;
 				}
 				
 				/**
@@ -248,6 +279,10 @@
 						downAtomCoords,
 						mouseDownAndMove
 					);
+				}
+				
+				function isContentEmpty() {
+					return DrawChemCache.getCurrentStructure() === null;
 				}
 			}
 		}
