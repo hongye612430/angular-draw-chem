@@ -7,9 +7,9 @@ The editor is from the beginning designed to be svg-based, thus enabling the dra
 ![ex2][struc2]
 ![ex3][struc3]
 
-[struc1]: https://mmmalik.github.io/angular-draw-chem/svg/benzyl-methyl-ether.svg "benzyl methyl ether"
-[struc2]: https://mmmalik.github.io/angular-draw-chem/svg/tmeda.svg "tmeda"
-[struc3]: https://mmmalik.github.io/angular-draw-chem/svg/complicated.svg "complicated"
+[struc1]: https://mmmalik.github.io/angular-draw-chem/svg/benzyl-methyl-ether.svg "benzyl methyl ether" { max-width: 30%; }
+[struc2]: https://mmmalik.github.io/angular-draw-chem/svg/tmeda.svg "tmeda" { max-width: 30%; }
+[struc3]: https://mmmalik.github.io/angular-draw-chem/svg/complicated.svg "complicated" { max-width: 30%; }
 
 ### possible usage
 
