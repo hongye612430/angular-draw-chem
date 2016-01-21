@@ -2,8 +2,12 @@
 The aim of this project is to create a light-weight, AngularJS-based editor for producing structural formulas.
 The editor is from the beginning designed to be svg-based, thus enabling the drawing of good-looking, scalable structures.
 
+### examples
+![alt text][logo]
+
+[logo]: mmmalik.github.io/angular-draw-chem/svg/benzyl-methyl-ether "benzyl methyl ether"
+
 ### possible usage
-It will be possible to use it in two ways:
 
 1. By adding `mmAngularDrawChem` module to your project, making it available for the users of your website, so they can interact with it and make their own structures.
 2. You can use it on the project website, make structures that you need, grab the `svg` and place it within your `html`.
