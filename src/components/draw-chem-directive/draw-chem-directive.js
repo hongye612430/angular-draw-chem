@@ -15,8 +15,7 @@
 				
 				var downAtomCoords,
 					downMouseCoords,
-					chosenStructure = false,
-					changeLabel = false,
+					selected,
 					movedOnEmpty = false,
 					mouseDown = false,
 					downOnAtom = false;
@@ -24,8 +23,7 @@
 				scope.label = "";
 				
 				scope.changeLabel = function () {
-					changeLabel = true;
-					chosenStructure = false;
+					selected = "label";
 				}
 				
 				/**
@@ -91,14 +89,14 @@
 					if (structure !== null) {
 						shape = DrawChemShapes.draw(structure, "cmpd1");
 						attr = {
-							"viewBox": (shape.minMax.minX - 20) + " " +
-								(shape.minMax.minY - 20) + " " +
-								(shape.minMax.maxX - shape.minMax.minX + 40) + " " +
-								(shape.minMax.maxY - shape.minMax.minY + 40),
+							"viewBox": (shape.minMax.minX - 20).toFixed(2) + " " +
+								(shape.minMax.minY - 20).toFixed(2) + " " +
+								(shape.minMax.maxX - shape.minMax.minX + 40).toFixed(2) + " " +
+								(shape.minMax.maxY - shape.minMax.minY + 40).toFixed(2),
 							"height": "100%",
 							"width": "100%"
 						};
-						content = shape.wrap("mini", "svg", attr).getElementMini();
+						content = shape.wrap("mini", "g").wrap("mini", "svg", attr).elementMini;
 					}
 					DrawChem.setContent(content);
 					DrawChem.setStructure(structure);
@@ -124,8 +122,7 @@
 						name: customInstance.name,
 						choose: function () {
 							scope.chosenStructure = customInstance;
-							chosenStructure = true;
-							changeLabel = false;
+							selected = "structure";
 						}
 					});
 				});
@@ -135,17 +132,21 @@
 				 */
 				scope.doOnMouseDown = function ($event) {
 					if ($event.which !== 1) {
+						// if button other than left was pushed
 						return undefined;
 					}
+					
 					downMouseCoords = innerCoords($event);
 					mouseDown = true;
 					if (!isContentEmpty()) {
+						// if content is not empty
 						checkIfDownOnAtom();
 					}
 					
 					function checkIfDownOnAtom() {
 						downAtomCoords = DrawChemShapes.isWithin(DrawChemCache.getCurrentStructure(), downMouseCoords).absPos;
 						if (typeof downAtomCoords !== "undefined") {
+							// set flag if atom was selected
 							downOnAtom = true;
 						}
 					}
@@ -158,18 +159,23 @@
 					var structure, mouseCoords = innerCoords($event);
 					
 					if ($event.which !== 1) {
+						// if button other than left was released
 						return undefined;
 					}
 					
 					if (isContentEmpty()) {
+						// if content is empty
 						structure = drawOnEmptyContent();
-					} else if (downOnAtom && changeLabel) {
+					} else if (downOnAtom && selected === "label") {
+						// if atom has been selected and 'change label' button is selected
 						structure = modifyLabel();						
-					} else if (downOnAtom && chosenStructure) {
+					} else if (downOnAtom && selected === "structure") {
+						// if atom has been selected and any of the structure buttons has been clicked
 						structure = modifyStructure(DrawChemCache.getCurrentStructure(), mouseCoords);
 					}
 					
 					if (typeof structure !== "undefined") {
+						// if the structure has been successfully set to something
 						DrawChemCache.addStructure(angular.copy(structure));
 						draw(structure);						
 					}
@@ -202,14 +208,18 @@
 				scope.doOnMouseMove = function ($event) {
 					var mouseCoords = innerCoords($event), structure;
 					
-					if (!chosenStructure && !mouseDown) {
+					if (selected !== "structure") {
+						// if no structure has been chosen
+						// then do nothing
 						return undefined;
 					}
 						
 					if (downOnAtom) {
+						// if an atom has been chosen
 						structure = modifyOnNonEmptyContent();
 						draw(structure);
 					} else if (mouseDown && isContentEmpty()) {
+						// if content is empty and mouse button is pushed
 						structure = modifyOnEmptyContent();
 						draw(structure);
 					}
@@ -261,7 +271,7 @@
 				function draw(structure) {
 					var drawn = "";					
 					drawn = DrawChemShapes.draw(structure, "cmpd1");
-					DrawChemCache.setCurrentSvg(drawn.wrap("full", "svg").getElementFull());
+					DrawChemCache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
 				}
 				
 				/**
@@ -281,6 +291,10 @@
 					);
 				}
 				
+				/**
+				 * Checks if the canvas is empty.
+				 * @returns {Boolean}
+				 */
 				function isContentEmpty() {
 					return DrawChemCache.getCurrentStructure() === null;
 				}

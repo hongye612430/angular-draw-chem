@@ -1,7 +1,36 @@
 describe("DrawChemEditor directive tests - part2", function () {
 	beforeEach(module("mmAngularDrawChem"));
 	
-	var $scope, element, $rootScope, DrawChem, DrawChemShapes, DrawChemStructures, template;
+	var $scope, element, $rootScope, DrawChem, DrawChemShapes, DrawChemStructures, template, styleFull;
+	
+	styleFull = "path{" +
+			"stroke:black;" +
+			"stroke-width:0.8;" +
+			"fill:none;" +
+		"}" +
+		"circle.atom:hover{" +
+			"opacity:0.3;" +
+			"stroke:black;" +
+			"stroke-width:0.8;" +
+		"}" +
+		"circle.atom{" +
+			"opacity:0;" +
+		"}" +
+		"circle.arom{" +
+			"stroke:black;" +
+			"stroke-width:0.8;" +
+			"fill:none;" +
+		"}" +
+		"text{" +
+			"font-family:Arial;" +
+			"cursor:default;" +
+			"text-anchor:middle;" +
+			"dominant-baseline:middle;" +
+			"font-size:18px;" +
+		"}" +
+		"rect{" +
+			"fill:white;" +
+		"}";
 	
 	beforeEach(inject(function ($httpBackend, $compile, _$rootScope_, _DrawChem_, _DrawChemShapes_, _DrawChemStructures_) {
 		// configure path for static files
@@ -35,13 +64,21 @@ describe("DrawChemEditor directive tests - part2", function () {
 		expect(element.isolateScope().chosenStructure.getDefault()).toEqual(custom.getDefault());
 		temp.find(".dc-editor-dialog-content").triggerHandler({
 			type : "mouseup",
+			which: 1,
 			clientX: 100,
 			clientY: 100
 		});
 		temp.find("#dc-" + add.name).click();
 		expect(element.isolateScope().chosenStructure.getDefault()).toEqual(add.getDefault());
 		temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "mousedown",
+			which: 1,
+			clientX: 101,
+			clientY: 99
+		});
+		temp.find(".dc-editor-dialog-content").triggerHandler({
 			type : "mouseup",
+			which: 1,
 			clientX: 101,
 			clientY: 99
 		});
@@ -50,24 +87,7 @@ describe("DrawChemEditor directive tests - part2", function () {
 				"<svg>" +
 						"<g id=\"cmpd1\">" +
 							"<style type=\"text/css\">" +
-								"path{" +
-									"stroke:black;" +
-									"stroke-width:0.8;" +
-									"fill:none;" +
-								"}" +
-								"circle.atom:hover{" +
-									"opacity:0.3;" +
-									"stroke:black;" +
-									"stroke-width:0.8;" +
-								"}" +
-								"circle.atom{" +
-									"opacity:0;" +
-								"}" +
-								"circle.arom{" +
-									"stroke:black;" +
-									"stroke-width:0.8;" +
-									"fill:none;" +
-								"}" +
+								styleFull +
 							"</style>" +
 							"<path d=\"M 98 98 L 115.32 108 L 115.32 128 L 98 138 L 80.68 128 L 80.68 108 L 98 98 \"></path>" +	
 							"<path d=\"M 98 98 L 98 78 \"></path>" +
@@ -84,7 +104,14 @@ describe("DrawChemEditor directive tests - part2", function () {
 				"</svg>"
 			);
 		temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "mousedown",
+			which: 1,
+			clientX: 118,
+			clientY: 110
+		});
+		temp.find(".dc-editor-dialog-content").triggerHandler({
 			type : "mouseup",
+			which: 1,
 			clientX: 118,
 			clientY: 110
 		});
@@ -93,24 +120,7 @@ describe("DrawChemEditor directive tests - part2", function () {
 				"<svg>" +
 						"<g id=\"cmpd1\">" +
 							"<style type=\"text/css\">" +
-								"path{" +
-									"stroke:black;" +
-									"stroke-width:0.8;" +
-									"fill:none;" +
-								"}" +
-								"circle.atom:hover{" +
-									"opacity:0.3;" +
-									"stroke:black;" +
-									"stroke-width:0.8;" +
-								"}" +
-								"circle.atom{" +
-									"opacity:0;" +
-								"}" +
-								"circle.arom{" +
-									"stroke:black;" +
-									"stroke-width:0.8;" +
-									"fill:none;" +
-								"}" +
+								styleFull +
 							"</style>" +
 							"<path d=\"M 98 98 L 115.32 108 L 115.32 128 L 98 138 L 80.68 128 L 80.68 108 L 98 98 \"></path>" +
 							"<path d=\"M 115.32 108 L 132.64 98 \"></path>" +
@@ -134,24 +144,7 @@ describe("DrawChemEditor directive tests - part2", function () {
 				"<svg>" +
 					"<g id=\"cmpd1\">" +
 						"<style type=\"text/css\">" +
-							"path{" +
-								"stroke:black;" +
-								"stroke-width:0.8;" +
-								"fill:none;" +
-							"}" +
-							"circle.atom:hover{" +
-								"opacity:0.3;" +
-								"stroke:black;" +
-								"stroke-width:0.8;" +
-							"}" +
-							"circle.atom{" +
-								"opacity:0;" +
-								"}" +
-							"circle.arom{" +
-								"stroke:black;" +
-								"stroke-width:0.8;" +
-								"fill:none;" +
-							"}" +
+							styleFull +
 						"</style>" +
 						"<path d=\"M 98 98 L 115.32 108 L 115.32 128 L 98 138 L 80.68 128 L 80.68 108 L 98 98 \"></path>" +	
 						"<path d=\"M 98 98 L 98 78 \"></path>" +

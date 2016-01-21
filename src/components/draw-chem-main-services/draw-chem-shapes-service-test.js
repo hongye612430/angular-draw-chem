@@ -1,7 +1,36 @@
 describe("DrawChemShapes service tests", function () {
 	beforeEach(module("mmAngularDrawChem"));
 	
-	var DrawChemShapes, DrawChemStructures, DrawChemConst, Atom, Structure;
+	var DrawChemShapes, DrawChemStructures, DrawChemConst, Atom, Structure, styleFull;
+	
+	styleFull = "path{" +
+			"stroke:black;" +
+			"stroke-width:0.8;" +
+			"fill:none;" +
+		"}" +
+		"circle.atom:hover{" +
+			"opacity:0.3;" +
+			"stroke:black;" +
+			"stroke-width:0.8;" +
+		"}" +
+		"circle.atom{" +
+			"opacity:0;" +
+		"}" +
+		"circle.arom{" +
+			"stroke:black;" +
+			"stroke-width:0.8;" +
+			"fill:none;" +
+		"}" +
+		"text{" +
+			"font-family:Arial;" +
+			"cursor:default;" +
+			"text-anchor:middle;" +
+			"dominant-baseline:middle;" +
+			"font-size:18px;" +
+		"}" +
+		"rect{" +
+			"fill:white;" +
+		"}";
 	
 	beforeEach(inject(function (_DrawChemShapes_, _DrawChemStructures_, _DrawChemConst_, _DCAtom_, _DCStructure_) {
 		Atom = _DCAtom_.Atom;
@@ -34,43 +63,26 @@ describe("DrawChemShapes service tests", function () {
 			])
 		]);
 		input.setOrigin([10, 10]);
-		expect(DrawChemShapes.draw(input, "cmpd1").wrap("full", "svg").getElementFull()).toEqual(
+		expect(DrawChemShapes.draw(input, "cmpd1").wrap("full", "g").wrap("full", "svg").elementFull).toEqual(
 			"<svg>" +
 				"<g id='cmpd1' >" +
 					"<style type=\"text/css\">" +
-						"path{" +
-								"stroke:black;" +
-								"stroke-width:0.8;" +
-								"fill:none;" +
-							"}" +
-							"circle.atom:hover{" +
-								"opacity:0.3;" +
-								"stroke:black;" +
-								"stroke-width:0.8;" +
-							"}" +
-							"circle.atom{" +
-								"opacity:0;" +
-							"}" +
-							"circle.arom{" +
-								"stroke:black;" +
-								"stroke-width:0.8;" +
-								"fill:none;" +
-							"}" +
-						"</style>" +
-						"<path d='M 10 10 L 25 25 L 45 45 L 75 75 '></path>" +
-						"<path d='M 25 25 L 50 50 '></path>" +	
-						"<path d='M 10 10 L 15 20 '></path>" +
-						"<path d='M 10 10 L 5 26 '></path>" +
-						"<path d='M 10 10 L 14 12 '></path>" +
-						"<circle class='atom' cx='10' cy='10' r='2.4' ></circle>" +
-						"<circle class='atom' cx='25' cy='25' r='2.4' ></circle>" +
-						"<circle class='atom' cx='45' cy='45' r='2.4' ></circle>" +
-						"<circle class='atom' cx='75' cy='75' r='2.4' ></circle>" +
-						"<circle class='atom' cx='50' cy='50' r='2.4' ></circle>" +
-						"<circle class='atom' cx='15' cy='20' r='2.4' ></circle>" +
-						"<circle class='atom' cx='5' cy='26' r='2.4' ></circle>" +
-						"<circle class='atom' cx='14' cy='12' r='2.4' ></circle>" +
-					"</g>" +
+						styleFull +
+					"</style>" +
+					"<path d='M 10 10 L 25 25 L 45 45 L 75 75 '></path>" +
+					"<path d='M 25 25 L 50 50 '></path>" +	
+					"<path d='M 10 10 L 15 20 '></path>" +
+					"<path d='M 10 10 L 5 26 '></path>" +
+					"<path d='M 10 10 L 14 12 '></path>" +
+					"<circle class='atom' cx='10' cy='10' r='2.4' ></circle>" +
+					"<circle class='atom' cx='25' cy='25' r='2.4' ></circle>" +
+					"<circle class='atom' cx='45' cy='45' r='2.4' ></circle>" +
+					"<circle class='atom' cx='75' cy='75' r='2.4' ></circle>" +
+					"<circle class='atom' cx='50' cy='50' r='2.4' ></circle>" +
+					"<circle class='atom' cx='15' cy='20' r='2.4' ></circle>" +
+					"<circle class='atom' cx='5' cy='26' r='2.4' ></circle>" +
+					"<circle class='atom' cx='14' cy='12' r='2.4' ></circle>" +
+				"</g>" +
 			"</svg>"
 		);
 	});

@@ -363,31 +363,37 @@
 					}
 				}
 			   
-			   /**
+				/**
 				* Transforms output into an array of strings.
 				* Basically, it translates each array of coordinates into its string representation.
 				* @returns {String[]}
 				*/
-			   function stringifyPaths() {
-				   var result = [], i, j, line, point, lineStr;
-				   for (i = 0; i < output.length; i += 1) {
-					   line = output[i];
-					   lineStr = "";
-					   for (j = 0; j < line.length; j += 1) {
-						   point = line[j];
-						   if (typeof point === "string") {
-							   lineStr += point + " ";
-						   } else {
-							   lineStr += point[0] + " " + point[1] + " ";
-						   }
-					   }
-					   result.push(lineStr);
-				   }
-				   return result;
-			   }
-		   }
+				function stringifyPaths() {
+					var result = [], i, j, line, point, lineStr;
+					for (i = 0; i < output.length; i += 1) {
+						line = output[i];
+						lineStr = "";
+						for (j = 0; j < line.length; j += 1) {
+							point = line[j];
+							if (typeof point === "string") {
+								lineStr += point + " ";
+							} else {
+								lineStr += point[0] + " " + point[1] + " ";
+							}
+						}
+						result.push(lineStr);
+					}
+					return result;
+				}
+			}
 		}
 		
+		/**
+		 * Divides a circle (center at pos2) into 12 parts and checks to which part the coords at pos1 belong.
+		 * @param {Number[]} pos1 - coordinates of the center
+		 * @param {Number[]} pos2 - coords to check
+		 * @returns {String}
+		 */
 		service.getDirection = function (pos1, pos2) {
 			var alpha = Math.PI / 6,
 				r = Math.sqrt(Math.pow((pos1[0] - pos2[0]), 2) + Math.pow((pos1[1] - pos2[1]), 2)),

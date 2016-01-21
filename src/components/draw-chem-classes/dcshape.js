@@ -10,14 +10,15 @@
 		var service = {};
 		
 		service.fontSize = 18;
+		service.font = "Arial";
 		
 		/**
 		 * Creates a new Shape. This helper class has methods
 		 * for wrapping an svg element (e.g. path) with other elements (e.g. g, defs).		 
 		 * @class
-		 * @private
-		 * @param {string} element - an svg element
-		 * @param {string} id - an id of the element
+		 * @param {String} elementFull - an svg element for editing
+		 * @param {String} elementMini - an svg element for displaying outside of the editor
+		 * @param {String} id - an id of the element
 		 */
 		function Shape(elementFull, elementMini, id) {
 			this.elementFull = elementFull;
@@ -45,7 +46,7 @@
 					"fill": "none"
 				},
 				"text": {
-					"font-family": "Times New Roman",
+					"font-family": service.font,
 					"cursor": "default",
 					"text-anchor": "middle",
 					"dominant-baseline": "middle",
@@ -67,10 +68,10 @@
 					"fill": "none"
 				},
 				"text": {
-					"font-family": "Times New Roman",
+					"font-family": service.font,
 					"cursor": "default",
 					"text-anchor": "middle",
-					"alignment-baseline": "middle",
+					"dominant-baseline": "middle",
 					"font-size": service.fontSize + "px"
 				},
 				"rect": {
@@ -79,6 +80,10 @@
 			}
 		}
 		
+		/**
+		 * Sets an array of extreme coords (minX, maxX, minY, maxY).
+		 * @param {Number[]} minMax - array of coords
+		 */
 		Shape.prototype.setMinMax = function (minMax) {
 			this.minMax = minMax;
 		}
@@ -119,10 +124,10 @@
 		
 		/**
 		 * Adds a specified transformation to transformAttr.
-		 * @param {string} transform - the transformation (e.g. scale, translate)
+		 * @param {String} transform - the transformation (e.g. scale, translate)
 		 * @param {Object} value - coordinates of the transformation
-		 * @param {number} value.x - x coordinate
-		 * @param {number} value.y - y coordinate
+		 * @param {Number} value.x - x coordinate
+		 * @param {Number} value.y - y coordinate
 		 * @returns {Shape}
 		 */
 		Shape.prototype.transform = function (transform, value) {
@@ -135,16 +140,6 @@
 			}			
 			this.transformAttr += ")";
 			return this;
-		};
-		
-		/**
-		 * Generates 'use' tag based on id, transformAttr, and styleAttr.
-		 * @returns {string}
-		 */
-		Shape.prototype.generateUse = function () {
-			return "<use xmlns:xlink='http://www.w3.org/1999/xlink' xlink:href='#" + this.id +
-				"' transform='" + this.transformAttr +
-				"'></use>";
 		};
 		
 		Shape.prototype.generateStyle = function (which) {
@@ -165,18 +160,6 @@
 			});
 			return attr + "</style>";
 		}
-		
-		/**
-		 * Generates 'use' element and wraps the content with 'svg' tags.
-		 * @returns {string}
-		 */
-		Shape.prototype.getElementFull = function () {			
-			return this.elementFull;
-		};
-		
-		Shape.prototype.getElementMini = function () {			
-			return this.elementMini;
-		};
 		
 		service.Shape = Shape;
 		
