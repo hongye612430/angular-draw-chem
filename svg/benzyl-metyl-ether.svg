@@ -1,0 +1,15 @@
+<svg width="100%" height="100%" viewBox="174.11 75.82 191.55 110.00">
+  <g id="cmpd1">
+  <style type="text/css">
+    path{stroke:black;stroke-width:1.4;fill:none;}
+	circle.arom{stroke:black;stroke-width:1.4;fill:none;}
+	text{font-family:Arial;cursor:default;text-anchor:middle;dominant-baseline:middle;font-size:16px;}
+	rect{fill:white;}
+  </style>
+  <path d="M 224.42 95.82 L 254.73 113.32 L 254.73 148.32 L 224.42 165.82 L 194.10999999999999 148.32 L 194.10999999999999 113.32 L 224.42 95.82 "/>
+  <path d="M 254.73 113.32 L 285.03999999999996 95.82 L 315.34999999999997 113.32 L 345.65999999999997 95.82 "/>
+  <rect height="19.8" width="14.4" y="101.44" x="308.15"/>
+  <text y="113.32" x="315.34999999999997">O</text>
+  <circle r="15.75" cy="130.82" cx="224.42" class="arom"/>
+  </g>
+</svg>

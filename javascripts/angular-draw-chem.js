@@ -295,14 +295,15 @@
 		var service = {};
 		
 		service.fontSize = 18;
+		service.font = "Arial";
 		
 		/**
 		 * Creates a new Shape. This helper class has methods
 		 * for wrapping an svg element (e.g. path) with other elements (e.g. g, defs).		 
 		 * @class
-		 * @private
-		 * @param {string} element - an svg element
-		 * @param {string} id - an id of the element
+		 * @param {String} elementFull - an svg element for editing
+		 * @param {String} elementMini - an svg element for displaying outside of the editor
+		 * @param {String} id - an id of the element
 		 */
 		function Shape(elementFull, elementMini, id) {
 			this.elementFull = elementFull;
@@ -330,7 +331,7 @@
 					"fill": "none"
 				},
 				"text": {
-					"font-family": "Times New Roman",
+					"font-family": service.font,
 					"cursor": "default",
 					"text-anchor": "middle",
 					"dominant-baseline": "middle",
@@ -352,10 +353,10 @@
 					"fill": "none"
 				},
 				"text": {
-					"font-family": "Times New Roman",
+					"font-family": service.font,
 					"cursor": "default",
 					"text-anchor": "middle",
-					"alignment-baseline": "middle",
+					"dominant-baseline": "middle",
 					"font-size": service.fontSize + "px"
 				},
 				"rect": {
@@ -364,6 +365,10 @@
 			}
 		}
 		
+		/**
+		 * Sets an array of extreme coords (minX, maxX, minY, maxY).
+		 * @param {Number[]} minMax - array of coords
+		 */
 		Shape.prototype.setMinMax = function (minMax) {
 			this.minMax = minMax;
 		}
@@ -404,10 +409,10 @@
 		
 		/**
 		 * Adds a specified transformation to transformAttr.
-		 * @param {string} transform - the transformation (e.g. scale, translate)
+		 * @param {String} transform - the transformation (e.g. scale, translate)
 		 * @param {Object} value - coordinates of the transformation
-		 * @param {number} value.x - x coordinate
-		 * @param {number} value.y - y coordinate
+		 * @param {Number} value.x - x coordinate
+		 * @param {Number} value.y - y coordinate
 		 * @returns {Shape}
 		 */
 		Shape.prototype.transform = function (transform, value) {
@@ -420,16 +425,6 @@
 			}			
 			this.transformAttr += ")";
 			return this;
-		};
-		
-		/**
-		 * Generates 'use' tag based on id, transformAttr, and styleAttr.
-		 * @returns {string}
-		 */
-		Shape.prototype.generateUse = function () {
-			return "<use xmlns:xlink='http://www.w3.org/1999/xlink' xlink:href='#" + this.id +
-				"' transform='" + this.transformAttr +
-				"'></use>";
 		};
 		
 		Shape.prototype.generateStyle = function (which) {
@@ -450,18 +445,6 @@
 			});
 			return attr + "</style>";
 		}
-		
-		/**
-		 * Generates 'use' element and wraps the content with 'svg' tags.
-		 * @returns {string}
-		 */
-		Shape.prototype.getElementFull = function () {			
-			return this.elementFull;
-		};
-		
-		Shape.prototype.getElementMini = function () {			
-			return this.elementMini;
-		};
 		
 		service.Shape = Shape;
 		
@@ -661,8 +644,7 @@
 				
 				var downAtomCoords,
 					downMouseCoords,
-					chosenStructure = false,
-					changeLabel = false,
+					selected,
 					movedOnEmpty = false,
 					mouseDown = false,
 					downOnAtom = false;
@@ -670,8 +652,7 @@
 				scope.label = "";
 				
 				scope.changeLabel = function () {
-					changeLabel = true;
-					chosenStructure = false;
+					selected = "label";
 				}
 				
 				/**
@@ -737,14 +718,14 @@
 					if (structure !== null) {
 						shape = DrawChemShapes.draw(structure, "cmpd1");
 						attr = {
-							"viewBox": (shape.minMax.minX - 20) + " " +
-								(shape.minMax.minY - 20) + " " +
-								(shape.minMax.maxX - shape.minMax.minX + 40) + " " +
-								(shape.minMax.maxY - shape.minMax.minY + 40),
+							"viewBox": (shape.minMax.minX - 20).toFixed(2) + " " +
+								(shape.minMax.minY - 20).toFixed(2) + " " +
+								(shape.minMax.maxX - shape.minMax.minX + 40).toFixed(2) + " " +
+								(shape.minMax.maxY - shape.minMax.minY + 40).toFixed(2),
 							"height": "100%",
 							"width": "100%"
 						};
-						content = shape.wrap("mini", "svg", attr).getElementMini();
+						content = shape.wrap("mini", "g").wrap("mini", "svg", attr).elementMini;
 					}
 					DrawChem.setContent(content);
 					DrawChem.setStructure(structure);
@@ -770,8 +751,7 @@
 						name: customInstance.name,
 						choose: function () {
 							scope.chosenStructure = customInstance;
-							chosenStructure = true;
-							changeLabel = false;
+							selected = "structure";
 						}
 					});
 				});
@@ -781,17 +761,21 @@
 				 */
 				scope.doOnMouseDown = function ($event) {
 					if ($event.which !== 1) {
+						// if button other than left was pushed
 						return undefined;
 					}
+					
 					downMouseCoords = innerCoords($event);
 					mouseDown = true;
 					if (!isContentEmpty()) {
+						// if content is not empty
 						checkIfDownOnAtom();
 					}
 					
 					function checkIfDownOnAtom() {
 						downAtomCoords = DrawChemShapes.isWithin(DrawChemCache.getCurrentStructure(), downMouseCoords).absPos;
 						if (typeof downAtomCoords !== "undefined") {
+							// set flag if atom was selected
 							downOnAtom = true;
 						}
 					}
@@ -804,18 +788,23 @@
 					var structure, mouseCoords = innerCoords($event);
 					
 					if ($event.which !== 1) {
+						// if button other than left was released
 						return undefined;
 					}
 					
 					if (isContentEmpty()) {
+						// if content is empty
 						structure = drawOnEmptyContent();
-					} else if (downOnAtom && changeLabel) {
+					} else if (downOnAtom && selected === "label") {
+						// if atom has been selected and 'change label' button is selected
 						structure = modifyLabel();						
-					} else if (downOnAtom && chosenStructure) {
+					} else if (downOnAtom && selected === "structure") {
+						// if atom has been selected and any of the structure buttons has been clicked
 						structure = modifyStructure(DrawChemCache.getCurrentStructure(), mouseCoords);
 					}
 					
 					if (typeof structure !== "undefined") {
+						// if the structure has been successfully set to something
 						DrawChemCache.addStructure(angular.copy(structure));
 						draw(structure);						
 					}
@@ -848,14 +837,18 @@
 				scope.doOnMouseMove = function ($event) {
 					var mouseCoords = innerCoords($event), structure;
 					
-					if (!chosenStructure && !mouseDown) {
+					if (selected !== "structure") {
+						// if no structure has been chosen
+						// then do nothing
 						return undefined;
 					}
 						
 					if (downOnAtom) {
+						// if an atom has been chosen
 						structure = modifyOnNonEmptyContent();
 						draw(structure);
 					} else if (mouseDown && isContentEmpty()) {
+						// if content is empty and mouse button is pushed
 						structure = modifyOnEmptyContent();
 						draw(structure);
 					}
@@ -907,7 +900,7 @@
 				function draw(structure) {
 					var drawn = "";					
 					drawn = DrawChemShapes.draw(structure, "cmpd1");
-					DrawChemCache.setCurrentSvg(drawn.wrap("full", "svg").getElementFull());
+					DrawChemCache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
 				}
 				
 				/**
@@ -927,6 +920,10 @@
 					);
 				}
 				
+				/**
+				 * Checks if the canvas is empty.
+				 * @returns {Boolean}
+				 */
 				function isContentEmpty() {
 					return DrawChemCache.getCurrentStructure() === null;
 				}
@@ -1828,31 +1825,37 @@
 					}
 				}
 			   
-			   /**
+				/**
 				* Transforms output into an array of strings.
 				* Basically, it translates each array of coordinates into its string representation.
 				* @returns {String[]}
 				*/
-			   function stringifyPaths() {
-				   var result = [], i, j, line, point, lineStr;
-				   for (i = 0; i < output.length; i += 1) {
-					   line = output[i];
-					   lineStr = "";
-					   for (j = 0; j < line.length; j += 1) {
-						   point = line[j];
-						   if (typeof point === "string") {
-							   lineStr += point + " ";
-						   } else {
-							   lineStr += point[0] + " " + point[1] + " ";
-						   }
-					   }
-					   result.push(lineStr);
-				   }
-				   return result;
-			   }
-		   }
+				function stringifyPaths() {
+					var result = [], i, j, line, point, lineStr;
+					for (i = 0; i < output.length; i += 1) {
+						line = output[i];
+						lineStr = "";
+						for (j = 0; j < line.length; j += 1) {
+							point = line[j];
+							if (typeof point === "string") {
+								lineStr += point + " ";
+							} else {
+								lineStr += point[0] + " " + point[1] + " ";
+							}
+						}
+						result.push(lineStr);
+					}
+					return result;
+				}
+			}
 		}
 		
+		/**
+		 * Divides a circle (center at pos2) into 12 parts and checks to which part the coords at pos1 belong.
+		 * @param {Number[]} pos1 - coordinates of the center
+		 * @param {Number[]} pos2 - coords to check
+		 * @returns {String}
+		 */
 		service.getDirection = function (pos1, pos2) {
 			var alpha = Math.PI / 6,
 				r = Math.sqrt(Math.pow((pos1[0] - pos2[0]), 2) + Math.pow((pos1[1] - pos2[1]), 2)),
