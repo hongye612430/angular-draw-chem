@@ -5,7 +5,7 @@ The editor is from the beginning designed to be svg-based, thus enabling the dra
 ### examples
 ![alt text][logo]
 
-[logo]: mmmalik.github.io/angular-draw-chem/svg/benzyl-methyl-ether "benzyl methyl ether"
+[logo]: https://mmmalik.github.io/angular-draw-chem/svg/benzyl-methyl-ether.svg "benzyl methyl ether"
 
 ### possible usage
 
