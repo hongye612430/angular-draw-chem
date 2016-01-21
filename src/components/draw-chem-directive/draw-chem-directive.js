@@ -68,7 +68,11 @@
 				 */
 				scope.forward = function () {
 					DrawChemCache.moveRightInStructures();
-					draw(DrawChemCache.getCurrentStructure());
+					if (DrawChemCache.getCurrentStructure() === null) {
+						DrawChem.clearContent();
+					} else {
+						draw(DrawChemCache.getCurrentStructure());
+					}
 				}
 				
 				/**
@@ -225,7 +229,7 @@
 					}
 					
 					function modifyOnNonEmptyContent() {
-						var frozenCurrentStructure = DrawChemCache.getCurrentStructure();							
+						var frozenCurrentStructure = DrawChemCache.getCurrentStructure();					
 						return modifyStructure(frozenCurrentStructure, mouseCoords, true);
 					}
 					
