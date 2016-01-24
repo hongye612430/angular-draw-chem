@@ -8,6 +8,11 @@ describe("DrawChemEditor directive tests - part1", function () {
 			"stroke-width:0.8;" +
 			"fill:none;" +
 		"}" +
+		"path.wedge{" +
+			"stroke:black;" +
+			"stroke-width:0.8;" +
+			"fill:black;" +
+		"}" +
 		"circle.atom:hover{" +
 			"opacity:0.3;" +
 			"stroke:black;" +
@@ -35,6 +40,11 @@ describe("DrawChemEditor directive tests - part1", function () {
 			"stroke:black;" +
 			"stroke-width:0.8;" +
 			"fill:none;" +
+		"}" +
+		"path.wedge{" +
+			"stroke:black;" +
+			"stroke-width:0.8;" +
+			"fill:black;" +
 		"}" +
 		"circle.arom{" +
 			"stroke:black;" +

@@ -3,12 +3,13 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemStructures", DrawChemStructures);
 		
-	DrawChemStructures.$inject = ["DrawChemConst", "DCStructure", "DCStructureCluster", "DCAtom"];
+	DrawChemStructures.$inject = ["DrawChemConst", "DCStructure", "DCStructureCluster", "DCAtom", "DCBond"];
 	
-	function DrawChemStructures(DrawChemConst, DCStructure, DCStructureCluster, DCAtom) {
+	function DrawChemStructures(DrawChemConst, DCStructure, DCStructureCluster, DCAtom, DCBond) {
 
 		var service = {},
 			Atom = DCAtom.Atom,
+			Bond = DCBond.Bond,
 			Structure = DCStructure.Structure,
 			StructureCluster = DCStructureCluster.StructureCluster,
 			BONDS = DrawChemConst.BONDS;
@@ -47,17 +48,80 @@
 		service.singleBond = function () {
 			var cluster,
 				name = "single-bond",
-				defs = generateSingleBonds();
+				defs = generateSingleBonds("single");
 				
 			cluster = new StructureCluster(name, defs);
 				
 			return cluster;
-		};		
+		};
+		
+		/**
+		 * Generates double bond structures in each defined direction.
+		 * @returns {StructureCluster}
+		 */
+		service.doubleBond = function () {
+			var cluster,
+				name = "double-bond",
+				defs = generateSingleBonds("double");
+				
+			cluster = new StructureCluster(name, defs);
+				
+			return cluster;
+		};
+		
+		/**
+		 * Generates triple bond structures in each defined direction.
+		 * @returns {StructureCluster}
+		 */
+		service.tripleBond = function () {
+			var cluster,
+				name = "triple-bond",
+				defs = generateSingleBonds("triple");
+				
+			cluster = new StructureCluster(name, defs);
+				
+			return cluster;
+		};
+		
+		/**
+		 * Generates wedge bond structures in each defined direction.
+		 * @returns {StructureCluster}
+		 */
+		service.wedgeBond = function () {
+			var cluster,
+				name = "wedge-bond",
+				defs = generateSingleBonds("wedge");
+				
+			cluster = new StructureCluster(name, defs);
+				
+			return cluster;
+		};
+		
+		/**
+		 * Generates wedge bond structures in each defined direction.
+		 * @returns {StructureCluster}
+		 */
+		service.dashBond = function () {
+			var cluster,
+				name = "dash-bond",
+				defs = generateSingleBonds("dash");
+				
+			cluster = new StructureCluster(name, defs);
+				
+			return cluster;
+		};
 		
 		/**
 		 * Stores all predefined structures.
 		 */
-		service.custom = [service.benzene, service.cyclohexane, service.singleBond];
+		service.custom = [service.benzene,
+			service.cyclohexane,
+			service.singleBond,
+			service.doubleBond,
+			service.tripleBond,
+			service.wedgeBond,
+			service.dashBond
+		];
 		
 		return service;
 		
@@ -107,10 +171,10 @@
 				function genAtoms(atom, dirs, depth) {
 					var newDirs = calcDirections(dirs.nextDirection), newAtom;
 					if (depth === 1) {
-						return atom.addBond(new Atom(dirs.nextBond, [], ""));
+						return atom.addBond(new Bond("single", new Atom(dirs.nextBond, [], "")));
 					}
 					newAtom = new Atom(dirs.nextBond, [], "", newDirs.current);
-					atom.addBond(newAtom);
+					atom.addBond(new Bond("single", newAtom));
 					genAtoms(newAtom, newDirs, depth - 1);
 				}
 				
@@ -161,9 +225,10 @@
 		
 		/**
 		 * Generates single bonds in all defined directions.
+		 * @param {String} type - bond type, e.g. 'single', 'double'.
 		 * @returns {Structure[]}
 		 */
-		function generateSingleBonds() {
+		function generateSingleBonds(type) {
 			var i, bond, direction, result = [];
 			for (i = 0; i < BONDS.length; i += 1) {
 				bond = BONDS[i].bond;
@@ -173,7 +238,7 @@
 						direction,
 						[
 							new Atom([0, 0], [
-								new Atom(bond, [], "", [Atom.getOppositeDirection(direction)])
+								new Bond(type, new Atom(bond, [], "", [Atom.getOppositeDirection(direction)]))
 							], "", [direction])
 						]
 					)

@@ -33,6 +33,12 @@
 			// the default r of an aromatic circle
 			service.AROMATIC_R = service.BOND_LENGTH * 0.45;
 			
+			// the default distance between two parallel bonds in double bonds (as a percent of the bond length);
+			service.BETWEEN_DBL_BONDS = 0.065;
+			
+			// the default distance between two parallel triple bonds in double bonds (as a percent of the bond length);
+			service.BETWEEN_TRP_BONDS = 0.1;
+			
 			// the default bond width
 			service.BOND_WIDTH = parseFloat((service.BOND_LENGTH * service.WIDTH_TO_LENGTH).toFixed(2));
 			

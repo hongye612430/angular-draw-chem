@@ -8,6 +8,11 @@ describe("DrawChemShapes service tests", function () {
 			"stroke-width:0.8;" +
 			"fill:none;" +
 		"}" +
+		"path.wedge{" +
+			"stroke:black;" +
+			"stroke-width:0.8;" +
+			"fill:black;" +
+		"}" +
 		"circle.atom:hover{" +
 			"opacity:0.3;" +
 			"stroke:black;" +
@@ -32,8 +37,9 @@ describe("DrawChemShapes service tests", function () {
 			"fill:white;" +
 		"}";
 	
-	beforeEach(inject(function (_DrawChemShapes_, _DrawChemStructures_, _DrawChemConst_, _DCAtom_, _DCStructure_) {
+	beforeEach(inject(function (_DrawChemShapes_, _DrawChemStructures_, _DrawChemConst_, _DCAtom_, _DCStructure_, _DCBond_) {
 		Atom = _DCAtom_.Atom;
+		Bond = _DCBond_.Bond;
 		DrawChemShapes = _DrawChemShapes_;
 		DrawChemConst = _DrawChemConst_;
 		DrawChemStructures = _DrawChemStructures_;
@@ -51,15 +57,15 @@ describe("DrawChemShapes service tests", function () {
 	it("should draw an object based on the input", function () {
 		var input = new Structure("test", [
 			new Atom([10, 10], [
-				new Atom([15, 15], [
-					new Atom([20, 20], [
-						new Atom([30, 30], [])
-					]),
-					new Atom([25, 25], [])
-				]),
-				new Atom([5, 10], []),
-				new Atom([-5, 16], []),
-				new Atom([4, 2], [])
+				new Bond("single", new Atom([15, 15], [
+					new Bond("single", new Atom([20, 20], [
+						new Bond("single", new Atom([30, 30], []))
+					])),
+					new Bond("single", new Atom([25, 25], []))
+				])),
+				new Bond("single", new Atom([5, 10], [])),
+				new Bond("single", new Atom([-5, 16], [])),
+				new Bond("single", new Atom([4, 2], []))
 			])
 		]);
 		input.setOrigin([10, 10]);

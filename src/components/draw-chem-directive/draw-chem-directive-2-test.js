@@ -8,6 +8,11 @@ describe("DrawChemEditor directive tests - part2", function () {
 			"stroke-width:0.8;" +
 			"fill:none;" +
 		"}" +
+		"path.wedge{" +
+			"stroke:black;" +
+			"stroke-width:0.8;" +
+			"fill:black;" +
+		"}" +
 		"circle.atom:hover{" +
 			"opacity:0.3;" +
 			"stroke:black;" +
