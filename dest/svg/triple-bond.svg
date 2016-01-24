@@ -1,0 +1,15 @@
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="191.98 96.52 70.31 57.50" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <g id="cmpd1">
+    <style type="text/css">
+      path{stroke:black;stroke-width:1.4;fill:none;}
+	  path.wedge{stroke:black;stroke-width:1.4;fill:black;}
+	  circle.arom{stroke:black;stroke-width:1.4;fill:none;}
+	  text{font-family:Arial;cursor:default;text-anchor:middle;dominant-baseline:middle;font-size:18px;}
+	  polygon.text{fill:white;}
+    </style>
+    <path d="M 211.98 134.02 "/>
+    <path d="M 213.73 137.05 L 244.04 119.55 M 211.98 134.02 L 242.29 116.52000000000001 M 210.23 130.99 L 240.54 113.49 "/>
+    <path d="M 242.29 116.52000000000001 "/>
+  </g>
+</svg>

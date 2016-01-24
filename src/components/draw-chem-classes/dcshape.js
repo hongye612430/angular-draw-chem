@@ -57,7 +57,7 @@
 					"dominant-baseline": "middle",
 					"font-size": service.fontSize + "px"
 				},
-				"rect": {
+				"polygon.text": {
 					"fill": "white"
 				}
 			};
@@ -84,9 +84,9 @@
 					"dominant-baseline": "middle",
 					"font-size": service.fontSize + "px"
 				},
-				"rect": {
+				"polygon.text": {
 					"fill": "white"
-				}				
+				}			
 			}
 		}
 		

@@ -33,7 +33,7 @@ describe("DrawChemShapes service tests", function () {
 			"dominant-baseline:middle;" +
 			"font-size:18px;" +
 		"}" +
-		"rect{" +
+		"polygon.text{" +
 			"fill:white;" +
 		"}";
 	

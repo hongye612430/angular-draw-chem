@@ -1,18 +1,36 @@
 <div ng-show="showEditor">
 	<div class="dc-editor-overlay" ng-click="closeEditor()"></div>
 	<div class="dc-editor-dialog" ng-style="dialogStyle">
-		<div class="dc-editor-close" ng-click="closeEditor()">X</div>
+		<button type="button" class="close dc-editor-close" aria-label="Close" ng-click="closeEditor()"><span aria-hidden="true">&times;</span></button>
 		<div class="dc-wrap">
 			<div id="#dc-tools-h" class="dc-tools-h">
-				<span ng-repeat="custom in customButtons">
-					<button id="dc-{{custom.name}}" class="dc-custom-button" ng-click="custom.choose()" ng-bind="custom.name"></button>
-				</span>
-				<button id="dc-label" class="dc-custom-button" ng-click="changeLabel()">label</button>
+				<div class="btn-group" uib-dropdown>
+					<button id="dc-structures" type="button" class="btn btn-primary" uib-dropdown-toggle>
+						Structures <span class="caret"></span>
+					</button>
+					<ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="btn-append-to-single-button">
+						<li class="dc-menuitem" role="menuitem" ng-repeat="custom in customButtons">
+							<a class="dc-menuitem-link" ng-click="custom.choose()" id="dc-{{custom.name}}">
+								<span class="dc-menuitem-link-text" ng-bind="custom.name"></span>
+								<img class="pull-right dc-struct" alt="{{custom.name}}" ng-src="{{custom.name}}.svg">
+							</a>
+						</li>				
+					</ul>
+				</div>
+				<div class="btn-group" uib-dropdown>
+					<button id="dc-structures" type="button" class="btn btn-primary" uib-dropdown-toggle>
+						Actions <span class="caret"></span>
+					</button>
+					<ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="btn-append-to-single-button">
+						<li class="dc-menuitem" role="menuitem" ng-repeat="custom in actions">
+							<a class="dc-menuitem-link" ng-click="custom.action()" id="dc-{{custom.name}}">
+								<span class="dc-menuitem-link-text" ng-bind="custom.name"></span>
+							</a>
+						</li>
+					</ul>
+				</div>
+				<button class="btn btn-default" id="dc-label" class="dc-custom-button" ng-click="changeLabel()">label</button>
 				<input type="text" ng-model="label" />
-				<button id="dc-undo" class="dc-custom-button" ng-click="undo()">undo</button>
-				<button id="dc-forward" class="dc-custom-button" ng-click="forward()">forward</button>
-				<button id="dc-clear" class="dc-custom-button" ng-click="clear()">clear</button>
-				<button id="dc-transfer" class="dc-custom-button" ng-click="transfer()">transfer</button>
 			</div>
 			<dc-content
 				class="dc-editor-dialog-content"

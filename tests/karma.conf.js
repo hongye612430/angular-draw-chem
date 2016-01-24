@@ -16,6 +16,7 @@ module.exports = function(config) {
       "assets/angular.js",
       "assets/angular-sanitize.js",
       "assets/angular-mocks.js",
+      "assets/ui-bootstrap.js",
       { pattern: "assets/draw-chem-editor.html", included: false, served: true, watched: true },
       "../src/angular-draw-chem-app.js",
       "../src/components/**/*.js",      

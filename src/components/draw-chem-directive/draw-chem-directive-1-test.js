@@ -33,7 +33,7 @@ describe("DrawChemEditor directive tests - part1", function () {
 			"dominant-baseline:middle;" +
 			"font-size:18px;" +
 		"}" +
-		"rect{" +
+		"polygon.text{" +
 			"fill:white;" +
 		"}";
 	styleMini = "path{" +
@@ -58,7 +58,7 @@ describe("DrawChemEditor directive tests - part1", function () {
 			"dominant-baseline:middle;" +
 			"font-size:18px;" +
 		"}" +
-		"rect{" +
+		"polygon.text{" +
 			"fill:white;" +
 		"}";
 	

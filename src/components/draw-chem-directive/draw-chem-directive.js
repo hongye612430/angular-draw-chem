@@ -241,6 +241,13 @@
 					}
 				}
 				
+				scope.actions = [
+					{ name: "undo", action: scope.undo },
+					{ name: "forward", action: scope.forward },
+					{ name: "transfer", action: scope.transfer },
+					{ name: "clear", action: scope.clear }
+				];
+				
 				/**
 				 * Calculates the coordinates of the mouse pointer during an event.
 				 * Takes into account the margin of the enclosing div.

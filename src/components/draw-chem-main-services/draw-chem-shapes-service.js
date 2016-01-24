@@ -8,6 +8,8 @@
 	function DrawChemShapes(DCShape, DrawChemConst, DCAtom, DCBond) {
 		
 		var service = {},
+			BOND_LENGTH = DrawChemConst.BOND_LENGTH,
+			BONDS_AUX = DrawChemConst.BONDS_AUX,
 			BETWEEN_DBL_BONDS = DrawChemConst.BETWEEN_DBL_BONDS,
 			BETWEEN_TRP_BONDS = DrawChemConst.BETWEEN_TRP_BONDS,
 			Atom = DCAtom.Atom;
@@ -240,12 +242,7 @@
 					full += "<circle class='atom' cx='" + circle[0] + "' cy='" + circle[1] + "' r='" + circle[2] + "' ></circle>";
 				});
 				labels.forEach(function (label) {
-					aux = "<rect x='" + (label.x - label.width / 2 ) +
-						"' y='" + (label.y - label.height * 3 / 5) +
-						"' width='" + label.width +
-						"' height='" + label.height + "'></rect>" +
-						"<text x='" + label.x +  "' y='" + label.y + "'>" + label.label + "</text>";
-					
+					aux = drawDodecagon(label) + "<text x='" + label.x +  "' y='" + label.y + "'>" + label.label + "</text>";					
 					full += aux;
 					mini += aux;
 				});
@@ -264,6 +261,18 @@
 					full: full,
 					mini: mini
 				};
+				
+				function drawDodecagon(label) {
+					var i, x, y,
+						factor = (label.height * 0.4) / BOND_LENGTH,
+						result = [];
+					for (i = 0; i < BONDS_AUX.length; i += 1) {
+						x = BONDS_AUX[i].bond[0];
+						y = BONDS_AUX[i].bond[1];
+						result = result.concat(addCoords([label.x, label.y], [x, y], factor));
+					}					
+					return "<polygon class='text' points='" + stringifyPaths([result])[0].line + "'></polygon>";
+				}
 			}
 			
 			/**
@@ -295,7 +304,7 @@
 				connect(input.getStructure(0).getBonds(), output[len - 1]);
 			   
 				return {
-					paths: stringifyPaths(),
+					paths: stringifyPaths(output),
 					circles: circles,
 					labels: labels,
 					minMax: minMax
@@ -402,12 +411,6 @@
 					return result;
 				}
 				
-				function addCoords(coords1, coords2, factor) {
-					return typeof factor === "undefined" ?
-						[(coords1[0] + coords2[0]).toFixed(2), (coords1[1] + coords2[1]).toFixed(2)]:
-						[(coords1[0] + factor * coords2[0]).toFixed(2), (coords1[1] + factor * coords2[1]).toFixed(2)];
-				}
-				
 				function updateLabel(absPos, atom) {
 					var label = atom.getLabel(),
 						labelObj,
@@ -440,33 +443,6 @@
 					if (absPos[1] < minMax.minY) {
 						minMax.minY = absPos[1];
 					}
-				}
-			   
-				/**
-				* Transforms output into an array of strings.
-				* Basically, it translates each array of coordinates into its string representation.
-				* @returns {String[]}
-				*/
-				function stringifyPaths() {
-					var result = [], i, j, line, point, lineStr;
-					for (i = 0; i < output.length; i += 1) {
-						line = output[i];
-						lineStr = { line: "" };
-						for (j = 0; j < line.length; j += 1) {
-							point = line[j];
-							if (typeof point === "string") {
-								if (point === "wedge") {
-									lineStr.class = "wedge";
-								} else {
-									lineStr.line += point + " ";
-								}
-							} else {
-								lineStr.line += point[0] + " " + point[1] + " ";
-							}
-						}
-						result.push(lineStr);
-					}
-					return result;
 				}
 			}
 		}
@@ -528,6 +504,39 @@
 		function insideCircle(center, point) {
 			var tolerance = DrawChemConst.CIRC_R;
 			return Math.abs(center[0] - point[0]) < tolerance && Math.abs(center[1] - point[1]) < tolerance;
+		}
+		
+		/**
+		* Transforms output into an array of strings.
+		* Basically, it translates each array of coordinates into its string representation.
+		* @returns {String[]}
+		*/
+		function stringifyPaths(output) {
+			var result = [], i, j, line, point, lineStr;
+			for (i = 0; i < output.length; i += 1) {
+				line = output[i];
+				lineStr = { line: "" };
+				for (j = 0; j < line.length; j += 1) {
+					point = line[j];
+					if (typeof point === "string") {
+						if (point === "wedge") {
+							lineStr.class = "wedge";
+						} else {
+							lineStr.line += point + " ";
+						}
+					} else {
+						lineStr.line += point[0] + " " + point[1] + " ";
+					}
+				}
+				result.push(lineStr);
+			}
+			return result;
+		}
+		
+		function addCoords(coords1, coords2, factor) {
+			return typeof factor === "undefined" ?
+				[(coords1[0] + coords2[0]).toFixed(2), (coords1[1] + coords2[1]).toFixed(2)]:
+				[(coords1[0] + factor * coords2[0]).toFixed(2), (coords1[1] + factor * coords2[1]).toFixed(2)];
 		}
 	}
 })();

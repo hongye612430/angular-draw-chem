@@ -11,6 +11,10 @@ module.exports = function(grunt) {
 		  files: ["src/static/draw-chem-editor.html"],
 		  tasks: ["html"]
 		},
+		buildSvg: {
+		  files: ["src/static/svg/*.svg"],
+		  tasks: ["svg"]
+		},
 		buildCss: {
 		  files: ["src/static/draw-chem-editor.sass"],
 		  tasks: ["css"]
@@ -36,6 +40,11 @@ module.exports = function(grunt) {
 			files: [
 				{ expand: true, cwd: "src/static/", src: "draw-chem-editor.html", dest: "dest/" },
 				{ expand: true, cwd: "src/static/", src: "draw-chem-editor.html", dest: "tests/assets" }
+			]
+		},
+		buildSvg: {
+			files: [
+				{ expand: true, cwd: "src/static/svg/", src: "*.svg", dest: "dest/svg/" }
 			]
 		},
 		buildCss: {
@@ -82,5 +91,6 @@ module.exports = function(grunt) {
   grunt.registerTask("js", ["concat:buildJs", "copy:buildJs", "uglify:buildJs", "clean:buildJs"]);
   grunt.registerTask("css", ["sass:buildCss", "copy:buildCss", "cssmin:buildCss", "clean:buildCss"]);
   grunt.registerTask("html", ["copy:buildHtml"]);
+  grunt.registerTask("svg", ["copy:buildSvg"]);
   //grunt.registerTask("default", ["watch"]);
 };
