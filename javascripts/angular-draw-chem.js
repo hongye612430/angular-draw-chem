@@ -1,6 +1,6 @@
 (function () {
 	"use strict";
-	angular.module("mmAngularDrawChem", ["ngSanitize"])
+	angular.module("mmAngularDrawChem", ["ngSanitize", "ui.bootstrap"])
 		.config(["$sanitizeProvider", function ($sanitizeProvider) {
 			$sanitizeProvider.enableSvg();
 		}]);
@@ -19,8 +19,10 @@
 		/**
 		* Creates a new Atom.
 		* @class
-		* @param {Number[]} - an array with coordinates of the atom
-		* @param {Atom[]} - an array of atoms this atom is connected with
+		* @param {Number[]} coords - an array with coordinates of the atom
+		* @param {Bond[]} - an array of bonds coming out of the atom
+		* @param {String} - additional info (not used yet...)
+		* @param {String[]} - directions of all bonds coming out or coming in
 		*/
 		function Atom(coords, bonds, info, attachedBonds) {
 			this.coords = coords;	
@@ -264,21 +266,78 @@
 		 * Adds a new atom to the bonds array.
 		 * @param {Atom} atom - a new Atom object to be added
 		 */
-		Atom.prototype.addBond = function (atom) {
-			this.bonds.push(atom);
+		Atom.prototype.addBond = function (bond) {
+			this.bonds.push(bond);
 		}
 		
 		/**
 		 * Adds new bonds.
-		 * @param {Atom[]} bonds - an array of bonds to be added
+		 * @param {Bond[]} bonds - an array of bonds to be added
 		 */
 		Atom.prototype.addBonds = function (bonds) {
-			bonds.forEach(function (atom) {
-				this.bonds.push(atom);
+			bonds.forEach(function (bond) {
+				this.bonds.push(bond);
 			}, this);
 		}
 		
 		service.Atom = Atom;
+		
+		return service;
+	}
+})();
+(function () {
+	"use strict";
+	angular.module("mmAngularDrawChem")
+		.factory("DCBond", DCBond);
+	
+	function DCBond() {
+		
+		var service = {};
+		
+		/**
+		* Creates a new Bond.
+		* @class
+		* @param {String} type - type of bond, e.g. single, double, triple, wedge, or dash
+		* @param {Atom} - an atom at the end of the bond
+		*/
+		function Bond(type, atom) {
+			this.type = type;	
+			this.atom = atom;
+		}
+		
+		/**
+		 * Sets a bond type.
+		 * @param {String} type - type of bond, e.g. single, double, triple, wedge, or dash
+		 */
+		Bond.prototype.setType = function (type) {
+			this.type = type;
+		}
+		
+		/**
+		 * Gets a bond type.
+		 * @returns {String}
+		 */
+		Bond.prototype.getType = function () {
+			return this.type;
+		}
+		
+		/**
+		 * Sets an atom at the end of the bond.
+		 * @param {Atom} atom - an atom at the end of the bond
+		 */
+		Bond.prototype.setAtom = function (atom) {
+			this.atom = atom;
+		}
+		
+		/**
+		 * Gets an atom at the end of the bond.
+		 * @returns {Atom}
+		 */
+		Bond.prototype.getAtom = function () {
+			return this.atom;
+		}
+		
+		service.Bond = Bond;
 		
 		return service;
 	}
@@ -316,7 +375,12 @@
 					"stroke": "black",
 					"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
 					"fill": "none"
-				},				
+				},
+				"path.wedge": {
+					"stroke": "black", 
+					"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
+					"fill": "black"
+				},
 				"circle.atom:hover": {
 					"opacity": "0.3",
 					"stroke": "black",
@@ -337,7 +401,7 @@
 					"dominant-baseline": "middle",
 					"font-size": service.fontSize + "px"
 				},
-				"rect": {
+				"polygon.text": {
 					"fill": "white"
 				}
 			};
@@ -346,6 +410,11 @@
 					"stroke": "black",
 					"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
 					"fill": "none"
+				},
+				"path.wedge": {
+					"stroke": "black", 
+					"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
+					"fill": "black"
 				},
 				"circle.arom": {
 					"stroke": "black",
@@ -359,9 +428,9 @@
 					"dominant-baseline": "middle",
 					"font-size": service.fontSize + "px"
 				},
-				"rect": {
+				"polygon.text": {
 					"fill": "white"
-				}				
+				}			
 			}
 		}
 		
@@ -870,6 +939,13 @@
 					}
 				}
 				
+				scope.actions = [
+					{ name: "undo", action: scope.undo },
+					{ name: "forward", action: scope.forward },
+					{ name: "transfer", action: scope.transfer },
+					{ name: "clear", action: scope.clear }
+				];
+				
 				/**
 				 * Calculates the coordinates of the mouse pointer during an event.
 				 * Takes into account the margin of the enclosing div.
@@ -1016,12 +1092,15 @@
 		
 		function init() {
 			
-			var calcBond;
+			var calcBond, calcBondAux1, calcBondAux2, calcBondAux3;
 			
 			// the default bond length
 			service.BOND_LENGTH = service.SET_BOND_LENGTH || 20;
 			
 			calcBond = parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2));
+			calcBondAux1 = parseFloat((service.BOND_LENGTH * Math.sin(Math.PI / 12)).toFixed(2));
+			calcBondAux2 = parseFloat((service.BOND_LENGTH * Math.cos(Math.PI / 12)).toFixed(2));
+			calcBondAux3 = parseFloat((service.BOND_LENGTH * Math.sin(Math.PI / 4)).toFixed(2));
 			
 			// proportion of the bond width to bond length
 			// 0.04 corresponds to the ACS settings in ChemDraw, according to
@@ -1031,8 +1110,14 @@
 			// the default r of an aromatic circle
 			service.AROMATIC_R = service.BOND_LENGTH * 0.45;
 			
+			// the default distance between two parallel bonds in double bonds (as a percent of the bond length);
+			service.BETWEEN_DBL_BONDS = 0.065;
+			
+			// the default distance between two parallel triple bonds in double bonds (as a percent of the bond length);
+			service.BETWEEN_TRP_BONDS = 0.1;
+			
 			// the default bond width
-			service.BOND_WIDTH = parseFloat((service.BOND_LENGTH * service.WIDTH_TO_LENGTH).toFixed(2));
+			service.BOND_WIDTH = (service.BOND_LENGTH * service.WIDTH_TO_LENGTH).toFixed(2);
 			
 			// the default r of a circle around an atom
 			service.CIRC_R = service.BOND_LENGTH * 0.12;
@@ -1046,7 +1131,7 @@
 			// bond in west direction
 			service.BOND_W = [-service.BOND_LENGTH, 0];
 			// bond in north-east direction (first clock-wise)
-			service.BOND_NE1 = [service.BOND_LENGTH / 2, -calcBond],
+			service.BOND_NE1 = [service.BOND_LENGTH / 2, -calcBond];
 			// bond in north-east direction (second clock-wise)
 			service.BOND_NE2 = [calcBond, -service.BOND_LENGTH / 2];
 			// bond in south-east direction (first clock-wise)
@@ -1077,6 +1162,34 @@
 				{ direction: "NW2", bond: service.BOND_NW2 }
 			];
 			
+			service.BOND_N_NE1 = [calcBondAux1, -calcBondAux2];
+			service.BOND_NE1_NE2 = [calcBondAux3, -calcBondAux3];
+			service.BOND_NE2_E = [calcBondAux2, -calcBondAux1];
+			service.BOND_E_SE1 = [calcBondAux2, calcBondAux1];
+			service.BOND_SE1_SE2 = [calcBondAux3, calcBondAux3];
+			service.BOND_SE2_S = [calcBondAux1, calcBondAux2];
+			service.BOND_S_SW1 = [-calcBondAux1, calcBondAux2];
+			service.BOND_SW1_SW2 = [-calcBondAux3, calcBondAux3];
+			service.BOND_SW2_W = [-calcBondAux2, calcBondAux1];
+			service.BOND_W_NW1 = [-calcBondAux2, -calcBondAux1];
+			service.BOND_NW1_NW2 = [-calcBondAux3, -calcBondAux3];
+			service.BOND_NW2_N = [-calcBondAux1, -calcBondAux2];
+			
+			service.BONDS_AUX = [
+				{ direction: "N_NE1", bond: service.BOND_N_NE1 },
+				{ direction: "NE1_NE2", bond: service.BOND_NE1_NE2 },
+				{ direction: "NE2_E", bond: service.BOND_NE2_E },
+				{ direction: "E_SE1", bond: service.BOND_E_SE1 },
+				{ direction: "SE1_SE2", bond: service.BOND_SE1_SE2 },
+				{ direction: "SE2_S", bond: service.BOND_SE2_S },
+				{ direction: "S_SW1", bond: service.BOND_S_SW1 },
+				{ direction: "SW1_SW2", bond: service.BOND_SW1_SW2 },
+				{ direction: "SW2_W", bond: service.BOND_SW2_W },
+				{ direction: "W_NW1", bond: service.BOND_W_NW1 },				
+				{ direction: "NW1_NW2", bond: service.BOND_NW1_NW2 },
+				{ direction: "NW2_N", bond: service.BOND_NW2_N }
+			];			
+			
 			service.getBondByDirection = function (direction) {
 				var i;
 				for (i = 0; i < service.BONDS.length; i += 1) {
@@ -1095,12 +1208,13 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemStructures", DrawChemStructures);
 		
-	DrawChemStructures.$inject = ["DrawChemConst", "DCStructure", "DCStructureCluster", "DCAtom"];
+	DrawChemStructures.$inject = ["DrawChemConst", "DCStructure", "DCStructureCluster", "DCAtom", "DCBond"];
 	
-	function DrawChemStructures(DrawChemConst, DCStructure, DCStructureCluster, DCAtom) {
+	function DrawChemStructures(DrawChemConst, DCStructure, DCStructureCluster, DCAtom, DCBond) {
 
 		var service = {},
 			Atom = DCAtom.Atom,
+			Bond = DCBond.Bond,
 			Structure = DCStructure.Structure,
 			StructureCluster = DCStructureCluster.StructureCluster,
 			BONDS = DrawChemConst.BONDS;
@@ -1139,17 +1253,80 @@
 		service.singleBond = function () {
 			var cluster,
 				name = "single-bond",
-				defs = generateSingleBonds();
+				defs = generateSingleBonds("single");
 				
 			cluster = new StructureCluster(name, defs);
 				
 			return cluster;
-		};		
+		};
+		
+		/**
+		 * Generates double bond structures in each defined direction.
+		 * @returns {StructureCluster}
+		 */
+		service.doubleBond = function () {
+			var cluster,
+				name = "double-bond",
+				defs = generateSingleBonds("double");
+				
+			cluster = new StructureCluster(name, defs);
+				
+			return cluster;
+		};
+		
+		/**
+		 * Generates triple bond structures in each defined direction.
+		 * @returns {StructureCluster}
+		 */
+		service.tripleBond = function () {
+			var cluster,
+				name = "triple-bond",
+				defs = generateSingleBonds("triple");
+				
+			cluster = new StructureCluster(name, defs);
+				
+			return cluster;
+		};
+		
+		/**
+		 * Generates wedge bond structures in each defined direction.
+		 * @returns {StructureCluster}
+		 */
+		service.wedgeBond = function () {
+			var cluster,
+				name = "wedge-bond",
+				defs = generateSingleBonds("wedge");
+				
+			cluster = new StructureCluster(name, defs);
+				
+			return cluster;
+		};
+		
+		/**
+		 * Generates wedge bond structures in each defined direction.
+		 * @returns {StructureCluster}
+		 */
+		service.dashBond = function () {
+			var cluster,
+				name = "dash-bond",
+				defs = generateSingleBonds("dash");
+				
+			cluster = new StructureCluster(name, defs);
+				
+			return cluster;
+		};
 		
 		/**
 		 * Stores all predefined structures.
 		 */
-		service.custom = [service.benzene, service.cyclohexane, service.singleBond];
+		service.custom = [service.benzene,
+			service.cyclohexane,
+			service.singleBond,
+			service.doubleBond,
+			service.tripleBond,
+			service.wedgeBond,
+			service.dashBond
+		];
 		
 		return service;
 		
@@ -1199,10 +1376,10 @@
 				function genAtoms(atom, dirs, depth) {
 					var newDirs = calcDirections(dirs.nextDirection), newAtom;
 					if (depth === 1) {
-						return atom.addBond(new Atom(dirs.nextBond, [], ""));
+						return atom.addBond(new Bond("single", new Atom(dirs.nextBond, [], "")));
 					}
 					newAtom = new Atom(dirs.nextBond, [], "", newDirs.current);
-					atom.addBond(newAtom);
+					atom.addBond(new Bond("single", newAtom));
 					genAtoms(newAtom, newDirs, depth - 1);
 				}
 				
@@ -1253,9 +1430,10 @@
 		
 		/**
 		 * Generates single bonds in all defined directions.
+		 * @param {String} type - bond type, e.g. 'single', 'double'.
 		 * @returns {Structure[]}
 		 */
-		function generateSingleBonds() {
+		function generateSingleBonds(type) {
 			var i, bond, direction, result = [];
 			for (i = 0; i < BONDS.length; i += 1) {
 				bond = BONDS[i].bond;
@@ -1265,7 +1443,7 @@
 						direction,
 						[
 							new Atom([0, 0], [
-								new Atom(bond, [], "", [Atom.getOppositeDirection(direction)])
+								new Bond(type, new Atom(bond, [], "", [Atom.getOppositeDirection(direction)]))
 							], "", [direction])
 						]
 					)
@@ -1469,11 +1647,16 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemShapes", DrawChemShapes);
 		
-	DrawChemShapes.$inject = ["DCShape", "DrawChemConst", "DCAtom"];
+	DrawChemShapes.$inject = ["DCShape", "DrawChemConst", "DCAtom", "DCBond"];
 	
-	function DrawChemShapes(DCShape, DrawChemConst, DCAtom) {
+	function DrawChemShapes(DCShape, DrawChemConst, DCAtom, DCBond) {
 		
-		var service = {}, Atom = DCAtom.Atom;
+		var service = {},
+			BOND_LENGTH = DrawChemConst.BOND_LENGTH,
+			BONDS_AUX = DrawChemConst.BONDS_AUX,
+			BETWEEN_DBL_BONDS = DrawChemConst.BETWEEN_DBL_BONDS,
+			BETWEEN_TRP_BONDS = DrawChemConst.BETWEEN_TRP_BONDS,
+			Atom = DCAtom.Atom;
 		
 		/**
 		 * Modifies the structure.
@@ -1496,23 +1679,24 @@
 			
 			/**
 			* Recursively looks for an atom to modify.
-			* @param {Atom[]} base - array of atoms,
+			* @param {Atom[]|Bond[]} struct - array of atoms or array of bonds,
 			* @param {Number[]} pos - absolute coordinates of an atom
 			*/
 			function modStructure(struct, pos) {
-				var i, absPos;
+				var i, absPos, aux;
 				for(i = 0; i < struct.length; i += 1) {
-					absPos = [struct[i].getCoords("x") + pos[0], struct[i].getCoords("y") + pos[1]];
+					aux = struct[i] instanceof Atom ? struct[i]: struct[i].getAtom();
+					absPos = [aux.getCoords("x") + pos[0], aux.getCoords("y") + pos[1]];
 					
-					if (found) { continue; }
+					if (found) { break; }
 					
 					isInsideCircle = insideCircle(absPos, mousePos);
 					
 					if (isInsideCircle && !mouseDownAndMove) {
 						// if 'mouseup' was within a circle around an atom
 						// and if a valid atom has not already been found
-							modStr = chooseMod(struct[i]);							
-							updateBonds(struct[i], modStr, absPos);
+							modStr = chooseMod(aux);			
+							updateBonds(aux, modStr, absPos);
 							updateDecorate(modStr, absPos);
 							found = true;
 							return base;										
@@ -1520,16 +1704,17 @@
 					
 					if (!isInsideCircle && compareCoords(down, absPos, 5)) {
 						// if 'mousedown' was within a circle around an atom
+						// but 'mouseup' was not
 						// and if a valid atom has not already been found
-						modStr = chooseDirectionManually(struct[i]);
-						updateBonds(struct[i], modStr, absPos);
+						modStr = chooseDirectionManually(aux);
+						updateBonds(aux, modStr, absPos);
 						updateDecorate(modStr, absPos);
 						found = true;
 						return base;
 					}
 					
 					// if none of the above was true, then continue looking down the structure tree
-					modStructure(struct[i].getBonds(), absPos);					
+					modStructure(aux.getBonds(), absPos);
 				}
 				
 				/**
@@ -1547,12 +1732,12 @@
 				
 				/**
 				 * Updates bonds array in an Atom object.
-				 * @param {Atom} atom - an Atom object to update
+				 * @param {Atom} atom - an Atom object or Bond object to update
 				 * @param {Atom[]} modStr - an array of Atom objects to attach
 				 * @param {Number[]} absPos - absolute position of the atom to update
 				 */
 				function updateBonds(atom, modStr, absPos) {
-					if (modStr !== null) {
+					if (modStr !== null) {		
 						modifyExisting(modStr, absPos);
 						atom.addBonds(modStr.getStructure(0).getBonds());
 					}
@@ -1567,7 +1752,7 @@
 					var i, newAbsPos, atom, newName,
 						struct = modStr.getStructure(0).getBonds();
 					for(i = 0; i < struct.length; i += 1) {
-						newAbsPos = [struct[i].getCoords("x") + absPos[0], struct[i].getCoords("y") + absPos[1]];
+						newAbsPos = [struct[i].getAtom().getCoords("x") + absPos[0], struct[i].getAtom().getCoords("y") + absPos[1]];
 						atom = service.isWithin(base, newAbsPos).foundAtom;
 						if (typeof atom !== "undefined") {
 							newName = Atom.getOppositeDirection(modStr.getName());
@@ -1625,7 +1810,7 @@
 						toCompare = output || next;
 						if (toCompare === name) {
 							current.attachBond(name);
-							current.calculateNext();
+							current.calculateNext();							
 							return at;
 						}
 					}
@@ -1649,15 +1834,16 @@
 			return foundObj;
 			
 			function check(struct, pos) {
-				var i, absPos;
+				var i, absPos, aux;
 				for(i = 0; i < struct.length; i += 1) {
-					absPos = [struct[i].getCoords("x") + pos[0], struct[i].getCoords("y") + pos[1]];
+					aux = struct[i] instanceof Atom ? struct[i]: struct[i].getAtom();
+					absPos = [aux.getCoords("x") + pos[0], aux.getCoords("y") + pos[1]];
 					if (!found && insideCircle(absPos, position)) {
 						found = true;
-						foundObj.foundAtom = struct[i];
+						foundObj.foundAtom = aux;
 						foundObj.absPos = absPos;
 					} else {
-						check(struct[i].getBonds(), absPos);
+						check(aux.getBonds(), absPos);
 					}
 				}	
 			}
@@ -1688,7 +1874,11 @@
 			function genElements() {
 				var full = "", mini = "", aux = "";
 				paths.forEach(function (path) {
-					aux = "<path d='" + path + "'></path>";
+					if (typeof path.class !== "undefined") {
+						aux = "<path class='" + path.class + "' d='" + path.line + "'></path>";
+					} else {
+						aux = "<path d='" + path.line + "'></path>";
+					}					
 					full += aux;
 					mini += aux;					
 				});
@@ -1696,12 +1886,7 @@
 					full += "<circle class='atom' cx='" + circle[0] + "' cy='" + circle[1] + "' r='" + circle[2] + "' ></circle>";
 				});
 				labels.forEach(function (label) {
-					aux = "<rect x='" + (label.x - label.width / 2 ) +
-						"' y='" + (label.y - label.height * 3 / 5) +
-						"' width='" + label.width +
-						"' height='" + label.height + "'></rect>" +
-						"<text x='" + label.x +  "' y='" + label.y + "'>" + label.label + "</text>";
-					
+					aux = drawDodecagon(label) + "<text x='" + label.x +  "' y='" + label.y + "'>" + label.label + "</text>";					
 					full += aux;
 					mini += aux;
 				});
@@ -1720,6 +1905,18 @@
 					full: full,
 					mini: mini
 				};
+				
+				function drawDodecagon(label) {
+					var i, x, y,
+						factor = (label.height * 0.4) / BOND_LENGTH,
+						result = [];
+					for (i = 0; i < BONDS_AUX.length; i += 1) {
+						x = BONDS_AUX[i].bond[0];
+						y = BONDS_AUX[i].bond[1];
+						result = result.concat(addCoords([label.x, label.y], [x, y], factor));
+					}					
+					return "<polygon class='text' points='" + stringifyPaths([result])[0].line + "'></polygon>";
+				}
 			}
 			
 			/**
@@ -1748,10 +1945,10 @@
 				]);
 				
 				updateLabel(origin, input.getStructure(0));
-				connect(origin, input.getStructure(0).getBonds(), output[len - 1]);
+				connect(input.getStructure(0).getBonds(), output[len - 1]);
 			   
 				return {
-					paths: stringifyPaths(),
+					paths: stringifyPaths(output),
 					circles: circles,
 					labels: labels,
 					minMax: minMax
@@ -1759,40 +1956,103 @@
 			   
 				/**
 				* Recursively translates the input, until it finds an element with an empty 'bonds' array.
-				* @param {Number[]} root - a two-element array of coordinates of the root element
-				* @param {Atom[]} bonds - an array of Atom objects
-				* @param {String|Number[]} - an array of coordinates with 'M' and 'l' commands
+				* @param {Bond[]} bonds - an array of Bond objects
+				* @param {String|Number[]} - an array of coordinates with 'M' and 'L' commands
 				*/
-				function connect(root, bonds, currentLine) {
-					var i, newLen, absPos,
+				function connect(bonds, currentLine) {
+					var i, absPos, atom, bondType,
 						prevAbsPos = [
-						circles[circles.length - 1][0],
-						circles[circles.length - 1][1]
-					];				
-					// if length of the bonds is 0, then do nothing				
-					if (bonds.length > 0) {
+							circles[circles.length - 1][0],
+							circles[circles.length - 1][1]
+						];			
+					for (i = 0; i < bonds.length; i += 1) {
+						atom = bonds[i].getAtom();
+						bondType = bonds[i].getType();
 						absPos = [
-							prevAbsPos[0] + bonds[0].getCoords("x"),
-							prevAbsPos[1] + bonds[0].getCoords("y")
+							prevAbsPos[0] + atom.getCoords("x"),
+							prevAbsPos[1] + atom.getCoords("y")
 						];
 						updateMinMax(absPos);
-						updateLabel(absPos, bonds[0]);
+						updateLabel(absPos, atom);
 						circles.push([absPos[0], absPos[1], circR]);
-						currentLine.push("L"); // 'l' for lineto - draws line to the specified coordinates
-						currentLine.push(absPos);						
-						connect(bonds[0].getCoords(), bonds[0].getBonds(), currentLine);						
-						for (i = 1; i < bonds.length; i += 1) {
-							absPos = [
-								prevAbsPos[0] + bonds[i].getCoords("x"),
-								prevAbsPos[1] + bonds[i].getCoords("y")
-							];
-							updateMinMax(absPos);
-							updateLabel(absPos, bonds[i]);
-							circles.push([absPos[0], absPos[1], circR]);
-							newLen = output.push(["M", prevAbsPos, "L", absPos]);
-							connect(absPos, bonds[i].getBonds(), output[newLen - 1]);
+						if (i === 0) {
+							drawLine(prevAbsPos, absPos, bondType, atom, "continue");
+						} else {
+							drawLine(prevAbsPos, absPos, bondType, atom, "begin");
 						}
+					}					
+				}
+				
+				function drawLine(prevAbsPos, absPos, bondType, atom, mode) {
+					var newLen = output.length;
+					if (bondType === "single") {
+						if (mode === "continue") {
+							output[newLen - 1].push("L");
+							output[newLen - 1].push(absPos);
+						} else if (mode === "begin") {
+							newLen = output.push(["M", prevAbsPos, "L", absPos]);
+						}
+					} else if (bondType === "double") {						
+						output.push(calcDoubleBondCoords(prevAbsPos, absPos));
+						newLen = output.push(["M", absPos]);
+					} else if (bondType === "triple") {
+						output.push(calcTripleBondCoords(prevAbsPos, absPos));
+						newLen = output.push(["M", absPos]);
+					} else if (bondType === "wedge") {
+						output.push(calcWedgeBondCoords(prevAbsPos, absPos));
+						newLen = output.push(["M", absPos]);
+					} else if (bondType === "dash") {
+						output.push(calcDashBondCoords(prevAbsPos, absPos));
+						newLen = output.push(["M", absPos]);
 					}
+					connect(atom.getBonds(), output[newLen - 1]);					
+				}
+				
+				function calcDoubleBondCoords(start, end) {
+					var vectCoords = [end[0] - start[0], end[1] - start[1]],
+						perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
+						perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
+						M1 = addCoords(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
+						L1 = addCoords(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
+						M2 = addCoords(start, perpVectCoordsCW, BETWEEN_DBL_BONDS),
+						L2 = addCoords(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+					return ["M", M1, "L", L1, "M", M2, "L", L2];
+				}
+				
+				function calcTripleBondCoords(start, end) {
+					var vectCoords = [end[0] - start[0], end[1] - start[1]],
+						perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
+						perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
+						M1 = addCoords(start, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
+						L1 = addCoords(end, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
+						M2 = addCoords(start, perpVectCoordsCW, BETWEEN_TRP_BONDS),
+						L2 = addCoords(end, perpVectCoordsCW, BETWEEN_TRP_BONDS);
+					return ["M", M1, "L", L1, "M", start, "L", end, "M", M2, "L", L2];
+				}
+				
+				function calcWedgeBondCoords(start, end) {
+					var vectCoords = [end[0] - start[0], end[1] - start[1]],
+						perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
+						perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
+						L1 = addCoords(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
+						L2 = addCoords(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+					return ["wedge", "M", start, "L", L1, "L", L2, "Z"];
+				}
+				
+				function calcDashBondCoords(start, end) {
+					var i, max = 7, factor = BETWEEN_DBL_BONDS / max, M, L, currentEnd = start, result = [],
+						vectCoords = [end[0] - start[0], end[1] - start[1]],
+						perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
+						perpVectCoordsCW = [vectCoords[1], -vectCoords[0]];
+						
+					for (i = max; i > 0; i -= 1) {
+						factor = factor + BETWEEN_DBL_BONDS / max;
+						currentEnd = [currentEnd[0] + vectCoords[0] / max, currentEnd[1] + vectCoords[1] / max];
+						M = addCoords(currentEnd, perpVectCoordsCCW, factor);
+						L = addCoords(currentEnd, perpVectCoordsCW, factor);
+						result = result.concat(["M", M, "L", L]);
+					}
+					return result;
 				}
 				
 				function updateLabel(absPos, atom) {
@@ -1827,29 +2087,6 @@
 					if (absPos[1] < minMax.minY) {
 						minMax.minY = absPos[1];
 					}
-				}
-			   
-				/**
-				* Transforms output into an array of strings.
-				* Basically, it translates each array of coordinates into its string representation.
-				* @returns {String[]}
-				*/
-				function stringifyPaths() {
-					var result = [], i, j, line, point, lineStr;
-					for (i = 0; i < output.length; i += 1) {
-						line = output[i];
-						lineStr = "";
-						for (j = 0; j < line.length; j += 1) {
-							point = line[j];
-							if (typeof point === "string") {
-								lineStr += point + " ";
-							} else {
-								lineStr += point[0] + " " + point[1] + " ";
-							}
-						}
-						result.push(lineStr);
-					}
-					return result;
 				}
 			}
 		}
@@ -1911,6 +2148,39 @@
 		function insideCircle(center, point) {
 			var tolerance = DrawChemConst.CIRC_R;
 			return Math.abs(center[0] - point[0]) < tolerance && Math.abs(center[1] - point[1]) < tolerance;
+		}
+		
+		/**
+		* Transforms output into an array of strings.
+		* Basically, it translates each array of coordinates into its string representation.
+		* @returns {String[]}
+		*/
+		function stringifyPaths(output) {
+			var result = [], i, j, line, point, lineStr;
+			for (i = 0; i < output.length; i += 1) {
+				line = output[i];
+				lineStr = { line: "" };
+				for (j = 0; j < line.length; j += 1) {
+					point = line[j];
+					if (typeof point === "string") {
+						if (point === "wedge") {
+							lineStr.class = "wedge";
+						} else {
+							lineStr.line += point + " ";
+						}
+					} else {
+						lineStr.line += point[0] + " " + point[1] + " ";
+					}
+				}
+				result.push(lineStr);
+			}
+			return result;
+		}
+		
+		function addCoords(coords1, coords2, factor) {
+			return typeof factor === "undefined" ?
+				[(coords1[0] + coords2[0]).toFixed(2), (coords1[1] + coords2[1]).toFixed(2)]:
+				[(coords1[0] + factor * coords2[0]).toFixed(2), (coords1[1] + factor * coords2[1]).toFixed(2)];
 		}
 	}
 })();
