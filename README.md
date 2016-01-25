@@ -23,9 +23,11 @@ The project consists of the following components:
 6. `DrawChemCache` factory - caching service for Structure objects,
 7. `DCShape` factory - defteines `Shape` class, which encapsulates svg-relevant data,
 8. `DCAtom` factory - defines `Atom` class, which encapsulates data about a single atom,
-9. `DCStructure` factory - defines `Structure` class, which encapsulates a structure tree (how the atoms are connected with each other),
-10. `DCStructureCluster` factory - defines `StructureCluster` class, which enables grouping of multiple `Structure` objects; used for predefined structures,
-11. `DrawChemConst` factory - contains all constants, e.g. BOND_LENGTH, BOND_WIDTH, etc.
+9. `DCBond` factory - defines `Bond` class, which encapsulates data about a single bond,
+10. `DCStructure` factory - defines `Structure` class, which encapsulates a structure tree (how the atoms are connected with each other),
+11. `DCStructureCluster` factory - defines `StructureCluster` class, which enables grouping of multiple `Structure` objects; used for predefined structures,
+12. `DrawChemConst` factory - contains all constants, e.g. `BOND_LENGTH`, `BOND_WIDTH`, etc.
+13. `DrawChemPaths` provider - enables to configure paths to some static resources related to the editor (`templateUrl` for `drawChemEditor` directive, svgs used in the UI)
 
 ### terminology
 **`Shape`** vs **`Structure`**
