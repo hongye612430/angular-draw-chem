@@ -701,11 +701,19 @@
 	angular.module("mmAngularDrawChem")
 		.directive("drawChemEditor", DrawChemEditor);
 	
-	DrawChemEditor.$inject = ["DrawChemShapes", "DrawChemStructures", "DrawChem", "DrawChemConst", "DrawChemCache", "$sce", "$window"];
+	DrawChemEditor.$inject = [
+		"DrawChemPaths",
+		"DrawChemShapes",
+		"DrawChemStructures",
+		"DrawChem",
+		"DrawChemConst",
+		"DrawChemCache",
+		"$sce"
+	];
 	
-	function DrawChemEditor(DrawChemShapes, DrawChemStructures, DrawChem, DrawChemConst, DrawChemCache, $sce, $window) {
+	function DrawChemEditor(DrawChemPaths, DrawChemShapes, DrawChemStructures, DrawChem, DrawChemConst, DrawChemCache, $sce) {
 		return {
-			templateUrl: "draw-chem-editor.html",
+			templateUrl: DrawChemPaths.getPath() + "draw-chem-editor.html",
 			scope: {
 				showEditor: "="
 			},
@@ -719,6 +727,8 @@
 					downOnAtom = false;
 					
 				scope.label = "";
+				
+				scope.pathToSvg = DrawChemPaths.getPathToSvg();
 				
 				scope.changeLabel = function () {
 					selected = "label";
@@ -796,7 +806,9 @@
 								(shape.minMax.maxX - shape.minMax.minX + 40).toFixed(2) + " " +
 								(shape.minMax.maxY - shape.minMax.minY + 40).toFixed(2),
 							"height": "100%",
-							"width": "100%"
+							"width": "100%",
+							"xmlns": "http://www.w3.org/2000/svg",
+							"xmlns:xlink": "http://www.w3.org/1999/xlink"
 						};
 						content = shape.wrap("mini", "g").wrap("mini", "svg", attr).elementMini;
 					}
@@ -1577,6 +1589,19 @@
 			}			
 		}
 		
+		service.beautifySvg = function (name) {
+			var svg = service.getContent(name), match,
+				output = "<!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>\n";
+			
+			match = svg.match(/<svg.*?>|<g.*?>|<style.*?<\/style>|<path.*?><\/path>|<circle.*?><\/circle>|<polygon.*?><\/polygon>|<text.*?<\/text>|<\/g>|<\/svg>|/g);
+			
+			match.forEach(function (row) {
+				output += row + "\n";
+			});
+			
+			return output;
+		}
+		
 		// exposes API
 		return service;
 		
@@ -2183,4 +2208,34 @@
 				[(coords1[0] + factor * coords2[0]).toFixed(2), (coords1[1] + factor * coords2[1]).toFixed(2)];
 		}
 	}
+})();
+(function () {
+	"use strict";
+	angular.module("mmAngularDrawChem")
+		.provider("DrawChemPaths", DrawChemPathsProvider);
+	
+	function DrawChemPathsProvider() {
+		var path = "",
+			pathSvg = path + "svg";
+		
+		return {
+			setPath: function (value) {
+				path = value;
+			},
+			setPathSvg: function (value) {
+				pathSvg = value;
+			},
+			$get: function () {
+				return {
+					getPath: function () {
+						return path;
+					},
+					getPathToSvg: function () {
+						return pathSvg;
+					}
+				};
+			}
+		};
+	}
+	
 })();

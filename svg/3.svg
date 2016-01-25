@@ -1,0 +1,14 @@
+<!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>
+<svg viewBox='79.11 65.62 252.17 162.50' height='100%' width='100%' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' >
+<g id='cmpd1' >
+<style type="text/css">path{stroke:black;stroke-width:1.4;fill:none;}path.wedge{stroke:black;stroke-width:1.4;fill:black;}circle.arom{stroke:black;stroke-width:1.4;fill:none;}text{font-family:Arial;cursor:default;text-anchor:middle;dominant-baseline:middle;font-size:18px;}polygon.text{fill:white;}</style>
+<path d='M 129.42 85.62 L 159.73 103.12 L 159.73 138.12 L 129.42 155.62 L 99.10999999999999 138.12 L 99.10999999999999 103.12 L 129.42 85.62 '></path>
+<path d='M 159.73 138.12 L 190.04 155.62 '></path>
+<path d='M 191.18 157.59 L 221.49 140.09 M 188.90 153.65 L 219.21 136.15 '></path>
+<path d='M 220.35 138.12 L 250.66 155.62 L 280.96999999999997 138.12 L 311.28 155.62 L 311.28 190.62 L 280.96999999999997 208.12 L 250.65999999999997 190.62 L 250.65999999999997 155.62 '></path>
+<polygon class='text' points='222.40 130.47 225.95 132.52 228.00 136.07 228.00 140.17 225.95 143.72 222.40 145.77 218.30 145.77 214.75 143.72 212.70 140.17 212.70 136.07 214.75 132.52 218.30 130.47 '></polygon>
+<text x='220.35' y='138.12'>N</text>
+<circle class='arom' cx='129.42' cy='120.62' r='15.75' ></circle>
+<circle class='arom' cx='280.96999999999997' cy='173.12' r='15.75' ></circle>
+</g>
+</svg>

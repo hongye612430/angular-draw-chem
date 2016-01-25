@@ -1,0 +1,18 @@
+<!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>
+<svg viewBox='198.07 106.80 110.70 113.63' height='100%' width='100%' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' >
+<g id='cmpd1' >
+<style type="text/css">path{stroke:black;stroke-width:1.4;fill:none;}path.wedge{stroke:black;stroke-width:1.4;fill:black;}circle.arom{stroke:black;stroke-width:1.4;fill:none;}text{font-family:Arial;cursor:default;text-anchor:middle;dominant-baseline:middle;font-size:18px;}polygon.text{fill:white;}</style>
+<path d='M 253.42 170.12 L 253.42 135.12 '></path>
+<path d='M 253.42 170.12 L 223.10999999999999 187.62 '></path>
+<path class='wedge' d='M 253.42 170.12 L 268.95 201.57 L 272.89 199.29 Z '></path>
+<path d='M 270.91999999999996 200.43 '></path>
+<path d='M 257.43 173.18 L 258.07 172.06 M 261.59 175.96 L 262.57 174.28 M 265.76 178.75 L 267.06 176.49 M 269.93 181.53 L 271.55 178.71 M 274.09 184.31 L 276.04 180.93 M 278.26 187.09 L 280.54 183.15 M 282.43 189.87 L 285.03 185.37 '></path>
+<path d='M 283.72999999999996 187.62 '></path>
+<polygon class='text' points='255.47 127.47 259.02 129.52 261.07 133.07 261.07 137.17 259.02 140.72 255.47 142.77 251.37 142.77 247.82 140.72 245.77 137.17 245.77 133.07 247.82 129.52 251.37 127.47 '></polygon>
+<text x='253.42' y='135.12'>I</text>
+<polygon class='text' points='225.16 179.97 228.71 182.02 230.76 185.57 230.76 189.67 228.71 193.22 225.16 195.27 221.06 195.27 217.51 193.22 215.46 189.67 215.46 185.57 217.51 182.02 221.06 179.97 '></polygon>
+<text x='223.10999999999999' y='187.62'>F</text>
+<polygon class='text' points='285.78 179.97 289.33 182.02 291.38 185.57 291.38 189.67 289.33 193.22 285.78 195.27 281.68 195.27 278.13 193.22 276.08 189.67 276.08 185.57 278.13 182.02 281.68 179.97 '></polygon>
+<text x='283.72999999999996' y='187.62'>H</text>
+</g>
+</svg>

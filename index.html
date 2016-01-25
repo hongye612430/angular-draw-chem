@@ -11,45 +11,87 @@
         <link rel="stylesheet" href="stylesheets/draw-chem-editor.min.css">
     </head>
     <body ng-app="angularDrawChemSite">
-        <div class="container">
-            <div class="mm-info">
-                <div class="alert alert-danger">
-                    <strong>Unstable and not yet fully functional!</strong>
-                </div>
-                <div class="alert alert-info" ng-controller="TestCtrl as ctrl">
-                    <p>                    
-                        <div>
+        <div class="container" ng-controller="TestCtrl as ctrl">
+            <div class="row">
+                <div class="col-md-10 col-md-offset-1">
+                    <div class="jumbotron mm-jumbo">               
+                        <h2>AngularDrawChem <small>an editor for drawing structural formulas in svg.</small><hr></h2>                        
+                        <p class="lead">
                             <strong>Try it:</strong>
-                            <button class="btn btn-default" ng-click="ctrl.click()">Editor</button> 
-                        </div>                        
-                    </p>
-                    <p>
-                        <strong>Output:</strong>
-                        <div class="mm-structure" ng-bind-html="ctrl.input()"></div>                        
-                    </p>
-                    <p>
-                        Soon:
-                        <ul>
-                            <li>
-                                new types of bonds
-                            </li>
-                            <li>
-                                heteroatoms
-                            </li>
-                            <li>
-                                new predefined structures
-                            </li>
+                            <button class="btn btn-default" ng-click="ctrl.click()">Open editor</button>&emsp;
+                            <span class="text-danger"><small>Unstable and not yet fully functional!</small></span>
+                        </p>                        
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-10 col-md-offset-1">                    
+                    <div class="alert alert-info mm-alert-info">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <p>Tip: Open editor > draw a structure > click 'transfer'</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-5">
+                                <p>
+                                    <strong>Output:</strong>
+                                    <div class="mm-structure" ng-bind-html="ctrl.input()"></div>                        
+                                </p>
+                            </div>
+                            <div class="col-md-7">
+                                <p>
+                                    <strong>Svg:</strong>
+                                    <div>
+                                        <form>
+                                            <div class="form-group">
+                                                <textarea class="form-control" rows="10" ng-bind="ctrl.svg()"></textarea>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-10 col-md-offset-1">
+                    <strong>Examples:</strong>
+                    <div class="mm-examples">
+                        <ul class="list-inline">
+                        	<li ng-repeat="example in ctrl.examples">
+                        		<img width="100%" height="100%" alt="{{example}}" ng-src="svg/{{example}}.svg">
+                        	</li>				
                         </ul>
-                    </p>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-10 col-md-offset-1">
+                    <strong>Soon:</strong>
+                    <ul>
+                        <li>new actions</li>
+                        <li>keyboard shortcuts</li>
+                        <li>improved labeling</li>
+                        <li>new predefined structures</li>
+                        <li>reaction schemes</li>
+                        <li>manual</li>
+                    </ul>                    
                 </div>
             </div>
             <div ng-controller="EditorCtrl as ctrl">
-                <div draw-chem-editor show-editor="ctrl.showEditor()" width="1000px" height="500px"></div>
+               <div draw-chem-editor show-editor="ctrl.showEditor()" width="1000px" height="500px"></div>
             </div>
-            <p class="footer">
-                Maintained by <a href="https://github.com/MMMalik">mmmalik</a>.
-                Check out the project on <a href="https://github.com/MMMalik/angular-draw-chem">Github</a>! <img rel="octocat" width="3%" src="images/github.png"/>
-            </p>
+            <div class="row">
+                <div class="col-md-10 col-md-offset-1">
+                    <p class="footer">
+                       Maintained by <a href="https://github.com/MMMalik">mmmalik</a>.
+                       Check out the project on <a href="https://github.com/MMMalik/angular-draw-chem">Github</a>!
+                       <img rel="octocat" width="3%" src="images/github.png"/>
+                    </p>
+                </div>
+            </div>
         </div>
         <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.0-beta.2/angular.min.js"></script>
         <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.0-beta.2/angular-sanitize.min.js"></script>
