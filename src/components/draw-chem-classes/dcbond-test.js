@@ -1,4 +1,4 @@
-describe("DCAtom service tests", function () {
+describe("DCBond service tests", function () {
 	beforeEach(module("mmAngularDrawChem"));
 	
 	var Bond, Atom;

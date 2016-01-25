@@ -3,13 +3,14 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemStructures", DrawChemStructures);
 		
-	DrawChemStructures.$inject = ["DrawChemConst", "DCStructure", "DCStructureCluster", "DCAtom", "DCBond"];
+	DrawChemStructures.$inject = ["DrawChemConst", "DCStructure", "DCStructureCluster", "DCAtom", "DCBond", "DCLabel"];
 	
-	function DrawChemStructures(DrawChemConst, DCStructure, DCStructureCluster, DCAtom, DCBond) {
+	function DrawChemStructures(DrawChemConst, DCStructure, DCStructureCluster, DCAtom, DCBond, DCLabel) {
 
 		var service = {},
 			Atom = DCAtom.Atom,
 			Bond = DCBond.Bond,
+			Label = DCLabel.Label,
 			Structure = DCStructure.Structure,
 			StructureCluster = DCStructureCluster.StructureCluster,
 			BONDS = DrawChemConst.BONDS;
@@ -112,9 +113,20 @@
 		};
 		
 		/**
+		 * An array of Label objects containing all supported labels.
+		 */
+		service.labels = [
+			new Label("O", 2),
+			new Label("S", 2),
+			new Label("P", 3),
+			new Label("N", 3)
+		];
+		
+		/**
 		 * Stores all predefined structures.
 		 */
-		service.custom = [service.benzene,
+		service.custom = [
+			service.benzene,
 			service.cyclohexane,
 			service.singleBond,
 			service.doubleBond,

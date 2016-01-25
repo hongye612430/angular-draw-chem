@@ -345,6 +345,49 @@
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
+		.factory("DCLabel", DCLabel);
+		
+	DCLabel.$inject = [];
+	
+	function DCLabel() {
+		
+		var service = {};
+		
+		/**
+		* Creates a new Label.
+		* @class
+		* @param {String} label - a symbol of the atom
+		* @param {Number} bonds - a maximum number of bonds this atom should be connected with
+		*/
+		function Label(label, bonds) {
+			this.label = label;	
+			this.bonds = bonds;
+		}
+		
+		Label.prototype.getLabel = function () {
+			return this.label;
+		};
+		
+		Label.prototype.setLabel = function (label) {
+			this.label = label;
+		};
+		
+		Label.prototype.getMaxBonds = function () {
+			return this.bonds;
+		};
+		
+		Label.prototype.setMaxBonds = function (bonds) {
+			this.bonds = bonds;
+		};
+		
+		service.Label = Label;
+		
+		return service;
+	}
+})();
+(function () {
+	"use strict";
+	angular.module("mmAngularDrawChem")
 		.factory("DCShape", DCShape);
 		
 	DCShape.$inject = ["DrawChemConst"];
@@ -699,19 +742,192 @@
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
+		.factory("DrawChemDirectiveActions", DrawChemDirectiveActions);
+	
+	DrawChemDirectiveActions.$inject = [
+		"DrawChemCache",
+		"DrawChem",
+		"DrawChemShapes",
+		"DrawChemDirectiveUtils"
+	];
+	
+	function DrawChemDirectiveActions(DrawChemCache, DrawChem, DrawChemShapes, DrawChemDirUtils) {
+		
+		var service = {};
+		
+		/**
+		 * Reverses the recent 'undo' action.
+		 */
+		service.forward = function () {
+			DrawChemCache.moveRightInStructures();
+			if (DrawChemCache.getCurrentStructure() === null) {
+				DrawChem.clearContent();
+			} else {
+				DrawChemDirUtils.drawStructure(DrawChemCache.getCurrentStructure());
+			}
+		};
+		
+		/**
+		 * Closes the editor.
+		 */
+		service.close = function () {
+			DrawChem.closeEditor();
+		};
+		
+		/**
+		 * Clears the content.
+		 */
+		service.clear = function () {
+			DrawChemCache.addStructure(null);
+			DrawChemCache.setCurrentSvg("");
+		};
+		
+		/**
+		 * Undoes a change associated with the recent 'mouseup' event.
+		 */
+		service.undo = function () {
+			DrawChemCache.moveLeftInStructures();
+			if (DrawChemCache.getCurrentStructure() === null) {
+				DrawChem.clearContent();
+			} else {
+				DrawChemDirUtils.drawStructure(DrawChemCache.getCurrentStructure());
+			}				
+		};
+		
+		/**
+		 * Transfers the content.
+		 */
+		service.transfer = function () {					
+			var structure = DrawChemCache.getCurrentStructure(),
+				shape, attr, content = "";
+			
+			if (structure !== null) {
+				shape = DrawChemShapes.draw(structure, "cmpd1");
+				attr = {
+					"viewBox": (shape.minMax.minX - 20).toFixed(2) + " " +
+						(shape.minMax.minY - 20).toFixed(2) + " " +
+						(shape.minMax.maxX - shape.minMax.minX + 40).toFixed(2) + " " +
+						(shape.minMax.maxY - shape.minMax.minY + 40).toFixed(2),
+					"height": "100%",
+					"width": "100%",
+					"xmlns": "http://www.w3.org/2000/svg",
+					"xmlns:xlink": "http://www.w3.org/1999/xlink"
+				};
+				content = shape.wrap("mini", "g").wrap("mini", "svg", attr).elementMini;
+			}
+			DrawChem.setContent(content);
+			DrawChem.setStructure(structure);
+			DrawChem.transferContent();
+		};
+		
+		service.actions = [
+			{ name: "undo", action: service.undo },
+			{ name: "forward", action: service.forward },
+			{ name: "transfer", action: service.transfer },
+			{ name: "clear", action: service.clear },
+			{ name: "close", action: service.close }
+		];
+		
+		return service;
+	}
+})();
+(function () {
+	"use strict";
+	angular.module("mmAngularDrawChem")
+		.factory("DrawChemDirectiveUtils", DrawChemDirectiveUtils);
+	
+	DrawChemDirectiveUtils.$inject = [
+		"DrawChemShapes",
+		"DrawChemCache"
+	];
+	
+	function DrawChemDirectiveUtils(DrawChemShapes, DrawChemCache) {
+		
+		var service = {};
+		
+		/**
+		 * Draws the specified structure.
+		 * @params {Structure} structure - a Structure object to draw.
+		 */
+		service.drawStructure = function (structure) {
+			var drawn = "";					
+			drawn = DrawChemShapes.draw(structure, "cmpd1");
+			DrawChemCache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
+		};
+		
+		/**
+		 * Sets all boolean values to false and non-boolean to undefined.
+		 * @params {Object} flags - an object containing flags (as mix of boolean and non-boolean values)
+		 */
+		service.resetMouseFlags = function (flags) {
+			angular.forEach(flags, function (value, key) {
+				if (typeof value === "boolean") {
+					flags[key] = false;
+				} else {
+					flags[key] = undefined;
+				}
+			});
+		};
+		
+		/**
+		 * Checks if the canvas is empty.
+		 * @returns {Boolean}
+		 */
+		service.isContentEmpty = function isContentEmpty() {
+			return DrawChemCache.getCurrentStructure() === null;
+		};
+		
+		/**
+		 * Calculates the coordinates of the mouse pointer during an event.
+		 * Takes into account the margin of the enclosing div.
+		 * @params {Event} $event - an Event object
+		 * @returns {Number[]}
+		 */
+		service.innerCoords = function (element, $event) {
+			var content = element.find("dc-content")[0],
+				coords = [								
+					parseFloat(($event.clientX - content.getBoundingClientRect().left - 2).toFixed(2)),
+					parseFloat(($event.clientY - content.getBoundingClientRect().top - 2).toFixed(2))
+				];
+			return coords;
+		};
+		
+		/**
+		 * Modifies the specified structure by adding a new structure to it.
+		 * @params {Structure} structure - a Structure object to modify,
+		 * @params {Number[]} clickCoords - coordinates of the mouse pointer
+		 * @params {Boolean} mouseDownAndMove - true if 'mouseonmove' and 'mousedown' are true
+		 * @returns {Structure}
+		 */
+		service.modifyStructure = function (structure, chosenStructure, mouseCoords, downAtomCoords, mouseDownAndMove) {
+			return DrawChemShapes.modifyStructure(
+				angular.copy(structure),
+				angular.copy(chosenStructure),
+				mouseCoords,
+				downAtomCoords,
+				mouseDownAndMove
+			);
+		};
+		
+		return service;
+	}
+})();
+(function () {
+	"use strict";
+	angular.module("mmAngularDrawChem")
 		.directive("drawChemEditor", DrawChemEditor);
 	
 	DrawChemEditor.$inject = [
 		"DrawChemPaths",
 		"DrawChemShapes",
 		"DrawChemStructures",
-		"DrawChem",
-		"DrawChemConst",
 		"DrawChemCache",
+		"DrawChemDirectiveActions",
+		"DrawChemDirectiveUtils",
 		"$sce"
 	];
 	
-	function DrawChemEditor(DrawChemPaths, DrawChemShapes, DrawChemStructures, DrawChem, DrawChemConst, DrawChemCache, $sce) {
+	function DrawChemEditor(DrawChemPaths, DrawChemShapes, DrawChemStructures, DrawChemCache, DrawChemDirActions, DrawChemDirUtils, $sce) {
 		return {
 			templateUrl: DrawChemPaths.getPath() + "draw-chem-editor.html",
 			scope: {
@@ -719,25 +935,20 @@
 			},
 			link: function (scope, element, attrs) {
 				
-				var downAtomCoords,
-					downMouseCoords,
-					selected,
-					movedOnEmpty = false,
-					mouseDown = false,
-					downOnAtom = false;
-					
-				scope.label = "";
+				var mouseFlags = {
+						downAtomCoords: undefined,
+						downMouseCoords: undefined,					
+						movedOnEmpty: false,
+						mouseDown: false,
+						downOnAtom: false
+					},
+					selected;
 				
 				scope.pathToSvg = DrawChemPaths.getPathToSvg();
 				
-				scope.changeLabel = function () {
-					selected = "label";
-				}
-				
-				/**
-				 * Sets width and height of the dialog box based on corresponding attributes.
-				 */
+				// Sets width and height of the dialog box based on corresponding attributes.
 				scope.dialogStyle = {};
+				
 				if (attrs.width) {
 					scope.dialogStyle.width = attrs.width;					
 				}
@@ -745,86 +956,44 @@
 					scope.dialogStyle.height = attrs.height;					
 				}
 				
-				/**
-				 * Closes the editor.
-				 */
-				scope.closeEditor = function () {
-					DrawChem.closeEditor();
-				}
-				
-				/**
-				 * Returns content which will be bound in the dialog box.
-				 */
+				// Returns content which will be bound in the dialog box.
 				scope.content = function () {
 					return $sce.trustAsHtml(DrawChemCache.getCurrentSvg());
-				}
+				};
 				
-				/**
-				 * Undoes a change associated with the recent 'mouseup' event.
-				 */
-				scope.undo = function () {
-					DrawChemCache.moveLeftInStructures();
-					if (DrawChemCache.getCurrentStructure() === null) {
-						DrawChem.clearContent();
-					} else {
-						draw(DrawChemCache.getCurrentStructure());
-					}				
-				}
+				// stores all actions, e.g. clear, transfer, undo.
+				scope.actions = [];
 				
-				/**
-				 * Reverses the recent 'undo' action.
-				 */
-				scope.forward = function () {
-					DrawChemCache.moveRightInStructures();
-					if (DrawChemCache.getCurrentStructure() === null) {
-						DrawChem.clearContent();
-					} else {
-						draw(DrawChemCache.getCurrentStructure());
+				angular.forEach(DrawChemDirActions.actions, function (action) {
+					if (action.name === "close") {
+						scope[action.name] = action.action;
 					}
-				}
+					scope.actions.push({
+						name: action.name,
+						action: action.action
+					});
+				});
 				
-				/**
-				 * Clears the content.
-				 */
-				scope.clear = function () {
-					DrawChemCache.addStructure(null);
-					DrawChemCache.setCurrentSvg("");
-				}
+				// Stores the chosen label.
+				scope.chosenLabel;
 				
-				/**
-				 * Transfers the content.
-				 */
-				scope.transfer = function () {					
-					var structure = DrawChemCache.getCurrentStructure(),
-						shape, attr, content = "";
-						
-					if (structure !== null) {
-						shape = DrawChemShapes.draw(structure, "cmpd1");
-						attr = {
-							"viewBox": (shape.minMax.minX - 20).toFixed(2) + " " +
-								(shape.minMax.minY - 20).toFixed(2) + " " +
-								(shape.minMax.maxX - shape.minMax.minX + 40).toFixed(2) + " " +
-								(shape.minMax.maxY - shape.minMax.minY + 40).toFixed(2),
-							"height": "100%",
-							"width": "100%",
-							"xmlns": "http://www.w3.org/2000/svg",
-							"xmlns:xlink": "http://www.w3.org/1999/xlink"
-						};
-						content = shape.wrap("mini", "g").wrap("mini", "svg", attr).elementMini;
-					}
-					DrawChem.setContent(content);
-					DrawChem.setStructure(structure);
-					DrawChem.transferContent();
-				}
+				// stores all labels
+				scope.labels = [];
 				
-				/**
-				 * Stores the chosen structure.
-				 */
+				angular.forEach(DrawChemStructures.labels, function (label) {
+					scope.labels.push({
+						name: label.getLabel(),
+						choose: function () {
+							scope.chosenLabel = angular.copy(label);
+							selected = "label";
+						}
+					})
+				});
+				
+				// Stores the chosen structure.			
 				scope.chosenStructure;
 				
-				/**
-				 * Stores all predefined structures.
-				 */
+				// Stores all predefined structures.
 				scope.customButtons = [];
 				
 				/**
@@ -841,86 +1010,87 @@
 					});
 				});
 				
-				/**
-				 * Action to perform on 'mousedown' event.
-				 */
+				/***** Mouse Events *****/				
 				scope.doOnMouseDown = function ($event) {
 					if ($event.which !== 1) {
 						// if button other than left was pushed
 						return undefined;
 					}
 					
-					downMouseCoords = innerCoords($event);
-					mouseDown = true;
-					if (!isContentEmpty()) {
+					mouseFlags.downMouseCoords = DrawChemDirUtils.innerCoords(element, $event);
+					mouseFlags.mouseDown = true;
+					if (!DrawChemDirUtils.isContentEmpty()) {
 						// if content is not empty
 						checkIfDownOnAtom();
 					}
 					
 					function checkIfDownOnAtom() {
-						downAtomCoords = DrawChemShapes.isWithin(DrawChemCache.getCurrentStructure(), downMouseCoords).absPos;
-						if (typeof downAtomCoords !== "undefined") {
+						mouseFlags.downAtomCoords =
+							DrawChemShapes.isWithin(
+								DrawChemCache.getCurrentStructure(),
+								mouseFlags.downMouseCoords
+							).absPos;
+						if (typeof mouseFlags.downAtomCoords !== "undefined") {
 							// set flag if atom was selected
-							downOnAtom = true;
+							mouseFlags.downOnAtom = true;
 						}
 					}
 				}
 				
-				/**
-				 * Action to perform on 'mouseup' event.
-				 */
 				scope.doOnMouseUp = function ($event) {					
-					var structure, mouseCoords = innerCoords($event);
+					var structure, mouseCoords = DrawChemDirUtils.innerCoords(element, $event);
 					
 					if ($event.which !== 1) {
 						// if button other than left was released
 						return undefined;
 					}
 					
-					if (isContentEmpty()) {
+					if (DrawChemDirUtils.isContentEmpty()) {
 						// if content is empty
 						structure = drawOnEmptyContent();
-					} else if (downOnAtom && selected === "label") {
+					} else if (mouseFlags.downOnAtom && selected === "label") {
 						// if atom has been selected and 'change label' button is selected
 						structure = modifyLabel();						
-					} else if (downOnAtom && selected === "structure") {
+					} else if (mouseFlags.downOnAtom && selected === "structure") {
 						// if atom has been selected and any of the structure buttons has been clicked
-						structure = modifyStructure(DrawChemCache.getCurrentStructure(), mouseCoords);
+						structure = DrawChemDirUtils.modifyStructure(
+							DrawChemCache.getCurrentStructure(),
+							scope.chosenStructure,
+							mouseCoords,
+							mouseFlags.downAtomCoords
+						);
 					}
 					
 					if (typeof structure !== "undefined") {
 						// if the structure has been successfully set to something
 						DrawChemCache.addStructure(angular.copy(structure));
-						draw(structure);						
+						DrawChemDirUtils.drawStructure(structure);						
 					}
 					
-					resetMouseFlags();
+					DrawChemDirUtils.resetMouseFlags(mouseFlags);
 					
 					function modifyLabel() {
 						var structure = angular.copy(DrawChemCache.getCurrentStructure()),
-							atom = DrawChemShapes.isWithin(structure, downMouseCoords).foundAtom;
-						atom.setLabel(scope.label);
+							atom = DrawChemShapes.isWithin(structure, mouseFlags.downMouseCoords).foundAtom;
+						atom.setLabel(scope.chosenLabel.getLabel());
 						return structure;
 					}
 					
 					function drawOnEmptyContent() {
 						var structure;
-						if (movedOnEmpty) {
-							structure = angular.copy(scope.chosenStructure.getStructure(mouseCoords, downMouseCoords));
-							structure.setOrigin(downMouseCoords);
+						if (mouseFlags.movedOnEmpty) {
+							structure = angular.copy(scope.chosenStructure.getStructure(mouseCoords, mouseFlags.downMouseCoords));
+							structure.setOrigin(mouseFlags.downMouseCoords);
 						} else {
 							structure = angular.copy(scope.chosenStructure.getDefault());
 							structure.setOrigin(mouseCoords);
 						}
 						return structure;
 					}
-				}
+				}				
 				
-				/**
-				 * Action to perform on 'mousemove' event.
-				 */
 				scope.doOnMouseMove = function ($event) {
-					var mouseCoords = innerCoords($event), structure;
+					var mouseCoords = DrawChemDirUtils.innerCoords(element, $event), structure;
 					
 					if (selected !== "structure") {
 						// if no structure has been chosen
@@ -928,96 +1098,33 @@
 						return undefined;
 					}
 						
-					if (downOnAtom) {
+					if (mouseFlags.downOnAtom) {
 						// if an atom has been chosen
 						structure = modifyOnNonEmptyContent();
-						draw(structure);
-					} else if (mouseDown && isContentEmpty()) {
+						DrawChemDirUtils.drawStructure(structure);
+					} else if (mouseFlags.mouseDown && DrawChemDirUtils.isContentEmpty()) {
 						// if content is empty and mouse button is pushed
 						structure = modifyOnEmptyContent();
-						draw(structure);
+						DrawChemDirUtils.drawStructure(structure);
 					}
 					
 					function modifyOnNonEmptyContent() {
 						var frozenCurrentStructure = DrawChemCache.getCurrentStructure();					
-						return modifyStructure(frozenCurrentStructure, mouseCoords, true);
+						return DrawChemDirUtils.modifyStructure(
+							frozenCurrentStructure,
+							scope.chosenStructure,
+							mouseCoords,
+							mouseFlags.downAtomCoords,
+							true
+						);
 					}
 					
 					function modifyOnEmptyContent() {
-						var struct = angular.copy(scope.chosenStructure.getStructure(mouseCoords, downMouseCoords));
-						struct.setOrigin(downMouseCoords);
-						movedOnEmpty = true;
+						var struct = angular.copy(scope.chosenStructure.getStructure(mouseCoords, mouseFlags.downMouseCoords));
+						struct.setOrigin(mouseFlags.downMouseCoords);
+						mouseFlags.movedOnEmpty = true;
 						return struct;
 					}
-				}
-				
-				scope.actions = [
-					{ name: "undo", action: scope.undo },
-					{ name: "forward", action: scope.forward },
-					{ name: "transfer", action: scope.transfer },
-					{ name: "clear", action: scope.clear }
-				];
-				
-				/**
-				 * Calculates the coordinates of the mouse pointer during an event.
-				 * Takes into account the margin of the enclosing div.
-				 * @params {Event} $event - an Event object
-				 * @returns {Number[]}
-				 */
-				function innerCoords($event) {
-					// 
-					var content = element.find("dc-content")[0],
-						coords = [								
-							parseFloat(($event.clientX - content.getBoundingClientRect().left - 2).toFixed(2)),
-							parseFloat(($event.clientY - content.getBoundingClientRect().top - 2).toFixed(2))
-						]
-					return coords;
-				}
-				
-				/**
-				 * Resets to default values associated with mouse events.
-				 */
-				function resetMouseFlags() {
-					mouseDown = false;					
-					downOnAtom = false;
-					movedOnEmpty = false;
-					downAtomCoords = undefined;
-					downMouseCoords = undefined;
-				}
-				
-				/**
-				 * Draws the specified structure.
-				 * @params {Structure} structure - a Structure object to draw.
-				 */
-				function draw(structure) {
-					var drawn = "";					
-					drawn = DrawChemShapes.draw(structure, "cmpd1");
-					DrawChemCache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
-				}
-				
-				/**
-				 * Modifies the specified structure by adding a new structure to it.
-				 * @params {Structure} structure - a Structure object to modify,
-				 * @params {Number[]} clickCoords - coordinates of the mouse pointer
-				 * @params {Boolean} mouseDownAndMove - true if 'mouseonmove' and 'mousedown' are true
-				 * @returns {Structure}
-				 */
-				function modifyStructure(structure, mouseCoords, mouseDownAndMove) {
-					return DrawChemShapes.modifyStructure(
-						angular.copy(structure),
-						angular.copy(scope.chosenStructure),
-						mouseCoords,
-						downAtomCoords,
-						mouseDownAndMove
-					);
-				}
-				
-				/**
-				 * Checks if the canvas is empty.
-				 * @returns {Boolean}
-				 */
-				function isContentEmpty() {
-					return DrawChemCache.getCurrentStructure() === null;
 				}
 			}
 		}
@@ -1220,13 +1327,14 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemStructures", DrawChemStructures);
 		
-	DrawChemStructures.$inject = ["DrawChemConst", "DCStructure", "DCStructureCluster", "DCAtom", "DCBond"];
+	DrawChemStructures.$inject = ["DrawChemConst", "DCStructure", "DCStructureCluster", "DCAtom", "DCBond", "DCLabel"];
 	
-	function DrawChemStructures(DrawChemConst, DCStructure, DCStructureCluster, DCAtom, DCBond) {
+	function DrawChemStructures(DrawChemConst, DCStructure, DCStructureCluster, DCAtom, DCBond, DCLabel) {
 
 		var service = {},
 			Atom = DCAtom.Atom,
 			Bond = DCBond.Bond,
+			Label = DCLabel.Label,
 			Structure = DCStructure.Structure,
 			StructureCluster = DCStructureCluster.StructureCluster,
 			BONDS = DrawChemConst.BONDS;
@@ -1329,9 +1437,20 @@
 		};
 		
 		/**
+		 * An array of Label objects containing all supported labels.
+		 */
+		service.labels = [
+			new Label("O", 2),
+			new Label("S", 2),
+			new Label("P", 3),
+			new Label("N", 3)
+		];
+		
+		/**
 		 * Stores all predefined structures.
 		 */
-		service.custom = [service.benzene,
+		service.custom = [
+			service.benzene,
 			service.cyclohexane,
 			service.singleBond,
 			service.doubleBond,
