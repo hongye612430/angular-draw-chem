@@ -121,6 +121,19 @@
 			}			
 		}
 		
+		service.beautifySvg = function (name) {
+			var svg = service.getContent(name), match,
+				output = "<!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>\n";
+			
+			match = svg.match(/<svg.*?>|<g.*?>|<style.*?<\/style>|<path.*?><\/path>|<circle.*?><\/circle>|<polygon.*?><\/polygon>|<text.*?<\/text>|<\/g>|<\/svg>|/g);
+			
+			match.forEach(function (row) {
+				output += row + "\n";
+			});
+			
+			return output;
+		}
+		
 		// exposes API
 		return service;
 		

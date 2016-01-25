@@ -148,7 +148,7 @@ describe("DrawChemEditor directive tests - part1", function () {
 		temp.find("#dc-transfer").click();
 		expect(parallelScope.input())
 			.toEqual(
-				"<svg viewBox='60.68 78.00 74.64 80.00' height='100%' width='100%' >" +
+				"<svg viewBox='60.68 78.00 74.64 80.00' height='100%' width='100%' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' >" +
 					"<g id='cmpd1' >" +
 						"<style type=\"text/css\">" +
 							styleMini +

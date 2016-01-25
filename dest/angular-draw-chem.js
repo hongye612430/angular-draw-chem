@@ -806,7 +806,9 @@
 								(shape.minMax.maxX - shape.minMax.minX + 40).toFixed(2) + " " +
 								(shape.minMax.maxY - shape.minMax.minY + 40).toFixed(2),
 							"height": "100%",
-							"width": "100%"
+							"width": "100%",
+							"xmlns": "http://www.w3.org/2000/svg",
+							"xmlns:xlink": "http://www.w3.org/1999/xlink"
 						};
 						content = shape.wrap("mini", "g").wrap("mini", "svg", attr).elementMini;
 					}
@@ -1585,6 +1587,19 @@
 			} else {
 				currentInstance.content = "";	
 			}			
+		}
+		
+		service.beautifySvg = function (name) {
+			var svg = service.getContent(name), match,
+				output = "<!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>\n";
+			
+			match = svg.match(/<svg.*?>|<g.*?>|<style.*?<\/style>|<path.*?><\/path>|<circle.*?><\/circle>|<polygon.*?><\/polygon>|<text.*?<\/text>|<\/g>|<\/svg>|/g);
+			
+			match.forEach(function (row) {
+				output += row + "\n";
+			});
+			
+			return output;
 		}
 		
 		// exposes API

@@ -108,7 +108,9 @@
 								(shape.minMax.maxX - shape.minMax.minX + 40).toFixed(2) + " " +
 								(shape.minMax.maxY - shape.minMax.minY + 40).toFixed(2),
 							"height": "100%",
-							"width": "100%"
+							"width": "100%",
+							"xmlns": "http://www.w3.org/2000/svg",
+							"xmlns:xlink": "http://www.w3.org/1999/xlink"
 						};
 						content = shape.wrap("mini", "g").wrap("mini", "svg", attr).elementMini;
 					}
