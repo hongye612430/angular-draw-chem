@@ -12,7 +12,7 @@
 						<li class="dc-menuitem" role="menuitem" ng-repeat="custom in customButtons">
 							<a class="dc-menuitem-link" ng-click="custom.choose()" id="dc-{{custom.name}}">
 								<span class="dc-menuitem-link-text" ng-bind="custom.name"></span>
-								<img class="dc-struct" alt="{{custom.name}}" ng-src="{{custom.name}}.svg">
+								<img class="dc-struct" alt="{{custom.name}}" ng-src="{{pathToSvg}}/{{custom.name}}.svg">
 							</a>
 						</li>				
 					</ul>

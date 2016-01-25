@@ -3,11 +3,19 @@
 	angular.module("mmAngularDrawChem")
 		.directive("drawChemEditor", DrawChemEditor);
 	
-	DrawChemEditor.$inject = ["DrawChemShapes", "DrawChemStructures", "DrawChem", "DrawChemConst", "DrawChemCache", "$sce", "$window"];
+	DrawChemEditor.$inject = [
+		"DrawChemPaths",
+		"DrawChemShapes",
+		"DrawChemStructures",
+		"DrawChem",
+		"DrawChemConst",
+		"DrawChemCache",
+		"$sce"
+	];
 	
-	function DrawChemEditor(DrawChemShapes, DrawChemStructures, DrawChem, DrawChemConst, DrawChemCache, $sce, $window) {
+	function DrawChemEditor(DrawChemPaths, DrawChemShapes, DrawChemStructures, DrawChem, DrawChemConst, DrawChemCache, $sce) {
 		return {
-			templateUrl: "draw-chem-editor.html",
+			templateUrl: DrawChemPaths.getPath() + "draw-chem-editor.html",
 			scope: {
 				showEditor: "="
 			},
@@ -21,6 +29,8 @@
 					downOnAtom = false;
 					
 				scope.label = "";
+				
+				scope.pathToSvg = DrawChemPaths.getPathToSvg();
 				
 				scope.changeLabel = function () {
 					selected = "label";

@@ -32,11 +32,8 @@
 .centered-text {
   text-align: center; }
 
-.dc-menuitem-link {
-  overflow: overlay; }
-
-.dc-menuitem-link-text {
-  padding-top: 10px; }
+.dc-menuitem {
+  cursor: default; }
 
 .dc-struct {
   width: 30px;
