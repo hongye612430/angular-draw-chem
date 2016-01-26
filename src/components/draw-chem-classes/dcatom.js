@@ -23,7 +23,7 @@
 			this.info = info;
 			this.attachedBonds = attachedBonds || [];
 			this.next = "";
-			this.label = "";
+			this.label;
 			this.calculateNext();
 		}
 		
@@ -213,10 +213,18 @@
 			return this.next;
 		}
 		
+		/**
+		 * Sets Label object.
+		 * @param {Label} label - a Label object
+		 */
 		Atom.prototype.setLabel = function (label) {
 			this.label = label;
 		}
 		
+		/**
+		 * Gets Label object.
+		 * @returns {Label}
+		 */
 		Atom.prototype.getLabel = function () {
 			return this.label;
 		}

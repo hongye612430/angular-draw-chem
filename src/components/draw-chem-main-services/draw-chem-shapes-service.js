@@ -242,7 +242,8 @@
 					full += "<circle class='atom' cx='" + circle[0] + "' cy='" + circle[1] + "' r='" + circle[2] + "' ></circle>";
 				});
 				labels.forEach(function (label) {
-					aux = drawDodecagon(label) + "<text x='" + label.x +  "' y='" + label.y + "'>" + label.label + "</text>";					
+					aux = drawDodecagon(label) +
+						"<text writing-mode='" + label.mode + "' x='" + label.labelX +  "' y='" + label.labelY + "'>" + label.label + "</text>";
 					full += aux;
 					mini += aux;
 				});
@@ -263,13 +264,14 @@
 				};
 				
 				function drawDodecagon(label) {
-					var i, x, y,
-						factor = (label.height * 0.4) / BOND_LENGTH,
-						result = [];
+					var i, x, y, aux, factor,result = [];
+					
+					aux = label.length === 1 ? 0.58: 0.5;
+					factor = aux * label.height / BOND_LENGTH;
 					for (i = 0; i < BONDS_AUX.length; i += 1) {
 						x = BONDS_AUX[i].bond[0];
 						y = BONDS_AUX[i].bond[1];
-						result = result.concat(addCoords([label.x, label.y], [x, y], factor));
+						result = result.concat(addCoords([label.atomX, label.atomY], [x, y], factor));
 					}					
 					return "<polygon class='text' points='" + stringifyPaths([result])[0].line + "'></polygon>";
 				}
@@ -412,22 +414,72 @@
 				}
 				
 				function updateLabel(absPos, atom) {
-					var label = atom.getLabel(),
-						labelObj,
-						width = DCShape.fontSize * label.length * 0.8,
-						height = DCShape.fontSize * 1.1;
-					if (label !== "") {
-						labelObj = {
-							x: absPos[0],
-							y: absPos[1],
-							label: label,
-							width: width,
-							height: height
-						};
+					var label = atom.getLabel(), labelObj;
+					if (typeof label !== "undefined") {
+						labelObj = genLabelInfo();
 						labels.push(labelObj);
 						updateMinMax([labelObj.x - 0.7 * labelObj.width / 2, labelObj.y - 0.7 * labelObj.height * 3 / 5]);
 						updateMinMax([labelObj.x + 0.7 * labelObj.width / 2, labelObj.y + 0.7 * labelObj.height * 2 / 5]);
-					}					
+					}
+					
+					function genLabelInfo() {
+						var bondsRemained = label.getMaxBonds() - atom.getAttachedBonds().length,
+							labelNameObj = { name: label.getLabelName() };
+							
+						addHydrogens();
+						
+						return {
+							length: labelNameObj.name.length,
+							label: labelNameObj.name,
+							mode: labelNameObj.mode || "lr",
+							atomX: absPos[0],
+							atomY: absPos[1],
+							labelX: absPos[0] + labelNameObj.correctX,
+							labelY: absPos[1] + 0.013 * Math.abs(absPos[1]),
+							width: DCShape.fontSize * labelNameObj.name.length,
+							height: DCShape.fontSize
+						};
+						
+						function addHydrogens() {
+							var i, correctX, hydrogens = 0;
+							for (i = 0; i < bondsRemained; i += 1) {
+								hydrogens += 1;								
+							}
+							
+							labelNameObj.hydrogens = hydrogens;
+							
+							if (hydrogens > 0) {
+								if (isLeft()) {
+									labelNameObj.name = hydrogens === 1 ?
+										 "H" + labelNameObj.name: "H" + hydrogens + labelNameObj.name;
+									labelNameObj.mode = "rl";
+									switch (hydrogens) {
+										case 1: correctX = -0.028 * labelNameObj.name.length; break;
+										case 2: correctX = -0.032 * labelNameObj.name.length; break;
+									}
+								} else {
+									labelNameObj.name = hydrogens === 1 ?
+										labelNameObj.name + "H": labelNameObj.name + "H" + hydrogens;
+									switch (hydrogens) {
+										case 1: correctX = 0.034 * (labelNameObj.name.length - 1); break;
+										case 2: correctX = 0.028 * (labelNameObj.name.length - 1); break;
+									}									
+								}
+							}
+							
+							correctX = correctX || 0.034 * (labelNameObj.name.length - 1);
+							
+							labelNameObj.correctX = correctX * Math.abs(absPos[0]);
+							
+							function isLeft() {
+								var countE = 0;
+								atom.getAttachedBonds().forEach(function (direction) {
+									countE = direction.indexOf("E") < 0 ? countE: countE + 1;
+								});
+								return countE > 0;
+							}
+						}
+					}	
 				}
 					
 				function updateMinMax(absPos) {

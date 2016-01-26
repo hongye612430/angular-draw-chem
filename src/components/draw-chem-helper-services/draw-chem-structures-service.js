@@ -119,7 +119,12 @@
 			new Label("O", 2),
 			new Label("S", 2),
 			new Label("P", 3),
-			new Label("N", 3)
+			new Label("N", 3),
+			new Label("F", 1),
+			new Label("Cl", 1),
+			new Label("Br", 1),
+			new Label("I", 1),
+			new Label("H", 1)
 		];
 		
 		/**

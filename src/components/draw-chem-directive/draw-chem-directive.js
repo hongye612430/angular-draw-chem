@@ -68,9 +68,9 @@
 				
 				angular.forEach(DrawChemStructures.labels, function (label) {
 					scope.labels.push({
-						name: label.getLabel(),
+						name: label.getLabelName(),
 						choose: function () {
-							scope.chosenLabel = angular.copy(label);
+							scope.chosenLabel = label;
 							selected = "label";
 						}
 					})
@@ -158,7 +158,7 @@
 					function modifyLabel() {
 						var structure = angular.copy(DrawChemCache.getCurrentStructure()),
 							atom = DrawChemShapes.isWithin(structure, mouseFlags.downMouseCoords).foundAtom;
-						atom.setLabel(scope.chosenLabel.getLabel());
+						atom.setLabel(angular.copy(scope.chosenLabel));
 						return structure;
 					}
 					

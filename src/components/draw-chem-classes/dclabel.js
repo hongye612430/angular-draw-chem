@@ -2,8 +2,6 @@
 	"use strict";
 	angular.module("mmAngularDrawChem")
 		.factory("DCLabel", DCLabel);
-		
-	DCLabel.$inject = [];
 	
 	function DCLabel() {
 		
@@ -16,16 +14,16 @@
 		* @param {Number} bonds - a maximum number of bonds this atom should be connected with
 		*/
 		function Label(label, bonds) {
-			this.label = label;	
+			this.labelName = label;	
 			this.bonds = bonds;
 		}
 		
-		Label.prototype.getLabel = function () {
-			return this.label;
+		Label.prototype.getLabelName = function () {
+			return this.labelName;
 		};
 		
-		Label.prototype.setLabel = function (label) {
-			this.label = label;
+		Label.prototype.setLabelName = function (labelName) {
+			this.labelName = labelName;
 		};
 		
 		Label.prototype.getMaxBonds = function () {

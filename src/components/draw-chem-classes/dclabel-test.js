@@ -12,6 +12,6 @@ describe("DCLabel service tests", function () {
 		expect(label.getMaxBonds()).toEqual(2);
 		label.setMaxBonds(1);
 		expect(label.getMaxBonds()).toEqual(1);
-		expect(label.getLabel()).toEqual("O");
+		expect(label.getLabelName()).toEqual("O");
 	});
 });
