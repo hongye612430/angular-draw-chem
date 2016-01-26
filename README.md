@@ -13,12 +13,12 @@ Visit AngularDrawChem [page](http://mmmalik.github.io/angular-draw-chem/)!
 ### components
 The project consists of the following components:
 
-## directive and its services
+#### directive and its services
 1. `drawChemEditor` directive - the directive for interaction between the user and the editor,
 2. `DrawChemDirectiveActions` - helper service with all actions available in the `drawChemEditor` directive,
 3. `DrawChemDirectiveUtils` - helper service with some utility functions for `drawChemEditor` directive.
 
-## common services
+#### common services
 1. `DrawChem` factory - the main entry point for the use in a custom `controller`,
 2. `DrawChemConstants` factory - contains constant values, such as bond length, bond width, etc.,
 3. `DrawChemStructures` factory - defines basic structures, such as single bond, basic molecules (benzene, cyclohexane, etc.),
@@ -26,7 +26,7 @@ The project consists of the following components:
 5. `DrawChemCache` factory - caching service for Structure objects,
 6. `DrawChemPaths` provider - enables to configure paths to some static resources related to the editor (`templateUrl` for `drawChemEditor` directive, svgs used in the UI).
 
-## classes
+#### classes
 1. `DCShape` factory - defines `Shape` class, which encapsulates svg-relevant data,
 2. `DCAtom` factory - defines `Atom` class, which encapsulates data about a single atom,
 3. `DCBond` factory - defines `Bond` class, which encapsulates data about a single bond,
