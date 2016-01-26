@@ -3,11 +3,9 @@ The aim of this project is to create a light-weight, AngularJS-based editor for 
 The editor is from the beginning designed to be svg-based, thus enabling the drawing of good-looking, scalable structures.
 
 ### examples
-<img src="https://mmmalik.github.io/angular-draw-chem/svg/2.svg" alt="ex1" width="40%" height="20%" />
-
-<img src="https://mmmalik.github.io/angular-draw-chem/svg/3.svg" alt="ex2" width="40%" height="20%" />
-
-<img src="https://mmmalik.github.io/angular-draw-chem/svg/4.svg" alt="ex3" width="40%" height="20%" />
+<img src="https://mmmalik.github.io/angular-draw-chem/svg/2.svg" alt="ex1" width="30%" height="30%" />
+<img src="https://mmmalik.github.io/angular-draw-chem/svg/3.svg" alt="ex2" width="30%" height="30%" />
+<img src="https://mmmalik.github.io/angular-draw-chem/svg/4.svg" alt="ex3" width="30%" height="30%" />
 
 ### possible usage
 
