@@ -2217,8 +2217,8 @@
 					if (typeof label !== "undefined") {
 						labelObj = genLabelInfo();
 						labels.push(labelObj);
-						updateMinMax([labelObj.x - 0.7 * labelObj.width / 2, labelObj.y - 0.7 * labelObj.height * 3 / 5]);
-						updateMinMax([labelObj.x + 0.7 * labelObj.width / 2, labelObj.y + 0.7 * labelObj.height * 2 / 5]);
+						updateMinMax([labelObj.atomX - labelObj.width / 2, labelObj.atomY - labelObj.height / 2]);
+						updateMinMax([labelObj.atomX + labelObj.width / 2, labelObj.atomY + labelObj.height / 2]);
 					}
 					
 					function genLabelInfo() {
@@ -2253,14 +2253,14 @@
 										 "H" + labelNameObj.name: "H" + hydrogens + labelNameObj.name;
 									labelNameObj.mode = "rl";
 									switch (hydrogens) {
-										case 1: correctX = -0.028 * labelNameObj.name.length; break;
+										case 1: correctX = -0.03 * labelNameObj.name.length; break;
 										case 2: correctX = -0.032 * labelNameObj.name.length; break;
 									}
 								} else {
 									labelNameObj.name = hydrogens === 1 ?
 										labelNameObj.name + "H": labelNameObj.name + "H" + hydrogens;
 									switch (hydrogens) {
-										case 1: correctX = 0.034 * (labelNameObj.name.length - 1); break;
+										case 1: correctX = 0.032 * (labelNameObj.name.length - 1); break;
 										case 2: correctX = 0.028 * (labelNameObj.name.length - 1); break;
 									}									
 								}
