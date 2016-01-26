@@ -1,0 +1,24 @@
+<!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>
+<svg viewBox='156.42 73.88 227.55 145.50' height='100%' width='100%' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' >
+<g id='cmpd1' >
+<style type="text/css">path{stroke:black;stroke-width:1.4;fill:none;}path.wedge{stroke:black;stroke-width:1.4;fill:black;}circle.arom{stroke:black;stroke-width:1.4;fill:none;}text{font-family:Arial;cursor:default;text-anchor:middle;dominant-baseline:middle;font-size:18px;}tspan.sub{font-size:14px;}polygon.text{fill:white;}</style>
+<path d='M 194.42 155.38 L 224.73 137.88 L 255.04 155.38 L 285.34999999999997 137.88 L 315.65999999999997 155.38 L 345.96999999999997 137.88 '></path>
+<path d='M 286.00 132.88 L 284.70 132.88 M 286.32 127.88 L 284.37 127.88 M 286.65 122.88 L 284.05 122.88 M 286.97 117.88 L 283.72 117.88 M 287.30 112.88 L 283.40 112.88 M 287.62 107.88 L 283.07 107.88 M 287.95 102.88 L 282.75 102.88 '></path>
+<path d='M 285.34999999999997 102.88 '></path>
+<path class='wedge' d='M 255.04 155.38 L 252.76 190.38 L 257.31 190.38 Z '></path>
+<path d='M 255.04 190.38 '></path>
+<path d='M 225.38 132.88 L 224.08 132.88 M 225.70 127.88 L 223.75 127.88 M 226.03 122.88 L 223.43 122.88 M 226.35 117.88 L 223.10 117.88 M 226.68 112.88 L 222.78 112.88 M 227.00 107.88 L 222.45 107.88 M 227.33 102.88 L 222.13 102.88 '></path>
+<path d='M 224.73 102.88 '></path>
+<path d='M 194.42 155.38 L 194.42 190.38 '></path>
+<polygon class='text' points='348.30 129.19 352.33 131.52 354.66 135.55 354.66 140.21 352.33 144.24 348.30 146.57 343.64 146.57 339.61 144.24 337.28 140.21 337.28 135.55 339.61 131.52 343.64 129.19 '></polygon>
+<text x='351.21999999999997' y='139.67244'><tspan>N</tspan><tspan class='sub' dy='4.5' >3</tspan></text>
+<polygon class='text' points='287.68 94.19 291.71 96.52 294.04 100.55 294.04 105.21 291.71 109.24 287.68 111.57 283.02 111.57 278.99 109.24 276.66 105.21 276.66 100.55 278.99 96.52 283.02 94.19 '></polygon>
+<text x='292.34999999999997' y='104.21744'><tspan>O</tspan><tspan>H</tspan></text>
+<polygon class='text' points='257.37 181.69 261.40 184.02 263.73 188.05 263.73 192.71 261.40 196.74 257.37 199.07 252.71 199.07 248.68 196.74 246.35 192.71 246.35 188.05 248.68 184.02 252.71 181.69 '></polygon>
+<text x='262.03999999999996' y='192.85494'><tspan>O</tspan><tspan>H</tspan></text>
+<polygon class='text' points='227.06 94.19 231.09 96.52 233.42 100.55 233.42 105.21 231.09 109.24 227.06 111.57 222.40 111.57 218.37 109.24 216.04 105.21 216.04 100.55 218.37 96.52 222.40 94.19 '></polygon>
+<text x='231.73' y='104.21744'><tspan>O</tspan><tspan>H</tspan></text>
+<polygon class='text' points='196.75 181.69 200.78 184.02 203.11 188.05 203.11 192.71 200.78 196.74 196.75 199.07 192.09 199.07 188.06 196.74 185.73 192.71 185.73 188.05 188.06 184.02 192.09 181.69 '></polygon>
+<text x='199.67' y='192.85494'><tspan>N</tspan><tspan class='sub' dy='4.5' >3</tspan></text>
+</g>
+</svg>
