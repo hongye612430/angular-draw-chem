@@ -10,6 +10,7 @@
 		var service = {};
 		
 		service.fontSize = 18;
+		service.subFontSize = 14;
 		service.font = "Arial";
 		
 		/**
@@ -57,6 +58,9 @@
 					"dominant-baseline": "middle",
 					"font-size": service.fontSize + "px"
 				},
+				"tspan.sub": {					
+					"font-size": service.subFontSize + "px"
+				},
 				"polygon.text": {
 					"fill": "white"
 				}
@@ -83,6 +87,9 @@
 					"text-anchor": "middle",
 					"dominant-baseline": "middle",
 					"font-size": service.fontSize + "px"
+				},
+				"tspan.sub": {					
+					"font-size": service.subFontSize + "px"
 				},
 				"polygon.text": {
 					"fill": "white"

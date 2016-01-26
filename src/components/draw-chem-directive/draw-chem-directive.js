@@ -10,10 +10,11 @@
 		"DrawChemCache",
 		"DrawChemDirectiveActions",
 		"DrawChemDirectiveUtils",
+		"DCLabel",
 		"$sce"
 	];
 	
-	function DrawChemEditor(DrawChemPaths, DrawChemShapes, DrawChemStructures, DrawChemCache, DrawChemDirActions, DrawChemDirUtils, $sce) {
+	function DrawChemEditor(DrawChemPaths, DrawChemShapes, DrawChemStructures, DrawChemCache, DrawChemDirActions, DrawChemDirUtils, DCLabel, $sce) {
 		return {
 			templateUrl: DrawChemPaths.getPath() + "draw-chem-editor.html",
 			scope: {
@@ -21,7 +22,8 @@
 			},
 			link: function (scope, element, attrs) {
 				
-				var mouseFlags = {
+				var Label = DCLabel.Label,
+					mouseFlags = {
 						downAtomCoords: undefined,
 						downMouseCoords: undefined,					
 						movedOnEmpty: false,
@@ -62,6 +64,12 @@
 				
 				// Stores the chosen label.
 				scope.chosenLabel;
+				
+				scope.customLabel = "";
+				
+				scope.chooseCustomLabel = function () {
+					selected = "customLabel";
+				}
 				
 				// stores all labels
 				scope.labels = [];
@@ -134,7 +142,7 @@
 					if (DrawChemDirUtils.isContentEmpty()) {
 						// if content is empty
 						structure = drawOnEmptyContent();
-					} else if (mouseFlags.downOnAtom && selected === "label") {
+					} else if (mouseFlags.downOnAtom && (selected === "label" || selected === "customLabel")) {
 						// if atom has been selected and 'change label' button is selected
 						structure = modifyLabel();						
 					} else if (mouseFlags.downOnAtom && selected === "structure") {
@@ -157,8 +165,22 @@
 					
 					function modifyLabel() {
 						var structure = angular.copy(DrawChemCache.getCurrentStructure()),
-							atom = DrawChemShapes.isWithin(structure, mouseFlags.downMouseCoords).foundAtom;
-						atom.setLabel(angular.copy(scope.chosenLabel));
+							atom = DrawChemShapes.isWithin(structure, mouseFlags.downMouseCoords).foundAtom,
+							currentLabel = atom.getLabel();
+						if (selected === "label") {
+							atom.setLabel(angular.copy(scope.chosenLabel));													
+						} else if (selected === "customLabel") {
+							atom.setLabel(new Label(scope.customLabel, 0, "lr"));							
+						}
+						
+						if (typeof currentLabel !== "undefined") {
+							if (currentLabel.getMode() === "lr") {
+								atom.getLabel().setMode("rl");
+							} else if (currentLabel.getMode() === "rl") {
+								atom.getLabel().setMode("lr");
+							}
+						}
+						
 						return structure;
 					}
 					

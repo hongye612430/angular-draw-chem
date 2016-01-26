@@ -4,6 +4,7 @@
 		<button type="button" class="close dc-editor-close" aria-label="Close" ng-click="close()"><span aria-hidden="true">&times;</span></button>
 		<div class="dc-wrap">
 			<div id="#dc-tools-h" class="dc-tools-h">
+				<form class="form-inline">
 				<div class="btn-group" uib-dropdown>
 					<button id="dc-structures" type="button" class="btn btn-primary" uib-dropdown-toggle>
 						Actions <span class="caret"></span>
@@ -38,10 +39,15 @@
 							<a class="dc-menuitem-link" ng-click="custom.choose()" id="dc-{{custom.name}}">
 								<span class="dc-menuitem-link-text" ng-bind="custom.name"></span>								
 							</a>
-						</li>				
+						</li>
 					</ul>
 				</div>
+				<div class="form-group">
+					<input class="form-control" type="text" ng-model="customLabel" placeholder="custom label">
+				</div>
+				<button ng-click="chooseCustomLabel()" class="btn btn-primary" >Choose</button>
 			</div>
+			<form>
 			<dc-content
 				class="dc-editor-dialog-content"
 				ng-mousedown="doOnMouseDown($event)"

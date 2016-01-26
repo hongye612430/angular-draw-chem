@@ -13,9 +13,10 @@
 		* @param {String} label - a symbol of the atom
 		* @param {Number} bonds - a maximum number of bonds this atom should be connected with
 		*/
-		function Label(label, bonds) {
-			this.labelName = label;	
+		function Label(label, bonds, mode) {
+			this.labelName = label;			
 			this.bonds = bonds;
+			this.mode = mode;
 		}
 		
 		Label.prototype.getLabelName = function () {
@@ -32,6 +33,14 @@
 		
 		Label.prototype.setMaxBonds = function (bonds) {
 			this.bonds = bonds;
+		};
+		
+		Label.prototype.getMode = function () {
+			return this.mode;
+		};
+		
+		Label.prototype.setMode = function (mode) {
+			this.mode = mode;
 		};
 		
 		service.Label = Label;

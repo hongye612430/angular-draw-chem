@@ -243,7 +243,9 @@
 				});
 				labels.forEach(function (label) {
 					aux = drawDodecagon(label) +
-						"<text writing-mode='" + label.mode + "' x='" + label.labelX +  "' y='" + label.labelY + "'>" + label.label + "</text>";
+						"<text x='" + label.labelX +
+						"' y='" + label.labelY +
+						"'>" + genLabel(label.label) + "</text>";
 					full += aux;
 					mini += aux;
 				});
@@ -262,6 +264,23 @@
 					full: full,
 					mini: mini
 				};
+				
+				function genLabel(labelName) {
+					var i, aux, isPreceded = false, output = "";
+					for (i = 0; i < labelName.length; i += 1) {
+						aux = labelName.substr(i, 1);
+						if (isNumeric(aux)) {
+							output += "<tspan class='sub' dy='" + DCShape.fontSize * 0.25 + "' >" + aux + "</tspan>";
+							isPreceded = true;
+						} else if (isPreceded) {
+							output += "<tspan dy='-" + DCShape.fontSize * 0.25 + "' >" + aux + "</tspan>";
+							isPreceded = false;
+						} else {
+							output += "<tspan>" + aux + "</tspan>";
+						}
+					}
+					return output;
+				}
 				
 				function drawDodecagon(label) {
 					var i, x, y, aux, factor,result = [];
@@ -431,7 +450,7 @@
 						return {
 							length: labelNameObj.name.length,
 							label: labelNameObj.name,
-							mode: labelNameObj.mode || "lr",
+							mode: label.getMode(),
 							atomX: absPos[0],
 							atomY: absPos[1],
 							labelX: absPos[0] + labelNameObj.correctX,
@@ -441,7 +460,7 @@
 						};
 						
 						function addHydrogens() {
-							var i, correctX, hydrogens = 0;
+							var i, mode = label.getMode(), hydrogens = 0;
 							for (i = 0; i < bondsRemained; i += 1) {
 								hydrogens += 1;								
 							}
@@ -449,27 +468,33 @@
 							labelNameObj.hydrogens = hydrogens;
 							
 							if (hydrogens > 0) {
-								if (isLeft()) {
+								if (mode === "rl" || mode === "tb" || isLeft()) {
 									labelNameObj.name = hydrogens === 1 ?
 										 "H" + labelNameObj.name: "H" + hydrogens + labelNameObj.name;
-									labelNameObj.mode = "rl";
-									switch (hydrogens) {
-										case 1: correctX = -0.03 * labelNameObj.name.length; break;
-										case 2: correctX = -0.032 * labelNameObj.name.length; break;
+									if (typeof mode === "undefined") {
+										label.setMode("rl");
+										mode = "rl";
 									}
 								} else {
 									labelNameObj.name = hydrogens === 1 ?
 										labelNameObj.name + "H": labelNameObj.name + "H" + hydrogens;
-									switch (hydrogens) {
-										case 1: correctX = 0.032 * (labelNameObj.name.length - 1); break;
-										case 2: correctX = 0.028 * (labelNameObj.name.length - 1); break;
-									}									
+									if (typeof mode === "undefined") {
+										label.setMode("lr");
+										mode = "lr";
+									}				
+								}
+							} else {
+								if (typeof mode === "undefined") {
+									label.setMode("lr");
+									mode = "lr";
+								} else if (mode === "rl") {
+									labelNameObj.name = invertString(labelNameObj.name);
+									label.setMode("rl");
+									mode = "rl";
 								}
 							}
 							
-							correctX = correctX || 0.034 * (labelNameObj.name.length - 1);
-							
-							labelNameObj.correctX = correctX * Math.abs(absPos[0]);
+							labelNameObj.correctX = calcCorrect() * BOND_LENGTH;
 							
 							function isLeft() {
 								var countE = 0;
@@ -477,6 +502,47 @@
 									countE = direction.indexOf("E") < 0 ? countE: countE + 1;
 								});
 								return countE > 0;
+							}
+							
+							function calcCorrect() {
+								var i, aux,
+									len = 0,
+									name = labelNameObj.name;
+								for (i = 0; i < name.length; i += 1) {
+									aux = name.substr(i, 1);
+									if (isNumeric(aux)) {
+										len += 0.5;
+									} else if (isSmallLetter(aux)) {
+										len += 0.75;
+									} else {
+										len += 1;
+									}
+								}
+								if (mode === "rl") {
+									if (compareFloats(len, 1, 2) || len < 1)	{ return -0.12; }
+									else if (compareFloats(len, 1.25, 2))		{ return -0.2; }
+									else if (compareFloats(len, 1.5, 2))		{ return -0.2; }
+									else if (compareFloats(len, 1.75, 2))		{ return -0.25; }									
+									else if (compareFloats(len, 2, 2))			{ return -0.25; }
+									else if (compareFloats(len, 2.25, 2))		{ return -0.3; }
+									else if (compareFloats(len, 2.5, 2))		{ return -0.4; }
+									else if (compareFloats(len, 2.75, 2))		{ return -0.45; }
+									else { return -0.5; }
+								} else if (mode === "lr") {
+									if (compareFloats(len, 1, 2) || len < 1)	{ return 0; }
+									else if (compareFloats(len, 1.25, 2))		{ return 0.125; }
+									else if (compareFloats(len, 1.5, 2))		{ return 0.15; }
+									else if (compareFloats(len, 1.75, 2))		{ return 0.15; }									
+									else if (compareFloats(len, 2, 2))			{ return 0.2; }
+									else if (compareFloats(len, 2.25, 2))		{ return 0.225; }
+									else if (compareFloats(len, 2.5, 2))		{ return 0.25; }
+									else if (compareFloats(len, 2.75, 2))		{ return 0.3; }
+									else { return 0.35; }
+								} else if (mode === "tb") {
+									
+								} else if (mode === "bt") {
+									
+								}
 							}
 						}
 					}	
@@ -589,6 +655,27 @@
 			return typeof factor === "undefined" ?
 				[(coords1[0] + coords2[0]).toFixed(2), (coords1[1] + coords2[1]).toFixed(2)]:
 				[(coords1[0] + factor * coords2[0]).toFixed(2), (coords1[1] + factor * coords2[1]).toFixed(2)];
+		}
+		
+		function isNumeric(obj) {
+			return obj - parseFloat(obj) >= 0;
+		}
+		
+		function isSmallLetter(obj) {
+			return obj >= "a" && obj <= "z";
+		}
+		
+		function compareFloats(float1, float2, prec) {
+			return float1.toFixed(prec) === float2.toFixed(prec);
+		}
+		
+		function invertString(str) {
+			var i, match = str.match(/[A-Z][a-z\d]*/g), output = "";
+			if (match === null) { return str; }
+			for (i = match.length - 1; i >= 0; i -= 1) {
+				output += match[i];
+			}
+			return output;
 		}
 	}
 })();
