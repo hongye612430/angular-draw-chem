@@ -34,13 +34,5 @@ The project consists of the following components:
 5. `DCStructureCluster` factory - defines `StructureCluster` class, which enables grouping of multiple `Structure` objects; used for predefined structures,
 6. `DCLabel` factory - defines `Label` class, which encapsulates data about a label
 
-### terminology
-**`Shape`** vs **`Structure`**
-
-`Structure` object contains name of the structure and the structure itself as an array of `atoms`.
-Each `atom` is an object containing coordinates of the atom and a `bonds` array with all `atoms` it is connected with.
-
-`Shape` object contains the desired structure as a set of `svg` elements (paths, circles, etc.).
-
 ### license
 MIT
