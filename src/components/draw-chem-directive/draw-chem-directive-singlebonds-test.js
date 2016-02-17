@@ -3,7 +3,15 @@ describe("DrawChemEditor directive tests - part2", function () {
 	
 	var $scope, element, $rootScope, DrawChem, DrawChemShapes, DrawChemStructures, template, styleFull;
 	
-	styleFull = "path{" +
+	styleExpanded = "circle.atom:hover{" +
+			"opacity:0.3;" +
+			"stroke:black;" +
+			"stroke-width:0.8;" +
+		"}" +
+		"circle.atom{" +
+			"opacity:0;" +
+		"}";
+	styleBase = "path{" +
 			"stroke:black;" +
 			"stroke-width:0.8;" +
 			"fill:none;" +
@@ -12,14 +20,6 @@ describe("DrawChemEditor directive tests - part2", function () {
 			"stroke:black;" +
 			"stroke-width:0.8;" +
 			"fill:black;" +
-		"}" +
-		"circle.atom:hover{" +
-			"opacity:0.3;" +
-			"stroke:black;" +
-			"stroke-width:0.8;" +
-		"}" +
-		"circle.atom{" +
-			"opacity:0;" +
 		"}" +
 		"circle.arom{" +
 			"stroke:black;" +
@@ -32,6 +32,9 @@ describe("DrawChemEditor directive tests - part2", function () {
 			"text-anchor:middle;" +
 			"dominant-baseline:middle;" +
 			"font-size:18px;" +
+		"}" +
+		"tspan.sub{" +					
+			"font-size:14px;" +
 		"}" +
 		"polygon.text{" +
 			"fill:white;" +
@@ -92,7 +95,7 @@ describe("DrawChemEditor directive tests - part2", function () {
 				"<svg>" +
 						"<g id=\"cmpd1\">" +
 							"<style type=\"text/css\">" +
-								styleFull +
+								styleBase + styleExpanded +
 							"</style>" +
 							"<path d=\"M 98 98 L 115.32 108 L 115.32 128 L 98 138 L 80.68 128 L 80.68 108 L 98 98 \"></path>" +
 							"<path d=\"M 99.30 98.00 L 99.30 78.00 M 96.70 98.00 L 96.70 78.00 \"></path>" +
@@ -142,7 +145,7 @@ describe("DrawChemEditor directive tests - part2", function () {
 				"<svg>" +
 						"<g id=\"cmpd1\">" +
 							"<style type=\"text/css\">" +
-								styleFull +
+								styleBase + styleExpanded +
 							"</style>" +
 							"<path d=\"M 98 98 L 115.32 108 L 115.32 128 L 98 138 L 80.68 128 L 80.68 108 L 98 98 \"></path>" +
 							"<path d=\"M 100.00 98.00 L 100.00 78.00 M 98 98 L 98 78 M 96.00 98.00 L 96.00 78.00 \"></path>" +
@@ -192,7 +195,7 @@ describe("DrawChemEditor directive tests - part2", function () {
 				"<svg>" +
 						"<g id=\"cmpd1\">" +
 							"<style type=\"text/css\">" +
-								styleFull +
+								styleBase + styleExpanded +
 							"</style>" +
 							"<path d=\"M 98 98 L 115.32 108 L 115.32 128 L 98 138 L 80.68 128 L 80.68 108 L 98 98 \"></path>" +
 							"<path class=\"wedge\" d=\"M 98 98 L 99.30 78.00 L 96.70 78.00 Z \"></path>" +
@@ -242,7 +245,7 @@ describe("DrawChemEditor directive tests - part2", function () {
 				"<svg>" +
 						"<g id=\"cmpd1\">" +
 							"<style type=\"text/css\">" +
-								styleFull +
+								styleBase + styleExpanded +
 							"</style>" +
 							"<path d=\"M 98 98 L 115.32 108 L 115.32 128 L 98 138 L 80.68 128 L 80.68 108 L 98 98 \"></path>" +
 							"<path d=\"M 98.37 95.14 L 97.63 95.14 M 98.56 92.29 L 97.44 92.29 M 98.74 89.43 L 97.26 89.43 M 98.93 86.57 L 97.07 86.57 M 99.11 83.71 L 96.89 83.71 M 99.30 80.86 L 96.70 80.86 M 99.49 78.00 L 96.51 78.00 \"></path>" +

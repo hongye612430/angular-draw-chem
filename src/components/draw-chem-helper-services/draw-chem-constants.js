@@ -48,30 +48,32 @@
 			// the default r of a circle around an atom
 			service.CIRC_R = service.BOND_LENGTH * 0.12;
 			
-			// bond in north direction
+			// all bonds (starting from bond in north direction, going clock-wise), every 15 deg
 			service.BOND_N = [0, -service.BOND_LENGTH];
-			// bond in south direction
-			service.BOND_S = [0, service.BOND_LENGTH];
-			// bond in east direction
-			service.BOND_E = [service.BOND_LENGTH, 0];
-			// bond in west direction
-			service.BOND_W = [-service.BOND_LENGTH, 0];
-			// bond in north-east direction (first clock-wise)
+			service.BOND_N_NE1 = [calcBondAux1, -calcBondAux2];			
 			service.BOND_NE1 = [service.BOND_LENGTH / 2, -calcBond];
-			// bond in north-east direction (second clock-wise)
+			service.BOND_NE1_NE2 = [calcBondAux3, -calcBondAux3];
 			service.BOND_NE2 = [calcBond, -service.BOND_LENGTH / 2];
-			// bond in south-east direction (first clock-wise)
+			service.BOND_NE2_E = [calcBondAux2, -calcBondAux1];
+			service.BOND_E = [service.BOND_LENGTH, 0];
+			service.BOND_E_SE1 = [calcBondAux2, calcBondAux1];
 			service.BOND_SE1 = [calcBond, service.BOND_LENGTH / 2],
-			// bond in south-east direction (second clock-wise)
+			service.BOND_SE1_SE2 = [calcBondAux3, calcBondAux3];
 			service.BOND_SE2 = [service.BOND_LENGTH / 2, calcBond];
-			// bond in south-west direction (first clock-wise)
+			service.BOND_SE2_S = [calcBondAux1, calcBondAux2];
+			service.BOND_S = [0, service.BOND_LENGTH];
+			service.BOND_S_SW1 = [-calcBondAux1, calcBondAux2];
 			service.BOND_SW1 = [-service.BOND_LENGTH / 2, calcBond];
-			// bond in south-west direction (second clock-wise)
+			service.BOND_SW1_SW2 = [-calcBondAux3, calcBondAux3];
 			service.BOND_SW2 = [-calcBond, service.BOND_LENGTH / 2];
-			// bond in north-west direction (first clock-wise)
+			service.BOND_SW2_W = [-calcBondAux2, calcBondAux1];
+			service.BOND_W = [-service.BOND_LENGTH, 0];
+			service.BOND_W_NW1 = [-calcBondAux2, -calcBondAux1];
 			service.BOND_NW1 = [-calcBond, -service.BOND_LENGTH / 2];
-			// bond in north-west direction (second clock-wise)	
-			service.BOND_NW2 = [-service.BOND_LENGTH / 2, -calcBond];					
+			service.BOND_NW1_NW2 = [-calcBondAux3, -calcBondAux3];
+			service.BOND_NW2 = [-service.BOND_LENGTH / 2, -calcBond];
+			service.BOND_NW2_N = [-calcBondAux1, -calcBondAux2];
+			
 			// bonds as array
 			service.BONDS = [
 				{ direction: "N", bond: service.BOND_N },
@@ -87,19 +89,6 @@
 				{ direction: "NW1", bond: service.BOND_NW1 },
 				{ direction: "NW2", bond: service.BOND_NW2 }
 			];
-			
-			service.BOND_N_NE1 = [calcBondAux1, -calcBondAux2];
-			service.BOND_NE1_NE2 = [calcBondAux3, -calcBondAux3];
-			service.BOND_NE2_E = [calcBondAux2, -calcBondAux1];
-			service.BOND_E_SE1 = [calcBondAux2, calcBondAux1];
-			service.BOND_SE1_SE2 = [calcBondAux3, calcBondAux3];
-			service.BOND_SE2_S = [calcBondAux1, calcBondAux2];
-			service.BOND_S_SW1 = [-calcBondAux1, calcBondAux2];
-			service.BOND_SW1_SW2 = [-calcBondAux3, calcBondAux3];
-			service.BOND_SW2_W = [-calcBondAux2, calcBondAux1];
-			service.BOND_W_NW1 = [-calcBondAux2, -calcBondAux1];
-			service.BOND_NW1_NW2 = [-calcBondAux3, -calcBondAux3];
-			service.BOND_NW2_N = [-calcBondAux1, -calcBondAux2];
 			
 			service.BONDS_AUX = [
 				{ direction: "N_NE1", bond: service.BOND_N_NE1 },

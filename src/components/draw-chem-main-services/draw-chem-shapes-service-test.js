@@ -1,9 +1,20 @@
 describe("DrawChemShapes service tests", function () {
 	beforeEach(module("mmAngularDrawChem"));
-	
+
 	var DrawChemShapes, DrawChemStructures, DrawChemConst, Atom, Structure, styleFull;
-	
-	styleFull = "path{" +
+
+	styleExpanded = "circle.atom:hover{" +
+			"opacity:0.3;" +
+			"stroke:black;" +
+			"stroke-width:0.8;" +
+		"}" +
+		"text:hover{" +
+			"opacity:0.3;" +
+		"}" +
+		"circle.atom{" +
+			"opacity:0;" +
+		"}";
+	styleBase = "path{" +
 			"stroke:black;" +
 			"stroke-width:0.8;" +
 			"fill:none;" +
@@ -13,14 +24,6 @@ describe("DrawChemShapes service tests", function () {
 			"stroke-width:0.8;" +
 			"fill:black;" +
 		"}" +
-		"circle.atom:hover{" +
-			"opacity:0.3;" +
-			"stroke:black;" +
-			"stroke-width:0.8;" +
-		"}" +
-		"circle.atom{" +
-			"opacity:0;" +
-		"}" +
 		"circle.arom{" +
 			"stroke:black;" +
 			"stroke-width:0.8;" +
@@ -29,14 +32,15 @@ describe("DrawChemShapes service tests", function () {
 		"text{" +
 			"font-family:Arial;" +
 			"cursor:default;" +
-			"text-anchor:middle;" +
-			"dominant-baseline:middle;" +
 			"font-size:18px;" +
+		"}" +
+		"tspan.sub{" +
+			"font-size:14px;" +
 		"}" +
 		"polygon.text{" +
 			"fill:white;" +
 		"}";
-	
+
 	beforeEach(inject(function (_DrawChemShapes_, _DrawChemStructures_, _DrawChemConst_, _DCAtom_, _DCStructure_, _DCBond_) {
 		Atom = _DCAtom_.Atom;
 		Bond = _DCBond_.Bond;
@@ -53,7 +57,7 @@ describe("DrawChemShapes service tests", function () {
 		BOND_SE = DrawChemConst.BOND_SE,
 		BOND_SW = DrawChemConst.BOND_SW;
 	}));
-	
+
 	it("should draw an object based on the input", function () {
 		var input = new Structure("test", [
 			new Atom([10, 10], [
@@ -68,15 +72,15 @@ describe("DrawChemShapes service tests", function () {
 				new Bond("single", new Atom([4, 2], []))
 			])
 		]);
-		input.setOrigin([10, 10]);
+		input.setOrigin([0, 0]);
 		expect(DrawChemShapes.draw(input, "cmpd1").wrap("full", "g").wrap("full", "svg").elementFull).toEqual(
 			"<svg>" +
 				"<g id='cmpd1' >" +
 					"<style type=\"text/css\">" +
-						styleFull +
+						styleBase + styleExpanded +
 					"</style>" +
 					"<path d='M 10 10 L 25 25 L 45 45 L 75 75 '></path>" +
-					"<path d='M 25 25 L 50 50 '></path>" +	
+					"<path d='M 25 25 L 50 50 '></path>" +
 					"<path d='M 10 10 L 15 20 '></path>" +
 					"<path d='M 10 10 L 5 26 '></path>" +
 					"<path d='M 10 10 L 14 12 '></path>" +

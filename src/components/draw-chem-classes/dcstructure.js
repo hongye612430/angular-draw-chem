@@ -85,6 +85,14 @@
 		}
 		
 		/**
+		 * Adds a tree of atoms to the structure array.
+		 * @param {Atom} content - an array of atoms and their connections
+		 */
+		Structure.prototype.addToStructures = function (str) {
+			this.structure.push(str);
+		}
+		
+		/**
 		 * Gets the structure array.
 		 * @returns {Atom[]|Atom}
 		 */
