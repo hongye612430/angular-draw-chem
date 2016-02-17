@@ -2143,7 +2143,7 @@
 				});
 				labels.forEach(function (label) {
 					aux = drawDodecagon(label) +
-						"<text ng-mouseover='lol()' dy='0.2125em' x='" + label.labelX + "' " +
+						"<text dy='0.2125em' x='" + label.labelX + "' " +
 						"y='" + label.labelY + "' " +
 						"text-anchor='" + genTextAnchor(label.mode) + "' " +
 						">" + genLabel(label.label) + "</text>";
