@@ -5,49 +5,99 @@
 		<div class="dc-wrap">
 			<div id="#dc-tools-h" class="dc-tools-h">
 				<form class="form-inline">
-				<div class="btn-group" uib-dropdown>
-					<button id="dc-structures" type="button" class="btn btn-primary" uib-dropdown-toggle>
-						Actions <span class="caret"></span>
-					</button>
-					<ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="btn-append-to-single-button">
-						<li class="dc-menuitem" role="menuitem" ng-repeat="custom in actions">
-							<a class="dc-menuitem-link" ng-click="custom.action()" id="dc-{{custom.name}}">
-								<span class="dc-menuitem-link-text" ng-bind="custom.name"></span>
-							</a>
-						</li>
-					</ul>
-				</div>
-				<div class="btn-group" uib-dropdown>
-					<button id="dc-structures" type="button" class="btn btn-primary" uib-dropdown-toggle>
-						Structures <span class="caret"></span>
-					</button>
-					<ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="btn-append-to-single-button">
-						<li class="dc-menuitem" role="menuitem" ng-repeat="custom in customButtons">
-							<a class="dc-menuitem-link" ng-click="custom.choose()" id="dc-{{custom.name}}">
-								<span class="dc-menuitem-link-text" ng-bind="custom.name"></span>
-								<img class="dc-struct" alt="{{custom.name}}" ng-src="{{pathToSvg}}/{{custom.name}}.svg">
-							</a>
-						</li>				
-					</ul>
-				</div>
-				<div class="btn-group" uib-dropdown>
-					<button id="dc-structures" type="button" class="btn btn-primary" uib-dropdown-toggle>
-						Labels <span class="caret"></span>
-					</button>
-					<ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="btn-append-to-single-button">
-						<li class="dc-menuitem" role="menuitem" ng-repeat="custom in labels">
-							<a class="dc-menuitem-link" ng-click="custom.choose()" id="dc-{{custom.name}}">
-								<span class="dc-menuitem-link-text" ng-bind="custom.name"></span>								
-							</a>
-						</li>
-					</ul>
-				</div>
-				<div class="form-group">
-					<input class="form-control" type="text" ng-model="customLabel" placeholder="custom label">
-				</div>
-				<button ng-click="chooseCustomLabel()" class="btn btn-primary" >Choose</button>
+
+					<!-- Action button -->
+					<div class="btn-group" uib-dropdown>
+						<button id="dc-structures" type="button" class="btn btn-primary" uib-dropdown-toggle>
+							Actions <span class="caret"></span>
+						</button>
+						<ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="btn-append-to-single-button">
+							<li class="dc-menuitem" role="menuitem" ng-repeat="custom in actions">
+								<a class="dc-menuitem-link" ng-click="custom.action()" id="dc-{{custom.name}}">
+									<span class="dc-menuitem-link-text" ng-bind="custom.name"></span>
+								</a>
+							</li>
+						</ul>
+					</div>
+
+					<!-- Edit button -->
+					<div class="btn-group" uib-dropdown>
+						<button id="dc-structures" type="button" class="btn btn-primary" uib-dropdown-toggle>
+							Edit <span class="caret"></span>
+						</button>
+						<ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="btn-append-to-single-button">
+							<li class="dc-menuitem" role="menuitem" ng-repeat="custom in edits">
+								<a class="dc-menuitem-link" ng-click="custom.edit()" id="dc-{{custom.name}}">
+									<span class="dc-menuitem-link-text" ng-bind="custom.name"></span>
+								</a>
+							</li>
+						</ul>
+					</div>
+
+					<!-- Predefined structures -->
+					<div class="btn-group" uib-dropdown>
+						<button id="dc-structures" type="button" class="btn btn-primary" uib-dropdown-toggle>
+							Structures <span class="caret"></span>
+						</button>
+						<ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="btn-append-to-single-button">
+							<li class="dc-menuitem" role="menuitem" ng-repeat="custom in predefinedStructures">
+								<a class="dc-menuitem-link" ng-click="custom.choose()" id="dc-{{custom.name}}">
+									<span class="dc-menuitem-link-text" ng-bind="custom.name"></span>
+									<img class="dc-struct" alt="{{custom.name}}" ng-src="{{pathToSvg}}/{{custom.name}}.svg">
+								</a>
+							</li>
+						</ul>
+					</div>
+
+					<!-- Arrows -->
+					<div class="btn-group" uib-dropdown>
+						<button id="dc-structures" type="button" class="btn btn-primary" uib-dropdown-toggle>
+							Arrows <span class="caret"></span>
+						</button>
+						<ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="btn-append-to-single-button">
+							<li class="dc-menuitem" role="menuitem" ng-repeat="custom in arrows">
+								<a class="dc-menuitem-link" ng-click="custom.choose()" id="dc-{{custom.name}}">
+									<span class="dc-menuitem-link-text" ng-bind="custom.name"></span>
+								</a>
+							</li>
+						</ul>
+					</div>
+
+					<!-- Shapes -->
+					<div class="btn-group" uib-dropdown>
+						<button id="dc-structures" type="button" class="btn btn-primary" uib-dropdown-toggle>
+							Shapes <span class="caret"></span>
+						</button>
+						<ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="btn-append-to-single-button">
+							<li class="dc-menuitem" role="menuitem" ng-repeat="custom in shapes">
+								<a class="dc-menuitem-link" ng-click="custom.choose()" id="dc-{{custom.name}}">
+									<span class="dc-menuitem-link-text" ng-bind="custom.name"></span>
+								</a>
+							</li>
+						</ul>
+					</div>
+
+					<!-- Predefined labels -->
+					<div class="btn-group" uib-dropdown>
+						<button id="dc-structures" type="button" class="btn btn-primary" uib-dropdown-toggle>
+							Labels <span class="caret"></span>
+						</button>
+						<ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="btn-append-to-single-button">
+							<li class="dc-menuitem" role="menuitem" ng-repeat="custom in labels">
+								<a class="dc-menuitem-link" ng-click="custom.choose()" id="dc-{{custom.name}}">
+									<span class="dc-menuitem-link-text" ng-bind="custom.name"></span>
+								</a>
+							</li>
+						</ul>
+					</div>
+
+					<!-- Custom label -->
+					<div class="form-group dc-input-right">
+						<input class="form-control" type="text" ng-model="customLabel" placeholder="custom label">
+						<button ng-click="chooseCustomLabel()" class="btn btn-primary" >Choose</button>
+					</div>
+				</form>
 			</div>
-			<form>
 			<dc-content
 				class="dc-editor-dialog-content"
 				ng-mousedown="doOnMouseDown($event)"

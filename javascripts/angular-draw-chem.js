@@ -871,59 +871,393 @@
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
+		.factory("DrawChemDirectiveEdits", DrawChemDirectiveEdits);
+
+	DrawChemDirectiveEdits.$inject = [];
+
+	function DrawChemDirectiveEdits() {
+
+		var service = {};
+
+    service.todo = function () {
+
+    };
+
+		service.edits = [
+			{ name: "dummy", edit: service.todo },
+		];
+
+		return service;
+	}
+})();
+
+(function () {
+	"use strict";
+	angular.module("mmAngularDrawChem")
+		.factory("DrawChemDirectiveFlags", DrawChemDirectiveFlags);
+
+	DrawChemDirectiveFlags.$inject = [];
+
+	function DrawChemDirectiveFlags() {
+
+		var service = {};
+
+    service.mouseFlags = {
+      downAtomCoords: undefined,
+      downMouseCoords: undefined,
+      movedOnEmpty: false,
+      mouseDown: false,
+      downOnAtom: false
+    };
+
+    service.selected;
+
+		return service;
+	}
+})();
+
+(function () {
+	"use strict";
+	angular.module("mmAngularDrawChem")
+		.factory("DrawChemDirectiveMenuButtons", DrawChemDirectiveMenuButtons);
+
+	DrawChemDirectiveMenuButtons.$inject = [
+    "DrawChemStructures",
+    "DrawChemDirectiveActions",
+		"DrawChemDirectiveEdits",
+    "DrawChemArrows",
+    "DrawChemGeomShapes",
+    "DrawChemDirectiveFlags"
+  ];
+
+	function DrawChemDirectiveMenuButtons(Structures, Actions, Edits, Arrows, Shapes, Flags) {
+
+		var service = {};
+
+    service.addButtonsToScope = function (scope) {
+      // stores all actions, e.g. clear, transfer, undo.
+      scope.actions = [];
+
+      angular.forEach(Actions.actions, function (action) {
+        if (action.name === "close") {
+          scope[action.name] = action.action;
+        }
+        scope.actions.push({
+          name: action.name,
+          action: action.action
+        });
+      });
+
+      // stores all edit actions, e.g. resize, select, align.
+      scope.edits = [];
+
+      angular.forEach(Edits.edits, function (edit) {
+        scope.edits.push({
+          name: edit.name,
+          edit: edit.edit
+        });
+      });
+
+      // stores all arrows
+      scope.arrows = [];
+
+      angular.forEach(Arrows.arrows, function (arrow) {
+        scope.arrows.push({
+          name: arrow.name,
+          arrow: arrow.arrow
+        });
+      });
+
+      // stores all shapes
+      scope.shapes = [];
+
+      angular.forEach(Shapes.shapes, function (shape) {
+        scope.shapes.push({
+          name: shape.name,
+          shape: shape.shape
+        });
+      });
+
+      // Stores the chosen label.
+      scope.chosenLabel;
+
+      // Stores the custom label.
+      scope.customLabel = "";
+
+      scope.chooseCustomLabel = function () {
+        Flags.selected = "customLabel";
+      }
+
+      // stores all labels
+      scope.labels = [];
+
+      angular.forEach(Structures.labels, function (label) {
+        scope.labels.push({
+          name: label.getLabelName(),
+          choose: function () {
+            scope.chosenLabel = label;
+            Flags.selected = "label";
+          }
+        })
+      });
+
+      // Stores the chosen structure.
+      scope.chosenStructure;
+
+      // Stores all predefined structures.
+      scope.predefinedStructures = [];
+
+      /**
+       * Adds all predefined shapes to the scope.
+       */
+      angular.forEach(Structures.custom, function (custom) {
+        var customInstance = custom();
+        scope.predefinedStructures.push({
+          name: customInstance.name,
+          choose: function () {
+            scope.chosenStructure = customInstance;
+            Flags.selected = "structure";
+          }
+        });
+      });
+    }
+
+		return service;
+	}
+})();
+
+(function () {
+	"use strict";
+	angular.module("mmAngularDrawChem")
+		.factory("DrawChemDirectiveMouseActions", DrawChemDirectiveMouseActions);
+
+	DrawChemDirectiveMouseActions.$inject = [
+    "DrawChemDirectiveFlags",
+    "DrawChemDirectiveUtils",
+    "DrawChemShapes",
+    "DrawChemCache",
+    "DrawChemConst",
+    "DCLabel"
+  ];
+
+	function DrawChemDirectiveMouseActions(Flags, Utils, Shapes, Cache, Const, DCLabel) {
+
+		var service = {},
+      Label = DCLabel.Label,
+      mouseFlags = Flags.mouseFlags;
+
+    service.doOnMouseDown = function ($event, scope, element) {
+      var elem;
+      if ($event.which !== 1) {
+        // if button other than left was pushed
+        return undefined;
+      }
+      mouseFlags.downMouseCoords = Utils.innerCoords(element, $event);
+      mouseFlags.mouseDown = true;
+      if (!Utils.isContentEmpty()) {
+        // if content is not empty
+        if ($event.target.nodeName === "tspan") {
+          elem = angular.element($event.target).parent();
+          mouseFlags.downMouseCoords = [elem.attr("atomx"), elem.attr("atomy")];
+        }
+        checkIfDownOnAtom();
+      }
+
+      function checkIfDownOnAtom() {
+        mouseFlags.downAtomCoords =
+          Shapes.isWithin(
+            Cache.getCurrentStructure(),
+            mouseFlags.downMouseCoords
+          ).absPos;
+        if (typeof mouseFlags.downAtomCoords !== "undefined") {
+          // set flag if atom was Flags.selected
+          mouseFlags.downOnAtom = true;
+        }
+      }
+    }
+
+    service.doOnMouseUp = function ($event, scope, element) {
+      var structure, mouseCoords = Utils.innerCoords(element, $event);
+
+      if ($event.which !== 1) {
+        // if button other than left was released
+        return undefined;
+      }
+
+      if (mouseFlags.downOnAtom && (Flags.selected === "label" || Flags.selected === "customLabel")) {
+        // if atom has been Flags.selected and 'change label' button is Flags.selected
+        structure = modifyLabel();
+      } else if (mouseFlags.downOnAtom && Flags.selected === "structure") {
+        // if atom has been Flags.selected and any of the structure buttons has been clicked
+        structure = Utils.modifyStructure(
+          Cache.getCurrentStructure(),
+          scope.chosenStructure,
+          mouseCoords,
+          mouseFlags.downAtomCoords
+        );
+      } else {
+        structure = drawOnEmptySpace();
+      }
+
+      if (typeof structure !== "undefined") {
+        // if the structure has been successfully set to something
+        Cache.addStructure(structure);
+        Utils.drawStructure(structure);
+      }
+
+      Utils.resetMouseFlags();
+
+      function modifyLabel() {
+        var structure = angular.copy(Cache.getCurrentStructure()),
+          atom = Shapes.isWithin(structure, mouseFlags.downMouseCoords).foundAtom,
+          currentLabel = atom.getLabel();
+        if (Flags.selected === "label") {
+          atom.setLabel(angular.copy(scope.chosenLabel));
+        } else if (Flags.selected === "customLabel") {
+          atom.setLabel(new Label(scope.customLabel, 0, "lr"));
+        }
+
+        if (typeof currentLabel !== "undefined") {
+          if (currentLabel.getMode() === "lr") {
+            atom.getLabel().setMode("rl");
+          } else if (currentLabel.getMode() === "rl") {
+            atom.getLabel().setMode("lr");
+          }
+        }
+
+        return structure;
+      }
+
+      function drawOnEmptySpace() {
+        var structure, structureAux, newCoords, bond;
+        if (Utils.isContentEmpty()) {
+          if (mouseFlags.movedOnEmpty) {
+            structure = angular.copy(scope.chosenStructure.getStructure(mouseCoords, mouseFlags.downMouseCoords));
+            structure.setOrigin(mouseFlags.downMouseCoords);
+          } else {
+            structure = angular.copy(scope.chosenStructure.getDefault());
+            structure.setOrigin(mouseCoords);
+          }
+        } else {
+          if (mouseFlags.movedOnEmpty) {
+            structureAux = angular.copy(scope.chosenStructure.getStructure(mouseCoords, mouseFlags.downMouseCoords));
+          } else {
+            structureAux = angular.copy(scope.chosenStructure.getDefault());
+          }
+          structure = angular.copy(Cache.getCurrentStructure());
+          newCoords = Utils.subtractCoords(mouseCoords, structure.getOrigin());
+          structureAux
+            .getStructure(0)
+            .setCoords(newCoords);
+          if (typeof structureAux.getDecorate("aromatic") !== "undefined") {
+            bond = Const.getBondByDirection(structureAux.getName()).bond;
+            structure.addDecorate("aromatic", [mouseCoords[0] + bond[0], mouseCoords[1] + bond[1]]);
+          }
+          structure.addToStructures(structureAux.getStructure(0));
+        }
+        return structure;
+      }
+    }
+
+    service.doOnMouseMove = function ($event, scope, element) {
+      var mouseCoords = Utils.innerCoords(element, $event), structure;
+
+      if (Flags.selected !== "structure") {
+        // if no structure has been chosen
+        // then do nothing
+        return undefined;
+      }
+
+      if (mouseFlags.downOnAtom) {
+        // if an atom has been chosen
+        structure = modifyOnNonEmptyContent();
+        Utils.drawStructure(structure);
+      } else if (mouseFlags.mouseDown) {
+        // if mouse button is pushed outside of the structure
+        structure = modifyOnEmptyContent();
+        Utils.drawStructure(structure);
+      }
+
+      function modifyOnNonEmptyContent() {
+        var frozenCurrentStructure = Cache.getCurrentStructure();
+        return Utils.modifyStructure(
+          frozenCurrentStructure,
+          scope.chosenStructure,
+          mouseCoords,
+          mouseFlags.downAtomCoords,
+          true
+        );
+      }
+
+      function modifyOnEmptyContent() {
+        var struct = angular.copy(scope.chosenStructure.getStructure(mouseCoords, mouseFlags.downMouseCoords));
+        struct.setOrigin(mouseFlags.downMouseCoords);
+        mouseFlags.movedOnEmpty = true;
+        return struct;
+      }
+    }
+
+		return service;
+	}
+})();
+
+(function () {
+	"use strict";
+	angular.module("mmAngularDrawChem")
 		.factory("DrawChemDirectiveUtils", DrawChemDirectiveUtils);
-	
+
 	DrawChemDirectiveUtils.$inject = [
 		"DrawChemShapes",
-		"DrawChemCache"
+		"DrawChemCache",
+		"DrawChemDirectiveFlags"
 	];
-	
-	function DrawChemDirectiveUtils(DrawChemShapes, DrawChemCache) {
-		
+
+	function DrawChemDirectiveUtils(Shapes, Cache, Flags) {
+
 		var service = {};
-		
+
 		/**
 		 * Draws the specified structure.
 		 * @params {Structure} structure - a Structure object to draw.
 		 */
 		service.drawStructure = function (structure) {
-			var drawn = "";					
-			drawn = DrawChemShapes.draw(structure, "cmpd1");
-			DrawChemCache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
+			var drawn = "";
+			drawn = Shapes.draw(structure, "cmpd1");
+			Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
 		};
-		
+
 		/**
 		 * Sets all boolean values to false and non-boolean to undefined.
 		 * @params {Object} flags - an object containing flags (as mix of boolean and non-boolean values)
 		 */
-		service.resetMouseFlags = function (flags) {
-			angular.forEach(flags, function (value, key) {
+		service.resetMouseFlags = function () {
+			angular.forEach(Flags.mouseFlags, function (value, key) {
 				if (typeof value === "boolean") {
-					flags[key] = false;
+					Flags.mouseFlags[key] = false;
 				} else {
-					flags[key] = undefined;
+					Flags.mouseFlags[key] = undefined;
 				}
 			});
 		};
-		
+
 		/**
 		 * Subtracts the coords in the second array from the first array.
 		 * @param {Number[]} arr1 - first array
 		 * @param {Number[]} arr2 - second array
-		 * @returns {Number[]}		 
+		 * @returns {Number[]}
 		 */
 		service.subtractCoords = function (arr1, arr2) {
 			return [arr1[0] - arr2[0], arr1[1] - arr2[1]];
 		}
-		
+
 		/**
 		 * Checks if the canvas is empty.
 		 * @returns {Boolean}
 		 */
 		service.isContentEmpty = function isContentEmpty() {
-			return DrawChemCache.getCurrentStructure() === null;
+			return Cache.getCurrentStructure() === null;
 		};
-		
+
 		/**
 		 * Calculates the coordinates of the mouse pointer during an event.
 		 * Takes into account the margin of the enclosing div.
@@ -932,13 +1266,13 @@
 		 */
 		service.innerCoords = function (element, $event) {
 			var content = element.find("dc-content")[0],
-				coords = [								
+				coords = [
 					parseFloat(($event.clientX - content.getBoundingClientRect().left - 2).toFixed(2)),
 					parseFloat(($event.clientY - content.getBoundingClientRect().top - 2).toFixed(2))
 				];
 			return coords;
 		};
-		
+
 		/**
 		 * Modifies the specified structure by adding a new structure to it.
 		 * @params {Structure} structure - a Structure object to modify,
@@ -947,7 +1281,7 @@
 		 * @returns {Structure}
 		 */
 		service.modifyStructure = function (structure, chosenStructure, mouseCoords, downAtomCoords, mouseDownAndMove) {
-			return DrawChemShapes.modifyStructure(
+			return Shapes.modifyStructure(
 				angular.copy(structure),
 				angular.copy(chosenStructure),
 				mouseCoords,
@@ -955,10 +1289,11 @@
 				mouseDownAndMove
 			);
 		};
-		
+
 		return service;
 	}
 })();
+
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
@@ -966,36 +1301,21 @@
 
 	DrawChemEditor.$inject = [
 		"DrawChemPaths",
-		"DrawChemShapes",
-		"DrawChemStructures",
 		"DrawChemCache",
-		"DrawChemConst",
-		"DrawChemDirectiveActions",
-		"DrawChemDirectiveUtils",
-		"DCLabel",
-		"$sce",
-		"$compile"
+		"DrawChemDirectiveMouseActions",
+		"DrawChemDirectiveMenuButtons",
+		"$sce"
 	];
 
-	function DrawChemEditor(DrawChemPaths, DrawChemShapes, DrawChemStructures, DrawChemCache, DrawChemConst, DrawChemDirActions, DrawChemDirUtils, DCLabel, $sce, $compile) {
+	function DrawChemEditor(Paths, Cache, MouseActions, MenuButtons, $sce) {
 		return {
-			templateUrl: DrawChemPaths.getPath() + "draw-chem-editor.html",
+			templateUrl: Paths.getPath() + "draw-chem-editor.html",
 			scope: {
 				showEditor: "="
 			},
 			link: function (scope, element, attrs) {
 
-				var Label = DCLabel.Label,
-					mouseFlags = {
-						downAtomCoords: undefined,
-						downMouseCoords: undefined,
-						movedOnEmpty: false,
-						mouseDown: false,
-						downOnAtom: false
-					},
-					selected;
-
-				scope.pathToSvg = DrawChemPaths.getPathToSvg();
+				scope.pathToSvg = Paths.getPathToSvg();
 
 				// Sets width and height of the dialog box based on corresponding attributes.
 				scope.dialogStyle = {};
@@ -1009,81 +1329,24 @@
 
 				// Returns content which will be bound in the dialog box.
 				scope.content = function () {
-					var svg = $sce.trustAsHtml(DrawChemCache.getCurrentSvg());
+					var svg = $sce.trustAsHtml(Cache.getCurrentSvg());
 					return svg;
 				};
 
-				// stores all actions, e.g. clear, transfer, undo.
-				scope.actions = [];
-
-				angular.forEach(DrawChemDirActions.actions, function (action) {
-					if (action.name === "close") {
-						scope[action.name] = action.action;
-					}
-					scope.actions.push({
-						name: action.name,
-						action: action.action
-					});
-				});
-
-				// Stores the chosen label.
-				scope.chosenLabel;
-
-				scope.customLabel = "";
-
-				scope.chooseCustomLabel = function () {
-					selected = "customLabel";
-				}
-
-				// stores all labels
-				scope.labels = [];
-
-				angular.forEach(DrawChemStructures.labels, function (label) {
-					scope.labels.push({
-						name: label.getLabelName(),
-						choose: function () {
-							scope.chosenLabel = label;
-							selected = "label";
-						}
-					})
-				});
-
-				// Stores the chosen structure.
-				scope.chosenStructure;
-
-				// Stores all predefined structures.
-				scope.customButtons = [];
-
-				/**
-				 * Adds all predefined shapes to the scope.
-				 */
-				angular.forEach(DrawChemStructures.custom, function (custom) {
-					var customInstance = custom();
-					scope.customButtons.push({
-						name: customInstance.name,
-						choose: function () {
-							scope.chosenStructure = customInstance;
-							selected = "structure";
-						}
-					});
-				});
+				MenuButtons.addButtonsToScope(scope);
 
 				/***** Mouse Events *****/
 				scope.doOnMouseDown = function ($event) {
 					try {
-						doOnMouseDown($event);
+						MouseActions.doOnMouseDown($event, scope, element);
 					} catch (e) {
 						console.log(e);
 					}
 				}
 
-				scope.lolo = function () {
-					console.log("lolo");
-				}
-
 				scope.doOnMouseUp = function ($event) {
 					try {
-						doOnMouseUp($event);
+						MouseActions.doOnMouseUp($event, scope, element);
 					} catch (e) {
 						console.log(e);
 					}
@@ -1091,160 +1354,36 @@
 
 				scope.doOnMouseMove = function ($event) {
 					try {
-						doOnMouseMove($event);
+						MouseActions.doOnMouseMove($event, scope, element);
 					} catch (e) {
 						console.log(e);
 					}
 				}
-
-				function doOnMouseDown($event) {
-					if ($event.which !== 1) {
-						// if button other than left was pushed
-						return undefined;
-					}
-
-					mouseFlags.downMouseCoords = DrawChemDirUtils.innerCoords(element, $event);
-					mouseFlags.mouseDown = true;
-					if (!DrawChemDirUtils.isContentEmpty()) {
-						// if content is not empty
-						checkIfDownOnAtom();
-					}
-
-					function checkIfDownOnAtom() {
-						mouseFlags.downAtomCoords =
-							DrawChemShapes.isWithin(
-								DrawChemCache.getCurrentStructure(),
-								mouseFlags.downMouseCoords
-							).absPos;
-						if (typeof mouseFlags.downAtomCoords !== "undefined") {
-							// set flag if atom was selected
-							mouseFlags.downOnAtom = true;
-						}
-					}
-				}
-
-				function doOnMouseUp($event) {
-					var structure, mouseCoords = DrawChemDirUtils.innerCoords(element, $event);
-
-					if ($event.which !== 1) {
-						// if button other than left was released
-						return undefined;
-					}
-
-					if (mouseFlags.downOnAtom && (selected === "label" || selected === "customLabel")) {
-						// if atom has been selected and 'change label' button is selected
-						structure = modifyLabel();
-					} else if (mouseFlags.downOnAtom && selected === "structure") {
-						// if atom has been selected and any of the structure buttons has been clicked
-						structure = DrawChemDirUtils.modifyStructure(
-							DrawChemCache.getCurrentStructure(),
-							scope.chosenStructure,
-							mouseCoords,
-							mouseFlags.downAtomCoords
-						);
-					} else {
-						structure = drawOnEmptySpace();
-					}
-
-					if (typeof structure !== "undefined") {
-						// if the structure has been successfully set to something
-						DrawChemCache.addStructure(structure);
-						DrawChemDirUtils.drawStructure(structure);
-					}
-
-					DrawChemDirUtils.resetMouseFlags(mouseFlags);
-
-					function modifyLabel() {
-						var structure = angular.copy(DrawChemCache.getCurrentStructure()),
-							atom = DrawChemShapes.isWithin(structure, mouseFlags.downMouseCoords).foundAtom,
-							currentLabel = atom.getLabel();
-						if (selected === "label") {
-							atom.setLabel(angular.copy(scope.chosenLabel));
-						} else if (selected === "customLabel") {
-							atom.setLabel(new Label(scope.customLabel, 0, "lr"));
-						}
-
-						if (typeof currentLabel !== "undefined") {
-							if (currentLabel.getMode() === "lr") {
-								atom.getLabel().setMode("rl");
-							} else if (currentLabel.getMode() === "rl") {
-								atom.getLabel().setMode("lr");
-							}
-						}
-
-						return structure;
-					}
-
-					function drawOnEmptySpace() {
-						var structure, structureAux, newCoords, bond;
-						if (DrawChemDirUtils.isContentEmpty()) {
-							if (mouseFlags.movedOnEmpty) {
-								structure = angular.copy(scope.chosenStructure.getStructure(mouseCoords, mouseFlags.downMouseCoords));
-								structure.setOrigin(mouseFlags.downMouseCoords);
-							} else {
-								structure = angular.copy(scope.chosenStructure.getDefault());
-								structure.setOrigin(mouseCoords);
-							}
-						} else {
-							if (mouseFlags.movedOnEmpty) {
-								structureAux = angular.copy(scope.chosenStructure.getStructure(mouseCoords, mouseFlags.downMouseCoords));
-							} else {
-								structureAux = angular.copy(scope.chosenStructure.getDefault());
-							}
-							structure = angular.copy(DrawChemCache.getCurrentStructure());
-							newCoords = DrawChemDirUtils.subtractCoords(mouseCoords, structure.getOrigin());
-							structureAux
-								.getStructure(0)
-								.setCoords(newCoords);
-							if (typeof structureAux.getDecorate("aromatic") !== "undefined") {
-								bond = DrawChemConst.getBondByDirection(structureAux.getName()).bond;
-								structure.addDecorate("aromatic", [mouseCoords[0] + bond[0], mouseCoords[1] + bond[1]]);
-							}
-							structure.addToStructures(structureAux.getStructure(0));
-						}
-						return structure;
-					}
-				}
-
-				function doOnMouseMove($event) {
-					var mouseCoords = DrawChemDirUtils.innerCoords(element, $event), structure;
-
-					if (selected !== "structure") {
-						// if no structure has been chosen
-						// then do nothing
-						return undefined;
-					}
-
-					if (mouseFlags.downOnAtom) {
-						// if an atom has been chosen
-						structure = modifyOnNonEmptyContent();
-						DrawChemDirUtils.drawStructure(structure);
-					} else if (mouseFlags.mouseDown) {
-						// if mouse button is pushed outside of the structure
-						structure = modifyOnEmptyContent();
-						DrawChemDirUtils.drawStructure(structure);
-					}
-
-					function modifyOnNonEmptyContent() {
-						var frozenCurrentStructure = DrawChemCache.getCurrentStructure();
-						return DrawChemDirUtils.modifyStructure(
-							frozenCurrentStructure,
-							scope.chosenStructure,
-							mouseCoords,
-							mouseFlags.downAtomCoords,
-							true
-						);
-					}
-
-					function modifyOnEmptyContent() {
-						var struct = angular.copy(scope.chosenStructure.getStructure(mouseCoords, mouseFlags.downMouseCoords));
-						struct.setOrigin(mouseFlags.downMouseCoords);
-						mouseFlags.movedOnEmpty = true;
-						return struct;
-					}
-				}
 			}
 		}
+	}
+})();
+
+(function () {
+	"use strict";
+	angular.module("mmAngularDrawChem")
+		.factory("DrawChemArrows", DrawChemArrows);
+
+	DrawChemArrows.$inject = [];
+
+	function DrawChemArrows() {
+
+		var service = {};
+
+    service.todo = function () {
+
+    };
+
+		service.arrows = [
+			{ name: "dummy", edit: service.todo },
+		];
+
+		return service;
 	}
 })();
 
@@ -1429,6 +1568,29 @@
 		return service;		
 	}		
 })();
+(function () {
+	"use strict";
+	angular.module("mmAngularDrawChem")
+		.factory("DrawChemGeomShapes", DrawChemGeomShapes);
+
+	DrawChemGeomShapes.$inject = [];
+
+	function DrawChemGeomShapes() {
+
+		var service = {};
+
+    service.todo = function () {
+
+    };
+
+		service.shapes = [
+			{ name: "dummy", edit: service.todo },
+		];
+
+		return service;
+	}
+})();
+
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
@@ -1905,13 +2067,13 @@
 
 	DrawChemShapes.$inject = ["DCShape", "DrawChemConst", "DCAtom", "DCBond"];
 
-	function DrawChemShapes(DCShape, DrawChemConst, DCAtom, DCBond) {
+	function DrawChemShapes(DCShape, Const, DCAtom, DCBond) {
 
 		var service = {},
-			BOND_LENGTH = DrawChemConst.BOND_LENGTH,
-			BONDS_AUX = DrawChemConst.BONDS_AUX,
-			BETWEEN_DBL_BONDS = DrawChemConst.BETWEEN_DBL_BONDS,
-			BETWEEN_TRP_BONDS = DrawChemConst.BETWEEN_TRP_BONDS,
+			BOND_LENGTH = Const.BOND_LENGTH,
+			BONDS_AUX = Const.BONDS_AUX,
+			BETWEEN_DBL_BONDS = Const.BETWEEN_DBL_BONDS,
+			BETWEEN_TRP_BONDS = Const.BETWEEN_TRP_BONDS,
 			Atom = DCAtom.Atom;
 
 		/**
@@ -1981,7 +2143,7 @@
 				function updateDecorate(modStr, abs) {
 					var coords;
 					if (modStr !== null && typeof modStr.getDecorate("aromatic") !== "undefined") {
-						coords = DrawChemConst.getBondByDirection(modStr.getName()).bond;
+						coords = Const.getBondByDirection(modStr.getName()).bond;
 						return base.addDecorate("aromatic", [coords[0] + abs[0], coords[1] + abs[1]]);
 					}
 				}
@@ -2144,6 +2306,8 @@
 				labels.forEach(function (label) {
 					aux = drawDodecagon(label) +
 						"<text dy='0.2125em' x='" + label.labelX + "' " +
+						"atomx='" + label.atomX + "'" +
+						"atomy='" + label.atomY + "'" +
 						"y='" + label.labelY + "' " +
 						"text-anchor='" + genTextAnchor(label.mode) + "' " +
 						">" + genLabel(label.label) + "</text>";
@@ -2154,7 +2318,7 @@
 					input.getDecorate("aromatic").forEach(function (coords) {
 						aux = "<circle class='arom' cx='" + coords[0] +
 						"' cy='" + coords[1] +
-						"' r='" + DrawChemConst.AROMATIC_R +
+						"' r='" + Const.AROMATIC_R +
 						"' ></circle>";
 						full += aux;
 						mini += aux;
@@ -2196,8 +2360,7 @@
 				function drawDodecagon(label) {
 					var i, x, y, aux, factor,result = [];
 
-					aux = label.length === 1 ? 0.58: 0.5;
-					factor = aux * label.height / BOND_LENGTH;
+					factor = 0.5 * label.height / BOND_LENGTH;
 					for (i = 0; i < BONDS_AUX.length; i += 1) {
 						x = BONDS_AUX[i].bond[0];
 						y = BONDS_AUX[i].bond[1];
@@ -2215,7 +2378,7 @@
 		  function parseInput(input) {
 				var output = [], circles = [], labels = [], i, absPos, len,
 					origin = input.getOrigin(), minMax = { minX: origin[0], maxX: origin[0], minY: origin[1], maxY: origin[1] },
-					circR = DrawChemConst.CIRC_R;
+					circR = Const.CIRC_R;
 
 				for (i = 0; i < input.getStructure().length; i += 1) {
 					absPos = addCoordsNoPrec(origin, input.getStructure(i).getCoords());
@@ -2352,7 +2515,7 @@
 							atomX: absPos[0],
 							atomY: absPos[1],
 							labelX: absPos[0] + labelNameObj.correctX,
-							labelY: absPos[1] + 0.013 * Math.abs(absPos[1]),
+							labelY: absPos[1] + 0.09 * BOND_LENGTH,
 							width: DCShape.fontSize * labelNameObj.name.length,
 							height: DCShape.fontSize
 						};
@@ -2489,7 +2652,7 @@
 		 * @returns {Boolean}
 		 */
 		function insideCircle(center, point) {
-			var tolerance = DrawChemConst.CIRC_R;
+			var tolerance = Const.CIRC_R;
 			return Math.abs(center[0] - point[0]) < tolerance && Math.abs(center[1] - point[1]) < tolerance;
 		}
 
