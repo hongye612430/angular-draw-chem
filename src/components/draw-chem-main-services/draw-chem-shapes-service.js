@@ -244,6 +244,8 @@
 				labels.forEach(function (label) {
 					aux = drawDodecagon(label) +
 						"<text dy='0.2125em' x='" + label.labelX + "' " +
+						"atomx='" + label.atomX + "'" +
+						"atomy='" + label.atomY + "'" +
 						"y='" + label.labelY + "' " +
 						"text-anchor='" + genTextAnchor(label.mode) + "' " +
 						">" + genLabel(label.label) + "</text>";

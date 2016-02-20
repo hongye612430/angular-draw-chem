@@ -1098,15 +1098,20 @@
 				}
 
 				function doOnMouseDown($event) {
+					var elem;
 					if ($event.which !== 1) {
 						// if button other than left was pushed
 						return undefined;
 					}
-
 					mouseFlags.downMouseCoords = DrawChemDirUtils.innerCoords(element, $event);
 					mouseFlags.mouseDown = true;
 					if (!DrawChemDirUtils.isContentEmpty()) {
 						// if content is not empty
+						if ($event.target.nodeName === "tspan") {
+						  console.log("down on tspan");
+							elem = angular.element($event.target).parent();
+							mouseFlags.downMouseCoords = [elem.attr("atomx"), elem.attr("atomy")];
+						}
 						checkIfDownOnAtom();
 					}
 
@@ -2144,6 +2149,8 @@
 				labels.forEach(function (label) {
 					aux = drawDodecagon(label) +
 						"<text dy='0.2125em' x='" + label.labelX + "' " +
+						"atomx='" + label.atomX + "'" +
+						"atomy='" + label.atomY + "'" +
 						"y='" + label.labelY + "' " +
 						"text-anchor='" + genTextAnchor(label.mode) + "' " +
 						">" + genLabel(label.label) + "</text>";
