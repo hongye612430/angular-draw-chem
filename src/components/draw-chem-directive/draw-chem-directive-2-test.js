@@ -287,7 +287,7 @@ describe("DrawChemEditor directive tests - part2", function () {
 						"<circle class=\"atom\" cx=\"132.64\" cy=\"98\" r=\"2.4\"></circle>" +
 						"<circle class=\"atom\" cx=\"98\" cy=\"78\" r=\"2.4\"></circle>" +
 						"<polygon class=\"text\" points=\"134.97 89.31 139.00 91.64 141.33 95.67 141.33 100.33 139.00 104.36 134.97 106.69 130.31 106.69 126.28 104.36 123.95 100.33 123.95 95.67 126.28 91.64 130.31 89.31 \"></polygon>" +
-						"<text dy=\"0.2125em\" x=\"129.14\" atomx=\"132.64\" atomy=\"98\" y=\"99.274\" text-anchor=\"start\">" +
+						"<text dy=\"0.2125em\" x=\"129.14\" atomx=\"132.64\" atomy=\"98\" y=\"99.8\" text-anchor=\"start\">" +
 							"<tspan>O</tspan><tspan>H</tspan></text>" +
 						"<circle class=\"arom\" cx=\"98\" cy=\"118\" r=\"9\"></circle>" +
 					"</g>" +

@@ -298,8 +298,7 @@
 				function drawDodecagon(label) {
 					var i, x, y, aux, factor,result = [];
 
-					aux = label.length === 1 ? 0.58: 0.5;
-					factor = aux * label.height / BOND_LENGTH;
+					factor = 0.5 * label.height / BOND_LENGTH;
 					for (i = 0; i < BONDS_AUX.length; i += 1) {
 						x = BONDS_AUX[i].bond[0];
 						y = BONDS_AUX[i].bond[1];
@@ -454,7 +453,7 @@
 							atomX: absPos[0],
 							atomY: absPos[1],
 							labelX: absPos[0] + labelNameObj.correctX,
-							labelY: absPos[1] + 0.013 * Math.abs(absPos[1]),
+							labelY: absPos[1] + 0.09 * BOND_LENGTH,
 							width: DCShape.fontSize * labelNameObj.name.length,
 							height: DCShape.fontSize
 						};
