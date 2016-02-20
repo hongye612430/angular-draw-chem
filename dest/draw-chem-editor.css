@@ -35,6 +35,9 @@
 .dc-menuitem {
   cursor: default; }
 
+.dc-input-right {
+  float: right; }
+
 .dc-struct {
   width: 30px;
   height: 30px; }

@@ -5,13 +5,13 @@
 
 	DrawChemShapes.$inject = ["DCShape", "DrawChemConst", "DCAtom", "DCBond"];
 
-	function DrawChemShapes(DCShape, DrawChemConst, DCAtom, DCBond) {
+	function DrawChemShapes(DCShape, Const, DCAtom, DCBond) {
 
 		var service = {},
-			BOND_LENGTH = DrawChemConst.BOND_LENGTH,
-			BONDS_AUX = DrawChemConst.BONDS_AUX,
-			BETWEEN_DBL_BONDS = DrawChemConst.BETWEEN_DBL_BONDS,
-			BETWEEN_TRP_BONDS = DrawChemConst.BETWEEN_TRP_BONDS,
+			BOND_LENGTH = Const.BOND_LENGTH,
+			BONDS_AUX = Const.BONDS_AUX,
+			BETWEEN_DBL_BONDS = Const.BETWEEN_DBL_BONDS,
+			BETWEEN_TRP_BONDS = Const.BETWEEN_TRP_BONDS,
 			Atom = DCAtom.Atom;
 
 		/**
@@ -81,7 +81,7 @@
 				function updateDecorate(modStr, abs) {
 					var coords;
 					if (modStr !== null && typeof modStr.getDecorate("aromatic") !== "undefined") {
-						coords = DrawChemConst.getBondByDirection(modStr.getName()).bond;
+						coords = Const.getBondByDirection(modStr.getName()).bond;
 						return base.addDecorate("aromatic", [coords[0] + abs[0], coords[1] + abs[1]]);
 					}
 				}
@@ -256,7 +256,7 @@
 					input.getDecorate("aromatic").forEach(function (coords) {
 						aux = "<circle class='arom' cx='" + coords[0] +
 						"' cy='" + coords[1] +
-						"' r='" + DrawChemConst.AROMATIC_R +
+						"' r='" + Const.AROMATIC_R +
 						"' ></circle>";
 						full += aux;
 						mini += aux;
@@ -316,7 +316,7 @@
 		  function parseInput(input) {
 				var output = [], circles = [], labels = [], i, absPos, len,
 					origin = input.getOrigin(), minMax = { minX: origin[0], maxX: origin[0], minY: origin[1], maxY: origin[1] },
-					circR = DrawChemConst.CIRC_R;
+					circR = Const.CIRC_R;
 
 				for (i = 0; i < input.getStructure().length; i += 1) {
 					absPos = addCoordsNoPrec(origin, input.getStructure(i).getCoords());
@@ -590,7 +590,7 @@
 		 * @returns {Boolean}
 		 */
 		function insideCircle(center, point) {
-			var tolerance = DrawChemConst.CIRC_R;
+			var tolerance = Const.CIRC_R;
 			return Math.abs(center[0] - point[0]) < tolerance && Math.abs(center[1] - point[1]) < tolerance;
 		}
 
