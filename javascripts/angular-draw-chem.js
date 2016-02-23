@@ -6,6 +6,115 @@
 		}]);
 })();
 (function () {
+  "use strict";
+  angular.module("mmAngularDrawChem")
+    .directive("dcShortcuts", DcShortcuts);
+
+  DcShortcuts.$inject = [
+    "DCShortcutsStorage",
+    "$rootScope"
+  ];
+
+  function DcShortcuts(Shortcuts, $rootScope) {
+    return {
+      restrict: "A",
+      link: function (scope, element) {
+
+        element.bind("keydown", function ($event) {
+          if ($event.ctrlKey) {
+            $event.preventDefault();
+            Shortcuts.down($event.keyCode);
+          }
+        });
+
+        element.bind("keyup", function ($event) {
+          Shortcuts.released($event.keyCode);
+          $rootScope.$digest();
+        });
+      }
+    }
+  }
+})();
+
+(function () {
+	"use strict";
+	angular.module("mmAngularDrawChem")
+		.factory("DCShortcutsStorage", DCShortcutsStorage);
+
+	DCShortcutsStorage.$inject = ["DrawChemDirectiveActions"];
+
+	function DCShortcutsStorage(Actions) {
+
+		var keysPredefined = {
+        17: "ctrl",
+        69: "e",
+        70: "f",
+        81: "q",
+        84: "t",
+        90: "z"
+      },
+      keyCombination = {},
+      service = {};
+
+    registerShortcut("ctrl+z", Actions.undo);
+    registerShortcut("ctrl+e", Actions.clear);
+    registerShortcut("ctrl+f", Actions.forward);
+    registerShortcut("ctrl+t", Actions.transfer);
+    registerShortcut("ctrl+q", Actions.close);
+
+    service.down = function (keyCode) {
+      setKey(keyCode, true);
+    }
+
+    service.released = function (keyCode) {
+      fireEvent();
+      setKey(keyCode, false);
+    }
+
+		return service;
+
+    function registerShortcut(combination, cb) {
+      var i,
+        keys = combination.split("+"),
+        currentCombination = { cb: cb, keys: {} };
+
+      for (i = 0; i < keys.length; i += 1) {
+        currentCombination.keys[keys[i]] = false;
+      }
+      keyCombination[combination] = currentCombination;
+    }
+
+    function setKey(keyCode, type) {
+      var keyInvolved = keysPredefined[keyCode];
+      if (typeof keyInvolved !== "undefined") {
+        angular.forEach(keyCombination, function (value, key) {
+          if (typeof value.keys[keyInvolved] !== "undefined") {
+            value.keys[keyInvolved] = type;
+          }
+        });
+      }
+    }
+
+    function fireEvent(keyCode) {
+      angular.forEach(keyCombination, function (value, key) {
+        if(allWereDown(value.keys)) {
+          console.log(value.keys)
+          value.cb();
+        }
+      });
+
+      function allWereDown(keys) {
+        var result = typeof keys !== "undefined";
+        angular.forEach(keys, function (value, key) {
+          if (!value) { result = false; }
+        });
+        return result;
+      }
+    }
+	}
+})();
+
+(function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
 		.factory("DCAtom", DCAtom);
@@ -780,18 +889,18 @@
 	"use strict";
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemDirectiveActions", DrawChemDirectiveActions);
-	
+
 	DrawChemDirectiveActions.$inject = [
 		"DrawChemCache",
 		"DrawChem",
 		"DrawChemShapes",
 		"DrawChemDirectiveUtils"
 	];
-	
+
 	function DrawChemDirectiveActions(DrawChemCache, DrawChem, DrawChemShapes, DrawChemDirUtils) {
-		
+
 		var service = {};
-		
+
 		/**
 		 * Reverses the recent 'undo' action.
 		 */
@@ -803,14 +912,14 @@
 				DrawChemDirUtils.drawStructure(DrawChemCache.getCurrentStructure());
 			}
 		};
-		
+
 		/**
 		 * Closes the editor.
 		 */
 		service.close = function () {
 			DrawChem.closeEditor();
 		};
-		
+
 		/**
 		 * Clears the content.
 		 */
@@ -818,7 +927,7 @@
 			DrawChemCache.addStructure(null);
 			DrawChemCache.setCurrentSvg("");
 		};
-		
+
 		/**
 		 * Undoes a change associated with the recent 'mouseup' event.
 		 */
@@ -828,16 +937,16 @@
 				DrawChem.clearContent();
 			} else {
 				DrawChemDirUtils.drawStructure(DrawChemCache.getCurrentStructure());
-			}				
+			}
 		};
-		
+
 		/**
 		 * Transfers the content.
 		 */
-		service.transfer = function () {					
+		service.transfer = function () {
 			var structure = DrawChemCache.getCurrentStructure(),
 				shape, attr, content = "";
-			
+
 			if (structure !== null) {
 				shape = DrawChemShapes.draw(structure, "cmpd1");
 				attr = {
@@ -856,18 +965,19 @@
 			DrawChem.setStructure(structure);
 			DrawChem.transferContent();
 		};
-		
+
 		service.actions = [
-			{ name: "undo", action: service.undo },
-			{ name: "forward", action: service.forward },
-			{ name: "transfer", action: service.transfer },
-			{ name: "clear", action: service.clear },
-			{ name: "close", action: service.close }
+			{ name: "undo", shortcut: "ctrl + z", action: service.undo },
+			{ name: "forward", shortcut: "ctrl + f", action: service.forward },
+			{ name: "transfer", shortcut: "ctrl + t", action: service.transfer },
+			{ name: "clear", shortcut: "ctrl + e", action: service.clear },
+			{ name: "close", shortcut: "ctrl + q", action: service.close }
 		];
-		
+
 		return service;
 	}
 })();
+
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
@@ -944,6 +1054,7 @@
         }
         scope.actions.push({
           name: action.name,
+					shortcut: action.shortcut,
           action: action.action
         });
       });
@@ -1314,7 +1425,6 @@
 				showEditor: "="
 			},
 			link: function (scope, element, attrs) {
-
 				scope.pathToSvg = Paths.getPathToSvg();
 
 				// Sets width and height of the dialog box based on corresponding attributes.
@@ -1342,7 +1452,7 @@
 					} catch (e) {
 						console.log(e);
 					}
-				}
+				};
 
 				scope.doOnMouseUp = function ($event) {
 					try {
@@ -1350,7 +1460,7 @@
 					} catch (e) {
 						console.log(e);
 					}
-				}
+				};
 
 				scope.doOnMouseMove = function ($event) {
 					try {
@@ -1358,7 +1468,7 @@
 					} catch (e) {
 						console.log(e);
 					}
-				}
+				};
 			}
 		}
 	}

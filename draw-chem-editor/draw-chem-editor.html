@@ -15,6 +15,7 @@
 							<li class="dc-menuitem" role="menuitem" ng-repeat="custom in actions">
 								<a class="dc-menuitem-link" ng-click="custom.action()" id="dc-{{custom.name}}">
 									<span class="dc-menuitem-link-text" ng-bind="custom.name"></span>
+									<small class="text-muted" ng-bind="custom.shortcut"></small>
 								</a>
 							</li>
 						</ul>
