@@ -8,9 +8,10 @@
 	function DCShortcutsStorage(Actions) {
 
 		var keysPredefined = {
-        16: "shift",
         17: "ctrl",
-        27: "esc",
+        69: "e",
+        70: "f",
+        81: "q",
         84: "t",
         90: "z"
       },
@@ -18,8 +19,10 @@
       service = {};
 
     registerShortcut("ctrl+z", Actions.undo);
+    registerShortcut("ctrl+e", Actions.clear);
+    registerShortcut("ctrl+f", Actions.forward);
     registerShortcut("ctrl+t", Actions.transfer);
-    registerShortcut("ctrl+esc", Actions.close);
+    registerShortcut("ctrl+q", Actions.close);
 
     service.down = function (keyCode) {
       setKey(keyCode, true);

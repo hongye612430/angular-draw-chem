@@ -2,18 +2,18 @@
 	"use strict";
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemDirectiveActions", DrawChemDirectiveActions);
-	
+
 	DrawChemDirectiveActions.$inject = [
 		"DrawChemCache",
 		"DrawChem",
 		"DrawChemShapes",
 		"DrawChemDirectiveUtils"
 	];
-	
+
 	function DrawChemDirectiveActions(DrawChemCache, DrawChem, DrawChemShapes, DrawChemDirUtils) {
-		
+
 		var service = {};
-		
+
 		/**
 		 * Reverses the recent 'undo' action.
 		 */
@@ -25,14 +25,14 @@
 				DrawChemDirUtils.drawStructure(DrawChemCache.getCurrentStructure());
 			}
 		};
-		
+
 		/**
 		 * Closes the editor.
 		 */
 		service.close = function () {
 			DrawChem.closeEditor();
 		};
-		
+
 		/**
 		 * Clears the content.
 		 */
@@ -40,7 +40,7 @@
 			DrawChemCache.addStructure(null);
 			DrawChemCache.setCurrentSvg("");
 		};
-		
+
 		/**
 		 * Undoes a change associated with the recent 'mouseup' event.
 		 */
@@ -50,16 +50,16 @@
 				DrawChem.clearContent();
 			} else {
 				DrawChemDirUtils.drawStructure(DrawChemCache.getCurrentStructure());
-			}				
+			}
 		};
-		
+
 		/**
 		 * Transfers the content.
 		 */
-		service.transfer = function () {					
+		service.transfer = function () {
 			var structure = DrawChemCache.getCurrentStructure(),
 				shape, attr, content = "";
-			
+
 			if (structure !== null) {
 				shape = DrawChemShapes.draw(structure, "cmpd1");
 				attr = {
@@ -78,15 +78,15 @@
 			DrawChem.setStructure(structure);
 			DrawChem.transferContent();
 		};
-		
+
 		service.actions = [
-			{ name: "undo", action: service.undo },
-			{ name: "forward", action: service.forward },
-			{ name: "transfer", action: service.transfer },
-			{ name: "clear", action: service.clear },
-			{ name: "close", action: service.close }
+			{ name: "undo", shortcut: "ctrl + z", action: service.undo },
+			{ name: "forward", shortcut: "ctrl + f", action: service.forward },
+			{ name: "transfer", shortcut: "ctrl + t", action: service.transfer },
+			{ name: "clear", shortcut: "ctrl + e", action: service.clear },
+			{ name: "close", shortcut: "ctrl + q", action: service.close }
 		];
-		
+
 		return service;
 	}
 })();

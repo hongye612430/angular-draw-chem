@@ -26,6 +26,7 @@
         }
         scope.actions.push({
           name: action.name,
+					shortcut: action.shortcut,
           action: action.action
         });
       });

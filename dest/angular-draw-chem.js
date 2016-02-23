@@ -12,24 +12,24 @@
 
   DcShortcuts.$inject = [
     "DCShortcutsStorage",
-    "$document"
+    "$rootScope"
   ];
 
-  function DcShortcuts(Shortcuts, $document) {
+  function DcShortcuts(Shortcuts, $rootScope) {
     return {
       restrict: "A",
       link: function (scope, element) {
 
         element.bind("keydown", function ($event) {
           if ($event.ctrlKey) {
-            Shortcuts.down($event.keyCode);
             $event.preventDefault();
+            Shortcuts.down($event.keyCode);
           }
-
         });
 
         element.bind("keyup", function ($event) {
           Shortcuts.released($event.keyCode);
+          $rootScope.$digest();
         });
       }
     }
@@ -46,9 +46,10 @@
 	function DCShortcutsStorage(Actions) {
 
 		var keysPredefined = {
-        16: "shift",
         17: "ctrl",
-        27: "esc",
+        69: "e",
+        70: "f",
+        81: "q",
         84: "t",
         90: "z"
       },
@@ -56,8 +57,10 @@
       service = {};
 
     registerShortcut("ctrl+z", Actions.undo);
+    registerShortcut("ctrl+e", Actions.clear);
+    registerShortcut("ctrl+f", Actions.forward);
     registerShortcut("ctrl+t", Actions.transfer);
-    registerShortcut("ctrl+esc", Actions.close);
+    registerShortcut("ctrl+q", Actions.close);
 
     service.down = function (keyCode) {
       setKey(keyCode, true);
@@ -886,18 +889,18 @@
 	"use strict";
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemDirectiveActions", DrawChemDirectiveActions);
-	
+
 	DrawChemDirectiveActions.$inject = [
 		"DrawChemCache",
 		"DrawChem",
 		"DrawChemShapes",
 		"DrawChemDirectiveUtils"
 	];
-	
+
 	function DrawChemDirectiveActions(DrawChemCache, DrawChem, DrawChemShapes, DrawChemDirUtils) {
-		
+
 		var service = {};
-		
+
 		/**
 		 * Reverses the recent 'undo' action.
 		 */
@@ -909,14 +912,14 @@
 				DrawChemDirUtils.drawStructure(DrawChemCache.getCurrentStructure());
 			}
 		};
-		
+
 		/**
 		 * Closes the editor.
 		 */
 		service.close = function () {
 			DrawChem.closeEditor();
 		};
-		
+
 		/**
 		 * Clears the content.
 		 */
@@ -924,7 +927,7 @@
 			DrawChemCache.addStructure(null);
 			DrawChemCache.setCurrentSvg("");
 		};
-		
+
 		/**
 		 * Undoes a change associated with the recent 'mouseup' event.
 		 */
@@ -934,16 +937,16 @@
 				DrawChem.clearContent();
 			} else {
 				DrawChemDirUtils.drawStructure(DrawChemCache.getCurrentStructure());
-			}				
+			}
 		};
-		
+
 		/**
 		 * Transfers the content.
 		 */
-		service.transfer = function () {					
+		service.transfer = function () {
 			var structure = DrawChemCache.getCurrentStructure(),
 				shape, attr, content = "";
-			
+
 			if (structure !== null) {
 				shape = DrawChemShapes.draw(structure, "cmpd1");
 				attr = {
@@ -962,18 +965,19 @@
 			DrawChem.setStructure(structure);
 			DrawChem.transferContent();
 		};
-		
+
 		service.actions = [
-			{ name: "undo", action: service.undo },
-			{ name: "forward", action: service.forward },
-			{ name: "transfer", action: service.transfer },
-			{ name: "clear", action: service.clear },
-			{ name: "close", action: service.close }
+			{ name: "undo", shortcut: "ctrl + z", action: service.undo },
+			{ name: "forward", shortcut: "ctrl + f", action: service.forward },
+			{ name: "transfer", shortcut: "ctrl + t", action: service.transfer },
+			{ name: "clear", shortcut: "ctrl + e", action: service.clear },
+			{ name: "close", shortcut: "ctrl + q", action: service.close }
 		];
-		
+
 		return service;
 	}
 })();
+
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
@@ -1050,6 +1054,7 @@
         }
         scope.actions.push({
           name: action.name,
+					shortcut: action.shortcut,
           action: action.action
         });
       });

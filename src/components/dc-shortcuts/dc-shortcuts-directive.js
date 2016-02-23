@@ -5,24 +5,24 @@
 
   DcShortcuts.$inject = [
     "DCShortcutsStorage",
-    "$document"
+    "$rootScope"
   ];
 
-  function DcShortcuts(Shortcuts, $document) {
+  function DcShortcuts(Shortcuts, $rootScope) {
     return {
       restrict: "A",
       link: function (scope, element) {
 
         element.bind("keydown", function ($event) {
           if ($event.ctrlKey) {
-            Shortcuts.down($event.keyCode);
             $event.preventDefault();
+            Shortcuts.down($event.keyCode);
           }
-
         });
 
         element.bind("keyup", function ($event) {
           Shortcuts.released($event.keyCode);
+          $rootScope.$digest();
         });
       }
     }
