@@ -18,7 +18,6 @@
 				showEditor: "="
 			},
 			link: function (scope, element, attrs) {
-
 				scope.pathToSvg = Paths.getPathToSvg();
 
 				// Sets width and height of the dialog box based on corresponding attributes.
@@ -46,7 +45,7 @@
 					} catch (e) {
 						console.log(e);
 					}
-				}
+				};
 
 				scope.doOnMouseUp = function ($event) {
 					try {
@@ -54,7 +53,7 @@
 					} catch (e) {
 						console.log(e);
 					}
-				}
+				};
 
 				scope.doOnMouseMove = function ($event) {
 					try {
@@ -62,7 +61,7 @@
 					} catch (e) {
 						console.log(e);
 					}
-				}
+				};
 			}
 		}
 	}
