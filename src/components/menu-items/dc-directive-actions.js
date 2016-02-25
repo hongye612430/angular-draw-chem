@@ -79,13 +79,28 @@
 			DrawChem.transferContent();
 		};
 
-		service.actions = [
-			{ name: "undo", shortcut: "ctrl + z", action: service.undo },
-			{ name: "forward", shortcut: "ctrl + f", action: service.forward },
-			{ name: "transfer", shortcut: "ctrl + t", action: service.transfer },
-			{ name: "clear", shortcut: "ctrl + e", action: service.clear },
-			{ name: "close", shortcut: "ctrl + q", action: service.close }
-		];
+		service.actions = {
+				"undo": {
+					shortcut: "ctrl + z",
+					action: service.undo
+				},
+				"forward": {
+					shortcut: "ctrl + f",
+					action: service.forward
+				},
+				"transfer": {
+					shortcut: "ctrl + t",
+					action: service.transfer
+				},
+				"clear": {
+					shortcut: "ctrl + e",
+					action: service.clear
+				},
+				"close": {
+					shortcut: "ctrl + q",
+					action: service.close
+				}
+		};
 
 		return service;
 	}

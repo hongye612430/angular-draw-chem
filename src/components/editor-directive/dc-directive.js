@@ -36,6 +36,7 @@
 					return svg;
 				};
 
+				// Adds all buttons to the scope
 				MenuButtons.addButtonsToScope(scope);
 
 				/***** Mouse Events *****/

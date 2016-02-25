@@ -13,9 +13,11 @@
 
     };
 
-		service.edits = [
-			{ name: "dummy", edit: service.todo },
-		];
+		service.edits = {
+			"dummy": {
+				action: service.todo
+			}
+		};
 
 		return service;
 	}

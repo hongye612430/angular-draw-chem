@@ -13,9 +13,11 @@
 
     };
 
-		service.arrows = [
-			{ name: "dummy", edit: service.todo },
-		];
+		service.arrows = {
+			"dummy": {
+				action: service.todo
+			},
+		};
 
 		return service;
 	}

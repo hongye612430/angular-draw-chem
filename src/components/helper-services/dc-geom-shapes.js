@@ -13,9 +13,11 @@
 
     };
 
-		service.shapes = [
-			{ name: "dummy", edit: service.todo },
-		];
+		service.shapes = {
+			"dummy": {
+				action: service.todo
+			}
+		};
 
 		return service;
 	}

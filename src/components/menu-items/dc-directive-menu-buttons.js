@@ -17,49 +17,14 @@
 		var service = {};
 
     service.addButtonsToScope = function (scope) {
-      // stores all actions, e.g. clear, transfer, undo.
-      scope.actions = [];
 
-      angular.forEach(Actions.actions, function (action) {
-        if (action.name === "close") {
-          scope[action.name] = action.action;
-        }
-        scope.actions.push({
-          name: action.name,
-					shortcut: action.shortcut,
-          action: action.action
-        });
-      });
-
-      // stores all edit actions, e.g. resize, select, align.
-      scope.edits = [];
-
-      angular.forEach(Edits.edits, function (edit) {
-        scope.edits.push({
-          name: edit.name,
-          edit: edit.edit
-        });
-      });
-
-      // stores all arrows
-      scope.arrows = [];
-
-      angular.forEach(Arrows.arrows, function (arrow) {
-        scope.arrows.push({
-          name: arrow.name,
-          arrow: arrow.arrow
-        });
-      });
-
-      // stores all shapes
-      scope.shapes = [];
-
-      angular.forEach(Shapes.shapes, function (shape) {
-        scope.shapes.push({
-          name: shape.name,
-          shape: shape.shape
-        });
-      });
+      // stores all actions related to Actions, Edit, Arrows, and Shapes menu items
+      scope.menu = {
+				"Actions": Actions.actions,
+				"Edit": Edits.edits,
+				"Arrows": Arrows.arrows,
+				"Shapes": Shapes.shapes
+			};
 
       // Stores the chosen label.
       scope.chosenLabel;
