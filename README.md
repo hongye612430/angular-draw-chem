@@ -1,19 +1,19 @@
-### aim of the project
-======
+aim of the project
+===
 The aim of this project is to create a light-weight, AngularJS-based editor for producing structural formulas.
 The editor is from the beginning designed to be svg-based, thus enabling the drawing of good-looking, scalable structures.
 
-### examples
-======
+examples
+===
 Visit AngularDrawChem [page](http://mmmalik.github.io/angular-draw-chem/)!
 
-### possible usage
-======
+possible usage
+===
 1. By adding `mmAngularDrawChem` module to your project, making it available for the users of your website, so they can interact with it and make their own structures.
 2. You can use it on the project website, make structures that you need, grab the `svg` and place it within your `html`.
 
-### components
-======
+components
+===
 The project consists of the following components:
 
 #### editor directive
@@ -51,6 +51,6 @@ The project consists of the following components:
 5. `DCStructureCluster` `factory` - defines `StructureCluster` class, which enables grouping of multiple `Structure` objects; used for predefined structures,
 6. `DCLabel` `factory` - defines `Label` class, which encapsulates data about a label
 
-### license
-======
+license
+===
 MIT
