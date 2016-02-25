@@ -1078,7 +1078,7 @@
 		"DrawChemPaths",
 		"DrawChemCache",
 		"DrawChemDirectiveMouseActions",
-		"DrawChemDirectiveMenuButtons",
+		"DrawChemMenuButtons",
 		"$sce"
 	];
 
@@ -1321,6 +1321,273 @@
 	}		
 })();
 (function () {
+  "use strict";
+  angular.module("mmAngularDrawChem")
+    .directive("dcShortcuts", DcShortcuts);
+
+  DcShortcuts.$inject = [
+    "DCShortcutsStorage",
+    "$rootScope"
+  ];
+
+  function DcShortcuts(Shortcuts, $rootScope) {
+    return {
+      restrict: "A",
+      link: function (scope, element) {
+
+        element.bind("keydown", function ($event) {
+          if ($event.ctrlKey) {
+            $event.preventDefault();
+            Shortcuts.down($event.keyCode);
+          }
+        });
+
+        element.bind("keyup", function ($event) {
+          Shortcuts.released($event.keyCode);
+          $rootScope.$digest();
+        });
+      }
+    }
+  }
+})();
+
+(function () {
+	"use strict";
+	angular.module("mmAngularDrawChem")
+		.factory("DCShortcutsStorage", DCShortcutsStorage);
+
+	DCShortcutsStorage.$inject = ["DrawChemDirectiveActions"];
+
+	function DCShortcutsStorage(Actions) {
+
+		var keysPredefined = {
+        17: "ctrl",
+        69: "e",
+        70: "f",
+        81: "q",
+        84: "t",
+        90: "z"
+      },
+      keyCombination = {},
+      service = {};
+
+    registerShortcut("ctrl+z", Actions.undo);
+    registerShortcut("ctrl+e", Actions.clear);
+    registerShortcut("ctrl+f", Actions.forward);
+    registerShortcut("ctrl+t", Actions.transfer);
+    registerShortcut("ctrl+q", Actions.close);
+
+    service.down = function (keyCode) {
+      setKey(keyCode, true);
+    }
+
+    service.released = function (keyCode) {
+      fireEvent();
+      setKey(keyCode, false);
+    }
+
+		return service;
+
+    function registerShortcut(combination, cb) {
+      var i,
+        keys = combination.split("+"),
+        currentCombination = { cb: cb, keys: {} };
+
+      for (i = 0; i < keys.length; i += 1) {
+        currentCombination.keys[keys[i]] = false;
+      }
+      keyCombination[combination] = currentCombination;
+    }
+
+    function setKey(keyCode, type) {
+      var keyInvolved = keysPredefined[keyCode];
+      if (typeof keyInvolved !== "undefined") {
+        angular.forEach(keyCombination, function (value, key) {
+          if (typeof value.keys[keyInvolved] !== "undefined") {
+            value.keys[keyInvolved] = type;
+          }
+        });
+      }
+    }
+
+    function fireEvent(keyCode) {
+      angular.forEach(keyCombination, function (value, key) {
+        if(allWereDown(value.keys)) {
+          console.log(value.keys)
+          value.cb();
+        }
+      });
+
+      function allWereDown(keys) {
+        var result = typeof keys !== "undefined";
+        angular.forEach(keys, function (value, key) {
+          if (!value) { result = false; }
+        });
+        return result;
+      }
+    }
+	}
+})();
+
+(function () {
+	"use strict";
+	angular.module("mmAngularDrawChem")
+		.factory("DrawChemActions", DrawChemActions);
+
+	DrawChemActions.$inject = [
+		"DrawChemCache",
+		"DrawChem",
+		"DrawChemShapes",
+		"DrawChemDirectiveUtils"
+	];
+
+	function DrawChemActions(DrawChemCache, DrawChem, DrawChemShapes, DrawChemDirUtils) {
+
+		var service = {};
+
+		/**
+		 * Reverses the recent 'undo' action.
+		 */
+		service.forward = function () {
+			DrawChemCache.moveRightInStructures();
+			if (DrawChemCache.getCurrentStructure() === null) {
+				DrawChem.clearContent();
+			} else {
+				DrawChemDirUtils.drawStructure(DrawChemCache.getCurrentStructure());
+			}
+		};
+
+		/**
+		 * Closes the editor.
+		 */
+		service.close = function () {
+			DrawChem.closeEditor();
+		};
+
+		/**
+		 * Clears the content.
+		 */
+		service.clear = function () {
+			DrawChemCache.addStructure(null);
+			DrawChemCache.setCurrentSvg("");
+		};
+
+		/**
+		 * Undoes a change associated with the recent 'mouseup' event.
+		 */
+		service.undo = function () {
+			DrawChemCache.moveLeftInStructures();
+			if (DrawChemCache.getCurrentStructure() === null) {
+				DrawChem.clearContent();
+			} else {
+				DrawChemDirUtils.drawStructure(DrawChemCache.getCurrentStructure());
+			}
+		};
+
+		/**
+		 * Transfers the content.
+		 */
+		service.transfer = function () {
+			var structure = DrawChemCache.getCurrentStructure(),
+				shape, attr, content = "";
+
+			if (structure !== null) {
+				shape = DrawChemShapes.draw(structure, "cmpd1");
+				attr = {
+					"viewBox": (shape.minMax.minX - 20).toFixed(2) + " " +
+						(shape.minMax.minY - 20).toFixed(2) + " " +
+						(shape.minMax.maxX - shape.minMax.minX + 40).toFixed(2) + " " +
+						(shape.minMax.maxY - shape.minMax.minY + 40).toFixed(2),
+					"height": "100%",
+					"width": "100%",
+					"xmlns": "http://www.w3.org/2000/svg",
+					"xmlns:xlink": "http://www.w3.org/1999/xlink"
+				};
+				content = shape.wrap("mini", "g").wrap("mini", "svg", attr).elementMini;
+			}
+			DrawChem.setContent(content);
+			DrawChem.setStructure(structure);
+			DrawChem.transferContent();
+		};
+
+		service.actions = {
+				"undo": {
+					shortcut: "ctrl + z",
+					action: service.undo
+				},
+				"forward": {
+					shortcut: "ctrl + f",
+					action: service.forward
+				},
+				"transfer": {
+					shortcut: "ctrl + t",
+					action: service.transfer
+				},
+				"clear": {
+					shortcut: "ctrl + e",
+					action: service.clear
+				},
+				"close": {
+					shortcut: "ctrl + q",
+					action: service.close
+				}
+		};
+
+		return service;
+	}
+})();
+
+(function () {
+	"use strict";
+	angular.module("mmAngularDrawChem")
+		.factory("DrawChemArrows", DrawChemArrows);
+
+	DrawChemArrows.$inject = [];
+
+	function DrawChemArrows() {
+
+		var service = {};
+
+    service.todo = function () {
+
+    };
+
+		service.arrows = {
+			"dummy": {
+				action: service.todo
+			},
+		};
+
+		return service;
+	}
+})();
+
+(function () {
+	"use strict";
+	angular.module("mmAngularDrawChem")
+		.factory("DrawChemEdits", DrawChemEdits);
+
+	DrawChemEdits.$inject = [];
+
+	function DrawChemEdits() {
+
+		var service = {};
+
+    service.todo = function () {
+
+    };
+
+		service.edits = {
+			"dummy": {
+				action: service.todo
+			}
+		};
+
+		return service;
+	}
+})();
+
+(function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemGeomShapes", DrawChemGeomShapes);
@@ -1340,6 +1607,82 @@
 				action: service.todo
 			}
 		};
+
+		return service;
+	}
+})();
+
+(function () {
+	"use strict";
+	angular.module("mmAngularDrawChem")
+		.factory("DrawChemMenuButtons", DrawChemMenuButtons);
+
+	DrawChemMenuButtons.$inject = [
+    "DrawChemStructures",
+    "DrawChemActions",
+		"DrawChemEdits",
+    "DrawChemArrows",
+    "DrawChemGeomShapes",
+    "DrawChemDirectiveFlags"
+  ];
+
+	function DrawChemMenuButtons(Structures, Actions, Edits, Arrows, Shapes, Flags) {
+
+		var service = {};
+
+    service.addButtonsToScope = function (scope) {
+
+      // stores all actions related to Actions, Edit, Arrows, and Shapes menu items
+      scope.menu = {
+				"Actions": Actions.actions,
+				"Edit": Edits.edits,
+				"Arrows": Arrows.arrows,
+				"Shapes": Shapes.shapes
+			};
+
+      // Stores the chosen label.
+      scope.chosenLabel;
+
+      // Stores the custom label.
+      scope.customLabel = "";
+
+      scope.chooseCustomLabel = function () {
+        Flags.selected = "customLabel";
+      }
+
+      // stores all labels
+      scope.labels = [];
+
+      angular.forEach(Structures.labels, function (label) {
+        scope.labels.push({
+          name: label.getLabelName(),
+          choose: function () {
+            scope.chosenLabel = label;
+            Flags.selected = "label";
+          }
+        })
+      });
+
+      // Stores the chosen structure.
+      scope.chosenStructure;
+
+      // Stores all predefined structures.
+      scope.predefinedStructures = [];
+
+      /**
+       * Adds all predefined shapes to the scope.
+       */
+      angular.forEach(Structures.custom, function (custom) {
+        var customInstance = custom();
+        scope.predefinedStructures.push({
+          name: customInstance.name,
+          choose: function () {
+            scope.chosenStructure = customInstance;
+            Flags.selected = "structure";
+          }
+        });
+      });
+    }
 
 		return service;
 	}
@@ -1613,349 +1956,6 @@
 		}
 	}
 })();
-(function () {
-  "use strict";
-  angular.module("mmAngularDrawChem")
-    .directive("dcShortcuts", DcShortcuts);
-
-  DcShortcuts.$inject = [
-    "DCShortcutsStorage",
-    "$rootScope"
-  ];
-
-  function DcShortcuts(Shortcuts, $rootScope) {
-    return {
-      restrict: "A",
-      link: function (scope, element) {
-
-        element.bind("keydown", function ($event) {
-          if ($event.ctrlKey) {
-            $event.preventDefault();
-            Shortcuts.down($event.keyCode);
-          }
-        });
-
-        element.bind("keyup", function ($event) {
-          Shortcuts.released($event.keyCode);
-          $rootScope.$digest();
-        });
-      }
-    }
-  }
-})();
-
-(function () {
-	"use strict";
-	angular.module("mmAngularDrawChem")
-		.factory("DCShortcutsStorage", DCShortcutsStorage);
-
-	DCShortcutsStorage.$inject = ["DrawChemDirectiveActions"];
-
-	function DCShortcutsStorage(Actions) {
-
-		var keysPredefined = {
-        17: "ctrl",
-        69: "e",
-        70: "f",
-        81: "q",
-        84: "t",
-        90: "z"
-      },
-      keyCombination = {},
-      service = {};
-
-    registerShortcut("ctrl+z", Actions.undo);
-    registerShortcut("ctrl+e", Actions.clear);
-    registerShortcut("ctrl+f", Actions.forward);
-    registerShortcut("ctrl+t", Actions.transfer);
-    registerShortcut("ctrl+q", Actions.close);
-
-    service.down = function (keyCode) {
-      setKey(keyCode, true);
-    }
-
-    service.released = function (keyCode) {
-      fireEvent();
-      setKey(keyCode, false);
-    }
-
-		return service;
-
-    function registerShortcut(combination, cb) {
-      var i,
-        keys = combination.split("+"),
-        currentCombination = { cb: cb, keys: {} };
-
-      for (i = 0; i < keys.length; i += 1) {
-        currentCombination.keys[keys[i]] = false;
-      }
-      keyCombination[combination] = currentCombination;
-    }
-
-    function setKey(keyCode, type) {
-      var keyInvolved = keysPredefined[keyCode];
-      if (typeof keyInvolved !== "undefined") {
-        angular.forEach(keyCombination, function (value, key) {
-          if (typeof value.keys[keyInvolved] !== "undefined") {
-            value.keys[keyInvolved] = type;
-          }
-        });
-      }
-    }
-
-    function fireEvent(keyCode) {
-      angular.forEach(keyCombination, function (value, key) {
-        if(allWereDown(value.keys)) {
-          console.log(value.keys)
-          value.cb();
-        }
-      });
-
-      function allWereDown(keys) {
-        var result = typeof keys !== "undefined";
-        angular.forEach(keys, function (value, key) {
-          if (!value) { result = false; }
-        });
-        return result;
-      }
-    }
-	}
-})();
-
-(function () {
-	"use strict";
-	angular.module("mmAngularDrawChem")
-		.factory("DrawChemArrows", DrawChemArrows);
-
-	DrawChemArrows.$inject = [];
-
-	function DrawChemArrows() {
-
-		var service = {};
-
-    service.todo = function () {
-
-    };
-
-		service.arrows = {
-			"dummy": {
-				action: service.todo
-			},
-		};
-
-		return service;
-	}
-})();
-
-(function () {
-	"use strict";
-	angular.module("mmAngularDrawChem")
-		.factory("DrawChemDirectiveActions", DrawChemDirectiveActions);
-
-	DrawChemDirectiveActions.$inject = [
-		"DrawChemCache",
-		"DrawChem",
-		"DrawChemShapes",
-		"DrawChemDirectiveUtils"
-	];
-
-	function DrawChemDirectiveActions(DrawChemCache, DrawChem, DrawChemShapes, DrawChemDirUtils) {
-
-		var service = {};
-
-		/**
-		 * Reverses the recent 'undo' action.
-		 */
-		service.forward = function () {
-			DrawChemCache.moveRightInStructures();
-			if (DrawChemCache.getCurrentStructure() === null) {
-				DrawChem.clearContent();
-			} else {
-				DrawChemDirUtils.drawStructure(DrawChemCache.getCurrentStructure());
-			}
-		};
-
-		/**
-		 * Closes the editor.
-		 */
-		service.close = function () {
-			DrawChem.closeEditor();
-		};
-
-		/**
-		 * Clears the content.
-		 */
-		service.clear = function () {
-			DrawChemCache.addStructure(null);
-			DrawChemCache.setCurrentSvg("");
-		};
-
-		/**
-		 * Undoes a change associated with the recent 'mouseup' event.
-		 */
-		service.undo = function () {
-			DrawChemCache.moveLeftInStructures();
-			if (DrawChemCache.getCurrentStructure() === null) {
-				DrawChem.clearContent();
-			} else {
-				DrawChemDirUtils.drawStructure(DrawChemCache.getCurrentStructure());
-			}
-		};
-
-		/**
-		 * Transfers the content.
-		 */
-		service.transfer = function () {
-			var structure = DrawChemCache.getCurrentStructure(),
-				shape, attr, content = "";
-
-			if (structure !== null) {
-				shape = DrawChemShapes.draw(structure, "cmpd1");
-				attr = {
-					"viewBox": (shape.minMax.minX - 20).toFixed(2) + " " +
-						(shape.minMax.minY - 20).toFixed(2) + " " +
-						(shape.minMax.maxX - shape.minMax.minX + 40).toFixed(2) + " " +
-						(shape.minMax.maxY - shape.minMax.minY + 40).toFixed(2),
-					"height": "100%",
-					"width": "100%",
-					"xmlns": "http://www.w3.org/2000/svg",
-					"xmlns:xlink": "http://www.w3.org/1999/xlink"
-				};
-				content = shape.wrap("mini", "g").wrap("mini", "svg", attr).elementMini;
-			}
-			DrawChem.setContent(content);
-			DrawChem.setStructure(structure);
-			DrawChem.transferContent();
-		};
-
-		service.actions = {
-				"undo": {
-					shortcut: "ctrl + z",
-					action: service.undo
-				},
-				"forward": {
-					shortcut: "ctrl + f",
-					action: service.forward
-				},
-				"transfer": {
-					shortcut: "ctrl + t",
-					action: service.transfer
-				},
-				"clear": {
-					shortcut: "ctrl + e",
-					action: service.clear
-				},
-				"close": {
-					shortcut: "ctrl + q",
-					action: service.close
-				}
-		};
-
-		return service;
-	}
-})();
-
-(function () {
-	"use strict";
-	angular.module("mmAngularDrawChem")
-		.factory("DrawChemDirectiveEdits", DrawChemDirectiveEdits);
-
-	DrawChemDirectiveEdits.$inject = [];
-
-	function DrawChemDirectiveEdits() {
-
-		var service = {};
-
-    service.todo = function () {
-
-    };
-
-		service.edits = {
-			"dummy": {
-				action: service.todo
-			}
-		};
-
-		return service;
-	}
-})();
-
-(function () {
-	"use strict";
-	angular.module("mmAngularDrawChem")
-		.factory("DrawChemDirectiveMenuButtons", DrawChemDirectiveMenuButtons);
-
-	DrawChemDirectiveMenuButtons.$inject = [
-    "DrawChemStructures",
-    "DrawChemDirectiveActions",
-		"DrawChemDirectiveEdits",
-    "DrawChemArrows",
-    "DrawChemGeomShapes",
-    "DrawChemDirectiveFlags"
-  ];
-
-	function DrawChemDirectiveMenuButtons(Structures, Actions, Edits, Arrows, Shapes, Flags) {
-
-		var service = {};
-
-    service.addButtonsToScope = function (scope) {
-
-      // stores all actions related to Actions, Edit, Arrows, and Shapes menu items
-      scope.menu = {
-				"Actions": Actions.actions,
-				"Edit": Edits.edits,
-				"Arrows": Arrows.arrows,
-				"Shapes": Shapes.shapes
-			};
-
-      // Stores the chosen label.
-      scope.chosenLabel;
-
-      // Stores the custom label.
-      scope.customLabel = "";
-
-      scope.chooseCustomLabel = function () {
-        Flags.selected = "customLabel";
-      }
-
-      // stores all labels
-      scope.labels = [];
-
-      angular.forEach(Structures.labels, function (label) {
-        scope.labels.push({
-          name: label.getLabelName(),
-          choose: function () {
-            scope.chosenLabel = label;
-            Flags.selected = "label";
-          }
-        })
-      });
-
-      // Stores the chosen structure.
-      scope.chosenStructure;
-
-      // Stores all predefined structures.
-      scope.predefinedStructures = [];
-
-      /**
-       * Adds all predefined shapes to the scope.
-       */
-      angular.forEach(Structures.custom, function (custom) {
-        var customInstance = custom();
-        scope.predefinedStructures.push({
-          name: customInstance.name,
-          choose: function () {
-            scope.chosenStructure = customInstance;
-            Flags.selected = "structure";
-          }
-        });
-      });
-    }
-
-		return service;
-	}
-})();
-
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")

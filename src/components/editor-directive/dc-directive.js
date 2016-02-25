@@ -7,7 +7,7 @@
 		"DrawChemPaths",
 		"DrawChemCache",
 		"DrawChemDirectiveMouseActions",
-		"DrawChemDirectiveMenuButtons",
+		"DrawChemMenuButtons",
 		"$sce"
 	];
 

@@ -1,18 +1,18 @@
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
-		.factory("DrawChemDirectiveMenuButtons", DrawChemDirectiveMenuButtons);
+		.factory("DrawChemMenuButtons", DrawChemMenuButtons);
 
-	DrawChemDirectiveMenuButtons.$inject = [
+	DrawChemMenuButtons.$inject = [
     "DrawChemStructures",
-    "DrawChemDirectiveActions",
-		"DrawChemDirectiveEdits",
+    "DrawChemActions",
+		"DrawChemEdits",
     "DrawChemArrows",
     "DrawChemGeomShapes",
     "DrawChemDirectiveFlags"
   ];
 
-	function DrawChemDirectiveMenuButtons(Structures, Actions, Edits, Arrows, Shapes, Flags) {
+	function DrawChemMenuButtons(Structures, Actions, Edits, Arrows, Shapes, Flags) {
 
 		var service = {};
 

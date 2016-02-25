@@ -1,11 +1,11 @@
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
-		.factory("DrawChemDirectiveEdits", DrawChemDirectiveEdits);
+		.factory("DrawChemEdits", DrawChemEdits);
 
-	DrawChemDirectiveEdits.$inject = [];
+	DrawChemEdits.$inject = [];
 
-	function DrawChemDirectiveEdits() {
+	function DrawChemEdits() {
 
 		var service = {};
 

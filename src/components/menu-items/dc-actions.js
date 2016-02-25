@@ -1,16 +1,16 @@
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
-		.factory("DrawChemDirectiveActions", DrawChemDirectiveActions);
+		.factory("DrawChemActions", DrawChemActions);
 
-	DrawChemDirectiveActions.$inject = [
+	DrawChemActions.$inject = [
 		"DrawChemCache",
 		"DrawChem",
 		"DrawChemShapes",
 		"DrawChemDirectiveUtils"
 	];
 
-	function DrawChemDirectiveActions(DrawChemCache, DrawChem, DrawChemShapes, DrawChemDirUtils) {
+	function DrawChemActions(DrawChemCache, DrawChem, DrawChemShapes, DrawChemDirUtils) {
 
 		var service = {};
 
