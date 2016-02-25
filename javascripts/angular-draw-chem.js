@@ -1356,7 +1356,7 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DCShortcutsStorage", DCShortcutsStorage);
 
-	DCShortcutsStorage.$inject = ["DrawChemDirectiveActions"];
+	DCShortcutsStorage.$inject = ["DrawChemActions"];
 
 	function DCShortcutsStorage(Actions) {
 
@@ -1413,7 +1413,6 @@
     function fireEvent(keyCode) {
       angular.forEach(keyCombination, function (value, key) {
         if(allWereDown(value.keys)) {
-          console.log(value.keys)
           value.cb();
         }
       });
