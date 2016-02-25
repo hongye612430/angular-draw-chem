@@ -26,6 +26,10 @@ The project consists of the following components:
 1. `DrawChemConstants` `factory` - contains constant values, such as bond length, bond width, etc.,
 2. `DrawChemCache` `factory` - caching service for Structure objects.
 
+#### keyboard shortcuts
+1. `dcShortcuts` `directive` - the directive binding `keydown` and `keyup` event listeners,
+2. `DCShortcutsStorage` `factory` - service that enables registering of new keyboard shortcuts; it also keeps track of keys pushed and released, in order to fire a suitable event.
+
 #### paths provider
 1. `DrawChemPaths` `provider` - enables to configure paths to some static resources related to the editor (`templateUrl` for `drawChemEditor` directive, svgs used in the UI).
 
@@ -34,7 +38,7 @@ The project consists of the following components:
 2. `DrawChemEdits` `factory` - contains all actions available under `Edit` menu,
 3. `DrawChemArrows` `factory` - contains all arrows available under `Arrows` menu,
 4. `DrawChemGeomShapes` `factory` - contains all geometrical shapes available under `Shapes` menu,
-5. `DrawChemStructures` `factory` - defines basic structures, such as single bond, basic molecules (benzene, cyclohexane, etc.), and predefined atom labels.
+5. `DrawChemStructures` `factory` - defines basic structures, such as single bond, basic molecules (benzene, cyclohexane, etc.), available under `Structures`, and predefined atom labels (`Labels` menu).
 
 #### classes
 1. `DCShape` `factory` - defines `Shape` class, which encapsulates svg-relevant data,
