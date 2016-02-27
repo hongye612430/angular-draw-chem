@@ -3,44 +3,6 @@ describe("DrawChemShapes service tests", function () {
 
 	var DrawChemShapes, DrawChemStructures, DrawChemConst, Atom, Structure, styleFull;
 
-	styleExpanded = "circle.atom:hover{" +
-			"opacity:0.3;" +
-			"stroke:black;" +
-			"stroke-width:0.8;" +
-		"}" +
-		"text:hover{" +
-			"opacity:0.3;" +
-		"}" +
-		"circle.atom{" +
-			"opacity:0;" +
-		"}";
-	styleBase = "path{" +
-			"stroke:black;" +
-			"stroke-width:0.8;" +
-			"fill:none;" +
-		"}" +
-		"path.wedge{" +
-			"stroke:black;" +
-			"stroke-width:0.8;" +
-			"fill:black;" +
-		"}" +
-		"circle.arom{" +
-			"stroke:black;" +
-			"stroke-width:0.8;" +
-			"fill:none;" +
-		"}" +
-		"text{" +
-			"font-family:Arial;" +
-			"cursor:default;" +
-			"font-size:18px;" +
-		"}" +
-		"tspan.sub{" +
-			"font-size:14px;" +
-		"}" +
-		"polygon.text{" +
-			"fill:white;" +
-		"}";
-
 	beforeEach(inject(function (_DrawChemShapes_, _DrawChemStructures_, _DrawChemConst_, _DCAtom_, _DCStructure_, _DCBond_) {
 		Atom = _DCAtom_.Atom;
 		Bond = _DCBond_.Bond;

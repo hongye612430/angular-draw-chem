@@ -4,25 +4,29 @@
     .directive("dcShortcuts", DcShortcuts);
 
   DcShortcuts.$inject = [
-    "DCShortcutsStorage",
+    "DrawChem",
+    "DrawChemKeyShortcuts",
     "$rootScope"
   ];
 
-  function DcShortcuts(Shortcuts, $rootScope) {
+  function DcShortcuts(DrawChem, Shortcuts, $rootScope) {
     return {
       restrict: "A",
       link: function (scope, element) {
 
         element.bind("keydown", function ($event) {
-          if ($event.ctrlKey) {
+          if ($event.ctrlKey && DrawChem.showEditor()) {
             $event.preventDefault();
             Shortcuts.down($event.keyCode);
           }
         });
 
         element.bind("keyup", function ($event) {
-          Shortcuts.released($event.keyCode);
-          $rootScope.$digest();
+          if ($event.ctrlKey && DrawChem.showEditor()) {
+            $event.preventDefault();
+            Shortcuts.released($event.keyCode);
+            $rootScope.$digest();
+          }
         });
       }
     }

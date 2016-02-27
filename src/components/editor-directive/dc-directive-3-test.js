@@ -1,60 +1,23 @@
 describe("DrawChemEditor directive tests - part2", function () {
 	beforeEach(module("mmAngularDrawChem"));
-	
+
 	var $scope, element, $rootScope, DrawChem, DrawChemShapes, DrawChemStructures, template, styleFull;
-	
-	styleExpanded = "circle.atom:hover{" +
-			"opacity:0.3;" +
-			"stroke:black;" +
-			"stroke-width:0.8;" +
-		"}" +
-		"circle.atom{" +
-			"opacity:0;" +
-		"}";
-	styleBase = "path{" +
-			"stroke:black;" +
-			"stroke-width:0.8;" +
-			"fill:none;" +
-		"}" +
-		"path.wedge{" +
-			"stroke:black;" +
-			"stroke-width:0.8;" +
-			"fill:black;" +
-		"}" +
-		"circle.arom{" +
-			"stroke:black;" +
-			"stroke-width:0.8;" +
-			"fill:none;" +
-		"}" +
-		"text{" +
-			"font-family:Arial;" +
-			"cursor:default;" +
-			"text-anchor:middle;" +
-			"dominant-baseline:middle;" +
-			"font-size:18px;" +
-		"}" +
-		"tspan.sub{" +					
-			"font-size:14px;" +
-		"}" +
-		"polygon.text{" +
-			"fill:white;" +
-		"}";
-	
+
 	beforeEach(inject(function ($httpBackend, $compile, _$rootScope_, _DrawChem_, _DrawChemShapes_, _DrawChemStructures_) {
 		// configure path for static files
 		jasmine.getFixtures().fixturesPath = "base/assets/";
 		// load template of the editor
 		template = readFixtures("draw-chem-editor.html");
-		
+
 		DrawChem = _DrawChem_;
 		DrawChemShapes = _DrawChemShapes_;
 		DrawChemStructures = _DrawChemStructures_;
 		$rootScope = _$rootScope_;
-		
+
 		$scope = $rootScope.$new();
 		element = angular.element(
 			"<div draw-chem-editor></div>"
-		);		
+		);
 		temp = $compile(element)($scope);
 		$httpBackend
 			.expectGET("draw-chem-editor.html")
@@ -62,12 +25,12 @@ describe("DrawChemEditor directive tests - part2", function () {
 		$scope.$digest();
 		$httpBackend.flush();
 	}));
-	
+
 	it("should draw a double bond", function () {
 		var custom = DrawChemStructures.cyclohexane(),
 			add = DrawChemStructures.doubleBond();
 		DrawChem.runEditor("test");
-		expect(DrawChem.showEditor()).toEqual(true);		
+		expect(DrawChem.showEditor()).toEqual(true);
 		temp.find("#dc-" + custom.name).click();
 		expect(element.isolateScope().chosenStructure.getDefault()).toEqual(custom.getDefault());
 		temp.find(".dc-editor-dialog-content").triggerHandler({
@@ -112,12 +75,12 @@ describe("DrawChemEditor directive tests - part2", function () {
 				"</svg>"
 			);
 	});
-	
+
 	it("should draw a triple bond", function () {
 		var custom = DrawChemStructures.cyclohexane(),
 			add = DrawChemStructures.tripleBond();
 		DrawChem.runEditor("test");
-		expect(DrawChem.showEditor()).toEqual(true);		
+		expect(DrawChem.showEditor()).toEqual(true);
 		temp.find("#dc-" + custom.name).click();
 		expect(element.isolateScope().chosenStructure.getDefault()).toEqual(custom.getDefault());
 		temp.find(".dc-editor-dialog-content").triggerHandler({
@@ -162,12 +125,12 @@ describe("DrawChemEditor directive tests - part2", function () {
 				"</svg>"
 			);
 	});
-	
+
 	it("should draw a wedge bond", function () {
 		var custom = DrawChemStructures.cyclohexane(),
 			add = DrawChemStructures.wedgeBond();
 		DrawChem.runEditor("test");
-		expect(DrawChem.showEditor()).toEqual(true);		
+		expect(DrawChem.showEditor()).toEqual(true);
 		temp.find("#dc-" + custom.name).click();
 		expect(element.isolateScope().chosenStructure.getDefault()).toEqual(custom.getDefault());
 		temp.find(".dc-editor-dialog-content").triggerHandler({
@@ -212,12 +175,12 @@ describe("DrawChemEditor directive tests - part2", function () {
 				"</svg>"
 			);
 	});
-	
+
 	it("should draw a dash bond", function () {
 		var custom = DrawChemStructures.cyclohexane(),
 			add = DrawChemStructures.dashBond();
 		DrawChem.runEditor("test");
-		expect(DrawChem.showEditor()).toEqual(true);		
+		expect(DrawChem.showEditor()).toEqual(true);
 		temp.find("#dc-" + custom.name).click();
 		expect(element.isolateScope().chosenStructure.getDefault()).toEqual(custom.getDefault());
 		temp.find(".dc-editor-dialog-content").triggerHandler({

@@ -3,44 +3,6 @@ describe("DrawChemEditor directive tests - part2", function () {
 
 	var $scope, element, $rootScope, DrawChem, DrawChemShapes, DrawChemStructures, template, styleFull;
 
-	styleExpanded = "circle.atom:hover{" +
-			"opacity:0.3;" +
-			"stroke:black;" +
-			"stroke-width:0.8;" +
-		"}" +
-		"text:hover{" +
-			"opacity:0.3;" +
-		"}" +
-		"circle.atom{" +
-			"opacity:0;" +
-		"}";
-	styleBase = "path{" +
-			"stroke:black;" +
-			"stroke-width:0.8;" +
-			"fill:none;" +
-		"}" +
-		"path.wedge{" +
-			"stroke:black;" +
-			"stroke-width:0.8;" +
-			"fill:black;" +
-		"}" +
-		"circle.arom{" +
-			"stroke:black;" +
-			"stroke-width:0.8;" +
-			"fill:none;" +
-		"}" +
-		"text{" +
-			"font-family:Arial;" +
-			"cursor:default;" +
-			"font-size:18px;" +
-		"}" +
-		"tspan.sub{" +
-			"font-size:14px;" +
-		"}" +
-		"polygon.text{" +
-			"fill:white;" +
-		"}";
-
 	beforeEach(inject(function ($httpBackend, $compile, _$rootScope_, _DrawChem_, _DrawChemShapes_, _DrawChemStructures_) {
 		// configure path for static files
 		jasmine.getFixtures().fixturesPath = "base/assets/";

@@ -1,11 +1,11 @@
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
-		.factory("DCShortcutsStorage", DCShortcutsStorage);
+		.factory("DrawChemKeyShortcuts", DrawChemKeyShortcuts);
 
-	DCShortcutsStorage.$inject = ["DrawChemActions"];
+	DrawChemKeyShortcuts.$inject = ["DrawChemActions"];
 
-	function DCShortcutsStorage(Actions) {
+	function DrawChemKeyShortcuts(Actions) {
 
 		var keysPredefined = {
         17: "ctrl",
