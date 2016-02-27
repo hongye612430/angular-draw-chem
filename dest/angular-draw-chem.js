@@ -9,13 +9,13 @@
 	"use strict";
 	angular.module("mmAngularDrawChem")
 		.factory("DCAtom", DCAtom);
-		
+
 	DCAtom.$inject = ["DrawChemConst"];
-	
+
 	function DCAtom(DrawChemConst) {
-		
+
 		var service = {};
-		
+
 		/**
 		* Creates a new Atom.
 		* @class
@@ -25,7 +25,7 @@
 		* @param {String[]} - directions of all bonds coming out or coming in
 		*/
 		function Atom(coords, bonds, info, attachedBonds) {
-			this.coords = coords;	
+			this.coords = coords;
 			this.bonds = bonds;
 			this.info = info;
 			this.attachedBonds = attachedBonds || [];
@@ -33,7 +33,7 @@
 			this.label;
 			this.calculateNext();
 		}
-		
+
 		/**
 		 * Calculates direction of an opposite bond.
 		 * @param {String} direction - direction of a bond
@@ -63,10 +63,10 @@
 				case "NW1":
 					return "SE1";
 				case "NW2":
-					return "SE2";					
+					return "SE2";
 			}
 		}
-		
+
 		/**
 		 * Adds a bond to the attachedBonds array.
 		 * @param {String} bond - direction of a bond
@@ -74,7 +74,7 @@
 		Atom.prototype.attachBond = function (bond) {
 			this.attachedBonds.push(bond);
 		};
-		
+
 		/**
 		 * Calculates direction of the bond that should be attached next.
 		 */
@@ -90,9 +90,9 @@
 			} else {
 				this.next = "";
 			}
-			
+
 			function checkIfLenOne() {
-				var str = this.attachedBonds[0];
+				var str = this.attachedBonds[0].direction;
 				switch (str) {
 					case "N":
 						return "SE1";
@@ -117,10 +117,10 @@
 					case "NW1":
 						return "NE2";
 					case "NW2":
-						return "E";					
+						return "E";
 				}
 			}
-			
+
 			function checkIfLenTwo() {
 				if (contains.call(this, "N", "SE1")) {
 					return "SW2";
@@ -149,23 +149,30 @@
 				} else {
 					check.call(this);
 				}
-				
+
 				function contains(d1, d2) {
-					return (this.attachedBonds[0] === d1 && this.attachedBonds[1] === d2) ||
-						(this.attachedBonds[0] === d2 && this.attachedBonds[1] === d1);
+					return (this.attachedBonds[0].direction === d1 && this.attachedBonds[1].direction === d2) ||
+						(this.attachedBonds[0].direction === d2 && this.attachedBonds[1].direction === d1);
 				}
 			}
-			
+
 			function check() {
-				var i, bonds = DrawChemConst.BONDS;
+				var i, j, bonds = DrawChemConst.BONDS, current, found;
 				for(i = 0; i < bonds.length; i += 1) {
-					if (this.attachedBonds.indexOf(bonds[i].direction) < 0) {
-						return bonds[i].direction;
+					current = bonds[i].direction;
+					found = "";
+					for (j = 0; j < this.attachedBonds.length; j += 1) {
+						if (this.attachedBonds[j].direction === current) {
+							found = current;
+						}
+					}
+					if (found === "") {
+						return current;
 					}
 				}
 			}
 		};
-		
+
 		/**
 		 * Sets coordinates of the atom.
 		 * @param {Number[]} coords - an array with coordinates of the atom
@@ -173,7 +180,7 @@
 		Atom.prototype.setCoords = function (coords) {
 			this.coords = coords;
 		};
-		
+
 		/**
 		 * Gets additional info.
 		 * @returns {String}
@@ -181,7 +188,7 @@
 		Atom.prototype.getInfo = function () {
 			return this.info;
 		}
-		
+
 		/**
 		 * Gets attached bonds.
 		 * @returns {String[]}
@@ -189,7 +196,7 @@
 		Atom.prototype.getAttachedBonds = function () {
 			return this.attachedBonds;
 		}
-		
+
 		/**
 		 * Sets coordinates of a preceding atom.
 		 * @param {Number[]} coords - an array with coordinates of the atom
@@ -197,7 +204,7 @@
 		Atom.prototype.setPreceding = function (coords) {
 			this.preceding = coords;
 		};
-		
+
 		/**
 		 * Gets coordinates of the atom.
 		 * @returns {Number[]|Number}
@@ -211,7 +218,7 @@
 				return this.preceding;
 			}
 		};
-		
+
 		/**
 		 * Gets symbol of the next bond.
 		 * @returns {String}
@@ -219,7 +226,7 @@
 		Atom.prototype.getNext = function () {
 			return this.next;
 		}
-		
+
 		/**
 		 * Sets Label object.
 		 * @param {Label} label - a Label object
@@ -227,7 +234,7 @@
 		Atom.prototype.setLabel = function (label) {
 			this.label = label;
 		}
-		
+
 		/**
 		 * Gets Label object.
 		 * @returns {Label}
@@ -235,7 +242,7 @@
 		Atom.prototype.getLabel = function () {
 			return this.label;
 		}
-		
+
 		/**
 		 * Sets symbol of the next bond.
 		 * @param {String} - symbol of the next bond
@@ -243,7 +250,7 @@
 		Atom.prototype.setNext = function (symbol) {
 			this.next = symbol;
 		}
-		
+
 		/**
 		 * Gets coordinates of the atom.
 		 * @returns {Number[]|Number}
@@ -257,7 +264,7 @@
 				return this.coords;
 			}
 		};
-		
+
 		/**
 		 * Gets an array of all atoms this atom is connected with
 		 * @returns {Atom[]|Atom}
@@ -265,11 +272,11 @@
 		Atom.prototype.getBonds = function (index) {
 			if (arguments.length === 0) {
 				return this.bonds;
-			} else {				
-				return this.bonds[index];	
-			}			
+			} else {
+				return this.bonds[index];
+			}
 		}
-		
+
 		/**
 		 * Adds a new atom to the bonds array.
 		 * @param {Atom} atom - a new Atom object to be added
@@ -277,7 +284,7 @@
 		Atom.prototype.addBond = function (bond) {
 			this.bonds.push(bond);
 		}
-		
+
 		/**
 		 * Adds new bonds.
 		 * @param {Bond[]} bonds - an array of bonds to be added
@@ -287,12 +294,13 @@
 				this.bonds.push(bond);
 			}, this);
 		}
-		
+
 		service.Atom = Atom;
-		
+
 		return service;
 	}
 })();
+
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
@@ -596,33 +604,38 @@
 	"use strict";
 	angular.module("mmAngularDrawChem")
 		.factory("DCStructureCluster", DCStructureCluster);
-		
+
 	DCStructureCluster.$inject = ["DrawChemShapes"];
-	
+
 	function DCStructureCluster(DrawChemShapes) {
-		
+
 		var service = {};
-		
+
 		/**
 		* Creates a new StructureCluster object.
 		* @class
 		* @param {String} name - name of the cluster
 		* @param {Structure[]} defs - array of Structure objects belonging to the cluster
 		*/
-		function StructureCluster(name, defs) {
+		function StructureCluster(name, defs, multiplicity) {
 			this.name = name;
 			this.defs = defs;
+			this.multiplicity = multiplicity;
 			this.defaultStructure = defs[0];
 		}
-		
+
 		StructureCluster.prototype.getDefs = function () {
 			return this.defs;
 		};
-		
+
+		StructureCluster.prototype.getBondsMultiplicity = function () {
+			return this.multiplicty;
+		};
+
 		StructureCluster.prototype.getDefault = function () {
 			return this.defaultStructure;
 		};
-		
+
 		StructureCluster.prototype.getStructure = function (mouseCoords1, mouseCoords2) {
 			var i,
 				direction = DrawChemShapes.getDirection(mouseCoords1, mouseCoords2);
@@ -632,12 +645,13 @@
 				}
 			}
 		};
-		
+
 		service.StructureCluster = StructureCluster;
-		
+
 		return service;
 	}
 })();
+
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
@@ -1745,10 +1759,11 @@
 		 */
 		service.benzene = function () {
 			var cluster,
+				multiplicity = "triple",
 				name = "benzene",
 				defs = generateSixMemberedRings("aromatic");
 
-			cluster = new StructureCluster(name, defs);
+			cluster = new StructureCluster(name, defs, multiplicity);
 			return cluster;
 		};
 
@@ -1758,10 +1773,11 @@
 		 */
 		service.cyclohexane = function () {
 			var cluster,
+				multiplicity = "double",
 				name = "cyclohexane",
 				defs = generateSixMemberedRings();
 
-			cluster = new StructureCluster(name, defs);
+			cluster = new StructureCluster(name, defs, multiplicity);
 
 			return cluster;
 		};
@@ -1772,10 +1788,11 @@
 		 */
 		service.singleBond = function () {
 			var cluster,
+				multiplicity = "single",
 				name = "single-bond",
-				defs = generateSingleBonds("single");
+				defs = generateBonds("single", multiplicity);
 
-			cluster = new StructureCluster(name, defs);
+			cluster = new StructureCluster(name, defs, multiplicity);
 
 			return cluster;
 		};
@@ -1786,10 +1803,11 @@
 		 */
 		service.doubleBond = function () {
 			var cluster,
+				multiplicity = "double",
 				name = "double-bond",
-				defs = generateSingleBonds("double");
+				defs = generateBonds("double", multiplicity);
 
-			cluster = new StructureCluster(name, defs);
+			cluster = new StructureCluster(name, defs, multiplicity);
 
 			return cluster;
 		};
@@ -1800,10 +1818,11 @@
 		 */
 		service.tripleBond = function () {
 			var cluster,
+				multiplicity = "triple",
 				name = "triple-bond",
-				defs = generateSingleBonds("triple");
+				defs = generateBonds("triple", multiplicity);
 
-			cluster = new StructureCluster(name, defs);
+			cluster = new StructureCluster(name, defs, multiplicity);
 
 			return cluster;
 		};
@@ -1814,10 +1833,11 @@
 		 */
 		service.wedgeBond = function () {
 			var cluster,
+				multiplicity = "single",
 				name = "wedge-bond",
-				defs = generateSingleBonds("wedge");
+				defs = generateBonds("wedge", multiplicity);
 
-			cluster = new StructureCluster(name, defs);
+			cluster = new StructureCluster(name, defs, multiplicity);
 
 			return cluster;
 		};
@@ -1828,10 +1848,11 @@
 		 */
 		service.dashBond = function () {
 			var cluster,
+				multiplicity = "single",
 				name = "dash-bond",
-				defs = generateSingleBonds("dash");
+				defs = generateBonds("dash", multiplicity);
 
-			cluster = new StructureCluster(name, defs);
+			cluster = new StructureCluster(name, defs, multiplicity);
 
 			return cluster;
 		};
@@ -1897,7 +1918,7 @@
 				function genAtoms(atom, dirs, depth) {
 					var newDirs = calcDirections(dirs.nextDirection), newAtom;
 					if (depth === 1) {
-						return atom.addBond(new Bond("single", new Atom(dirs.nextBond, [], "")));
+						return atom.addBond(new Bond("single", new Atom(dirs.nextBond, [], "", [newDirs.current[0]])));
 					}
 					newAtom = new Atom(dirs.nextBond, [], "", newDirs.current);
 					atom.addBond(new Bond("single", newAtom));
@@ -1923,7 +1944,7 @@
 
 					return {
 						// attached bonds
-						current: [BONDS[left].direction, BONDS[right].direction],
+						current: [{ direction: BONDS[left].direction, type: "single" }, { direction: BONDS[right].direction, type: "single" }],
 						// next bond
 						nextBond: BONDS[right].bond,
 						// next direction
@@ -1954,7 +1975,7 @@
 		 * @param {String} type - bond type, e.g. 'single', 'double'.
 		 * @returns {Structure[]}
 		 */
-		function generateSingleBonds(type) {
+		function generateBonds(type, multiplicity) {
 			var i, bond, direction, result = [];
 			for (i = 0; i < BONDS.length; i += 1) {
 				bond = BONDS[i].bond;
@@ -1964,8 +1985,8 @@
 						direction,
 						[
 							new Atom([0, 0], [
-								new Bond(type, new Atom(bond, [], "", [Atom.getOppositeDirection(direction)]))
-							], "", [direction])
+								new Bond(type, new Atom(bond, [], "", [{ direction: Atom.getOppositeDirection(direction), type: multiplicity }]))
+							], "", [{ direction: direction, type: multiplicity }])
 						]
 					)
 				);
@@ -2321,7 +2342,7 @@
 						atom = service.isWithin(base, newAbsPos).foundAtom;
 						if (typeof atom !== "undefined") {
 							newName = Atom.getOppositeDirection(modStr.getName());
-							atom.attachBond(newName);
+							atom.attachBond({ direction: newName, type: mod.getBondsMultiplicity() });
 							return atom.calculateNext();
 						}
 					}
@@ -2374,7 +2395,7 @@
 						name = at.getName();
 						toCompare = output || next;
 						if (toCompare === name) {
-							current.attachBond(name);
+							current.attachBond({ direction: name, type: mod.getBondsMultiplicity() });
 							current.calculateNext();
 							return at;
 						}
@@ -2453,8 +2474,8 @@
 				labels.forEach(function (label) {
 					aux = drawDodecagon(label) +
 						"<text dy='0.2125em' x='" + label.labelX + "' " +
-						"atomx='" + label.atomX + "'" +
-						"atomy='" + label.atomY + "'" +
+						"atomx='" + label.atomX + "' " +
+						"atomy='" + label.atomY + "' " +
 						"y='" + label.labelY + "' " +
 						"text-anchor='" + genTextAnchor(label.mode) + "' " +
 						">" + genLabel(label.label) + "</text>";
@@ -2523,17 +2544,18 @@
 			* @returns {Object}
 			*/
 		  function parseInput(input) {
-				var output = [], circles = [], labels = [], i, absPos, len,
+				var output = [], circles = [], labels = [], i, absPos, len, atom,
 					origin = input.getOrigin(), minMax = { minX: origin[0], maxX: origin[0], minY: origin[1], maxY: origin[1] },
 					circR = Const.CIRC_R;
 
 				for (i = 0; i < input.getStructure().length; i += 1) {
-					absPos = addCoordsNoPrec(origin, input.getStructure(i).getCoords());
-					updateLabel(absPos, input.getStructure(i));
+					atom = input.getStructure(i);
+					absPos = addCoordsNoPrec(origin, atom.getCoords());
+					updateLabel(absPos, atom);
 					updateMinMax(absPos);
 					len = output.push(["M", absPos]);
 					circles.push([absPos[0], absPos[1], circR]);
-					connect(absPos, input.getStructure(i).getBonds(), output[len - 1]);
+					connect(absPos, atom.getBonds(), output[len - 1]);
 				}
 
 				return {
@@ -2650,7 +2672,7 @@
 					}
 
 					function genLabelInfo() {
-						var bondsRemained = label.getMaxBonds() - atom.getAttachedBonds().length,
+						var bondsRemained = label.getMaxBonds() - calcBondsIn(atom.getAttachedBonds()) - calcBondsOut(atom.getBonds()),
 							labelNameObj = { name: label.getLabelName() };
 
 						addHydrogens();
@@ -2666,6 +2688,34 @@
 							width: DCShape.fontSize * labelNameObj.name.length,
 							height: DCShape.fontSize
 						};
+
+						function calcBondsIn(bonds) {
+							var i, type, result = 0;
+							for (i = 0; i < bonds.length; i += 1) {
+								type = bonds[i].type;
+								switch (type) {
+									case "single": result += 1; break;
+									case "double": result += 2; break;
+									case "triple": result += 3; break;
+								}
+							}
+							return result;
+						}
+
+						function calcBondsOut(bonds) {
+							var i, type, result = 0;
+							for (i = 0; i < bonds.length; i += 1) {
+								type = bonds[i].getType();
+								switch (type) {
+									case "single": result += 1; break;
+									case "wedge": result += 1; break;
+									case "dash": result += 1; break;
+									case "double": result += 2; break;
+									case "triple": result += 3; break;
+								}
+							}
+							return result;
+						}
 
 						function addHydrogens() {
 							var i, mode = label.getMode(), hydrogens = 0;
@@ -2707,7 +2757,7 @@
 							function isLeft() {
 								var countE = 0;
 								atom.getAttachedBonds().forEach(function (direction) {
-									countE = direction.indexOf("E") < 0 ? countE: countE + 1;
+									countE = direction.direction.indexOf("E") < 0 ? countE: countE + 1;
 								});
 								return countE > 0;
 							}

@@ -20,10 +20,11 @@
 		 */
 		service.benzene = function () {
 			var cluster,
+				multiplicity = "triple",
 				name = "benzene",
 				defs = generateSixMemberedRings("aromatic");
 
-			cluster = new StructureCluster(name, defs);
+			cluster = new StructureCluster(name, defs, multiplicity);
 			return cluster;
 		};
 
@@ -33,10 +34,11 @@
 		 */
 		service.cyclohexane = function () {
 			var cluster,
+				multiplicity = "double",
 				name = "cyclohexane",
 				defs = generateSixMemberedRings();
 
-			cluster = new StructureCluster(name, defs);
+			cluster = new StructureCluster(name, defs, multiplicity);
 
 			return cluster;
 		};
@@ -47,10 +49,11 @@
 		 */
 		service.singleBond = function () {
 			var cluster,
+				multiplicity = "single",
 				name = "single-bond",
-				defs = generateSingleBonds("single");
+				defs = generateBonds("single", multiplicity);
 
-			cluster = new StructureCluster(name, defs);
+			cluster = new StructureCluster(name, defs, multiplicity);
 
 			return cluster;
 		};
@@ -61,10 +64,11 @@
 		 */
 		service.doubleBond = function () {
 			var cluster,
+				multiplicity = "double",
 				name = "double-bond",
-				defs = generateSingleBonds("double");
+				defs = generateBonds("double", multiplicity);
 
-			cluster = new StructureCluster(name, defs);
+			cluster = new StructureCluster(name, defs, multiplicity);
 
 			return cluster;
 		};
@@ -75,10 +79,11 @@
 		 */
 		service.tripleBond = function () {
 			var cluster,
+				multiplicity = "triple",
 				name = "triple-bond",
-				defs = generateSingleBonds("triple");
+				defs = generateBonds("triple", multiplicity);
 
-			cluster = new StructureCluster(name, defs);
+			cluster = new StructureCluster(name, defs, multiplicity);
 
 			return cluster;
 		};
@@ -89,10 +94,11 @@
 		 */
 		service.wedgeBond = function () {
 			var cluster,
+				multiplicity = "single",
 				name = "wedge-bond",
-				defs = generateSingleBonds("wedge");
+				defs = generateBonds("wedge", multiplicity);
 
-			cluster = new StructureCluster(name, defs);
+			cluster = new StructureCluster(name, defs, multiplicity);
 
 			return cluster;
 		};
@@ -103,10 +109,11 @@
 		 */
 		service.dashBond = function () {
 			var cluster,
+				multiplicity = "single",
 				name = "dash-bond",
-				defs = generateSingleBonds("dash");
+				defs = generateBonds("dash", multiplicity);
 
-			cluster = new StructureCluster(name, defs);
+			cluster = new StructureCluster(name, defs, multiplicity);
 
 			return cluster;
 		};
@@ -172,7 +179,7 @@
 				function genAtoms(atom, dirs, depth) {
 					var newDirs = calcDirections(dirs.nextDirection), newAtom;
 					if (depth === 1) {
-						return atom.addBond(new Bond("single", new Atom(dirs.nextBond, [], "")));
+						return atom.addBond(new Bond("single", new Atom(dirs.nextBond, [], "", [newDirs.current[0]])));
 					}
 					newAtom = new Atom(dirs.nextBond, [], "", newDirs.current);
 					atom.addBond(new Bond("single", newAtom));
@@ -198,7 +205,7 @@
 
 					return {
 						// attached bonds
-						current: [BONDS[left].direction, BONDS[right].direction],
+						current: [{ direction: BONDS[left].direction, type: "single" }, { direction: BONDS[right].direction, type: "single" }],
 						// next bond
 						nextBond: BONDS[right].bond,
 						// next direction
@@ -229,7 +236,7 @@
 		 * @param {String} type - bond type, e.g. 'single', 'double'.
 		 * @returns {Structure[]}
 		 */
-		function generateSingleBonds(type) {
+		function generateBonds(type, multiplicity) {
 			var i, bond, direction, result = [];
 			for (i = 0; i < BONDS.length; i += 1) {
 				bond = BONDS[i].bond;
@@ -239,8 +246,8 @@
 						direction,
 						[
 							new Atom([0, 0], [
-								new Bond(type, new Atom(bond, [], "", [Atom.getOppositeDirection(direction)]))
-							], "", [direction])
+								new Bond(type, new Atom(bond, [], "", [{ direction: Atom.getOppositeDirection(direction), type: multiplicity }]))
+							], "", [{ direction: direction, type: multiplicity }])
 						]
 					)
 				);

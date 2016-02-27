@@ -2,13 +2,13 @@
 	"use strict";
 	angular.module("mmAngularDrawChem")
 		.factory("DCAtom", DCAtom);
-		
+
 	DCAtom.$inject = ["DrawChemConst"];
-	
+
 	function DCAtom(DrawChemConst) {
-		
+
 		var service = {};
-		
+
 		/**
 		* Creates a new Atom.
 		* @class
@@ -18,7 +18,7 @@
 		* @param {String[]} - directions of all bonds coming out or coming in
 		*/
 		function Atom(coords, bonds, info, attachedBonds) {
-			this.coords = coords;	
+			this.coords = coords;
 			this.bonds = bonds;
 			this.info = info;
 			this.attachedBonds = attachedBonds || [];
@@ -26,7 +26,7 @@
 			this.label;
 			this.calculateNext();
 		}
-		
+
 		/**
 		 * Calculates direction of an opposite bond.
 		 * @param {String} direction - direction of a bond
@@ -56,10 +56,10 @@
 				case "NW1":
 					return "SE1";
 				case "NW2":
-					return "SE2";					
+					return "SE2";
 			}
 		}
-		
+
 		/**
 		 * Adds a bond to the attachedBonds array.
 		 * @param {String} bond - direction of a bond
@@ -67,7 +67,7 @@
 		Atom.prototype.attachBond = function (bond) {
 			this.attachedBonds.push(bond);
 		};
-		
+
 		/**
 		 * Calculates direction of the bond that should be attached next.
 		 */
@@ -83,9 +83,9 @@
 			} else {
 				this.next = "";
 			}
-			
+
 			function checkIfLenOne() {
-				var str = this.attachedBonds[0];
+				var str = this.attachedBonds[0].direction;
 				switch (str) {
 					case "N":
 						return "SE1";
@@ -110,10 +110,10 @@
 					case "NW1":
 						return "NE2";
 					case "NW2":
-						return "E";					
+						return "E";
 				}
 			}
-			
+
 			function checkIfLenTwo() {
 				if (contains.call(this, "N", "SE1")) {
 					return "SW2";
@@ -142,23 +142,30 @@
 				} else {
 					check.call(this);
 				}
-				
+
 				function contains(d1, d2) {
-					return (this.attachedBonds[0] === d1 && this.attachedBonds[1] === d2) ||
-						(this.attachedBonds[0] === d2 && this.attachedBonds[1] === d1);
+					return (this.attachedBonds[0].direction === d1 && this.attachedBonds[1].direction === d2) ||
+						(this.attachedBonds[0].direction === d2 && this.attachedBonds[1].direction === d1);
 				}
 			}
-			
+
 			function check() {
-				var i, bonds = DrawChemConst.BONDS;
+				var i, j, bonds = DrawChemConst.BONDS, current, found;
 				for(i = 0; i < bonds.length; i += 1) {
-					if (this.attachedBonds.indexOf(bonds[i].direction) < 0) {
-						return bonds[i].direction;
+					current = bonds[i].direction;
+					found = "";
+					for (j = 0; j < this.attachedBonds.length; j += 1) {
+						if (this.attachedBonds[j].direction === current) {
+							found = current;
+						}
+					}
+					if (found === "") {
+						return current;
 					}
 				}
 			}
 		};
-		
+
 		/**
 		 * Sets coordinates of the atom.
 		 * @param {Number[]} coords - an array with coordinates of the atom
@@ -166,7 +173,7 @@
 		Atom.prototype.setCoords = function (coords) {
 			this.coords = coords;
 		};
-		
+
 		/**
 		 * Gets additional info.
 		 * @returns {String}
@@ -174,7 +181,7 @@
 		Atom.prototype.getInfo = function () {
 			return this.info;
 		}
-		
+
 		/**
 		 * Gets attached bonds.
 		 * @returns {String[]}
@@ -182,7 +189,7 @@
 		Atom.prototype.getAttachedBonds = function () {
 			return this.attachedBonds;
 		}
-		
+
 		/**
 		 * Sets coordinates of a preceding atom.
 		 * @param {Number[]} coords - an array with coordinates of the atom
@@ -190,7 +197,7 @@
 		Atom.prototype.setPreceding = function (coords) {
 			this.preceding = coords;
 		};
-		
+
 		/**
 		 * Gets coordinates of the atom.
 		 * @returns {Number[]|Number}
@@ -204,7 +211,7 @@
 				return this.preceding;
 			}
 		};
-		
+
 		/**
 		 * Gets symbol of the next bond.
 		 * @returns {String}
@@ -212,7 +219,7 @@
 		Atom.prototype.getNext = function () {
 			return this.next;
 		}
-		
+
 		/**
 		 * Sets Label object.
 		 * @param {Label} label - a Label object
@@ -220,7 +227,7 @@
 		Atom.prototype.setLabel = function (label) {
 			this.label = label;
 		}
-		
+
 		/**
 		 * Gets Label object.
 		 * @returns {Label}
@@ -228,7 +235,7 @@
 		Atom.prototype.getLabel = function () {
 			return this.label;
 		}
-		
+
 		/**
 		 * Sets symbol of the next bond.
 		 * @param {String} - symbol of the next bond
@@ -236,7 +243,7 @@
 		Atom.prototype.setNext = function (symbol) {
 			this.next = symbol;
 		}
-		
+
 		/**
 		 * Gets coordinates of the atom.
 		 * @returns {Number[]|Number}
@@ -250,7 +257,7 @@
 				return this.coords;
 			}
 		};
-		
+
 		/**
 		 * Gets an array of all atoms this atom is connected with
 		 * @returns {Atom[]|Atom}
@@ -258,11 +265,11 @@
 		Atom.prototype.getBonds = function (index) {
 			if (arguments.length === 0) {
 				return this.bonds;
-			} else {				
-				return this.bonds[index];	
-			}			
+			} else {
+				return this.bonds[index];
+			}
 		}
-		
+
 		/**
 		 * Adds a new atom to the bonds array.
 		 * @param {Atom} atom - a new Atom object to be added
@@ -270,7 +277,7 @@
 		Atom.prototype.addBond = function (bond) {
 			this.bonds.push(bond);
 		}
-		
+
 		/**
 		 * Adds new bonds.
 		 * @param {Bond[]} bonds - an array of bonds to be added
@@ -280,9 +287,9 @@
 				this.bonds.push(bond);
 			}, this);
 		}
-		
+
 		service.Atom = Atom;
-		
+
 		return service;
 	}
 })();

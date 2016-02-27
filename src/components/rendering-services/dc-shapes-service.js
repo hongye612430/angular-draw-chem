@@ -112,7 +112,7 @@
 						atom = service.isWithin(base, newAbsPos).foundAtom;
 						if (typeof atom !== "undefined") {
 							newName = Atom.getOppositeDirection(modStr.getName());
-							atom.attachBond(newName);
+							atom.attachBond({ direction: newName, type: mod.getBondsMultiplicity() });
 							return atom.calculateNext();
 						}
 					}
@@ -165,7 +165,7 @@
 						name = at.getName();
 						toCompare = output || next;
 						if (toCompare === name) {
-							current.attachBond(name);
+							current.attachBond({ direction: name, type: mod.getBondsMultiplicity() });
 							current.calculateNext();
 							return at;
 						}
@@ -244,8 +244,8 @@
 				labels.forEach(function (label) {
 					aux = drawDodecagon(label) +
 						"<text dy='0.2125em' x='" + label.labelX + "' " +
-						"atomx='" + label.atomX + "'" +
-						"atomy='" + label.atomY + "'" +
+						"atomx='" + label.atomX + "' " +
+						"atomy='" + label.atomY + "' " +
 						"y='" + label.labelY + "' " +
 						"text-anchor='" + genTextAnchor(label.mode) + "' " +
 						">" + genLabel(label.label) + "</text>";
@@ -314,17 +314,18 @@
 			* @returns {Object}
 			*/
 		  function parseInput(input) {
-				var output = [], circles = [], labels = [], i, absPos, len,
+				var output = [], circles = [], labels = [], i, absPos, len, atom,
 					origin = input.getOrigin(), minMax = { minX: origin[0], maxX: origin[0], minY: origin[1], maxY: origin[1] },
 					circR = Const.CIRC_R;
 
 				for (i = 0; i < input.getStructure().length; i += 1) {
-					absPos = addCoordsNoPrec(origin, input.getStructure(i).getCoords());
-					updateLabel(absPos, input.getStructure(i));
+					atom = input.getStructure(i);
+					absPos = addCoordsNoPrec(origin, atom.getCoords());
+					updateLabel(absPos, atom);
 					updateMinMax(absPos);
 					len = output.push(["M", absPos]);
 					circles.push([absPos[0], absPos[1], circR]);
-					connect(absPos, input.getStructure(i).getBonds(), output[len - 1]);
+					connect(absPos, atom.getBonds(), output[len - 1]);
 				}
 
 				return {
@@ -441,7 +442,7 @@
 					}
 
 					function genLabelInfo() {
-						var bondsRemained = label.getMaxBonds() - atom.getAttachedBonds().length,
+						var bondsRemained = label.getMaxBonds() - calcBondsIn(atom.getAttachedBonds()) - calcBondsOut(atom.getBonds()),
 							labelNameObj = { name: label.getLabelName() };
 
 						addHydrogens();
@@ -457,6 +458,34 @@
 							width: DCShape.fontSize * labelNameObj.name.length,
 							height: DCShape.fontSize
 						};
+
+						function calcBondsIn(bonds) {
+							var i, type, result = 0;
+							for (i = 0; i < bonds.length; i += 1) {
+								type = bonds[i].type;
+								switch (type) {
+									case "single": result += 1; break;
+									case "double": result += 2; break;
+									case "triple": result += 3; break;
+								}
+							}
+							return result;
+						}
+
+						function calcBondsOut(bonds) {
+							var i, type, result = 0;
+							for (i = 0; i < bonds.length; i += 1) {
+								type = bonds[i].getType();
+								switch (type) {
+									case "single": result += 1; break;
+									case "wedge": result += 1; break;
+									case "dash": result += 1; break;
+									case "double": result += 2; break;
+									case "triple": result += 3; break;
+								}
+							}
+							return result;
+						}
 
 						function addHydrogens() {
 							var i, mode = label.getMode(), hydrogens = 0;
@@ -498,7 +527,7 @@
 							function isLeft() {
 								var countE = 0;
 								atom.getAttachedBonds().forEach(function (direction) {
-									countE = direction.indexOf("E") < 0 ? countE: countE + 1;
+									countE = direction.direction.indexOf("E") < 0 ? countE: countE + 1;
 								});
 								return countE > 0;
 							}
