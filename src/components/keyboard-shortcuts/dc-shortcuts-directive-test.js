@@ -190,4 +190,64 @@ describe("dcShortcuts directive tests", function () {
     triggerKeyUp(temp, 69, true);
 		expect(editor.find(".dc-editor-dialog-content").html()).toEqual("");
 	});
+
+	it("should not do anything if editor is not shown", function () {
+		var custom = DrawChemStructures.benzene();
+		DrawChem.runEditor("test");
+		expect(DrawChem.showEditor()).toEqual(true);
+		editor.find("#dc-" + custom.name).click();
+		editor.find(".dc-editor-dialog-content").triggerHandler({
+			type : "mouseup",
+			which: 1,
+			clientX: 2,
+			clientY: 2
+		});
+		expect(editor.find(".dc-editor-dialog-content").html())
+			.toEqual(
+				"<svg>" +
+						"<g id=\"cmpd1\">" +
+							"<style type=\"text/css\">" +
+								styleBase + styleExpanded +
+							"</style>" +
+							"<path d=\"M 0 0 L 17.32 10 L 17.32 30 L 0 40 L -17.32 30 L -17.32 10 L 0 0 \"></path>" +
+							"<circle class=\"atom\" cx=\"0\" cy=\"0\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"17.32\" cy=\"10\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"17.32\" cy=\"30\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"0\" cy=\"40\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"-17.32\" cy=\"30\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"-17.32\" cy=\"10\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"0\" cy=\"0\" r=\"2.4\"></circle>" +
+							"<circle class=\"arom\" cx=\"0\" cy=\"20\" r=\"9\"></circle>" +
+						"</g>" +
+				"</svg>"
+			);
+		// ctrl+q
+		triggerKeyDown(temp, 17, true);
+	  triggerKeyDown(temp, 81, true);
+	  triggerKeyUp(temp, 81, true);
+	  expect(DrawChem.showEditor()).toEqual(false);
+    // ctrl+e should not work
+		triggerKeyDown(temp, 17, true);
+    triggerKeyDown(temp, 69, true);
+    triggerKeyUp(temp, 69, true);
+		expect(editor.find(".dc-editor-dialog-content").html())
+			.toEqual(
+				"<svg>" +
+						"<g id=\"cmpd1\">" +
+							"<style type=\"text/css\">" +
+								styleBase + styleExpanded +
+							"</style>" +
+							"<path d=\"M 0 0 L 17.32 10 L 17.32 30 L 0 40 L -17.32 30 L -17.32 10 L 0 0 \"></path>" +
+							"<circle class=\"atom\" cx=\"0\" cy=\"0\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"17.32\" cy=\"10\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"17.32\" cy=\"30\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"0\" cy=\"40\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"-17.32\" cy=\"30\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"-17.32\" cy=\"10\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"0\" cy=\"0\" r=\"2.4\"></circle>" +
+							"<circle class=\"arom\" cx=\"0\" cy=\"20\" r=\"9\"></circle>" +
+						"</g>" +
+				"</svg>"
+			);
+	});
 })
