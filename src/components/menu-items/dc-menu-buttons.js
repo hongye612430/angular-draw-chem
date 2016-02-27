@@ -5,6 +5,7 @@
 
 	DrawChemMenuButtons.$inject = [
     "DrawChemStructures",
+		"DrawChemLabels",
     "DrawChemActions",
 		"DrawChemEdits",
     "DrawChemArrows",
@@ -12,7 +13,7 @@
     "DrawChemDirectiveFlags"
   ];
 
-	function DrawChemMenuButtons(Structures, Actions, Edits, Arrows, Shapes, Flags) {
+	function DrawChemMenuButtons(Structures, Labels, Actions, Edits, Arrows, Shapes, Flags) {
 
 		var service = {};
 
@@ -39,7 +40,7 @@
       // stores all labels
       scope.labels = [];
 
-      angular.forEach(Structures.labels, function (label) {
+      angular.forEach(Labels.labels, function (label) {
         scope.labels.push({
           name: label.getLabelName(),
           choose: function () {
