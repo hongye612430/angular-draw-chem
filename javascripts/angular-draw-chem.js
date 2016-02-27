@@ -9,13 +9,13 @@
 	"use strict";
 	angular.module("mmAngularDrawChem")
 		.factory("DCAtom", DCAtom);
-		
+
 	DCAtom.$inject = ["DrawChemConst"];
-	
+
 	function DCAtom(DrawChemConst) {
-		
+
 		var service = {};
-		
+
 		/**
 		* Creates a new Atom.
 		* @class
@@ -25,7 +25,7 @@
 		* @param {String[]} - directions of all bonds coming out or coming in
 		*/
 		function Atom(coords, bonds, info, attachedBonds) {
-			this.coords = coords;	
+			this.coords = coords;
 			this.bonds = bonds;
 			this.info = info;
 			this.attachedBonds = attachedBonds || [];
@@ -33,7 +33,7 @@
 			this.label;
 			this.calculateNext();
 		}
-		
+
 		/**
 		 * Calculates direction of an opposite bond.
 		 * @param {String} direction - direction of a bond
@@ -63,10 +63,10 @@
 				case "NW1":
 					return "SE1";
 				case "NW2":
-					return "SE2";					
+					return "SE2";
 			}
 		}
-		
+
 		/**
 		 * Adds a bond to the attachedBonds array.
 		 * @param {String} bond - direction of a bond
@@ -74,7 +74,7 @@
 		Atom.prototype.attachBond = function (bond) {
 			this.attachedBonds.push(bond);
 		};
-		
+
 		/**
 		 * Calculates direction of the bond that should be attached next.
 		 */
@@ -90,9 +90,9 @@
 			} else {
 				this.next = "";
 			}
-			
+
 			function checkIfLenOne() {
-				var str = this.attachedBonds[0];
+				var str = this.attachedBonds[0].direction;
 				switch (str) {
 					case "N":
 						return "SE1";
@@ -117,10 +117,10 @@
 					case "NW1":
 						return "NE2";
 					case "NW2":
-						return "E";					
+						return "E";
 				}
 			}
-			
+
 			function checkIfLenTwo() {
 				if (contains.call(this, "N", "SE1")) {
 					return "SW2";
@@ -149,23 +149,30 @@
 				} else {
 					check.call(this);
 				}
-				
+
 				function contains(d1, d2) {
-					return (this.attachedBonds[0] === d1 && this.attachedBonds[1] === d2) ||
-						(this.attachedBonds[0] === d2 && this.attachedBonds[1] === d1);
+					return (this.attachedBonds[0].direction === d1 && this.attachedBonds[1].direction === d2) ||
+						(this.attachedBonds[0].direction === d2 && this.attachedBonds[1].direction === d1);
 				}
 			}
-			
+
 			function check() {
-				var i, bonds = DrawChemConst.BONDS;
+				var i, j, bonds = DrawChemConst.BONDS, current, found;
 				for(i = 0; i < bonds.length; i += 1) {
-					if (this.attachedBonds.indexOf(bonds[i].direction) < 0) {
-						return bonds[i].direction;
+					current = bonds[i].direction;
+					found = "";
+					for (j = 0; j < this.attachedBonds.length; j += 1) {
+						if (this.attachedBonds[j].direction === current) {
+							found = current;
+						}
+					}
+					if (found === "") {
+						return current;
 					}
 				}
 			}
 		};
-		
+
 		/**
 		 * Sets coordinates of the atom.
 		 * @param {Number[]} coords - an array with coordinates of the atom
@@ -173,7 +180,7 @@
 		Atom.prototype.setCoords = function (coords) {
 			this.coords = coords;
 		};
-		
+
 		/**
 		 * Gets additional info.
 		 * @returns {String}
@@ -181,7 +188,7 @@
 		Atom.prototype.getInfo = function () {
 			return this.info;
 		}
-		
+
 		/**
 		 * Gets attached bonds.
 		 * @returns {String[]}
@@ -189,7 +196,7 @@
 		Atom.prototype.getAttachedBonds = function () {
 			return this.attachedBonds;
 		}
-		
+
 		/**
 		 * Sets coordinates of a preceding atom.
 		 * @param {Number[]} coords - an array with coordinates of the atom
@@ -197,7 +204,7 @@
 		Atom.prototype.setPreceding = function (coords) {
 			this.preceding = coords;
 		};
-		
+
 		/**
 		 * Gets coordinates of the atom.
 		 * @returns {Number[]|Number}
@@ -211,7 +218,7 @@
 				return this.preceding;
 			}
 		};
-		
+
 		/**
 		 * Gets symbol of the next bond.
 		 * @returns {String}
@@ -219,7 +226,7 @@
 		Atom.prototype.getNext = function () {
 			return this.next;
 		}
-		
+
 		/**
 		 * Sets Label object.
 		 * @param {Label} label - a Label object
@@ -227,7 +234,7 @@
 		Atom.prototype.setLabel = function (label) {
 			this.label = label;
 		}
-		
+
 		/**
 		 * Gets Label object.
 		 * @returns {Label}
@@ -235,7 +242,7 @@
 		Atom.prototype.getLabel = function () {
 			return this.label;
 		}
-		
+
 		/**
 		 * Sets symbol of the next bond.
 		 * @param {String} - symbol of the next bond
@@ -243,7 +250,7 @@
 		Atom.prototype.setNext = function (symbol) {
 			this.next = symbol;
 		}
-		
+
 		/**
 		 * Gets coordinates of the atom.
 		 * @returns {Number[]|Number}
@@ -257,7 +264,7 @@
 				return this.coords;
 			}
 		};
-		
+
 		/**
 		 * Gets an array of all atoms this atom is connected with
 		 * @returns {Atom[]|Atom}
@@ -265,11 +272,11 @@
 		Atom.prototype.getBonds = function (index) {
 			if (arguments.length === 0) {
 				return this.bonds;
-			} else {				
-				return this.bonds[index];	
-			}			
+			} else {
+				return this.bonds[index];
+			}
 		}
-		
+
 		/**
 		 * Adds a new atom to the bonds array.
 		 * @param {Atom} atom - a new Atom object to be added
@@ -277,7 +284,7 @@
 		Atom.prototype.addBond = function (bond) {
 			this.bonds.push(bond);
 		}
-		
+
 		/**
 		 * Adds new bonds.
 		 * @param {Bond[]} bonds - an array of bonds to be added
@@ -287,12 +294,13 @@
 				this.bonds.push(bond);
 			}, this);
 		}
-		
+
 		service.Atom = Atom;
-		
+
 		return service;
 	}
 })();
+
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
@@ -596,33 +604,38 @@
 	"use strict";
 	angular.module("mmAngularDrawChem")
 		.factory("DCStructureCluster", DCStructureCluster);
-		
+
 	DCStructureCluster.$inject = ["DrawChemShapes"];
-	
+
 	function DCStructureCluster(DrawChemShapes) {
-		
+
 		var service = {};
-		
+
 		/**
 		* Creates a new StructureCluster object.
 		* @class
 		* @param {String} name - name of the cluster
 		* @param {Structure[]} defs - array of Structure objects belonging to the cluster
 		*/
-		function StructureCluster(name, defs) {
+		function StructureCluster(name, defs, multiplicity) {
 			this.name = name;
 			this.defs = defs;
+			this.multiplicity = multiplicity;
 			this.defaultStructure = defs[0];
 		}
-		
+
 		StructureCluster.prototype.getDefs = function () {
 			return this.defs;
 		};
-		
+
+		StructureCluster.prototype.getBondsMultiplicity = function () {
+			return this.multiplicty;
+		};
+
 		StructureCluster.prototype.getDefault = function () {
 			return this.defaultStructure;
 		};
-		
+
 		StructureCluster.prototype.getStructure = function (mouseCoords1, mouseCoords2) {
 			var i,
 				direction = DrawChemShapes.getDirection(mouseCoords1, mouseCoords2);
@@ -632,12 +645,13 @@
 				}
 			}
 		};
-		
+
 		service.StructureCluster = StructureCluster;
-		
+
 		return service;
 	}
 })();
+
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
@@ -1326,25 +1340,29 @@
     .directive("dcShortcuts", DcShortcuts);
 
   DcShortcuts.$inject = [
-    "DCShortcutsStorage",
+    "DrawChem",
+    "DrawChemKeyShortcuts",
     "$rootScope"
   ];
 
-  function DcShortcuts(Shortcuts, $rootScope) {
+  function DcShortcuts(DrawChem, Shortcuts, $rootScope) {
     return {
       restrict: "A",
       link: function (scope, element) {
 
         element.bind("keydown", function ($event) {
-          if ($event.ctrlKey) {
+          if ($event.ctrlKey && DrawChem.showEditor()) {
             $event.preventDefault();
             Shortcuts.down($event.keyCode);
           }
         });
 
         element.bind("keyup", function ($event) {
-          Shortcuts.released($event.keyCode);
-          $rootScope.$digest();
+          if ($event.ctrlKey && DrawChem.showEditor()) {
+            $event.preventDefault();
+            Shortcuts.released($event.keyCode);
+            $rootScope.$digest();
+          }
         });
       }
     }
@@ -1354,11 +1372,11 @@
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
-		.factory("DCShortcutsStorage", DCShortcutsStorage);
+		.factory("DrawChemKeyShortcuts", DrawChemKeyShortcuts);
 
-	DCShortcutsStorage.$inject = ["DrawChemActions"];
+	DrawChemKeyShortcuts.$inject = ["DrawChemActions"];
 
-	function DCShortcutsStorage(Actions) {
+	function DrawChemKeyShortcuts(Actions) {
 
 		var keysPredefined = {
         17: "ctrl",
@@ -1614,10 +1632,42 @@
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
+		.factory("DrawChemLabels", DrawChemLabels);
+
+	DrawChemLabels.$inject = ["DCLabel"];
+
+	function DrawChemLabels(DCLabel) {
+
+		var service = {},
+      Label = DCLabel.Label;
+
+		/**
+		 * An array of Label objects containing all predefined labels.
+		 */
+		service.labels = [
+			new Label("O", 2),
+			new Label("S", 2),
+			new Label("P", 3),
+			new Label("N", 3),
+			new Label("F", 1),
+			new Label("Cl", 1),
+			new Label("Br", 1),
+			new Label("I", 1),
+			new Label("H", 1)
+		];
+
+		return service;
+	}
+})();
+
+(function () {
+	"use strict";
+	angular.module("mmAngularDrawChem")
 		.factory("DrawChemMenuButtons", DrawChemMenuButtons);
 
 	DrawChemMenuButtons.$inject = [
     "DrawChemStructures",
+		"DrawChemLabels",
     "DrawChemActions",
 		"DrawChemEdits",
     "DrawChemArrows",
@@ -1625,7 +1675,7 @@
     "DrawChemDirectiveFlags"
   ];
 
-	function DrawChemMenuButtons(Structures, Actions, Edits, Arrows, Shapes, Flags) {
+	function DrawChemMenuButtons(Structures, Labels, Actions, Edits, Arrows, Shapes, Flags) {
 
 		var service = {};
 
@@ -1652,7 +1702,7 @@
       // stores all labels
       scope.labels = [];
 
-      angular.forEach(Structures.labels, function (label) {
+      angular.forEach(Labels.labels, function (label) {
         scope.labels.push({
           name: label.getLabelName(),
           choose: function () {
@@ -1691,131 +1741,122 @@
 	"use strict";
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemStructures", DrawChemStructures);
-		
-	DrawChemStructures.$inject = ["DrawChemConst", "DCStructure", "DCStructureCluster", "DCAtom", "DCBond", "DCLabel"];
-	
-	function DrawChemStructures(DrawChemConst, DCStructure, DCStructureCluster, DCAtom, DCBond, DCLabel) {
+
+	DrawChemStructures.$inject = ["DrawChemConst", "DCStructure", "DCStructureCluster", "DCAtom", "DCBond"];
+
+	function DrawChemStructures(DrawChemConst, DCStructure, DCStructureCluster, DCAtom, DCBond) {
 
 		var service = {},
 			Atom = DCAtom.Atom,
 			Bond = DCBond.Bond,
-			Label = DCLabel.Label,
 			Structure = DCStructure.Structure,
 			StructureCluster = DCStructureCluster.StructureCluster,
 			BONDS = DrawChemConst.BONDS;
-		
+
 		/**
 		 * Generates benzene structures in each defined direction.
 		 * @returns {StructureCluster}
 		 */
 		service.benzene = function () {
 			var cluster,
+				multiplicity = "triple",
 				name = "benzene",
 				defs = generateSixMemberedRings("aromatic");
-				
-			cluster = new StructureCluster(name, defs);
+
+			cluster = new StructureCluster(name, defs, multiplicity);
 			return cluster;
 		};
-		
+
 		/**
 		 * Generates cyclohexane structures in each defined direction.
 		 * @returns {StructureCluster}
 		 */
 		service.cyclohexane = function () {
 			var cluster,
+				multiplicity = "double",
 				name = "cyclohexane",
 				defs = generateSixMemberedRings();
-				
-			cluster = new StructureCluster(name, defs);
-			
+
+			cluster = new StructureCluster(name, defs, multiplicity);
+
 			return cluster;
 		};
-		
+
 		/**
 		 * Generates single bond structures in each defined direction.
 		 * @returns {StructureCluster}
 		 */
 		service.singleBond = function () {
 			var cluster,
+				multiplicity = "single",
 				name = "single-bond",
-				defs = generateSingleBonds("single");
-				
-			cluster = new StructureCluster(name, defs);
-				
+				defs = generateBonds("single", multiplicity);
+
+			cluster = new StructureCluster(name, defs, multiplicity);
+
 			return cluster;
 		};
-		
+
 		/**
 		 * Generates double bond structures in each defined direction.
 		 * @returns {StructureCluster}
 		 */
 		service.doubleBond = function () {
 			var cluster,
+				multiplicity = "double",
 				name = "double-bond",
-				defs = generateSingleBonds("double");
-				
-			cluster = new StructureCluster(name, defs);
-				
+				defs = generateBonds("double", multiplicity);
+
+			cluster = new StructureCluster(name, defs, multiplicity);
+
 			return cluster;
 		};
-		
+
 		/**
 		 * Generates triple bond structures in each defined direction.
 		 * @returns {StructureCluster}
 		 */
 		service.tripleBond = function () {
 			var cluster,
+				multiplicity = "triple",
 				name = "triple-bond",
-				defs = generateSingleBonds("triple");
-				
-			cluster = new StructureCluster(name, defs);
-				
+				defs = generateBonds("triple", multiplicity);
+
+			cluster = new StructureCluster(name, defs, multiplicity);
+
 			return cluster;
 		};
-		
+
 		/**
 		 * Generates wedge bond structures in each defined direction.
 		 * @returns {StructureCluster}
 		 */
 		service.wedgeBond = function () {
 			var cluster,
+				multiplicity = "single",
 				name = "wedge-bond",
-				defs = generateSingleBonds("wedge");
-				
-			cluster = new StructureCluster(name, defs);
-				
+				defs = generateBonds("wedge", multiplicity);
+
+			cluster = new StructureCluster(name, defs, multiplicity);
+
 			return cluster;
 		};
-		
+
 		/**
 		 * Generates wedge bond structures in each defined direction.
 		 * @returns {StructureCluster}
 		 */
 		service.dashBond = function () {
 			var cluster,
+				multiplicity = "single",
 				name = "dash-bond",
-				defs = generateSingleBonds("dash");
-				
-			cluster = new StructureCluster(name, defs);
-				
+				defs = generateBonds("dash", multiplicity);
+
+			cluster = new StructureCluster(name, defs, multiplicity);
+
 			return cluster;
 		};
-		
-		/**
-		 * An array of Label objects containing all supported labels.
-		 */
-		service.labels = [
-			new Label("O", 2),
-			new Label("S", 2),
-			new Label("P", 3),
-			new Label("N", 3),
-			new Label("F", 1),
-			new Label("Cl", 1),
-			new Label("Br", 1),
-			new Label("I", 1),
-			new Label("H", 1)
-		];
-		
+
 		/**
 		 * Stores all predefined structures.
 		 */
@@ -1828,9 +1869,9 @@
 			service.wedgeBond,
 			service.dashBond
 		];
-		
+
 		return service;
-		
+
 		/**
 		 * Generates six-membered rings (60 deg between bonds) in each of defined direction.
 		 * @param {String} decorate - indicates decorate element (e.g. aromatic ring)
@@ -1839,12 +1880,12 @@
 		function generateSixMemberedRings(decorate) {
 			var i, direction, result = [];
 			for (i = 0; i < BONDS.length; i += 1) {
-				direction = BONDS[i].direction;				
+				direction = BONDS[i].direction;
 				result.push(generateRing(direction));
 			}
-			
+
 			return result;
-			
+
 			/**
 			 * Generates a six-membered ring in the specified direction.
 			 * This may be a little bit confusing, but in this function, the direction parameter (e.g. N, NE1)
@@ -1857,7 +1898,7 @@
 				var firstAtom, structure, bond,
 					dirs = calcDirections(direction),
 					opposite = Atom.getOppositeDirection(direction);
-				
+
 				firstAtom = new Atom([0, 0], [], "", dirs.current);
 				genAtoms(firstAtom, dirs, 6);
 				structure = new Structure(opposite, [firstAtom]);
@@ -1865,25 +1906,25 @@
 					bond = DrawChemConst.getBondByDirection(opposite).bond;
 					structure.addDecorate(decorate, [bond[0], bond[1]]);
 				}
-				
+
 				return structure;
-				
+
 				/**
 				 * Recursievely generates atoms.
 				 * @param {Atom} atom - atom to which next atom will be added.
 				 * @param {Object} dirs - keeps track of attached bonds, next bond and next atom
-				 * @param {Number} depth - current depth of the structure tree				 
+				 * @param {Number} depth - current depth of the structure tree
 				 */
 				function genAtoms(atom, dirs, depth) {
 					var newDirs = calcDirections(dirs.nextDirection), newAtom;
 					if (depth === 1) {
-						return atom.addBond(new Bond("single", new Atom(dirs.nextBond, [], "")));
+						return atom.addBond(new Bond("single", new Atom(dirs.nextBond, [], "", [newDirs.current[0]])));
 					}
 					newAtom = new Atom(dirs.nextBond, [], "", newDirs.current);
 					atom.addBond(new Bond("single", newAtom));
 					genAtoms(newAtom, newDirs, depth - 1);
 				}
-				
+
 				/**
 				 * Calculates attached bonds, next bond and next atom.
 				 * @param {String} direction - direction based on which calculations are made
@@ -1891,7 +1932,7 @@
 				 */
 				function calcDirections(direction) {
 					var i, left, right, next;
-					
+
 					for (i = 0; i < BONDS.length; i += 1) {
 						if (BONDS[i].direction === direction) {
 							left = moveToLeft(BONDS, i, 4);
@@ -1900,16 +1941,16 @@
 							break;
 						}
 					}
-					
+
 					return {
 						// attached bonds
-						current: [BONDS[left].direction, BONDS[right].direction],
+						current: [{ direction: BONDS[left].direction, type: "single" }, { direction: BONDS[right].direction, type: "single" }],
 						// next bond
 						nextBond: BONDS[right].bond,
 						// next direction
 						nextDirection: BONDS[next].direction
 					};
-					
+
 					// this way, the array can be used circularly
 					function moveToLeft(array, index, d) {
 						if (index - d < 0) {
@@ -1917,7 +1958,7 @@
 						}
 						return index - d;
 					}
-					
+
 					// this way, the array can be used circularly
 					function moveToRight(array, index, d) {
 						if (index + d > array.length - 1) {
@@ -1928,13 +1969,13 @@
 				}
 			}
 		}
-		
+
 		/**
 		 * Generates single bonds in all defined directions.
 		 * @param {String} type - bond type, e.g. 'single', 'double'.
 		 * @returns {Structure[]}
 		 */
-		function generateSingleBonds(type) {
+		function generateBonds(type, multiplicity) {
 			var i, bond, direction, result = [];
 			for (i = 0; i < BONDS.length; i += 1) {
 				bond = BONDS[i].bond;
@@ -1944,17 +1985,18 @@
 						direction,
 						[
 							new Atom([0, 0], [
-								new Bond(type, new Atom(bond, [], "", [Atom.getOppositeDirection(direction)]))
-							], "", [direction])
+								new Bond(type, new Atom(bond, [], "", [{ direction: Atom.getOppositeDirection(direction), type: multiplicity }]))
+							], "", [{ direction: direction, type: multiplicity }])
 						]
 					)
 				);
 			}
-			
+
 			return result;
 		}
 	}
 })();
+
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
@@ -2300,7 +2342,7 @@
 						atom = service.isWithin(base, newAbsPos).foundAtom;
 						if (typeof atom !== "undefined") {
 							newName = Atom.getOppositeDirection(modStr.getName());
-							atom.attachBond(newName);
+							atom.attachBond({ direction: newName, type: mod.getBondsMultiplicity() });
 							return atom.calculateNext();
 						}
 					}
@@ -2353,7 +2395,7 @@
 						name = at.getName();
 						toCompare = output || next;
 						if (toCompare === name) {
-							current.attachBond(name);
+							current.attachBond({ direction: name, type: mod.getBondsMultiplicity() });
 							current.calculateNext();
 							return at;
 						}
@@ -2432,8 +2474,8 @@
 				labels.forEach(function (label) {
 					aux = drawDodecagon(label) +
 						"<text dy='0.2125em' x='" + label.labelX + "' " +
-						"atomx='" + label.atomX + "'" +
-						"atomy='" + label.atomY + "'" +
+						"atomx='" + label.atomX + "' " +
+						"atomy='" + label.atomY + "' " +
 						"y='" + label.labelY + "' " +
 						"text-anchor='" + genTextAnchor(label.mode) + "' " +
 						">" + genLabel(label.label) + "</text>";
@@ -2502,17 +2544,18 @@
 			* @returns {Object}
 			*/
 		  function parseInput(input) {
-				var output = [], circles = [], labels = [], i, absPos, len,
+				var output = [], circles = [], labels = [], i, absPos, len, atom,
 					origin = input.getOrigin(), minMax = { minX: origin[0], maxX: origin[0], minY: origin[1], maxY: origin[1] },
 					circR = Const.CIRC_R;
 
 				for (i = 0; i < input.getStructure().length; i += 1) {
-					absPos = addCoordsNoPrec(origin, input.getStructure(i).getCoords());
-					updateLabel(absPos, input.getStructure(i));
+					atom = input.getStructure(i);
+					absPos = addCoordsNoPrec(origin, atom.getCoords());
+					updateLabel(absPos, atom);
 					updateMinMax(absPos);
 					len = output.push(["M", absPos]);
 					circles.push([absPos[0], absPos[1], circR]);
-					connect(absPos, input.getStructure(i).getBonds(), output[len - 1]);
+					connect(absPos, atom.getBonds(), output[len - 1]);
 				}
 
 				return {
@@ -2629,7 +2672,7 @@
 					}
 
 					function genLabelInfo() {
-						var bondsRemained = label.getMaxBonds() - atom.getAttachedBonds().length,
+						var bondsRemained = label.getMaxBonds() - calcBondsIn(atom.getAttachedBonds()) - calcBondsOut(atom.getBonds()),
 							labelNameObj = { name: label.getLabelName() };
 
 						addHydrogens();
@@ -2645,6 +2688,34 @@
 							width: DCShape.fontSize * labelNameObj.name.length,
 							height: DCShape.fontSize
 						};
+
+						function calcBondsIn(bonds) {
+							var i, type, result = 0;
+							for (i = 0; i < bonds.length; i += 1) {
+								type = bonds[i].type;
+								switch (type) {
+									case "single": result += 1; break;
+									case "double": result += 2; break;
+									case "triple": result += 3; break;
+								}
+							}
+							return result;
+						}
+
+						function calcBondsOut(bonds) {
+							var i, type, result = 0;
+							for (i = 0; i < bonds.length; i += 1) {
+								type = bonds[i].getType();
+								switch (type) {
+									case "single": result += 1; break;
+									case "wedge": result += 1; break;
+									case "dash": result += 1; break;
+									case "double": result += 2; break;
+									case "triple": result += 3; break;
+								}
+							}
+							return result;
+						}
 
 						function addHydrogens() {
 							var i, mode = label.getMode(), hydrogens = 0;
@@ -2686,7 +2757,7 @@
 							function isLeft() {
 								var countE = 0;
 								atom.getAttachedBonds().forEach(function (direction) {
-									countE = direction.indexOf("E") < 0 ? countE: countE + 1;
+									countE = direction.direction.indexOf("E") < 0 ? countE: countE + 1;
 								});
 								return countE > 0;
 							}
