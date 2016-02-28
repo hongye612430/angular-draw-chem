@@ -1649,6 +1649,7 @@
 			new Label("S", 2),
 			new Label("P", 3),
 			new Label("N", 3),
+			new Label("C", 4),
 			new Label("F", 1),
 			new Label("Cl", 1),
 			new Label("Br", 1),
