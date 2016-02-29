@@ -282,7 +282,7 @@
 						[
 							new Atom([0, 0], [
 								new Bond(type, new Atom(bond, [], "", [{ direction: Atom.getOppositeDirection(direction), type: multiplicity }]))
-							], "", [{ direction: direction, type: multiplicity }])
+							], "")
 						]
 					)
 				);
