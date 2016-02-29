@@ -49,7 +49,9 @@ The project consists of the following components:
 3. `DCBond` `factory` - defines `Bond` class, which encapsulates data about a single bond,
 4. `DCStructure` `factory` - defines `Structure` class, which encapsulates a structure tree (how the atoms are connected with each other),
 5. `DCStructureCluster` `factory` - defines `StructureCluster` class, which enables grouping of multiple `Structure` objects; used for predefined structures,
-6. `DCLabel` `factory` - defines `Label` class, which encapsulates data about a label
+6. `DCLabel` `factory` - defines `Label` class, which encapsulates data about a label,
+7. `DCArrow` `factory` - defines `Arrow` class, which encapsulates data about an arrow,
+8. `DCArrowCluster` `factory` - defines `ArrowCluster` class, which enables grouping of multiple `Arrow` objects.
 
 license
 ------
