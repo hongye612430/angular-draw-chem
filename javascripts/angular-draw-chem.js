@@ -965,7 +965,7 @@
 			// check if the event occurred on an atom
 			// if content is not empty and (label is selected or structure is selected)
 			// otherwise there is no necessity for checking this
-			if (!Utils.isContentEmpty() && (Flags.selected === "label" || Flags.selected === "structure")) {
+			if (!Utils.isContentEmpty() && (Flags.selected === "label" || Flags.selected === "customLabel" || Flags.selected === "structure")) {
         // if content is not empty
         if ($event.target.nodeName === "tspan") {
           elem = angular.element($event.target).parent();
@@ -1025,7 +1025,6 @@
 					// find the atom object in the new structure
           atom = Shapes.isWithin(structure, mouseFlags.downMouseCoords).foundAtom,
           currentLabel = atom.getLabel();
-
 				// set Label object
 				// either predefined or custom
         if (Flags.selected === "label") {
@@ -2332,7 +2331,7 @@
 						[
 							new Atom([0, 0], [
 								new Bond(type, new Atom(bond, [], "", [{ direction: Atom.getOppositeDirection(direction), type: multiplicity }]))
-							], "", [{ direction: direction, type: multiplicity }])
+							], "")
 						]
 					)
 				);
