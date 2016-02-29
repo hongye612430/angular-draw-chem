@@ -1,0 +1,16 @@
+<!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>
+<svg viewBox='233.98 46.07 75.00 40.00' height='100%' width='100%' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' >
+  <g id='cmpd1' >
+    <style type="text/css">
+      path{stroke:black;stroke-width:1.4;fill:none;}
+      path.wedge{fill:black;}
+      path.arrow{fill:black;}
+      path.arrow-eq{fill:none;}
+      circle.arom{stroke:black;stroke-width:1.4;fill:none;}
+      text{font-family:Arial;cursor:default;font-size:18px;}
+      tspan.sub{font-size:14px;}
+      polygon.text{fill:white;}
+    </style>
+    <path class='arrow' d='M 253.98 66.07 L 288.98 66.07 M 283.73 66.07 L 283.73 63.79 L 288.98 66.07 L 283.73 68.34 Z M 259.23 66.07 L 259.23 63.79 L 253.98 66.07 L 259.23 68.34 Z '></path>
+  </g>
+</svg>
