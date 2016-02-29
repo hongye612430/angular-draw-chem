@@ -15,9 +15,13 @@ var styleExpanded = "circle.atom:hover{" +
 		"fill:none;" +
 	"}" +
 	"path.wedge{" +
-		"stroke:black;" +
-		"stroke-width:0.8;" +
 		"fill:black;" +
+	"}" +
+	"path.arrow{" +
+		"fill:black;" +
+	"}" +
+	"path.arrow-eq{" +
+		"fill:none;" +
 	"}" +
 	"circle.arom{" +
 		"stroke:black;" +

@@ -2,13 +2,13 @@
 <svg width="100%" height="100%" viewBox="137.67 34.02 100.62 110.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
   <g id="cmpd1">
     <style type="text/css">
-	  path{stroke:black;stroke-width:1.4;fill:none;}
-	  path.wedge{stroke:black;stroke-width:1.4;fill:black;}
-	  circle.arom{stroke:black;stroke-width:1.4;fill:none;}
-	  text{font-family:Arial;cursor:default;text-anchor:middle;dominant-baseline:middle;font-size:18px;}
-	  polygon.text{fill:white;}
-	</style>
-	<path d="M 187.98 54.02 L 218.29 71.52000000000001 L 218.29 106.52000000000001 L 187.98 124.02000000000001 L 157.67 106.52000000000001 L 157.67 71.52000000000001 Z "/>
-	<circle r="15.75" cy="89.02000000000001" cx="187.98" class="arom"/>
+	   path{stroke:black;stroke-width:1.4;fill:none;}
+	   path.wedge{stroke:black;stroke-width:1.4;fill:black;}
+	   circle.arom{stroke:black;stroke-width:1.4;fill:none;}
+	   text{font-family:Arial;cursor:default;text-anchor:middle;dominant-baseline:middle;font-size:18px;}
+	   polygon.text{fill:white;}
+	  </style>
+	  <path d="M 187.98 54.02 L 218.29 71.52000000000001 L 218.29 106.52000000000001 L 187.98 124.02000000000001 L 157.67 106.52000000000001 L 157.67 71.52000000000001 Z "/>
+	  <circle r="15.75" cy="89.02000000000001" cx="187.98" class="arom"/>
   </g>
 </svg>

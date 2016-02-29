@@ -9,13 +9,13 @@
 
 		var service = {};
 
-    service.todo = function () {
+    service.selectAll = function () {
 
     };
 
 		service.edits = {
-			"dummy": {
-				action: service.todo
+			"select all": {
+				action: service.selectAll
 			}
 		};
 

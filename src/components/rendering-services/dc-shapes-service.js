@@ -3,16 +3,25 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemShapes", DrawChemShapes);
 
-	DrawChemShapes.$inject = ["DCShape", "DrawChemConst", "DCAtom", "DCBond"];
+	DrawChemShapes.$inject = [
+		"DCShape",
+		"DrawChemConst",
+		"DCAtom",
+		"DCBond",
+		"DCArrow"
+	];
 
-	function DrawChemShapes(DCShape, Const, DCAtom, DCBond) {
+	function DrawChemShapes(DCShape, Const, DCAtom, DCBond, DCArrow) {
 
 		var service = {},
+			ARROW_START = Const.ARROW_START,
+			ARROW_SIZE = Const.ARROW_SIZE,
 			BOND_LENGTH = Const.BOND_LENGTH,
 			BONDS_AUX = Const.BONDS_AUX,
 			BETWEEN_DBL_BONDS = Const.BETWEEN_DBL_BONDS,
 			BETWEEN_TRP_BONDS = Const.BETWEEN_TRP_BONDS,
-			Atom = DCAtom.Atom;
+			Atom = DCAtom.Atom,
+			Arrow = DCArrow.Arrow;
 
 		/**
 		 * Modifies the structure.
@@ -41,6 +50,10 @@
 			function modStructure(struct, pos) {
 				var i, absPos, aux;
 				for(i = 0; i < struct.length; i += 1) {
+					if (struct[i] instanceof Arrow) {
+						continue;
+					}
+
 					aux = struct[i] instanceof Atom ? struct[i]: struct[i].getAtom();
 					absPos = [aux.getCoords("x") + pos[0], aux.getCoords("y") + pos[1]];
 
@@ -192,6 +205,9 @@
 			function check(struct, pos) {
 				var i, absPos, aux;
 				for(i = 0; i < struct.length; i += 1) {
+					if (struct[i] instanceof Arrow) {
+						continue;
+					}
 					aux = struct[i] instanceof Atom ? struct[i]: struct[i].getAtom();
 					absPos = [aux.getCoords("x") + pos[0], aux.getCoords("y") + pos[1]];
 					if (!found && insideCircle(absPos, position)) {
@@ -199,7 +215,7 @@
 						foundObj.foundAtom = aux;
 						foundObj.absPos = absPos;
 					} else {
-						check(aux.getBonds(), absPos);
+					  check(aux.getBonds(), absPos);
 					}
 				}
 			}
@@ -314,18 +330,28 @@
 			* @returns {Object}
 			*/
 		  function parseInput(input) {
-				var output = [], circles = [], labels = [], i, absPos, len, atom,
+				var output = [], circles = [], labels = [], i, absPos, absPosStart, absPosEnd, len, atom, arrow, obj,
 					origin = input.getOrigin(), minMax = { minX: origin[0], maxX: origin[0], minY: origin[1], maxY: origin[1] },
 					circR = Const.CIRC_R;
 
 				for (i = 0; i < input.getStructure().length; i += 1) {
-					atom = input.getStructure(i);
-					absPos = addCoordsNoPrec(origin, atom.getCoords());
-					updateLabel(absPos, atom);
-					updateMinMax(absPos);
-					len = output.push(["M", absPos]);
-					circles.push([absPos[0], absPos[1], circR]);
-					connect(absPos, atom.getBonds(), output[len - 1]);
+					obj = input.getStructure(i);
+					if (obj instanceof Atom) {
+						atom = obj;
+						absPos = addCoordsNoPrec(origin, atom.getCoords());
+						updateLabel(absPos, atom);
+						updateMinMax(absPos);
+						len = output.push(["M", absPos]);
+						circles.push([absPos[0], absPos[1], circR]);
+						connect(absPos, atom.getBonds(), output[len - 1]);
+					} else if (obj instanceof Arrow) {
+						arrow = obj;
+						absPosStart = addCoordsNoPrec(origin, arrow.getOrigin());
+						absPosEnd = addCoordsNoPrec(origin, arrow.getEnd());
+						updateMinMax(absPosStart);
+						updateMinMax(absPosEnd);
+						output.push(calcArrow(absPosStart, absPosEnd, arrow.getType()));
+					}
 				}
 
 				return {
@@ -334,6 +360,48 @@
 					labels: labels,
 					minMax: minMax
 				};
+
+				function calcArrow(start, end, type) {
+					var vectCoords = [end[0] - start[0], end[1] - start[1]],
+						perpVectCoordsCW = [-vectCoords[1], vectCoords[0]],
+						perpVectCoordsCCW = [vectCoords[1], -vectCoords[0]], endMarkerStart, startMarkerStart, M1, M2, L1, L2, L3, L4;
+					if (type === "one-way-arrow") {
+						endMarkerStart = [start[0] + vectCoords[0] * ARROW_START, start[1] + vectCoords[1] * ARROW_START];
+						L1 = addCoords(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+						L2 = addCoords(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+						return ["arrow", "M", start, "L", end, "M", endMarkerStart, "L", L1, "L", end, "L", L2, "Z"];
+					} else if (type === "two-way-arrow") {
+						endMarkerStart = [start[0] + vectCoords[0] * ARROW_START, start[1] + vectCoords[1] * ARROW_START];
+						startMarkerStart = [start[0] + vectCoords[0] * (1 - ARROW_START), start[1] + vectCoords[1] * (1 - ARROW_START)];
+						L1 = addCoords(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+						L2 = addCoords(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+						L3 = addCoords(startMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+						L4 = addCoords(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+						return [
+							"arrow",
+							"M", start, "L", end,
+							"M", endMarkerStart, "L", L1, "L", end, "L", L2, "Z",
+							"M", startMarkerStart, "L", L3, "L", start, "L", L4, "Z"
+						];
+					}
+					else if (type === "equilibrium-arrow") {
+						M1 = addCoords(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
+						L1 = addCoords(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
+						endMarkerStart = [parseFloat(M1[0]) + vectCoords[0] * ARROW_START, parseFloat(M1[1]) + vectCoords[1] * ARROW_START];
+						L2 = addCoords(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+
+						M2 = addCoords(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+						L3 = addCoords(start, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+						startMarkerStart = [parseFloat(L3[0]) + vectCoords[0] * (1 - ARROW_START), parseFloat(L3[1]) + vectCoords[1] * (1 - ARROW_START)];
+						L4 = addCoords(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+
+						return [
+							"arrow-eq",
+							"M", M1, "L", L1, "L", L2,
+							"M", M2, "L", L3, "L", L4
+						];
+					}
+				}
 
 				/**
 				* Recursively translates the input, until it finds an element with an empty 'bonds' array.
@@ -495,41 +563,45 @@
 
 							labelNameObj.hydrogens = hydrogens;
 
+							if (typeof mode === "undefined") {
+								// if mode is not known (if there was previously no label)
+								// try to guess which one should it be
+								mode = getTextDirection();
+								label.setMode(mode);
+							}
+
 							if (hydrogens > 0) {
-								if (mode === "rl" || mode === "tb" || isLeft()) {
-									labelNameObj.name = hydrogens === 1 ?
-										 "H" + labelNameObj.name: "H" + hydrogens + labelNameObj.name;
-									if (typeof mode === "undefined") {
-										label.setMode("rl");
-										mode = "rl";
-									}
-								} else {
-									labelNameObj.name = hydrogens === 1 ?
-										labelNameObj.name + "H": labelNameObj.name + "H" + hydrogens;
-									if (typeof mode === "undefined") {
-										label.setMode("lr");
-										mode = "lr";
-									}
-								}
+								// only happens for predefined labels
+								// custom labels can't have implicit hydrogens
+								hydrogensAboveZero();
 							} else {
-								if (typeof mode === "undefined") {
-									label.setMode("lr");
-									mode = "lr";
-								} else if (mode === "rl") {
-									labelNameObj.name = invertString(labelNameObj.name);
-									label.setMode("rl");
-									mode = "rl";
-								}
+								hydrogensZeroOrLess();
 							}
 
 							labelNameObj.correctX = calcCorrect() * BOND_LENGTH;
 
-							function isLeft() {
+							function hydrogensAboveZero() {
+								if (mode === "rl") {
+									labelNameObj.name = hydrogens === 1 ?
+										 "H" + labelNameObj.name: "H" + hydrogens + labelNameObj.name;
+								} else if (mode === "lr") {
+									labelNameObj.name = hydrogens === 1 ?
+										labelNameObj.name + "H": labelNameObj.name + "H" + hydrogens;
+								}
+							}
+
+							function hydrogensZeroOrLess() {
+								if (mode === "rl") {
+									labelNameObj.name = invertString(labelNameObj.name);
+								}
+							}
+
+							function getTextDirection() {
 								var countE = 0;
 								atom.getAttachedBonds().forEach(function (direction) {
 									countE = direction.direction.indexOf("E") < 0 ? countE: countE + 1;
 								});
-								return countE > 0;
+								return countE > 0 ? "rl": "lr";
 							}
 
 							function calcCorrect() {
@@ -636,8 +708,8 @@
 				for (j = 0; j < line.length; j += 1) {
 					point = line[j];
 					if (typeof point === "string") {
-						if (point === "wedge") {
-							lineStr.class = "wedge";
+						if (point === "arrow" || point === "arrow-eq" || point === "wedge") {
+							lineStr.class = point;
 						} else {
 							lineStr.line += point + " ";
 						}

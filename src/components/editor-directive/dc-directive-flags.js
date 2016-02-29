@@ -11,13 +11,14 @@
 
     service.mouseFlags = {
       downAtomCoords: undefined,
+			downAtomObject: undefined,
       downMouseCoords: undefined,
       movedOnEmpty: false,
       mouseDown: false,
       downOnAtom: false
     };
 
-    service.selected;
+    service.selected = "";
 
 		return service;
 	}

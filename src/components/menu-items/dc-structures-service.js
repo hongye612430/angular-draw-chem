@@ -3,16 +3,23 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemStructures", DrawChemStructures);
 
-	DrawChemStructures.$inject = ["DrawChemConst", "DCStructure", "DCStructureCluster", "DCAtom", "DCBond"];
+	DrawChemStructures.$inject = [
+		"DrawChemConst",
+		"DCStructure",
+		"DCStructureCluster",
+		"DCAtom",
+		"DCBond",
+		"DrawChemDirectiveFlags"
+	];
 
-	function DrawChemStructures(DrawChemConst, DCStructure, DCStructureCluster, DCAtom, DCBond) {
+	function DrawChemStructures(Const, DCStructure, DCStructureCluster, DCAtom, DCBond, Flags) {
 
 		var service = {},
 			Atom = DCAtom.Atom,
 			Bond = DCBond.Bond,
 			Structure = DCStructure.Structure,
 			StructureCluster = DCStructureCluster.StructureCluster,
-			BONDS = DrawChemConst.BONDS;
+			BONDS = Const.BONDS;
 
 		/**
 		 * Generates benzene structures in each defined direction.
@@ -121,17 +128,45 @@
 		/**
 		 * Stores all predefined structures.
 		 */
-		service.custom = [
-			service.benzene,
-			service.cyclohexane,
-			service.singleBond,
-			service.doubleBond,
-			service.tripleBond,
-			service.wedgeBond,
-			service.dashBond
-		];
+		service.structures = {
+			"benzene": {
+				action: createStructureAction(service.benzene),
+				thumbnail: true
+			},
+			"cyclohexane": {
+				action: createStructureAction(service.cyclohexane),
+				thumbnail: true
+			},
+			"single-bond": {
+				action: createStructureAction(service.singleBond),
+				thumbnail: true
+			},
+			"wedge-bond": {
+				action: createStructureAction(service.wedgeBond),
+				thumbnail: true
+			},
+			"dash-bond": {
+				action: createStructureAction(service.dashBond),
+				thumbnail: true
+			},
+			"double-bond": {
+				action: createStructureAction(service.doubleBond),
+				thumbnail: true
+			},
+			"triple-bond": {
+				action: createStructureAction(service.tripleBond),
+				thumbnail: true
+			}
+		};
 
 		return service;
+
+		function createStructureAction(cb) {
+			return function (scope) {
+				scope.chosenStructure = cb();
+				Flags.selected = "structure";
+			}
+		}
 
 		/**
 		 * Generates six-membered rings (60 deg between bonds) in each of defined direction.
@@ -164,7 +199,7 @@
 				genAtoms(firstAtom, dirs, 6);
 				structure = new Structure(opposite, [firstAtom]);
 				if (typeof decorate !== "undefined") {
-					bond = DrawChemConst.getBondByDirection(opposite).bond;
+					bond = Const.getBondByDirection(opposite).bond;
 					structure.addDecorate(decorate, [bond[0], bond[1]]);
 				}
 

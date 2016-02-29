@@ -216,7 +216,7 @@ describe("DrawChemEditor directive tests - part2", function () {
 						"</g>" +
 				"</svg>"
 			);
-		temp.find("#dc-O").click();
+		temp.find("#dc-oxygen").click();
 		temp.find(".dc-editor-dialog-content").triggerHandler({
 			type : "mousedown",
 			which: 1,

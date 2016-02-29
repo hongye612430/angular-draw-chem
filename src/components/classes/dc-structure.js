@@ -2,11 +2,11 @@
 	"use strict";
 	angular.module("mmAngularDrawChem")
 		.factory("DCStructure", DCStructure);
-	
+
 	function DCStructure() {
-		
+
 		var service = {};
-		
+
 		/**
 		* Creates a new Structure.
 		* @class
@@ -14,13 +14,13 @@
 		* @param {Atom[]} structure - an array of atoms
 		*/
 		function Structure(name, structure, decorate) {
-			this.name = name;			
-			this.structure = structure;
+			this.name = name || "";
+			this.structure = structure || [];
 			this.transform = [];
 			this.origin = [];
 			this.decorate = decorate || {};
-		}		
-		
+		}
+
 		/**
 		 * Sets the specified transform (translate, scale, etc.)
 		 * @param {String} name - a name of the transform
@@ -34,7 +34,7 @@
 				}
 			);
 		}
-		
+
 		/**
 		 * Gets the specified transform.
 		 * @returns {Number[]}
@@ -47,7 +47,7 @@
 				}
 			}
 		}
-		
+
 		/**
 		 * Sets coordinates of the first atom.
 		 * @param {Number[]} origin - an array with coordinates
@@ -61,7 +61,7 @@
 				});
 			});
 		}
-		
+
 		/**
 		 * Gets the coordinates of the first atom.
 		 * @returns {Number[]}
@@ -75,7 +75,7 @@
 				return this.origin;
 			}
 		}
-		
+
 		/**
 		 * Sets the structure array.
 		 * @param {Atom[]} content - an array of atoms and their connections
@@ -83,7 +83,7 @@
 		Structure.prototype.setStructure = function (structure) {
 			this.structure = structure;
 		}
-		
+
 		/**
 		 * Adds a tree of atoms to the structure array.
 		 * @param {Atom} content - an array of atoms and their connections
@@ -91,7 +91,7 @@
 		Structure.prototype.addToStructures = function (str) {
 			this.structure.push(str);
 		}
-		
+
 		/**
 		 * Gets the structure array.
 		 * @returns {Atom[]|Atom}
@@ -103,7 +103,7 @@
 				return this.structure[index];
 			}
 		}
-		
+
 		/**
 		 * Gets the name of the structure.
 		 * @returns {String}
@@ -111,7 +111,7 @@
 		Structure.prototype.getName = function () {
 			return this.name;
 		}
-		
+
 		/**
 		 * Gets the decorate element.
 		 * @returns {Object}
@@ -119,7 +119,7 @@
 		Structure.prototype.getDecorate = function (decorate) {
 			return this.decorate[decorate];
 		}
-		
+
 		/**
 		 * Sets the decorate element.
 		 * @param {String} decorate - an element to add to the array
@@ -130,9 +130,9 @@
 			}
 			this.decorate[decorate].push(coords);
 		}
-		
+
 		service.Structure = Structure;
-		
+
 		return service;
 	}
 })();

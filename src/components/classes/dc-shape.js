@@ -48,9 +48,13 @@
 						"fill": "none"
 					},
 					"path.wedge": {
-						"stroke": "black",
-						"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
 						"fill": "black"
+					},
+					"path.arrow": {
+						"fill": "black"
+					},
+					"path.arrow-eq": {
+						"fill": "none"
 					},
 					"circle.arom": {
 						"stroke": "black",
