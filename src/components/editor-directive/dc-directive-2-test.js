@@ -7,7 +7,7 @@ describe("DrawChemEditor directive tests - part2", function () {
 		// configure path for static files
 		jasmine.getFixtures().fixturesPath = "base/assets/";
 		// load template of the editor
-		template = readFixtures("draw-chem-editor.html");
+		template = readFixtures("draw-chem-editor-modal.html");
 
 		DrawChem = _DrawChem_;
 		DrawChemShapes = _DrawChemShapes_;
@@ -16,11 +16,11 @@ describe("DrawChemEditor directive tests - part2", function () {
 
 		$scope = $rootScope.$new();
 		element = angular.element(
-			"<div draw-chem-editor></div>"
+			"<div draw-chem-editor dc-modal></div>"
 		);
 		temp = $compile(element)($scope);
 		$httpBackend
-			.expectGET("draw-chem-editor.html")
+			.expectGET("draw-chem-editor-modal.html")
 			.respond(template);
 		$scope.$digest();
 		$httpBackend.flush();

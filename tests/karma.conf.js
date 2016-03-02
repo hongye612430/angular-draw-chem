@@ -17,9 +17,9 @@ module.exports = function(config) {
       "assets/angular-sanitize.js",
       "assets/angular-mocks.js",
       "assets/ui-bootstrap.js",
-      { pattern: "assets/draw-chem-editor.html", included: false, served: true, watched: true },
+      { pattern: "assets/*.html", included: false, served: true, watched: true },
       "../src/angular-draw-chem-app.js",
-      "../src/components/**/*.js",      
+      "../src/components/**/*.js",
     ],
 
     // list of files to exclude
@@ -31,7 +31,7 @@ module.exports = function(config) {
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
     },
-    
+
     reporters: ["nyan"],
 
     // web server port

@@ -23,7 +23,7 @@ describe("dcShortcuts directive tests", function () {
     };
 
     jasmine.getFixtures().fixturesPath = "base/assets/";
-		template = readFixtures("draw-chem-editor.html");
+		template = readFixtures("draw-chem-editor-modal.html");
     $scope = $rootScope.$new();
 
     // shortcuts directive
@@ -34,11 +34,11 @@ describe("dcShortcuts directive tests", function () {
 
     // editor directive
     editor = angular.element(
-			"<div draw-chem-editor></div>"
+			"<div draw-chem-editor dc-modal></div>"
 		);
 		editor = $compile(editor)($scope);
 		$httpBackend
-			.expectGET("draw-chem-editor.html")
+			.expectGET("draw-chem-editor-modal.html")
 			.respond(template);
 		$scope.$digest();
 		$httpBackend.flush();

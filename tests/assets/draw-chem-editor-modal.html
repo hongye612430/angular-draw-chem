@@ -1,0 +1,40 @@
+<div ng-show="showEditor">
+	<div class="dc-editor-overlay" ng-click="menu.Actions.actions.close.action()"></div>
+	<div class="dc-editor-dialog" ng-style="dialogStyle">
+		<button type="button" class="close dc-editor-close" aria-label="Close" ng-click="menu.Actions.actions.close.action()"><span aria-hidden="true">&times;</span></button>
+		<div class="dc-wrap">
+			<div id="#dc-tools-h" class="dc-tools-h">
+				<form class="form-inline">
+
+					<!-- Menu Items -->
+					<div class="btn-group" uib-dropdown ng-repeat="(name, menuItem) in menu">
+						<button id="dc-btn-{{name}}" type="button" class="btn btn-primary" uib-dropdown-toggle>
+							<span ng-bind="name"></span> <span class="caret"></span>
+						</button>
+						<ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="btn-append-to-single-button">
+							<li class="dc-menuitem" role="menuitem" ng-repeat="(name, action) in menuItem.actions">
+								<a class="dc-menuitem-link" ng-click="action.action(menuItem.scope)" id="dc-{{name}}">
+									<span class="dc-menuitem-link-text" ng-bind="name"></span>
+									<small ng-if="action.shortcut" class="text-muted" ng-bind="action.shortcut"></small>
+									<img ng-if="action.thumbnail" class="dc-thumbnail" alt="{{name}}" ng-src="{{pathToSvg}}/{{name}}.svg">
+								</a>
+							</li>
+						</ul>
+						<span ng-if="!$last">&nbsp;</span>
+					</div>
+					<!-- Custom label -->
+					<div class="form-group dc-input-right">
+						<input class="form-control" type="text" ng-model="customLabel" placeholder="custom label">
+						<button ng-click="chooseCustomLabel()" class="btn btn-primary" >Choose</button>
+					</div>
+				</form>
+			</div>
+			<dc-content
+				class="dc-editor-dialog-content"
+				ng-mousedown="doOnMouseDown($event)"
+				ng-mouseup="doOnMouseUp($event)"
+				ng-mousemove="doOnMouseMove($event)"
+				ng-bind-html="content()"></dc-content>
+		</div>
+	</div>
+</div>

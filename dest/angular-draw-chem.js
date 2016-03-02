@@ -1356,11 +1356,15 @@
 
 	function DrawChemEditor(Paths, Cache, MouseActions, MenuButtons, $sce) {
 		return {
-			templateUrl: Paths.getPath() + "draw-chem-editor.html",
+			template: "<div ng-include=\"getEditorUrl()\"></div>",
 			scope: {
 				showEditor: "="
 			},
 			link: function (scope, element, attrs) {
+				scope.getEditorUrl = function () {
+					var editorHtml = attrs.dcModal === "" ? "draw-chem-editor-modal.html": "draw-chem-editor.html";
+					return Paths.getPath() + editorHtml;
+				}
 				scope.pathToSvg = Paths.getPathToSvg();
 
 				// Sets width and height of the dialog box based on corresponding attributes.

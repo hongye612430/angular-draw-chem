@@ -8,7 +8,7 @@ module.exports = function(grunt) {
 		  tasks: ["js"]
 		},
 		buildHtml: {
-		  files: ["src/static/draw-chem-editor.html"],
+		  files: ["src/static/*.html"],
 		  tasks: ["html"]
 		},
 		buildSvg: {
@@ -33,13 +33,13 @@ module.exports = function(grunt) {
 	copy: {
 		buildJs: {
 			files: [
-				{ expand: true, cwd: "src/components/", src: "angular-draw-chem.js", dest: "dest/" }				
+				{ expand: true, cwd: "src/components/", src: "angular-draw-chem.js", dest: "dest/" }
 			]
 		},
 		buildHtml: {
 			files: [
-				{ expand: true, cwd: "src/static/", src: "draw-chem-editor.html", dest: "dest/" },
-				{ expand: true, cwd: "src/static/", src: "draw-chem-editor.html", dest: "tests/assets" }
+				{ expand: true, cwd: "src/static/", src: "*.html", dest: "dest/" },
+				{ expand: true, cwd: "src/static/", src: "*.html", dest: "tests/assets" }
 			]
 		},
 		buildSvg: {
@@ -49,7 +49,7 @@ module.exports = function(grunt) {
 		},
 		buildCss: {
 			files: [
-				{ expand: true, cwd: "src/static/", src: "draw-chem-editor.css", dest: "dest/" }
+				{ expand: true, cwd: "src/static/", src: "*.css", dest: "dest/" }
 			]
 		}
 	},
@@ -57,29 +57,29 @@ module.exports = function(grunt) {
 		buildJs: {
 			files: {
 				"dest/angular-draw-chem.min.js": "src/components/angular-draw-chem.js"
-			}	
+			}
 		}
     },
 	clean: {
 		buildJs: ["src/components/angular-draw-chem.js"],
-		buildCss: ["src/static/draw-chem-editor.css"]
+		buildCss: ["src/static/*.css"]
 	},
 	sass: {
 		buildCss: {
 			files: {
-				"src/static/draw-chem-editor.css": "src/static/draw-chem-editor.sass"
+				"src/static/*.css": "src/static/*.sass"
 			}
 		}
 	},
 	cssmin: {
 		buildCss: {
 			files: {
-				"dest/draw-chem-editor.min.css": "src/static/draw-chem-editor.css"
+				"dest/*.min.css": "src/static/*.css"
 			}
 		}
 	}
   });
-  
+
   grunt.loadNpmTasks("grunt-contrib-uglify");
   grunt.loadNpmTasks("grunt-contrib-concat");
   grunt.loadNpmTasks("grunt-contrib-clean");
@@ -87,7 +87,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks("grunt-contrib-cssmin");
   grunt.loadNpmTasks("grunt-sass");
   grunt.loadNpmTasks("grunt-contrib-watch");
-  
+
   grunt.registerTask("js", ["concat:buildJs", "copy:buildJs", "uglify:buildJs", "clean:buildJs"]);
   grunt.registerTask("css", ["sass:buildCss", "copy:buildCss", "cssmin:buildCss", "clean:buildCss"]);
   grunt.registerTask("html", ["copy:buildHtml"]);
