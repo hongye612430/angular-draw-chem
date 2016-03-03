@@ -1,0 +1,32 @@
+<div class="editor-wrap">
+  <ul class="nav nav-tabs tabs">
+    <li role="presentation" ng-class="mainCtrl.tab1"><a ng-click="mainCtrl.runEditor()">Editor</a></li>
+    <li role="presentation" ng-class="mainCtrl.tab2"><a ng-click="mainCtrl.runOutput()">Output</a></li>
+  </ul>
+  <div class="editor-background">
+    <div ng-if="mainCtrl.showEditor()">
+      <div draw-chem-editor show-editor="mainCtrl.showEditor()" width="100%" height="600px"></div>
+    </div>
+    <div ng-if="!mainCtrl.showEditor()">
+      <div class="row">
+        <div class="col-md-5">
+          <p>
+            <strong>Output:</strong>
+            <div class="structure" ng-bind-html="mainCtrl.input()"></div>
+          </p>
+        </div>
+        <div class="col-md-7">
+          <p>
+            <strong>Svg:</strong>
+            <div>
+              <div ng-switch="mainCtrl.svg()">
+                  <span ng-switch-when=""></span>
+                  <pre ng-switch-default ng-bind="mainCtrl.svg()"></pre>
+              </div>
+            </div>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

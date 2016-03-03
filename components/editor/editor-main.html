@@ -1,0 +1,24 @@
+<div class="editor-main">
+  <p class="home"><button class="btn btn-primary" ng-click="mainCtrl.runEditor()"> Open Editor </button></p>
+  <div class="home row">
+    <div class="col-md-5">
+      <p>
+        <strong>Output:</strong>
+        <div class="structure" ng-bind-html="mainCtrl.input()"></div>
+      </p>
+    </div>
+    <div class="col-md-6">
+      <p>
+        <strong>Svg:</strong>
+        <div>
+          <div ng-switch="mainCtrl.svg()">
+              <span ng-switch-when=""></span>
+              <pre ng-switch-default ng-bind="mainCtrl.svg()"></pre>
+          </div>
+        </div>
+      </p>
+    </div>
+    <div class="col-md-1"></div>
+  </div>
+</div>
+<div draw-chem-editor dc-modal show-editor="mainCtrl.showEditor()" width="1000px" height="600px"></div>

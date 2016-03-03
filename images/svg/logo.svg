@@ -1,0 +1,17 @@
+<!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>
+<svg viewBox='300 75.80 199.62 163.00' height='100%' width='100%' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' >
+<g id='cmpd1' >
+<style type="text/css">path{stroke:black;stroke-width:1.4;fill:none;}path.wedge{fill:black;}path.arrow{fill:black;}path.arrow-eq{fill:none;}circle.arom{stroke:black;stroke-width:1.4;fill:none;}text{font-family:'Times New Roman';cursor:default;font-size:18px;}tspan.sub{font-size:14px;}polygon.text{fill:#EFFFFF;}</style>
+<path d='M 371.97 139.8 L 402.28000000000003 157.3 L 402.28000000000003 192.3 L 371.97 209.8 L 341.66 192.3 L 341.66 157.3 L 371.97 139.8 '></path>
+<path d='M 402.28000000000003 192.3 L 432.59000000000003 209.8 '></path>
+<path d='M 402.28000000000003 157.3 L 432.59000000000003 139.8 '></path>
+<path d='M 371.97 139.8 L 371.97 104.80000000000001 '></path>
+<polygon class='text' points='434.92 201.11 438.95 203.44 441.28 207.47 441.28 212.13 438.95 216.16 434.92 218.49 430.26 218.49 426.23 216.16 423.90 212.13 423.90 207.47 426.23 203.44 430.26 201.11 '></polygon>
+<text dy='0.2125em' x='426.46500000000003' atomx='432.59000000000003' atomy='209.8' y='212.95000000000002' text-anchor='start' ><tspan>C</tspan><tspan>h</tspan><tspan>e</tspan><tspan>m</tspan></text>
+<polygon class='text' points='434.92 131.11 438.95 133.44 441.28 137.47 441.28 142.13 438.95 146.16 434.92 148.49 430.26 148.49 426.23 146.16 423.90 142.13 423.90 137.47 426.23 133.44 430.26 131.11 '></polygon>
+<text dy='0.2125em' x='426.46500000000003' atomx='432.59000000000003' atomy='139.8' y='142.95000000000002' text-anchor='start' ><tspan>D</tspan><tspan>r</tspan><tspan>a</tspan><tspan>w</tspan></text>
+<polygon class='text' points='374.30 96.11 378.33 98.44 380.66 102.47 380.66 107.13 378.33 111.16 374.30 113.49 369.64 113.49 365.61 111.16 363.28 107.13 363.28 102.47 365.61 98.44 369.64 96.11 '></polygon>
+<text dy='0.2125em' x='365.845' atomx='371.97' atomy='104.80000000000001' y='107.95000000000002' text-anchor='start' ><tspan>A</tspan><tspan>n</tspan><tspan>g</tspan><tspan>u</tspan><tspan>l</tspan><tspan>a</tspan><tspan>r</tspan></text>
+<circle class='arom' cx='371.97' cy='174.8' r='15.75' ></circle>
+</g>
+</svg>

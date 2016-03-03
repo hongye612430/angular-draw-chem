@@ -1,0 +1,18 @@
+<p ng-repeat="(name, item) in menuItems">
+  <a class="item-link" ng-href="{{item.link}}">
+    <span class="item-name" ng-bind="name"></span>
+    <span>&nbsp;</span>
+    <span class="item-spacer" ng-bind="dots"></span>
+    <span>&nbsp;</span>
+    <span class="item-right {{item.icon}}"></span>
+  </a>
+  <span class="item-submenu" ng-repeat="(name, item) in item.submenu">
+    <a class="item-link" ng-href="{{item.link}}">
+      <span class="item-name" ng-bind="name"></span>
+      <span>&nbsp;</span>
+      <span class="item-spacer" ng-bind="dots"></span>
+      <span>&nbsp;</span>
+      <span class="item-right {{item.icon}}"></span>
+    </a>
+  </span>
+</p>

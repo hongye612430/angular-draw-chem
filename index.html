@@ -1,110 +1,52 @@
 <!doctype html>
 <html class="no-js" lang="">
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-        <title>Angular Chemistry</title>
-        <meta name="description" content="AngularJS-based tool for drawing structural formulas in svg">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="stylesheets/bootstrap.min.css">
-        <link rel="stylesheet" href="stylesheets/main.min.css">
-        <link rel="stylesheet" href="stylesheets/draw-chem-editor.min.css">
-    </head>
-    <body dc-shortcuts ng-app="angularDrawChemSite">
-        <div class="container" ng-controller="TestCtrl as ctrl">
-            <div class="row">
-                <div class="col-md-10 col-md-offset-1">
-                    <div class="jumbotron mm-jumbo">
-                        <h2>AngularDrawChem <small>an editor for drawing structural formulas in svg</small><hr></h2>
-                        <p class="lead">
-                            <strong>Try it:</strong>
-                            <button class="btn btn-default" ng-click="ctrl.click()">Open editor</button>&emsp;
-                            <span class="text-danger"><small>Unstable and not yet fully functional!</small></span>
-                        </p>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-10 col-md-offset-1">
-                    <div class="alert alert-info mm-alert-info">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <p>Tip: Open editor > draw a structure > click 'transfer'</p>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-5">
-                                <p>
-                                    <strong>Output:</strong>
-                                    <div class="mm-structure" ng-bind-html="ctrl.input()"></div>
-                                </p>
-                            </div>
-                            <div class="col-md-7">
-                                <p>
-                                    <strong>Svg:</strong>
-                                    <div>
-                                        <form>
-                                            <div class="form-group">
-                                                <textarea class="form-control" rows="10" ng-bind="ctrl.svg()"></textarea>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-10 col-md-offset-1">
-                    <strong>Examples:</strong>
-                    <div class="mm-examples">
-                        <ul class="list-inline">
-                        	<li ng-repeat="example in ctrl.examples">
-                        		<img width="100%" height="100%" alt="{{example}}" ng-src="svg/{{example}}.svg">
-                        	</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-10 col-md-offset-1">
-                    <strong>Soon:</strong>
-                    <ul>
-                        <li>new actions</li>
-                        <li>keyboard shortcuts</li>
-                        <li>improved labeling</li>
-                        <li>new predefined structures</li>
-                        <li>reaction schemes</li>
-                        <li>manual</li>
-                    </ul>
-                </div>
-            </div>
-            <div ng-controller="EditorCtrl as ctrl">
-               <div draw-chem-editor show-editor="ctrl.showEditor()" width="1000px" height="500px"></div>
-            </div>
-            <div class="row">
-                <div class="col-md-10 col-md-offset-1">
-                    <p class="footer">
-                       Maintained by <a href="https://github.com/MMMalik">mmmalik</a>.
-                       Check out the project on <a href="https://github.com/MMMalik/angular-draw-chem">Github</a>!
-                       <img rel="octocat" width="3%" src="images/github.png"/>
-                    </p>
-                </div>
-            </div>
-        </div>
-        <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.0-beta.2/angular.min.js"></script>
-        <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.0-beta.2/angular-sanitize.min.js"></script>
-        <script src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/1.1.0/ui-bootstrap-tpls.min.js"></script>
-        <script src="javascripts/angular-draw-chem.js"></script>
-        <script src="javascripts/app.min.js"></script>
-        <script>
-            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-            })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-            ga('create', 'UA-72823584-1', 'auto');
-            ga('send', 'pageview');
-        </script>
-    </body>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Angular Chemistry</title>
+    <meta name="description" content="AngularJS-based tool for drawing structural formulas in svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="stylesheets/main.min.css">
+    <link rel="stylesheet" href="stylesheets/github.ttf">
+    <link rel="stylesheet" href="stylesheets/draw-chem-editor-modal.min.css">
+    <base href="/">
+  </head>
+  <body dc-shortcuts ng-app="angularDrawChemSite">
+    <div class="sidebar" ng-controller="SidebarCtrl as ctrl">
+      <img class="logo" ng-src="images/svg/logo.svg"></img>
+      <sidebar-menu menu-items="ctrl.menuItems"></sidebar-menu>
+      <div class="sidebar-additional">
+        <p>
+          <span>version: </span>
+          <span ng-switch="ctrl.version">
+            <span ng-switch-when="unstable" class="text-danger" ng-bind="ctrl.version"></span>
+            <span ng-switch-default ng-bind="ctrl.version"></span>
+          </span>
+        </p>
+        <p>license: MIT</p>
+        <p>maintained by: <a href="https://github.com/MMMalik">mmmalik</a></p>
+      </div>
+    </div>
+    <div class="content">
+      <div class="content-title">
+        <h2>AngularDrawChem <small>an editor for generating structural formulas in svg</small></h2>
+      </div>
+      <div ng-view></div>
+    </div>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.0-beta.2/angular.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.0-beta.2/angular-sanitize.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.0-beta.2/angular-route.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/1.1.0/ui-bootstrap-tpls.min.js"></script>
+    <script src="javascripts/angular-draw-chem.js"></script>
+    <script src="javascripts/app-concat.js"></script>
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-72823584-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </body>
 </html>
