@@ -16,7 +16,7 @@ module.exports = function(grunt) {
 		  tasks: ["svg"]
 		},
 		buildCss: {
-		  files: ["src/static/draw-chem-editor.sass"],
+		  files: ["src/static/*.sass"],
 		  tasks: ["css"]
 		}
 	},
@@ -33,12 +33,12 @@ module.exports = function(grunt) {
 	copy: {
 		buildJs: {
 			files: [
-				{ expand: true, cwd: "src/components/", src: "angular-draw-chem.js", dest: "dest/" }
+				{ expand: true, cwd: "src/components/", src: "angular-draw-chem.js", dest: "dest/js/" }
 			]
 		},
 		buildHtml: {
 			files: [
-				{ expand: true, cwd: "src/static/", src: "*.html", dest: "dest/" },
+				{ expand: true, cwd: "src/static/", src: "*.html", dest: "dest/html/" },
 				{ expand: true, cwd: "src/static/", src: "*.html", dest: "tests/assets" }
 			]
 		},
@@ -49,33 +49,35 @@ module.exports = function(grunt) {
 		},
 		buildCss: {
 			files: [
-				{ expand: true, cwd: "src/static/", src: "*.css", dest: "dest/" }
+				{ expand: true, cwd: "src/static/", src: "*.css", dest: "dest/css/" }
 			]
 		}
 	},
-    uglify: {
+  uglify: {
 		buildJs: {
 			files: {
-				"dest/angular-draw-chem.min.js": "src/components/angular-draw-chem.js"
+				"dest/js/angular-draw-chem.min.js": "src/components/angular-draw-chem.js"
 			}
 		}
-    },
+  },
 	clean: {
 		buildJs: ["src/components/angular-draw-chem.js"],
 		buildCss: ["src/static/*.css"]
 	},
 	sass: {
 		buildCss: {
-			files: {
-				"src/static/*.css": "src/static/*.sass"
+      files: {
+				"src/static/draw-chem-editor.css": "src/static/draw-chem-editor.sass",
+        "src/static/draw-chem-editor-modal.css": "src/static/draw-chem-editor-modal.sass"
 			}
 		}
 	},
 	cssmin: {
 		buildCss: {
-			files: {
-				"dest/*.min.css": "src/static/*.css"
-			}
+      files: {
+  		  "dest/css/draw-chem-editor.min.css": "src/static/draw-chem-editor.css",
+        "dest/css/draw-chem-editor-modal.min.css": "src/static/draw-chem-editor-modal.css"
+  		}
 		}
 	}
   });
@@ -92,5 +94,4 @@ module.exports = function(grunt) {
   grunt.registerTask("css", ["sass:buildCss", "copy:buildCss", "cssmin:buildCss", "clean:buildCss"]);
   grunt.registerTask("html", ["copy:buildHtml"]);
   grunt.registerTask("svg", ["copy:buildSvg"]);
-  //grunt.registerTask("default", ["watch"]);
 };

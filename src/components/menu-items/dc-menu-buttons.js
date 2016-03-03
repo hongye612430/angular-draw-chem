@@ -49,10 +49,8 @@
 				}
 			});
 
-      // Stores the custom label.
-      scope.customLabel = "";
-
-      scope.chooseCustomLabel = function () {
+      scope.chooseCustomLabel = function (text) {
+				Flags.customLabel = text;
         Flags.selected = "customLabel";
       }
     }

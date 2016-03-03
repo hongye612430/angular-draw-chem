@@ -97,7 +97,7 @@
         if (Flags.selected === "label") {
           atom.setLabel(angular.copy(scope.chosenLabel));
         } else if (Flags.selected === "customLabel") {
-          atom.setLabel(new Label(scope.customLabel, 0));
+          atom.setLabel(new Label(Flags.customLabel, 0));
         }
 
 				// if atom object already has a label on it

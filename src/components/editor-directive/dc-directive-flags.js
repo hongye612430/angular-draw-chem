@@ -18,6 +18,8 @@
       downOnAtom: false
     };
 
+		service.customLabel = "";
+
     service.selected = "";
 
 		return service;

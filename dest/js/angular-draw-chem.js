@@ -925,6 +925,8 @@
       downOnAtom: false
     };
 
+		service.customLabel = "";
+
     service.selected = "";
 
 		return service;
@@ -1030,7 +1032,7 @@
         if (Flags.selected === "label") {
           atom.setLabel(angular.copy(scope.chosenLabel));
         } else if (Flags.selected === "customLabel") {
-          atom.setLabel(new Label(scope.customLabel, 0));
+          atom.setLabel(new Label(Flags.customLabel, 0));
         }
 
 				// if atom object already has a label on it
@@ -1364,7 +1366,8 @@
 				scope.getEditorUrl = function () {
 					var editorHtml = attrs.dcModal === "" ? "draw-chem-editor-modal.html": "draw-chem-editor.html";
 					return Paths.getPath() + editorHtml;
-				}
+				};
+
 				scope.pathToSvg = Paths.getPathToSvg();
 
 				// Sets width and height of the dialog box based on corresponding attributes.
@@ -2039,10 +2042,8 @@
 				}
 			});
 
-      // Stores the custom label.
-      scope.customLabel = "";
-
-      scope.chooseCustomLabel = function () {
+      scope.chooseCustomLabel = function (text) {
+				Flags.customLabel = text;
         Flags.selected = "customLabel";
       }
     }

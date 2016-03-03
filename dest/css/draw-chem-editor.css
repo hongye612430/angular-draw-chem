@@ -1,0 +1,52 @@
+.dc-editor-dialog {
+  width: 100%;
+  background-color: white;
+  height: 100%; }
+
+.dc-wrap {
+  height: 90%;
+  width: 90%;
+  float: left;
+  margin: 5px; }
+
+.centered-text {
+  text-align: center; }
+
+.dc-menuitem {
+  cursor: default; }
+
+.dc-input-right {
+  float: right; }
+
+.dc-thumbnail {
+  width: 30px;
+  height: 30px; }
+
+.dc-editor-dialog-content {
+  width: 100%;
+  height: 88%;
+  margin: 2px;
+  border: 1px solid black;
+  display: block; }
+
+.dc-editor-dialog-content > svg {
+  width: 100%;
+  height: 100%; }
+
+.dc-tools-v {
+  width: 10%;
+  height: auto;
+  display: block; }
+
+.dc-tools-h {
+  width: 100%;
+  height: 10%;
+  margin: 2px;
+  display: block; }
+
+.dc-custom-button {
+  height: 75%;
+  font-size: 100%; }
+
+.dc-editor-close {
+  margin: 15px; }

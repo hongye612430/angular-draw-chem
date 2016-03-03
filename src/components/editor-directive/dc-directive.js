@@ -21,7 +21,8 @@
 				scope.getEditorUrl = function () {
 					var editorHtml = attrs.dcModal === "" ? "draw-chem-editor-modal.html": "draw-chem-editor.html";
 					return Paths.getPath() + editorHtml;
-				}
+				};
+
 				scope.pathToSvg = Paths.getPathToSvg();
 
 				// Sets width and height of the dialog box based on corresponding attributes.
