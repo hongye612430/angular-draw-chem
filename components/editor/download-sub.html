@@ -1,1 +1,16 @@
-Download - todo
+<div class="home">
+  <p>Download from Github</p>
+  <ul class="list-unstyled">
+    <li ng-repeat="release in submenuCtrl.releases">
+      <span ng-bind="release.name"></span>: <a ng-href="{{release.zip}}">zipball</a> <a ng-href="{{release.tar}}">tarball</a>
+    </li>
+  </ul>
+</div>
+<div class="home">
+  <p>Download from npm</p>
+  <i>Not yet submitted</i>
+</div>
+<div class="home">
+  <p>Download from bower</p>
+  <i>Not yet submitted</i>
+</div>
