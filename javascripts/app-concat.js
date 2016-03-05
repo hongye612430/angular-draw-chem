@@ -23,7 +23,27 @@
 		}])
 		.run(["DrawChemConst", function (DrawChemConst) {
 			DrawChemConst.setBondLength(35);
-		}]);
+		}])
+		.controller("AppCtrl", AppCtrl);
+
+	AppCtrl.$inject = ["DrawChem", "$http"];
+
+  function AppCtrl(DrawChem, $http) {
+    var vm = this;
+    vm.runEditor = function () {
+			DrawChem.runEditor("test");
+		};
+    vm.showEditor = function () {
+			return DrawChem.showEditor();
+		};
+		$http
+			.get("https://api.github.com/repos/mmmalik/angular-draw-chem/tags")
+			.then(function (success) {
+				vm.version = typeof success.data[0] === "undefined" ? "unstable": "v" + success.data[0].name;
+			}, function (err) {
+				vm.version = "unknown";
+			});
+  }
 })();
 
 (function () {
@@ -41,13 +61,7 @@
     vm.runOutput = function () {
 			DrawChem.closeEditor();
       vm.showOutput = true;
-		}
-    vm.runEditor = function () {
-			DrawChem.runEditor("test");
-		}
-    vm.showEditor = function () {
-			return DrawChem.showEditor();
-		}
+		}    
 		vm.input = function () {
 			return $sce.trustAsHtml(DrawChem.getContent("test"));
 		}
@@ -76,7 +90,15 @@
 			}
 			return "components" + location + "-sub.html";
 		};
-		vm.svgs = ["erythromycin", "barbituric-acid", "inositol", "miglustat"];
+		vm.svgs = {
+			"erythromycin": { file: "erythromycin", style: { width: "30%" } },
+			"barbituric acid": { file: "barbituric-acid", style: { width: "15%" } },
+			"inositol": { file: "inositol", style: { width: "15%" } },
+			"miglustat": { file: "miglustat", style: { width: "15%" } },
+			"naringenin": { file: "naringenin", style: { width: "25%" } },
+			"curcumin": { file: "curcumin", style: { width: "35%" } },
+			"cephalosporins": { file: "cephalosporins", style: { width: "20%" } }
+		};
   }
 })();
 
@@ -119,15 +141,7 @@
         icon: "icon-github",
         link: "https://github.com/MMMalik/angular-draw-chem"
       }
-    };
-
-		$http
-			.get("https://api.github.com/repos/mmmalik/angular-draw-chem/tags")
-			.then(function (success) {
-				vm.version = typeof success.data[0] === "undefined" ? "unstable": "v" + success.data[0].name;
-			}, function (err) {
-				vm.version = "unknown";
-			});
+    };		
   }
 })();
 

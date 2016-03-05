@@ -1,4 +1,4 @@
-<p ng-repeat="name in submenuCtrl.svgs">
+<p class="home" ng-repeat="(name, obj) in submenuCtrl.svgs">
   <strong ng-bind="name"></strong><br/>
-  <img width="20%" ng-src="svg/{{name}}.svg"></img>
+  <img ng-style="obj.style" ng-src="svg/{{obj.file}}.svg"></img>
 </p>

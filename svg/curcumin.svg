@@ -1,0 +1,34 @@
+<!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>
+<svg viewBox='125.36 113.60 536.34 163.00' height='100%' width='100%' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' >
+<g id='cmpd1' >
+<style type="text/css">path{stroke:black;stroke-width:1.4;fill:none;}path.wedge{fill:black;}path.arrow{fill:black;}path.arrow-eq{fill:none;}circle.arom{stroke:black;stroke-width:1.4;fill:none;}text{font-family:Arial;cursor:default;font-size:18px;}tspan.sub{font-size:14px;}polygon.text{fill:white;}</style>
+<path d='M 241.98 142.6 L 272.28999999999996 160.1 L 272.28999999999996 195.1 L 241.97999999999996 212.6 L 211.66999999999996 195.1 L 211.66999999999996 160.1 L 241.97999999999996 142.6 '></path>
+<path d='M 211.66999999999996 160.1 L 181.35999999999996 142.6 '></path>
+<path d='M 211.66999999999996 195.1 L 181.35999999999996 212.6 '></path>
+<path d='M 272.28999999999996 195.1 L 302.59999999999997 212.6 '></path>
+<path d='M 303.74 214.57 L 334.05 197.07 M 301.46 210.63 L 331.77 193.13 '></path>
+<path d='M 332.90999999999997 195.1 L 363.21999999999997 212.6 L 393.53 195.1 L 423.84 212.6 L 454.15 195.1 '></path>
+<path d='M 453.01 197.07 L 483.32 214.57 M 455.29 193.13 L 485.60 210.63 '></path>
+<path d='M 484.46 212.6 L 514.77 195.1 L 514.77 160.1 L 545.0799999999999 142.6 L 575.3899999999999 160.1 L 575.3899999999999 195.1 L 545.0799999999999 212.6 L 514.77 195.1 '></path>
+<path d='M 575.3899999999999 195.1 L 605.6999999999998 212.6 '></path>
+<path d='M 575.3899999999999 160.1 L 605.6999999999998 142.6 '></path>
+<path d='M 421.56 212.60 L 421.56 247.60 M 426.11 212.60 L 426.11 247.60 '></path>
+<path d='M 423.84 247.6 '></path>
+<path d='M 360.94 212.60 L 360.94 247.60 M 365.49 212.60 L 365.49 247.60 '></path>
+<path d='M 363.21999999999997 247.6 '></path>
+<polygon class='text' points='183.69 133.91 187.72 136.24 190.05 140.27 190.05 144.93 187.72 148.96 183.69 151.29 179.03 151.29 175.00 148.96 172.67 144.93 172.67 140.27 175.00 136.24 179.03 133.91 '></polygon>
+<text dy='0.2125em' x='187.48499999999996' atomx='181.35999999999996' atomy='142.6' y='145.75' text-anchor='end' ><tspan>H</tspan><tspan>O</tspan></text>
+<polygon class='text' points='183.69 203.91 187.72 206.24 190.05 210.27 190.05 214.93 187.72 218.96 183.69 221.29 179.03 221.29 175.00 218.96 172.67 214.93 172.67 210.27 175.00 206.24 179.03 203.91 '></polygon>
+<text dy='0.2125em' x='187.48499999999996' atomx='181.35999999999996' atomy='212.6' y='215.75' text-anchor='end' ><tspan>H</tspan><tspan class='sub' dy='4.5' >3</tspan><tspan dy='-4.5' >C</tspan><tspan>O</tspan></text>
+<polygon class='text' points='608.03 203.91 612.06 206.24 614.39 210.27 614.39 214.93 612.06 218.96 608.03 221.29 603.37 221.29 599.34 218.96 597.01 214.93 597.01 210.27 599.34 206.24 603.37 203.91 '></polygon>
+<text dy='0.2125em' x='599.5749999999998' atomx='605.6999999999998' atomy='212.6' y='215.75' text-anchor='start' ><tspan>O</tspan><tspan>C</tspan><tspan>H</tspan><tspan class='sub' dy='4.5' >3</tspan></text>
+<polygon class='text' points='608.03 133.91 612.06 136.24 614.39 140.27 614.39 144.93 612.06 148.96 608.03 151.29 603.37 151.29 599.34 148.96 597.01 144.93 597.01 140.27 599.34 136.24 603.37 133.91 '></polygon>
+<text dy='0.2125em' x='599.5749999999998' atomx='605.6999999999998' atomy='142.6' y='145.75' text-anchor='start' ><tspan>O</tspan><tspan>H</tspan></text>
+<polygon class='text' points='426.17 238.91 430.20 241.24 432.53 245.27 432.53 249.93 430.20 253.96 426.17 256.29 421.51 256.29 417.48 253.96 415.15 249.93 415.15 245.27 417.48 241.24 421.51 238.91 '></polygon>
+<text dy='0.2125em' x='417.715' atomx='423.84' atomy='247.6' y='250.75' text-anchor='start' ><tspan>O</tspan></text>
+<polygon class='text' points='365.55 238.91 369.58 241.24 371.91 245.27 371.91 249.93 369.58 253.96 365.55 256.29 360.89 256.29 356.86 253.96 354.53 249.93 354.53 245.27 356.86 241.24 360.89 238.91 '></polygon>
+<text dy='0.2125em' x='369.34499999999997' atomx='363.21999999999997' atomy='247.6' y='250.75' text-anchor='end' ><tspan>O</tspan></text>
+<circle class='arom' cx='241.98' cy='177.6' r='15.75' ></circle>
+<circle class='arom' cx='545.0799999999999' cy='177.6' r='15.75' ></circle>
+</g>
+</svg>

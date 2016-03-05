@@ -1,7 +1,7 @@
 <!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>
 <svg viewBox='300 75.80 199.62 163.00' height='100%' width='100%' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' >
 <g id='cmpd1' >
-<style type="text/css">path{stroke:black;stroke-width:1.4;fill:none;}path.wedge{fill:black;}path.arrow{fill:black;}path.arrow-eq{fill:none;}circle.arom{stroke:black;stroke-width:1.4;fill:none;}text{font-family:'Times New Roman';cursor:default;font-size:18px;}tspan.sub{font-size:14px;}polygon.text{fill:#EFFFFF;}</style>
+<style type="text/css">path{stroke:black;stroke-width:1.4;fill:none;}path.wedge{fill:black;}path.arrow{fill:black;}path.arrow-eq{fill:none;}circle.arom{stroke:black;stroke-width:1.4;fill:none;}text{font-family:'Helvetica';cursor:default;font-size:18px;}tspan.sub{font-size:14px;}polygon.text{fill:white;}</style>
 <path d='M 371.97 139.8 L 402.28000000000003 157.3 L 402.28000000000003 192.3 L 371.97 209.8 L 341.66 192.3 L 341.66 157.3 L 371.97 139.8 '></path>
 <path d='M 402.28000000000003 192.3 L 432.59000000000003 209.8 '></path>
 <path d='M 402.28000000000003 157.3 L 432.59000000000003 139.8 '></path>

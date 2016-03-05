@@ -12,28 +12,39 @@
     <link rel="stylesheet" href="stylesheets/draw-chem-editor-modal.min.css">
     <base href="/angular-draw-chem/">
   </head>
-  <body dc-shortcuts ng-app="angularDrawChemSite">
-    <div class="sidebar" ng-controller="SidebarCtrl as ctrl">
-      <img class="logo" ng-src="images/svg/logo.svg"></img>
-      <sidebar-menu menu-items="ctrl.menuItems"></sidebar-menu>
-      <div class="sidebar-additional">
-        <p>
-          <span>version: </span>
-          <span ng-switch="ctrl.version">
-            <span ng-switch-when="unstable" class="text-danger" ng-bind="ctrl.version"></span>
-            <span ng-switch-default ng-bind="ctrl.version"></span>
-          </span>
-        </p>
-        <p>license: MIT</p>
-        <p>maintained by: <a href="https://github.com/MMMalik">mmmalik</a></p>
+  <body dc-shortcuts ng-app="angularDrawChemSite" ng-controller="AppCtrl as appCtrl">
+    <div class="row">
+      <div class="col-md-2 col-xs-3">
+        <div class="sidebar" ng-controller="SidebarCtrl as ctrl">
+          <img class="logo" ng-src="images/svg/logo.svg"></img>
+          <sidebar-menu menu-items="ctrl.menuItems"></sidebar-menu>
+          <div class="sidebar-additional">
+            <p>
+              <span>version: </span>
+              <span ng-switch="appCtrl.version">
+                <span ng-switch-when="unstable" class="text-danger" ng-bind="appCtrl.version"></span>
+                <span ng-switch-default ng-bind="appCtrl.version"></span>
+              </span>
+            </p>
+            <p>license: MIT</p>
+            <p>maintained by: <a href="https://github.com/MMMalik">mmmalik</a></p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-10 col-xs-9">
+        <div class="row">
+          <div class="col-xs-10">
+            <div class="content">
+              <div class="content-title">
+                <h2>AngularDrawChem <small>an editor for generating structural formulas in svg</small></h2>
+              </div>
+              <div ng-view></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="content">
-      <div class="content-title">
-        <h2>AngularDrawChem <small>an editor for generating structural formulas in svg</small></h2>
-      </div>
-      <div ng-view></div>
-    </div>
+    <div draw-chem-editor dc-modal show-editor="appCtrl.showEditor()" width="1000px" height="600px"></div>
     <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.0-beta.2/angular.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.0-beta.2/angular-sanitize.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.0-beta.2/angular-route.js"></script>
