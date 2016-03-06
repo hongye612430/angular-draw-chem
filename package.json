@@ -1,25 +1,28 @@
 {
   "name": "angular-draw-chem",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "AngularJS-based tool for drawing structural formulas in svg",
-  "main": "./dest/angular-draw-chem.js",
+  "main": "./dest/js/angular-draw-chem.js",
   "scripts": {
     "test": "karma start ./tests/karma.conf.js --single-run"
   },
   "repository": {
     "type": "git",
-    "url": "dk"
+    "url": "https://github.com/MMMalik/angular-draw-chem"
   },
   "keywords": [
-    "chemistry",
+    "molecule editor",
     "structural formula",
-    "substances",
-    "laboratory",
-    "angular"
+    "svg",
+    "angularjs",
+    "chemistry"
   ],
   "author": "Michał Malik <michalmmalik@gmail.com>",
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "angular": "^1.4.7",
+    "angular-sanitize": "^1.4.7"
+  },
   "devDependencies": {
     "angular": "^1.4.7",
     "angular-route": "^1.4.8",
