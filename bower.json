@@ -1,0 +1,24 @@
+{
+  "name": "angular-draw-chem",
+  "version": "1.0.0",
+  "homepage": "https://github.com/MMMalik/angular-draw-chem",
+  "authors": [
+    "michalmmalik@gmail.com"
+  ],
+  "description": "molecule editor for drawing structural formulas based on AngularJS",
+  "main": "dest/js/angular-draw-chem.js",
+  "keywords": [
+    "molecule editor",
+    "structural formula",
+    "svg",
+    "angularjs",
+    "chemistry"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "Gruntfile.js",
+    "package.json",
+    "tests",
+    ".gitignore"
+  ]
+}
