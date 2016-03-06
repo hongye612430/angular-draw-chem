@@ -11,6 +11,10 @@ possible usage
 ------
 1. By adding `mmAngularDrawChem` module to your project, making it available for the users of your website, so they can interact with it and make their own structures.
 2. You can use it on the project website, make structures that you need, grab the `svg` and place it within your `html`.
+3. Download:
+* [Github](https://github.com/MMMalik/angular-draw-chem/releases)
+* npm `npm i angular-draw-chem`
+* bower `bower install angular-draw-chem`
 
 components
 ------
