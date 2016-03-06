@@ -18,6 +18,7 @@
   "ignore": [
     "Gruntfile.js",
     "package.json",
+    "src",
     "tests",
     ".gitignore"
   ]
