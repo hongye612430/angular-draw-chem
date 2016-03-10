@@ -13,12 +13,25 @@
 		*/
 		function Arrow(type, direction, relativeEnd) {
 			this.type = type;
+			this.selected = false;
 			this.direction = direction;
 			this.relativeEnd = relativeEnd;
 		}
 
+		Arrow.prototype.select = function () {
+			this.selected = true;
+		};
+
+		Arrow.prototype.deselect = function () {
+			this.selected = false;
+		}
+
 		Arrow.prototype.getType = function () {
 			return this.type;
+		}
+
+		Arrow.prototype.getRelativeEnd = function () {
+			return this.relativeEnd;
 		}
 
 		Arrow.prototype.getEnd = function () {

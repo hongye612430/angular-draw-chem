@@ -255,7 +255,8 @@
 					mini += aux;
 				});
 				circles.forEach(function (circle) {
-					full += "<circle class='atom' cx='" + circle[0] + "' cy='" + circle[1] + "' r='" + circle[2] + "' ></circle>";
+					var aux = circle.selected ? "edit": "atom";
+					full += "<circle class='" + aux + "' cx='" + circle.circle[0] + "' cy='" + circle.circle[1] + "' r='" + circle.circle[2] + "' ></circle>";
 				});
 				labels.forEach(function (label) {
 					aux = drawDodecagon(label) +
@@ -342,14 +343,18 @@
 						updateLabel(absPos, atom);
 						updateMinMax(absPos);
 						len = output.push(["M", absPos]);
-						circles.push([absPos[0], absPos[1], circR]);
-						connect(absPos, atom.getBonds(), output[len - 1]);
+						circles.push({ selected: atom.selected, circle: [absPos[0], absPos[1], circR] });
+						connect(absPos, atom.getBonds(), output[len - 1], atom.selected);
 					} else if (obj instanceof Arrow) {
 						arrow = obj;
 						absPosStart = addCoordsNoPrec(origin, arrow.getOrigin());
 						absPosEnd = addCoordsNoPrec(origin, arrow.getEnd());
 						updateMinMax(absPosStart);
 						updateMinMax(absPosEnd);
+						if (arrow.selected) {
+							circles.push({ selected: true, circle: [ absPosStart[0], absPosStart[1], circR ] })
+							circles.push({ selected: true, circle: [ absPosEnd[0], absPosEnd[1], circR ] })
+						}
 						output.push(calcArrow(absPosStart, absPosEnd, arrow.getType()));
 					}
 				}
@@ -408,7 +413,7 @@
 				* @param {Bond[]} bonds - an array of Bond objects
 				* @param {String|Number[]} - an array of coordinates with 'M' and 'L' commands
 				*/
-				function connect(prevAbsPos, bonds, currentLine) {
+				function connect(prevAbsPos, bonds, currentLine, selected) {
 					var i, absPos, atom, bondType;
 					for (i = 0; i < bonds.length; i += 1) {
 						atom = bonds[i].getAtom();
@@ -419,16 +424,16 @@
 						];
 						updateMinMax(absPos);
 						updateLabel(absPos, atom);
-						circles.push([absPos[0], absPos[1], circR]);
+						circles.push({ selected: selected, circle: [absPos[0], absPos[1], circR] });
 						if (i === 0) {
-							drawLine(prevAbsPos, absPos, bondType, atom, "continue");
+							drawLine(prevAbsPos, absPos, bondType, atom, "continue", selected);
 						} else {
-							drawLine(prevAbsPos, absPos, bondType, atom, "begin");
+							drawLine(prevAbsPos, absPos, bondType, atom, "begin", selected);
 						}
 					}
 				}
 
-				function drawLine(prevAbsPos, absPos, bondType, atom, mode) {
+				function drawLine(prevAbsPos, absPos, bondType, atom, mode, selected) {
 					var newLen = output.length;
 					if (bondType === "single") {
 						if (mode === "continue") {
@@ -450,7 +455,7 @@
 						output.push(calcDashBondCoords(prevAbsPos, absPos));
 						newLen = output.push(["M", absPos]);
 					}
-					connect(absPos, atom.getBonds(), output[newLen - 1]);
+					connect(absPos, atom.getBonds(), output[newLen - 1], selected);
 				}
 
 				function calcDoubleBondCoords(start, end) {
@@ -505,8 +510,6 @@
 					if (typeof label !== "undefined") {
 						labelObj = genLabelInfo();
 						labels.push(labelObj);
-						updateMinMax([labelObj.atomX - labelObj.width / 2, labelObj.atomY - labelObj.height / 2]);
-						updateMinMax([labelObj.atomX + labelObj.width / 2, labelObj.atomY + labelObj.height / 2]);
 					}
 
 					function genLabelInfo() {

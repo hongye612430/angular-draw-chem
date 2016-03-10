@@ -21,6 +21,7 @@
 			var drawn = "";
 			drawn = Shapes.draw(structure, "cmpd1");
 			Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
+			return drawn;
 		};
 
 		/**

@@ -5,7 +5,6 @@
 		<div class="dc-wrap">
 			<div id="#dc-tools-h" class="dc-tools-h">
 				<form class="form-inline">
-
 					<!-- Menu Items -->
 					<div class="btn-group" uib-dropdown ng-repeat="(name, menuItem) in menu">
 						<button id="dc-btn-{{name}}" type="button" class="btn btn-primary" uib-dropdown-toggle>
@@ -13,10 +12,10 @@
 						</button>
 						<ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="btn-append-to-single-button">
 							<li class="dc-menuitem" role="menuitem" ng-repeat="(name, action) in menuItem.actions">
-								<a class="dc-menuitem-link" ng-click="action.action(menuItem.scope)" id="dc-{{name}}">
+								<a class="dc-menuitem-link" ng-click="action.action(menuItem.scope)" id="dc-{{action.id}}">
 									<span class="dc-menuitem-link-text" ng-bind="name"></span>
 									<small ng-if="action.shortcut" class="text-muted" ng-bind="action.shortcut"></small>
-									<img ng-if="action.thumbnail" class="dc-thumbnail" alt="{{name}}" ng-src="{{pathToSvg}}/{{name}}.svg">
+									<img ng-if="action.thumbnail" class="dc-thumbnail" alt="{{action.id}}" ng-src="{{pathToSvg}}/{{action.id}}.svg">
 								</a>
 							</li>
 						</ul>

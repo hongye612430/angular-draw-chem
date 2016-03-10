@@ -8,6 +8,10 @@ var styleExpanded = "circle.atom:hover{" +
 	"}" +
 	"circle.atom{" +
 		"opacity:0;" +
+	"}" +
+	"circle.edit{" +
+		"stroke:black;" +
+		"fill:none;" +
 	"}",
 	styleBase = "path{" +
 		"stroke:black;" +

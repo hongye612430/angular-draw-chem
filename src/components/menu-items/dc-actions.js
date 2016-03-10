@@ -82,22 +82,27 @@
 		service.actions = {
 				"undo": {
 					shortcut: "ctrl + z",
+					id: "undo",
 					action: service.undo
 				},
 				"forward": {
 					shortcut: "ctrl + f",
+					id: "forward",
 					action: service.forward
 				},
 				"transfer": {
 					shortcut: "ctrl + t",
+					id: "transfer",
 					action: service.transfer
 				},
 				"clear": {
 					shortcut: "ctrl + e",
+					id: "clear",
 					action: service.clear
 				},
 				"close": {
 					shortcut: "ctrl + q",
+					id: "close",
 					action: service.close
 				}
 		};

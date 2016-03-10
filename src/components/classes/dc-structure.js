@@ -3,9 +3,13 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DCStructure", DCStructure);
 
-	function DCStructure() {
+	DCStructure.$inject = ["DCArrow", "DCAtom"];
 
-		var service = {};
+	function DCStructure(DCArrow, DCAtom) {
+
+		var service = {},
+			Arrow = DCArrow.Arrow,
+			Atom = DCAtom.Atom;
 
 		/**
 		* Creates a new Structure.
@@ -18,32 +22,98 @@
 			this.structure = structure || [];
 			this.transform = [];
 			this.origin = [];
+			this.selectedAll = false;
 			this.decorate = decorate || {};
 		}
 
-		/**
-		 * Sets the specified transform (translate, scale, etc.)
-		 * @param {String} name - a name of the transform
-		 * @param {Number[]} content - an array with the coordinates
-		 */
-		Structure.prototype.setTransform = function (name, content) {
-			this.transform.push(
-				{
-					name: name,
-					content: content
-				}
-			);
+		Structure.prototype.selectAll = function () {
+			var i;
+			this.selectedAll = true;
+			for (i = 0; i < this.structure.length; i += 1) {
+				this.structure[i].select();
+			}
+		};
+
+		Structure.prototype.deselectAll = function () {
+			var i;
+			this.selectedAll = false;
+			for (i = 0; i < this.structure.length; i += 1) {
+				this.structure[i].deselect();
+			}
+		};
+
+		Structure.prototype.alignUp = function (minY) {
+			changeAlignment.call(this, "up", minY);
+		};
+
+		function setArrow(arrow, alignment, coord) {
+			var absPosStart = addCoordsNoPrec(this.origin, arrow.getOrigin()),
+				absPosEnd = addCoordsNoPrec(this.origin, arrow.getEnd()),
+				minMax = { minX: absPosStart[0], minY: absPosStart[1], maxX: 0, maxY: 0 };
+
+			if (alignment === "up") {
+				updateMinY(absPosEnd, minMax);
+				alignUp();
+			}
+
+			function alignUp() {
+				var d = coord - minMax.minY;
+				arrow.setOrigin([
+					arrow.getOrigin("x"),
+					arrow.getOrigin("y") + d
+				]);
+			}
 		}
 
-		/**
-		 * Gets the specified transform.
-		 * @returns {Number[]}
-		 */
-		Structure.prototype.getTransform = function (name) {
-			var i, transform = this.transform;
-			for (i = 0; i < transform.length; i += 1) {
-				if (transform[i].name === name) {
-					return transform[i].content;
+		function setAtom(atom, alignment, coord) {
+			var currAtOrig = atom.getCoords(),
+				absPos = addCoordsNoPrec(this.origin, currAtOrig),
+				minMax = { minX: absPos[0], minY: absPos[1], maxX: 0, maxY: 0 };
+
+			if (alignment === "up") {
+				checkMinY(absPos, atom);
+				alignUp();
+			}
+
+			function alignUp() {
+				var d = coord - minMax.minY;
+				atom.setCoords([
+					currAtOrig[0],
+					currAtOrig[1] + d
+				]);
+			}
+
+			function checkMinY(absPos, atom) {
+				var i, currAbsPos, at;
+				updateMinY(absPos, minMax);
+				for (i = 0; i < atom.getBonds().length; i += 1) {
+					at = atom.getBonds(i).getAtom();
+					currAbsPos = addCoordsNoPrec(absPos, at.getCoords());
+					checkMinY(currAbsPos, at);
+				}
+			}
+		}
+
+		function addCoordsNoPrec(coords1, coords2, factor) {
+			return typeof factor === "undefined" ?
+				[coords1[0] + coords2[0], coords1[1] + coords2[1]]:
+				[coords1[0] + factor * coords2[0], coords1[1] + factor * coords2[1]];
+		}
+
+		function updateMinY(absPos, minMax) {
+			if (absPos[1] < minMax.minY) {
+				minMax.minY = absPos[1];
+			}
+		}
+
+		function changeAlignment(alignment, coord) {
+			var i;
+			for (i = 0; i < this.structure.length; i += 1) {
+				var struct = this.structure[i];
+				if (struct instanceof Arrow) {
+					setArrow.call(this, struct, alignment, coord);
+				} else if (struct instanceof Atom) {
+					setAtom.call(this, struct, alignment, coord);
 				}
 			}
 		}

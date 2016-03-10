@@ -13,16 +13,19 @@
 			ArrowCluster = DCArrowCluster.ArrowCluster;
 
 		service.arrows = {
-			"one-way-arrow": {
+			"one way arrow": {
 				action: createArrowAction("one-way-arrow"),
+				id: "one-way-arrow",
 				thumbnail: true
 			},
-			"two-way-arrow": {
+			"two way arrow": {
 				action: createArrowAction("two-way-arrow"),
+				id: "two-way-arrow",
 				thumbnail: true
 			},
-			"equilibrium-arrow": {
+			"equilibrium arrow": {
 				action: createArrowAction("equilibrium-arrow"),
+				id: "equilibrium-arrow",
 				thumbnail: true
 			}
 		};

@@ -131,30 +131,37 @@
 		service.structures = {
 			"benzene": {
 				action: createStructureAction(service.benzene),
+				id: "benzene",
 				thumbnail: true
 			},
 			"cyclohexane": {
 				action: createStructureAction(service.cyclohexane),
+				id: "cyclohexane",
 				thumbnail: true
 			},
-			"single-bond": {
+			"single bond": {
 				action: createStructureAction(service.singleBond),
+				id: "single-bond",
 				thumbnail: true
 			},
-			"wedge-bond": {
+			"wedge bond": {
 				action: createStructureAction(service.wedgeBond),
+				id: "wedge-bond",
 				thumbnail: true
 			},
-			"dash-bond": {
+			"dash bond": {
 				action: createStructureAction(service.dashBond),
+				id: "dash-bond",
 				thumbnail: true
 			},
-			"double-bond": {
+			"double bond": {
 				action: createStructureAction(service.doubleBond),
+				id: "double-bond",
 				thumbnail: true
 			},
-			"triple-bond": {
+			"triple bond": {
 				action: createStructureAction(service.tripleBond),
+				id: "triple-bond",
 				thumbnail: true
 			}
 		};

@@ -15,34 +15,44 @@
 		 */
 		service.labels = {
 			"oxygen": {
-				action: createLabelAction("O", 2)
+				action: createLabelAction("O", 2),
+				id: "oxygen"
 			},
 			"sulfur": {
-				action: createLabelAction("S", 2)
+				action: createLabelAction("S", 2),
+				id: "sulfur"
 			},
 			"phosphorus": {
-				action: createLabelAction("P", 3)
+				action: createLabelAction("P", 3),
+				id: "phosphorus"
 			},
 			"nitrogen": {
-				action: createLabelAction("N", 3)
+				action: createLabelAction("N", 3),
+				id: "nitrogen"
 			},
 			"carbon": {
-				action: createLabelAction("C", 4)
+				action: createLabelAction("C", 4),
+				id: "carbon"
 			},
 			"fluorine": {
-				action: createLabelAction("F", 1)
+				action: createLabelAction("F", 1),
+				id: "fluorine"
 			},
 			"chlorine": {
-				action: createLabelAction("Cl", 1)
+				action: createLabelAction("Cl", 1),
+				id: "chlorine"
 			},
 			"bromine": {
-				action: createLabelAction("Br", 1)
+				action: createLabelAction("Br", 1),
+				id: "bromine"
 			},
 			"iodine": {
-				action: createLabelAction("I", 1)
+				action: createLabelAction("I", 1),
+				id: "iodine"
 			},
 			"hydrogen": {
-				action: createLabelAction("H", 1)
+				action: createLabelAction("H", 1),
+				id: "hydrogen"
 			}
 		};
 

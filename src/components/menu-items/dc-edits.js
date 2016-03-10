@@ -3,19 +3,52 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemEdits", DrawChemEdits);
 
-	DrawChemEdits.$inject = [];
+	DrawChemEdits.$inject = ["DrawChemCache", "DrawChemDirectiveUtils"];
 
-	function DrawChemEdits() {
+	function DrawChemEdits(Cache, Utils) {
 
-		var service = {};
+		var service = {}, minMax;
 
     service.selectAll = function () {
-
+			var structure = angular.copy(Cache.getCurrentStructure()), shape;
+			if (structure !== null) {
+				structure.selectAll();
+				Cache.addStructure(structure);
+				shape = Utils.drawStructure(structure);
+				minMax = shape.minMax;
+			}
     };
+
+		service.deselectAll = function () {
+			var structure = angular.copy(Cache.getCurrentStructure());
+			if (structure !== null) {
+				structure.deselectAll();
+				Cache.addStructure(structure);
+				Utils.drawStructure(structure);
+			}
+    };
+
+		service.alignUp = function () {
+			var structure = angular.copy(Cache.getCurrentStructure());
+			if (structure !== null && structure.selectedAll) {
+				structure.alignUp(minMax.minY);
+				Cache.addStructure(structure);
+				Utils.drawStructure(structure);
+			}
+		};
 
 		service.edits = {
 			"select all": {
-				action: service.selectAll
+				action: service.selectAll,
+				id: "select-all"
+			},
+			"deselect all": {
+				action: service.deselectAll,
+				id: "deselect-all"
+			},
+			"align up": {
+				action: service.alignUp,
+				id: "align-up"
 			}
 		};
 

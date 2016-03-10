@@ -39,6 +39,10 @@
 					},
 					"circle.atom": {
 						"opacity": "0",
+					},
+					"circle.edit": {
+						"stroke": "black",
+						"fill": "none"
 					}
 				},
 				base: {

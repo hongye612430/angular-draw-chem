@@ -65,12 +65,25 @@
 		*/
 		function Arrow(type, direction, relativeEnd) {
 			this.type = type;
+			this.selected = false;
 			this.direction = direction;
 			this.relativeEnd = relativeEnd;
 		}
 
+		Arrow.prototype.select = function () {
+			this.selected = true;
+		};
+
+		Arrow.prototype.deselect = function () {
+			this.selected = false;
+		}
+
 		Arrow.prototype.getType = function () {
 			return this.type;
+		}
+
+		Arrow.prototype.getRelativeEnd = function () {
+			return this.relativeEnd;
 		}
 
 		Arrow.prototype.getEnd = function () {
@@ -140,9 +153,18 @@
 			this.info = info;
 			this.attachedBonds = attachedBonds || [];
 			this.next = "";
+			this.selected = false;
 			this.label;
 			this.calculateNext();
 		}
+
+		Atom.prototype.select = function () {
+			this.selected = true;
+		};
+
+		Atom.prototype.deselect = function () {
+			this.selected = false;
+		};
 
 		/**
 		 * Calculates direction of an opposite bond.
@@ -584,6 +606,10 @@
 					},
 					"circle.atom": {
 						"opacity": "0",
+					},
+					"circle.edit": {
+						"stroke": "black",
+						"fill": "none"
 					}
 				},
 				base: {
@@ -771,9 +797,13 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DCStructure", DCStructure);
 
-	function DCStructure() {
+	DCStructure.$inject = ["DCArrow", "DCAtom"];
 
-		var service = {};
+	function DCStructure(DCArrow, DCAtom) {
+
+		var service = {},
+			Arrow = DCArrow.Arrow,
+			Atom = DCAtom.Atom;
 
 		/**
 		* Creates a new Structure.
@@ -786,32 +816,98 @@
 			this.structure = structure || [];
 			this.transform = [];
 			this.origin = [];
+			this.selectedAll = false;
 			this.decorate = decorate || {};
 		}
 
-		/**
-		 * Sets the specified transform (translate, scale, etc.)
-		 * @param {String} name - a name of the transform
-		 * @param {Number[]} content - an array with the coordinates
-		 */
-		Structure.prototype.setTransform = function (name, content) {
-			this.transform.push(
-				{
-					name: name,
-					content: content
-				}
-			);
+		Structure.prototype.selectAll = function () {
+			var i;
+			this.selectedAll = true;
+			for (i = 0; i < this.structure.length; i += 1) {
+				this.structure[i].select();
+			}
+		};
+
+		Structure.prototype.deselectAll = function () {
+			var i;
+			this.selectedAll = false;
+			for (i = 0; i < this.structure.length; i += 1) {
+				this.structure[i].deselect();
+			}
+		};
+
+		Structure.prototype.alignUp = function (minY) {
+			changeAlignment.call(this, "up", minY);
+		};
+
+		function setArrow(arrow, alignment, coord) {
+			var absPosStart = addCoordsNoPrec(this.origin, arrow.getOrigin()),
+				absPosEnd = addCoordsNoPrec(this.origin, arrow.getEnd()),
+				minMax = { minX: absPosStart[0], minY: absPosStart[1], maxX: 0, maxY: 0 };
+
+			if (alignment === "up") {
+				updateMinY(absPosEnd, minMax);
+				alignUp();
+			}
+
+			function alignUp() {
+				var d = coord - minMax.minY;
+				arrow.setOrigin([
+					arrow.getOrigin("x"),
+					arrow.getOrigin("y") + d
+				]);
+			}
 		}
 
-		/**
-		 * Gets the specified transform.
-		 * @returns {Number[]}
-		 */
-		Structure.prototype.getTransform = function (name) {
-			var i, transform = this.transform;
-			for (i = 0; i < transform.length; i += 1) {
-				if (transform[i].name === name) {
-					return transform[i].content;
+		function setAtom(atom, alignment, coord) {
+			var currAtOrig = atom.getCoords(),
+				absPos = addCoordsNoPrec(this.origin, currAtOrig),
+				minMax = { minX: absPos[0], minY: absPos[1], maxX: 0, maxY: 0 };
+
+			if (alignment === "up") {
+				checkMinY(absPos, atom);
+				alignUp();
+			}
+
+			function alignUp() {
+				var d = coord - minMax.minY;
+				atom.setCoords([
+					currAtOrig[0],
+					currAtOrig[1] + d
+				]);
+			}
+
+			function checkMinY(absPos, atom) {
+				var i, currAbsPos, at;
+				updateMinY(absPos, minMax);
+				for (i = 0; i < atom.getBonds().length; i += 1) {
+					at = atom.getBonds(i).getAtom();
+					currAbsPos = addCoordsNoPrec(absPos, at.getCoords());
+					checkMinY(currAbsPos, at);
+				}
+			}
+		}
+
+		function addCoordsNoPrec(coords1, coords2, factor) {
+			return typeof factor === "undefined" ?
+				[coords1[0] + coords2[0], coords1[1] + coords2[1]]:
+				[coords1[0] + factor * coords2[0], coords1[1] + factor * coords2[1]];
+		}
+
+		function updateMinY(absPos, minMax) {
+			if (absPos[1] < minMax.minY) {
+				minMax.minY = absPos[1];
+			}
+		}
+
+		function changeAlignment(alignment, coord) {
+			var i;
+			for (i = 0; i < this.structure.length; i += 1) {
+				var struct = this.structure[i];
+				if (struct instanceof Arrow) {
+					setArrow.call(this, struct, alignment, coord);
+				} else if (struct instanceof Atom) {
+					setAtom.call(this, struct, alignment, coord);
 				}
 			}
 		}
@@ -1273,6 +1369,7 @@
 			var drawn = "";
 			drawn = Shapes.draw(structure, "cmpd1");
 			Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
+			return drawn;
 		};
 
 		/**
@@ -1422,63 +1519,64 @@
 	"use strict";
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemCache", DrawChemCache);
-	
+
 	function DrawChemCache() {
 
 		var service = {},
-			namedStructures = {},			
-			cachedStructures = [{structure: null, svg: ""}],
+			namedStructures = {},
+			cachedStructures = [{ structure: null, svg: "" }],
 			structurePointer = 0,
 			maxCapacity = 10;
-		
+
 		service.addStructure = function (structure) {
 			if (structurePointer < cachedStructures.length - 1) {
-				cachedStructures = cachedStructures.slice(0, structurePointer + 1);				
+				cachedStructures = cachedStructures.slice(0, structurePointer + 1);
 			}
-			cachedStructures.push({structure: structure, svg: ""});			
-			
+			cachedStructures.push({structure: structure, svg: ""});
+
 			if (cachedStructures.length > 10) {
 				cachedStructures.shift();
 			}
-			
+
 			service.moveRightInStructures();
 		};
-		
+
 		service.getCurrentPosition = function () {
 			return structurePointer;
 		}
-		
+
 		service.getStructureLength = function () {
 			return cachedStructures.length;
 		};
-		
+
 		service.getCurrentStructure = function () {
 			return cachedStructures[structurePointer].structure;
 		};
-		
+
 		service.getCurrentSvg = function () {
 			return cachedStructures[structurePointer].svg;
 		};
-		
+
 		service.setCurrentSvg = function (svg) {
 			cachedStructures[structurePointer].svg = svg;
 		};
-		
+
 		service.moveLeftInStructures = function () {
 			if (structurePointer > 0) {
 				structurePointer -= 1;
 			}
 		};
-		
+
 		service.moveRightInStructures = function () {
 			if (structurePointer < cachedStructures.length - 1) {
 				structurePointer += 1;
 			}
 		}
-		
-		return service;		
-	}		
+
+		return service;
+	}
 })();
+
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
@@ -1802,22 +1900,27 @@
 		service.actions = {
 				"undo": {
 					shortcut: "ctrl + z",
+					id: "undo",
 					action: service.undo
 				},
 				"forward": {
 					shortcut: "ctrl + f",
+					id: "forward",
 					action: service.forward
 				},
 				"transfer": {
 					shortcut: "ctrl + t",
+					id: "transfer",
 					action: service.transfer
 				},
 				"clear": {
 					shortcut: "ctrl + e",
+					id: "clear",
 					action: service.clear
 				},
 				"close": {
 					shortcut: "ctrl + q",
+					id: "close",
 					action: service.close
 				}
 		};
@@ -1841,16 +1944,19 @@
 			ArrowCluster = DCArrowCluster.ArrowCluster;
 
 		service.arrows = {
-			"one-way-arrow": {
+			"one way arrow": {
 				action: createArrowAction("one-way-arrow"),
+				id: "one-way-arrow",
 				thumbnail: true
 			},
-			"two-way-arrow": {
+			"two way arrow": {
 				action: createArrowAction("two-way-arrow"),
+				id: "two-way-arrow",
 				thumbnail: true
 			},
-			"equilibrium-arrow": {
+			"equilibrium arrow": {
 				action: createArrowAction("equilibrium-arrow"),
+				id: "equilibrium-arrow",
 				thumbnail: true
 			}
 		};
@@ -1887,19 +1993,52 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemEdits", DrawChemEdits);
 
-	DrawChemEdits.$inject = [];
+	DrawChemEdits.$inject = ["DrawChemCache", "DrawChemDirectiveUtils"];
 
-	function DrawChemEdits() {
+	function DrawChemEdits(Cache, Utils) {
 
-		var service = {};
+		var service = {}, minMax;
 
     service.selectAll = function () {
-
+			var structure = angular.copy(Cache.getCurrentStructure()), shape;
+			if (structure !== null) {
+				structure.selectAll();
+				Cache.addStructure(structure);
+				shape = Utils.drawStructure(structure);
+				minMax = shape.minMax;
+			}
     };
+
+		service.deselectAll = function () {
+			var structure = angular.copy(Cache.getCurrentStructure());
+			if (structure !== null) {
+				structure.deselectAll();
+				Cache.addStructure(structure);
+				Utils.drawStructure(structure);
+			}
+    };
+
+		service.alignUp = function () {
+			var structure = angular.copy(Cache.getCurrentStructure());
+			if (structure !== null && structure.selectedAll) {
+				structure.alignUp(minMax.minY);
+				Cache.addStructure(structure);
+				Utils.drawStructure(structure);
+			}
+		};
 
 		service.edits = {
 			"select all": {
-				action: service.selectAll
+				action: service.selectAll,
+				id: "select-all"
+			},
+			"deselect all": {
+				action: service.deselectAll,
+				id: "deselect-all"
+			},
+			"align up": {
+				action: service.alignUp,
+				id: "align-up"
 			}
 		};
 
@@ -1949,34 +2088,44 @@
 		 */
 		service.labels = {
 			"oxygen": {
-				action: createLabelAction("O", 2)
+				action: createLabelAction("O", 2),
+				id: "oxygen"
 			},
 			"sulfur": {
-				action: createLabelAction("S", 2)
+				action: createLabelAction("S", 2),
+				id: "sulfur"
 			},
 			"phosphorus": {
-				action: createLabelAction("P", 3)
+				action: createLabelAction("P", 3),
+				id: "phosphorus"
 			},
 			"nitrogen": {
-				action: createLabelAction("N", 3)
+				action: createLabelAction("N", 3),
+				id: "nitrogen"
 			},
 			"carbon": {
-				action: createLabelAction("C", 4)
+				action: createLabelAction("C", 4),
+				id: "carbon"
 			},
 			"fluorine": {
-				action: createLabelAction("F", 1)
+				action: createLabelAction("F", 1),
+				id: "fluorine"
 			},
 			"chlorine": {
-				action: createLabelAction("Cl", 1)
+				action: createLabelAction("Cl", 1),
+				id: "chlorine"
 			},
 			"bromine": {
-				action: createLabelAction("Br", 1)
+				action: createLabelAction("Br", 1),
+				id: "bromine"
 			},
 			"iodine": {
-				action: createLabelAction("I", 1)
+				action: createLabelAction("I", 1),
+				id: "iodine"
 			},
 			"hydrogen": {
-				action: createLabelAction("H", 1)
+				action: createLabelAction("H", 1),
+				id: "hydrogen"
 			}
 		};
 
@@ -2185,30 +2334,37 @@
 		service.structures = {
 			"benzene": {
 				action: createStructureAction(service.benzene),
+				id: "benzene",
 				thumbnail: true
 			},
 			"cyclohexane": {
 				action: createStructureAction(service.cyclohexane),
+				id: "cyclohexane",
 				thumbnail: true
 			},
-			"single-bond": {
+			"single bond": {
 				action: createStructureAction(service.singleBond),
+				id: "single-bond",
 				thumbnail: true
 			},
-			"wedge-bond": {
+			"wedge bond": {
 				action: createStructureAction(service.wedgeBond),
+				id: "wedge-bond",
 				thumbnail: true
 			},
-			"dash-bond": {
+			"dash bond": {
 				action: createStructureAction(service.dashBond),
+				id: "dash-bond",
 				thumbnail: true
 			},
-			"double-bond": {
+			"double bond": {
 				action: createStructureAction(service.doubleBond),
+				id: "double-bond",
 				thumbnail: true
 			},
-			"triple-bond": {
+			"triple bond": {
 				action: createStructureAction(service.tripleBond),
+				id: "triple-bond",
 				thumbnail: true
 			}
 		};
@@ -2835,7 +2991,8 @@
 					mini += aux;
 				});
 				circles.forEach(function (circle) {
-					full += "<circle class='atom' cx='" + circle[0] + "' cy='" + circle[1] + "' r='" + circle[2] + "' ></circle>";
+					var aux = circle.selected ? "edit": "atom";
+					full += "<circle class='" + aux + "' cx='" + circle.circle[0] + "' cy='" + circle.circle[1] + "' r='" + circle.circle[2] + "' ></circle>";
 				});
 				labels.forEach(function (label) {
 					aux = drawDodecagon(label) +
@@ -2922,14 +3079,18 @@
 						updateLabel(absPos, atom);
 						updateMinMax(absPos);
 						len = output.push(["M", absPos]);
-						circles.push([absPos[0], absPos[1], circR]);
-						connect(absPos, atom.getBonds(), output[len - 1]);
+						circles.push({ selected: atom.selected, circle: [absPos[0], absPos[1], circR] });
+						connect(absPos, atom.getBonds(), output[len - 1], atom.selected);
 					} else if (obj instanceof Arrow) {
 						arrow = obj;
 						absPosStart = addCoordsNoPrec(origin, arrow.getOrigin());
 						absPosEnd = addCoordsNoPrec(origin, arrow.getEnd());
 						updateMinMax(absPosStart);
 						updateMinMax(absPosEnd);
+						if (arrow.selected) {
+							circles.push({ selected: true, circle: [ absPosStart[0], absPosStart[1], circR ] })
+							circles.push({ selected: true, circle: [ absPosEnd[0], absPosEnd[1], circR ] })
+						}
 						output.push(calcArrow(absPosStart, absPosEnd, arrow.getType()));
 					}
 				}
@@ -2988,7 +3149,7 @@
 				* @param {Bond[]} bonds - an array of Bond objects
 				* @param {String|Number[]} - an array of coordinates with 'M' and 'L' commands
 				*/
-				function connect(prevAbsPos, bonds, currentLine) {
+				function connect(prevAbsPos, bonds, currentLine, selected) {
 					var i, absPos, atom, bondType;
 					for (i = 0; i < bonds.length; i += 1) {
 						atom = bonds[i].getAtom();
@@ -2999,16 +3160,16 @@
 						];
 						updateMinMax(absPos);
 						updateLabel(absPos, atom);
-						circles.push([absPos[0], absPos[1], circR]);
+						circles.push({ selected: selected, circle: [absPos[0], absPos[1], circR] });
 						if (i === 0) {
-							drawLine(prevAbsPos, absPos, bondType, atom, "continue");
+							drawLine(prevAbsPos, absPos, bondType, atom, "continue", selected);
 						} else {
-							drawLine(prevAbsPos, absPos, bondType, atom, "begin");
+							drawLine(prevAbsPos, absPos, bondType, atom, "begin", selected);
 						}
 					}
 				}
 
-				function drawLine(prevAbsPos, absPos, bondType, atom, mode) {
+				function drawLine(prevAbsPos, absPos, bondType, atom, mode, selected) {
 					var newLen = output.length;
 					if (bondType === "single") {
 						if (mode === "continue") {
@@ -3030,7 +3191,7 @@
 						output.push(calcDashBondCoords(prevAbsPos, absPos));
 						newLen = output.push(["M", absPos]);
 					}
-					connect(absPos, atom.getBonds(), output[newLen - 1]);
+					connect(absPos, atom.getBonds(), output[newLen - 1], selected);
 				}
 
 				function calcDoubleBondCoords(start, end) {
@@ -3085,8 +3246,6 @@
 					if (typeof label !== "undefined") {
 						labelObj = genLabelInfo();
 						labels.push(labelObj);
-						updateMinMax([labelObj.atomX - labelObj.width / 2, labelObj.atomY - labelObj.height / 2]);
-						updateMinMax([labelObj.atomX + labelObj.width / 2, labelObj.atomY + labelObj.height / 2]);
 					}
 
 					function genLabelInfo() {

@@ -23,9 +23,18 @@
 			this.info = info;
 			this.attachedBonds = attachedBonds || [];
 			this.next = "";
+			this.selected = false;
 			this.label;
 			this.calculateNext();
 		}
+
+		Atom.prototype.select = function () {
+			this.selected = true;
+		};
+
+		Atom.prototype.deselect = function () {
+			this.selected = false;
+		};
 
 		/**
 		 * Calculates direction of an opposite bond.
