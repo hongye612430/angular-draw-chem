@@ -9,6 +9,9 @@
 
 		var service = {}, minMax;
 
+		/**
+		* Marks all structures as selected.
+		*/
     service.selectAll = function () {
 			var structure = angular.copy(Cache.getCurrentStructure()), shape;
 			if (structure !== null) {
@@ -19,6 +22,9 @@
 			}
     };
 
+		/**
+		* Deselects all structures.
+		*/
 		service.deselectAll = function () {
 			var structure = angular.copy(Cache.getCurrentStructure());
 			if (structure !== null) {
@@ -28,27 +34,99 @@
 			}
     };
 
+		/**
+		* Aligns all structures to the uppermost point.
+		*/
 		service.alignUp = function () {
-			var structure = angular.copy(Cache.getCurrentStructure());
-			if (structure !== null && structure.selectedAll) {
-				structure.alignUp(minMax.minY);
-				Cache.addStructure(structure);
-				Utils.drawStructure(structure);
+			var structure = angular.copy(Cache.getCurrentStructure()), changed = false, shape;
+			if (structure !== null) {
+				changed = structure.alignUp(minMax.minY);
+				if (changed) {
+					Cache.addStructure(structure);
+					shape = Utils.drawStructure(structure);
+					minMax = shape.minMax;
+				}
+			}
+		};
+
+		/**
+		* Aligns all structures to the lowermost point.
+		*/
+		service.alignDown = function () {
+			var structure = angular.copy(Cache.getCurrentStructure()), changed = false, shape;
+			if (structure !== null) {
+				changed = structure.alignDown(minMax.maxY);
+				if (changed) {
+					Cache.addStructure(structure);
+					Utils.drawStructure(structure);
+					shape = Utils.drawStructure(structure);
+					minMax = shape.minMax;
+				}
+			}
+		};
+
+		/**
+		* Aligns all structures to the rightmost point.
+		*/
+		service.alignRight = function () {
+			var structure = angular.copy(Cache.getCurrentStructure()), changed = false, shape;
+			if (structure !== null) {
+				changed = structure.alignRight(minMax.maxX);
+				if (changed) {
+					Cache.addStructure(structure);
+					Utils.drawStructure(structure);
+					shape = Utils.drawStructure(structure);
+					minMax = shape.minMax;
+				}
+			}
+		};
+
+		/**
+		* Aligns all structures to the rightmost point.
+		*/
+		service.alignLeft = function () {
+			var structure = angular.copy(Cache.getCurrentStructure()), changed = false, shape;
+			if (structure !== null) {
+				changed = structure.alignLeft(minMax.minX);
+				if (changed) {
+					Cache.addStructure(structure);
+					Utils.drawStructure(structure);
+					shape = Utils.drawStructure(structure);
+					minMax = shape.minMax;
+				}
 			}
 		};
 
 		service.edits = {
 			"select all": {
 				action: service.selectAll,
-				id: "select-all"
+				id: "select-all",
+				shortcut: "shift + a"
 			},
 			"deselect all": {
 				action: service.deselectAll,
-				id: "deselect-all"
+				id: "deselect-all",
+				shortcut: "shift + d"
 			},
 			"align up": {
 				action: service.alignUp,
-				id: "align-up"
+				id: "align-up",
+				shortcut: "shift + q"
+			},
+			"align down": {
+				action: service.alignDown,
+				id: "align-down",
+				shortcut: "shift + w"
+			},
+			"align right": {
+				action: service.alignRight,
+				id: "align-right",
+				shortcut: "shift + r"
+			},
+			"align left": {
+				action: service.alignLeft,
+				id: "align-left",
+				shortcut: "shift + e"
 			}
 		};
 

@@ -15,14 +15,14 @@
       link: function (scope, element) {
 
         element.bind("keydown", function ($event) {
-          if ($event.ctrlKey && DrawChem.showEditor()) {
+          if (DrawChem.showEditor()) {
             $event.preventDefault();
             Shortcuts.down($event.keyCode);
           }
         });
 
         element.bind("keyup", function ($event) {
-          if ($event.ctrlKey && DrawChem.showEditor()) {
+          if (DrawChem.showEditor()) {
             $event.preventDefault();
             Shortcuts.released($event.keyCode);
             $rootScope.$digest();

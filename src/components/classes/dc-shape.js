@@ -123,26 +123,6 @@
 		};
 
 		/**
-		 * Adds a specified transformation to transformAttr.
-		 * @param {String} transform - the transformation (e.g. scale, translate)
-		 * @param {Object} value - coordinates of the transformation
-		 * @param {Number} value.x - x coordinate
-		 * @param {Number} value.y - y coordinate
-		 * @returns {Shape}
-		 */
-		Shape.prototype.transform = function (transform, value) {
-			if (this.transformAttr) {
-				this.transformAttr += " ";
-			}
-			this.transformAttr += transform + "(" + value[0];
-			if (value.length > 1) {
-				this.transformAttr += "," + value[1];
-			}
-			this.transformAttr += ")";
-			return this;
-		};
-
-		/**
 		 * Generates style tag with all info about the style enclosed.
 		 * @param {String} which - 'expanded' for the whole css, 'base' for css needed to render the molecule (without circles on hover, etc.)
 		 */

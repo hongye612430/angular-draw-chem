@@ -3,16 +3,21 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemKeyShortcuts", DrawChemKeyShortcuts);
 
-	DrawChemKeyShortcuts.$inject = ["DrawChemActions"];
+	DrawChemKeyShortcuts.$inject = ["DrawChemActions", "DrawChemEdits"];
 
-	function DrawChemKeyShortcuts(Actions) {
+	function DrawChemKeyShortcuts(Actions, Edits) {
 
 		var keysPredefined = {
+				16: "shift",
         17: "ctrl",
+				65: "a",
+        68: "d",
         69: "e",
         70: "f",
         81: "q",
+				82: "r",
         84: "t",
+				87: "w",
         90: "z"
       },
       keyCombination = {},
@@ -23,6 +28,12 @@
     registerShortcut("ctrl+f", Actions.forward);
     registerShortcut("ctrl+t", Actions.transfer);
     registerShortcut("ctrl+q", Actions.close);
+		registerShortcut("shift+a", Edits.selectAll);
+		registerShortcut("shift+d", Edits.deselectAll);
+		registerShortcut("shift+q", Edits.alignUp);
+		registerShortcut("shift+w", Edits.alignDown);
+		registerShortcut("shift+r", Edits.alignRight);
+		registerShortcut("shift+e", Edits.alignLeft);
 
     service.down = function (keyCode) {
       setKey(keyCode, true);

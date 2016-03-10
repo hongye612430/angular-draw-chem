@@ -6,12 +6,13 @@
 	DrawChemShapes.$inject = [
 		"DCShape",
 		"DrawChemConst",
+		"DrawChemUtils",
 		"DCAtom",
 		"DCBond",
 		"DCArrow"
 	];
 
-	function DrawChemShapes(DCShape, Const, DCAtom, DCBond, DCArrow) {
+	function DrawChemShapes(DCShape, Const, Utils, DCAtom, DCBond, DCArrow) {
 
 		var service = {},
 			ARROW_START = Const.ARROW_START,
@@ -48,13 +49,16 @@
 			* @param {Number[]} pos - absolute coordinates of an atom
 			*/
 			function modStructure(struct, pos) {
-				var i, absPos, aux;
+				var i, absPos, aux, firstAtom;
 				for(i = 0; i < struct.length; i += 1) {
 					if (struct[i] instanceof Arrow) {
 						continue;
 					}
 
 					aux = struct[i] instanceof Atom ? struct[i]: struct[i].getAtom();
+
+					if (struct[i] instanceof Atom) { firstAtom = struct[i]; } // remember first atom in each structure
+
 					absPos = [aux.getCoords("x") + pos[0], aux.getCoords("y") + pos[1]];
 
 					if (found) { break; }
@@ -66,7 +70,7 @@
 						// and if a valid atom has not already been found
 							modStr = chooseMod(aux);
 							updateBonds(aux, modStr, absPos);
-							updateDecorate(modStr, absPos);
+							updateDecorate(modStr, absPos, firstAtom);
 							found = true;
 							return base;
 					}
@@ -77,7 +81,7 @@
 						// and if a valid atom has not already been found
 						modStr = chooseDirectionManually(aux);
 						updateBonds(aux, modStr, absPos);
-						updateDecorate(modStr, absPos);
+						updateDecorate(modStr, absPos, firstAtom);
 						found = true;
 						return base;
 					}
@@ -91,11 +95,14 @@
 				 * @param {Structure} modStr - Structure object which may contain decorate elements
 				 * @param {Number[]} abs - absolute coordinates
 				 */
-				function updateDecorate(modStr, abs) {
+				function updateDecorate(modStr, abs, firstAtom) {
 					var coords;
 					if (modStr !== null && typeof modStr.getDecorate("aromatic") !== "undefined") {
 						coords = Const.getBondByDirection(modStr.getName()).bond;
-						return base.addDecorate("aromatic", [coords[0] + abs[0], coords[1] + abs[1]]);
+						return base.addDecorate("aromatic", {
+							fromWhich: firstAtom.getCoords(),
+							coords: [coords[0] + abs[0], coords[1] + abs[1]]
+						});
 					}
 				}
 
@@ -270,9 +277,9 @@
 					mini += aux;
 				});
 				if (input.getDecorate("aromatic")) {
-					input.getDecorate("aromatic").forEach(function (coords) {
-						aux = "<circle class='arom' cx='" + coords[0] +
-						"' cy='" + coords[1] +
+					input.getDecorate("aromatic").forEach(function (arom) {
+						aux = "<circle class='arom' cx='" + arom.coords[0] +
+						"' cy='" + arom.coords[1] +
 						"' r='" + Const.AROMATIC_R +
 						"' ></circle>";
 						full += aux;
@@ -299,7 +306,7 @@
 					var i, aux, isPreceded = false, output = "";
 					for (i = 0; i < labelName.length; i += 1) {
 						aux = labelName.substr(i, 1);
-						if (isNumeric(aux)) {
+						if (Utils.isNumeric(aux)) {
 							output += "<tspan class='sub' dy='" + DCShape.fontSize * 0.25 + "' >" + aux + "</tspan>";
 							isPreceded = true;
 						} else if (isPreceded) {
@@ -319,7 +326,7 @@
 					for (i = 0; i < BONDS_AUX.length; i += 1) {
 						x = BONDS_AUX[i].bond[0];
 						y = BONDS_AUX[i].bond[1];
-						result = result.concat(addCoords([label.atomX, label.atomY], [x, y], factor));
+						result = result.concat(Utils.addCoords([label.atomX, label.atomY], [x, y], factor));
 					}
 					return "<polygon class='text' points='" + stringifyPaths([result])[0].line + "'></polygon>";
 				}
@@ -339,7 +346,7 @@
 					obj = input.getStructure(i);
 					if (obj instanceof Atom) {
 						atom = obj;
-						absPos = addCoordsNoPrec(origin, atom.getCoords());
+						absPos = Utils.addCoordsNoPrec(origin, atom.getCoords());
 						updateLabel(absPos, atom);
 						updateMinMax(absPos);
 						len = output.push(["M", absPos]);
@@ -347,8 +354,8 @@
 						connect(absPos, atom.getBonds(), output[len - 1], atom.selected);
 					} else if (obj instanceof Arrow) {
 						arrow = obj;
-						absPosStart = addCoordsNoPrec(origin, arrow.getOrigin());
-						absPosEnd = addCoordsNoPrec(origin, arrow.getEnd());
+						absPosStart = Utils.addCoordsNoPrec(origin, arrow.getOrigin());
+						absPosEnd = Utils.addCoordsNoPrec(origin, arrow.getEnd());
 						updateMinMax(absPosStart);
 						updateMinMax(absPosEnd);
 						if (arrow.selected) {
@@ -372,16 +379,16 @@
 						perpVectCoordsCCW = [vectCoords[1], -vectCoords[0]], endMarkerStart, startMarkerStart, M1, M2, L1, L2, L3, L4;
 					if (type === "one-way-arrow") {
 						endMarkerStart = [start[0] + vectCoords[0] * ARROW_START, start[1] + vectCoords[1] * ARROW_START];
-						L1 = addCoords(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
-						L2 = addCoords(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+						L1 = Utils.addCoords(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+						L2 = Utils.addCoords(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
 						return ["arrow", "M", start, "L", end, "M", endMarkerStart, "L", L1, "L", end, "L", L2, "Z"];
 					} else if (type === "two-way-arrow") {
 						endMarkerStart = [start[0] + vectCoords[0] * ARROW_START, start[1] + vectCoords[1] * ARROW_START];
 						startMarkerStart = [start[0] + vectCoords[0] * (1 - ARROW_START), start[1] + vectCoords[1] * (1 - ARROW_START)];
-						L1 = addCoords(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
-						L2 = addCoords(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
-						L3 = addCoords(startMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
-						L4 = addCoords(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+						L1 = Utils.addCoords(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+						L2 = Utils.addCoords(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+						L3 = Utils.addCoords(startMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+						L4 = Utils.addCoords(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
 						return [
 							"arrow",
 							"M", start, "L", end,
@@ -390,15 +397,15 @@
 						];
 					}
 					else if (type === "equilibrium-arrow") {
-						M1 = addCoords(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
-						L1 = addCoords(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
+						M1 = Utils.addCoords(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
+						L1 = Utils.addCoords(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
 						endMarkerStart = [parseFloat(M1[0]) + vectCoords[0] * ARROW_START, parseFloat(M1[1]) + vectCoords[1] * ARROW_START];
-						L2 = addCoords(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+						L2 = Utils.addCoords(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
 
-						M2 = addCoords(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
-						L3 = addCoords(start, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+						M2 = Utils.addCoords(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+						L3 = Utils.addCoords(start, perpVectCoordsCW, BETWEEN_DBL_BONDS);
 						startMarkerStart = [parseFloat(L3[0]) + vectCoords[0] * (1 - ARROW_START), parseFloat(L3[1]) + vectCoords[1] * (1 - ARROW_START)];
-						L4 = addCoords(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+						L4 = Utils.addCoords(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
 
 						return [
 							"arrow-eq",
@@ -462,10 +469,10 @@
 					var vectCoords = [end[0] - start[0], end[1] - start[1]],
 						perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
 						perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
-						M1 = addCoords(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
-						L1 = addCoords(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
-						M2 = addCoords(start, perpVectCoordsCW, BETWEEN_DBL_BONDS),
-						L2 = addCoords(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+						M1 = Utils.addCoords(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
+						L1 = Utils.addCoords(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
+						M2 = Utils.addCoords(start, perpVectCoordsCW, BETWEEN_DBL_BONDS),
+						L2 = Utils.addCoords(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
 					return ["M", M1, "L", L1, "M", M2, "L", L2];
 				}
 
@@ -473,10 +480,10 @@
 					var vectCoords = [end[0] - start[0], end[1] - start[1]],
 						perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
 						perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
-						M1 = addCoords(start, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
-						L1 = addCoords(end, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
-						M2 = addCoords(start, perpVectCoordsCW, BETWEEN_TRP_BONDS),
-						L2 = addCoords(end, perpVectCoordsCW, BETWEEN_TRP_BONDS);
+						M1 = Utils.addCoords(start, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
+						L1 = Utils.addCoords(end, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
+						M2 = Utils.addCoords(start, perpVectCoordsCW, BETWEEN_TRP_BONDS),
+						L2 = Utils.addCoords(end, perpVectCoordsCW, BETWEEN_TRP_BONDS);
 					return ["M", M1, "L", L1, "M", start, "L", end, "M", M2, "L", L2];
 				}
 
@@ -484,8 +491,8 @@
 					var vectCoords = [end[0] - start[0], end[1] - start[1]],
 						perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
 						perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
-						L1 = addCoords(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
-						L2 = addCoords(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+						L1 = Utils.addCoords(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
+						L2 = Utils.addCoords(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
 					return ["wedge", "M", start, "L", L1, "L", L2, "Z"];
 				}
 
@@ -498,8 +505,8 @@
 					for (i = max; i > 0; i -= 1) {
 						factor = factor + BETWEEN_DBL_BONDS / max;
 						currentEnd = [currentEnd[0] + vectCoords[0] / max, currentEnd[1] + vectCoords[1] / max];
-						M = addCoords(currentEnd, perpVectCoordsCCW, factor);
-						L = addCoords(currentEnd, perpVectCoordsCW, factor);
+						M = Utils.addCoords(currentEnd, perpVectCoordsCCW, factor);
+						L = Utils.addCoords(currentEnd, perpVectCoordsCW, factor);
 						result = result.concat(["M", M, "L", L]);
 					}
 					return result;
@@ -595,7 +602,7 @@
 
 							function hydrogensZeroOrLess() {
 								if (mode === "rl") {
-									labelNameObj.name = invertString(labelNameObj.name);
+									labelNameObj.name = Utils.invertGroup(labelNameObj.name);
 								}
 							}
 
@@ -723,39 +730,6 @@
 				result.push(lineStr);
 			}
 			return result;
-		}
-
-		function addCoords(coords1, coords2, factor) {
-			return typeof factor === "undefined" ?
-				[(coords1[0] + coords2[0]).toFixed(2), (coords1[1] + coords2[1]).toFixed(2)]:
-				[(coords1[0] + factor * coords2[0]).toFixed(2), (coords1[1] + factor * coords2[1]).toFixed(2)];
-		}
-
-		function addCoordsNoPrec(coords1, coords2, factor) {
-			return typeof factor === "undefined" ?
-				[coords1[0] + coords2[0], coords1[1] + coords2[1]]:
-				[coords1[0] + factor * coords2[0], coords1[1] + factor * coords2[1]];
-		}
-
-		function isNumeric(obj) {
-			return obj - parseFloat(obj) >= 0;
-		}
-
-		function isSmallLetter(obj) {
-			return obj >= "a" && obj <= "z";
-		}
-
-		function compareFloats(float1, float2, prec) {
-			return float1.toFixed(prec) === float2.toFixed(prec);
-		}
-
-		function invertString(str) {
-			var i, match = str.match(/[A-Z][a-z\d]*/g), output = "";
-			if (match === null) { return str; }
-			for (i = match.length - 1; i >= 0; i -= 1) {
-				output += match[i];
-			}
-			return output;
 		}
 	}
 })();

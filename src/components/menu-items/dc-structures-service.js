@@ -205,9 +205,8 @@
 				firstAtom = new Atom([0, 0], [], "", dirs.current);
 				genAtoms(firstAtom, dirs, 6);
 				structure = new Structure(opposite, [firstAtom]);
-				if (typeof decorate !== "undefined") {
-					bond = Const.getBondByDirection(opposite).bond;
-					structure.addDecorate(decorate, [bond[0], bond[1]]);
+				if (decorate === "aromatic") {
+					structure.setAromatic();
 				}
 
 				return structure;

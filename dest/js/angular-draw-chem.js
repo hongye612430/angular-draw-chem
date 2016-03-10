@@ -690,26 +690,6 @@
 		};
 
 		/**
-		 * Adds a specified transformation to transformAttr.
-		 * @param {String} transform - the transformation (e.g. scale, translate)
-		 * @param {Object} value - coordinates of the transformation
-		 * @param {Number} value.x - x coordinate
-		 * @param {Number} value.y - y coordinate
-		 * @returns {Shape}
-		 */
-		Shape.prototype.transform = function (transform, value) {
-			if (this.transformAttr) {
-				this.transformAttr += " ";
-			}
-			this.transformAttr += transform + "(" + value[0];
-			if (value.length > 1) {
-				this.transformAttr += "," + value[1];
-			}
-			this.transformAttr += ")";
-			return this;
-		};
-
-		/**
 		 * Generates style tag with all info about the style enclosed.
 		 * @param {String} which - 'expanded' for the whole css, 'base' for css needed to render the molecule (without circles on hover, etc.)
 		 */
@@ -797,9 +777,9 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DCStructure", DCStructure);
 
-	DCStructure.$inject = ["DCArrow", "DCAtom"];
+	DCStructure.$inject = ["DCArrow", "DCAtom", "DrawChemUtils"];
 
-	function DCStructure(DCArrow, DCAtom) {
+	function DCStructure(DCArrow, DCAtom, Utils) {
 
 		var service = {},
 			Arrow = DCArrow.Arrow,
@@ -810,6 +790,7 @@
 		* @class
 		* @param {String} name - name of the structure
 		* @param {Atom[]} structure - an array of atoms
+		* @param {Object} decorate - an object with all decorate elements
 		*/
 		function Structure(name, structure, decorate) {
 			this.name = name || "";
@@ -818,8 +799,20 @@
 			this.origin = [];
 			this.selectedAll = false;
 			this.decorate = decorate || {};
+			this.aromatic = false;
 		}
 
+		Structure.prototype.setAromatic = function () {
+			this.aromatic = true;
+		}
+
+		Structure.prototype.getAromatic = function () {
+			return this.aromatic;
+		}
+
+		/**
+		* Sets all structures in structure array as selected.
+		*/
 		Structure.prototype.selectAll = function () {
 			var i;
 			this.selectedAll = true;
@@ -828,6 +821,9 @@
 			}
 		};
 
+		/**
+		* Deselcts all structures in structure array.
+		*/
 		Structure.prototype.deselectAll = function () {
 			var i;
 			this.selectedAll = false;
@@ -836,81 +832,37 @@
 			}
 		};
 
+		/**
+		* Aligns all structures marked as selected to the uppermost point.
+		* @param {Number} minY - uppermost point
+		*/
 		Structure.prototype.alignUp = function (minY) {
-			changeAlignment.call(this, "up", minY);
+			return changeAlignment.call(this, "up", minY);
 		};
 
-		function setArrow(arrow, alignment, coord) {
-			var absPosStart = addCoordsNoPrec(this.origin, arrow.getOrigin()),
-				absPosEnd = addCoordsNoPrec(this.origin, arrow.getEnd()),
-				minMax = { minX: absPosStart[0], minY: absPosStart[1], maxX: 0, maxY: 0 };
+		/**
+		* Aligns all structures marked as selected to the lowermost point.
+		* @param {Number} maxY - lowermost point
+		*/
+		Structure.prototype.alignDown = function (maxY) {
+			return changeAlignment.call(this, "down", maxY);
+		};
 
-			if (alignment === "up") {
-				updateMinY(absPosEnd, minMax);
-				alignUp();
-			}
+		/**
+		* Aligns all structures marked as selected to the rightmost point.
+		* @param {Number} maxX - uppermost point
+		*/
+		Structure.prototype.alignRight = function (maxX) {
+			return changeAlignment.call(this, "right", maxX);
+		};
 
-			function alignUp() {
-				var d = coord - minMax.minY;
-				arrow.setOrigin([
-					arrow.getOrigin("x"),
-					arrow.getOrigin("y") + d
-				]);
-			}
-		}
-
-		function setAtom(atom, alignment, coord) {
-			var currAtOrig = atom.getCoords(),
-				absPos = addCoordsNoPrec(this.origin, currAtOrig),
-				minMax = { minX: absPos[0], minY: absPos[1], maxX: 0, maxY: 0 };
-
-			if (alignment === "up") {
-				checkMinY(absPos, atom);
-				alignUp();
-			}
-
-			function alignUp() {
-				var d = coord - minMax.minY;
-				atom.setCoords([
-					currAtOrig[0],
-					currAtOrig[1] + d
-				]);
-			}
-
-			function checkMinY(absPos, atom) {
-				var i, currAbsPos, at;
-				updateMinY(absPos, minMax);
-				for (i = 0; i < atom.getBonds().length; i += 1) {
-					at = atom.getBonds(i).getAtom();
-					currAbsPos = addCoordsNoPrec(absPos, at.getCoords());
-					checkMinY(currAbsPos, at);
-				}
-			}
-		}
-
-		function addCoordsNoPrec(coords1, coords2, factor) {
-			return typeof factor === "undefined" ?
-				[coords1[0] + coords2[0], coords1[1] + coords2[1]]:
-				[coords1[0] + factor * coords2[0], coords1[1] + factor * coords2[1]];
-		}
-
-		function updateMinY(absPos, minMax) {
-			if (absPos[1] < minMax.minY) {
-				minMax.minY = absPos[1];
-			}
-		}
-
-		function changeAlignment(alignment, coord) {
-			var i;
-			for (i = 0; i < this.structure.length; i += 1) {
-				var struct = this.structure[i];
-				if (struct instanceof Arrow) {
-					setArrow.call(this, struct, alignment, coord);
-				} else if (struct instanceof Atom) {
-					setAtom.call(this, struct, alignment, coord);
-				}
-			}
-		}
+		/**
+		* Aligns all structures marked as selected to the leftmost point.
+		* @param {Number} minX - leftmost point
+		*/
+		Structure.prototype.alignLeft = function (minX) {
+			return changeAlignment.call(this, "left", minX);
+		};
 
 		/**
 		 * Sets coordinates of the first atom.
@@ -918,12 +870,6 @@
 		 */
 		Structure.prototype.setOrigin = function (origin) {
 			this.origin = origin;
-			angular.forEach(this.decorate, function (value, key) {
-				value.forEach(function (element) {
-					element[0] += origin[0];
-					element[1] += origin[1];
-				});
-			});
 		}
 
 		/**
@@ -977,7 +923,7 @@
 		}
 
 		/**
-		 * Gets the decorate element.
+		 * Gets a decorate element.
 		 * @returns {Object}
 		 */
 		Structure.prototype.getDecorate = function (decorate) {
@@ -985,19 +931,222 @@
 		}
 
 		/**
-		 * Sets the decorate element.
-		 * @param {String} decorate - an element to add to the array
+		 * Adds a decorate element.
+		 * @param {String} decorate - an element to add to the decorate object
 		 */
-		Structure.prototype.addDecorate = function (decorate, coords) {
+		Structure.prototype.addDecorate = function (decorate, obj) {
 			if (typeof this.decorate[decorate] === "undefined") {
 				this.decorate[decorate] = [];
 			}
-			this.decorate[decorate].push(coords);
+			this.decorate[decorate].push(obj);
 		}
 
 		service.Structure = Structure;
 
 		return service;
+
+		/**
+		* Iterates over structure array and changes alignment of each selected structure.
+		* @param {String} alignment - associated with alignment direction ("up", "down", "left", "right")
+		* @param {Number} coord - the most extreme coordinate (e.g. uppermost, rightmost, etc.)
+		*/
+		function changeAlignment(alignment, coord) {
+			var i, changed = false;
+			for (i = 0; i < this.structure.length; i += 1) {
+				var struct = this.structure[i];
+				if (!struct.selected) { continue; }
+				changed = true;
+				if (struct instanceof Arrow) {
+					setArrow.call(this, struct, alignment, coord);
+				} else if (struct instanceof Atom) {
+					setAtom.call(this, struct, alignment, coord);
+				}
+			}
+			return changed;
+		}
+
+		/**
+		* Compares absolute position and minY coord. If absPos[1] is lower than minY, it replaces minY.
+		* @param {Number[]} absPos - array of coords
+		* @param {Object} minMax - object containing minY coord
+		*/
+		function updateMinY(absPos, minMax) {
+			if (absPos[1] < minMax.minY) {
+				minMax.minY = absPos[1];
+			}
+		}
+
+		/**
+		* Compares absolute position and maxY coord. If absPos[1] is bigger than maxY, it replaces maxY.
+		* @param {Number[]} absPos - array of coords
+		* @param {Object} minMax - object containing maxY coord
+		*/
+		function updateMaxY(absPos, minMax) {
+			if (absPos[1] > minMax.maxY) {
+				minMax.maxY = absPos[1];
+			}
+		}
+
+		/**
+		* Compares absolute position and maxX coord. If absPos[0] is bigger than maxX, it replaces maxX.
+		* @param {Number[]} absPos - array of coords
+		* @param {Object} minMax - object containing maxX coord
+		*/
+		function updateMaxX(absPos, minMax) {
+			if (absPos[0] > minMax.maxX) {
+				minMax.maxX = absPos[0];
+			}
+		}
+
+		/**
+		* Compares absolute position and minX coord. If absPos[0] is lower than minX, it replaces minX.
+		* @param {Number[]} absPos - array of coords
+		* @param {Object} minMax - object containing minX coord
+		*/
+		function updateMinX(absPos, minMax) {
+			if (absPos[0] < minMax.minX) {
+				minMax.minX = absPos[0];
+			}
+		}
+
+		/**
+		* Changes alignment of an Arrow object.
+		* @param {Arrow} arrow - object to align
+		* @param {String} alignment - alignment direction
+		* @param {Number} coord - the most extreme coord
+		*/
+		function setArrow(arrow, alignment, coord) {
+			var absPosStart = Utils.addCoordsNoPrec(this.origin, arrow.getOrigin()), // absolute coords of arrow start
+				absPosEnd = Utils.addCoordsNoPrec(this.origin, arrow.getEnd()), // absolute coords of arrow end
+				// object with extreme coords
+				minMax = { minX: absPosStart[0], minY: absPosStart[1], maxX: absPosStart[0], maxY: absPosStart[1] },
+				d;
+
+			if (alignment === "up") {
+				updateMinY(absPosEnd, minMax); // checks if arrow end is not upper than the start
+				d = coord - minMax.minY;
+				align(arrow, [0, d]); // translates arrow
+			} else if (alignment === "down") {
+				updateMaxY(absPosEnd, minMax); // checks if arrow end is not upper than the start
+				d = coord - minMax.maxY;
+				align(arrow, [0, d]); // translates arrow
+			} else if (alignment === "right") {
+				updateMinX(absPosEnd, minMax); // checks if arrow end is not upper than the start
+				d = coord - minMax.minX;
+				align(arrow, [d, 0]); // translates arrow
+			} else if (alignment === "left") {
+				updateMaxX(absPosEnd, minMax); // checks if arrow end is not upper than the start
+				d = coord - minMax.minX;
+				align(arrow, [d, 0]); // translates arrow
+			}
+		}
+
+		/**
+		* Changes alignment of an Atom object.
+		* @param {Atom} atom - object to align
+		* @param {String} alignment - alignment direction
+		* @param {Number} coord - the most extreme coord
+		*/
+		function setAtom(atom, alignment, coord) {
+			var currAtOrig = atom.getCoords(), // relative coords of the atom
+				absPos = Utils.addCoordsNoPrec(this.origin, currAtOrig), // absolute coords of the first atom
+				// object with extreme coords
+				minMax = { minX: absPos[0], minY: absPos[1], maxX: absPos[0], maxY: absPos[1] },
+				d;
+
+			if (alignment === "up") {
+				checkMinY(absPos, atom); // searches the whole structure for the uppermost atom
+				d = coord - minMax.minY;
+				updateArom.call(this, [0, d]); // updates coords of aromatic elements
+				align(atom, [0, d]); // translates arrow
+			} else if (alignment === "down") {
+				checkMaxY(absPos, atom); // searches the whole structure for the uppermost atom
+				d = coord - minMax.maxY;
+				updateArom.call(this, [0, d]); // updates coords of aromatic elements
+				align(atom, [0, d]); // translates arrow
+			} else if (alignment === "left") {
+				checkMinX(absPos, atom); // searches the whole structure for the uppermost atom
+				d = coord - minMax.minX;
+				updateArom.call(this, [d, 0]); // updates coords of aromatic elements
+				align(atom, [d, 0]); // translates arrow
+			} else if (alignment === "right") {
+				checkMaxX(absPos, atom); // searches the whole structure for the uppermost atom
+				d = coord - minMax.maxX;
+				updateArom.call(this, [d, 0]); // updates coords of aromatic elements
+				align(atom, [d, 0]); // translates arrow
+			}
+
+			// recursively searches for the uppermost coords
+			function checkMinY(absPos, atom) {
+				var i, currAbsPos, at;
+				updateMinY(absPos, minMax);
+				for (i = 0; i < atom.getBonds().length; i += 1) {
+					at = atom.getBonds(i).getAtom();
+					currAbsPos = Utils.addCoordsNoPrec(absPos, at.getCoords());
+					checkMinY(currAbsPos, at);
+				}
+			}
+
+			// recursively searches for the lowermost coords
+			function checkMaxY(absPos, atom) {
+				var i, currAbsPos, at;
+				updateMaxY(absPos, minMax);
+				for (i = 0; i < atom.getBonds().length; i += 1) {
+					at = atom.getBonds(i).getAtom();
+					currAbsPos = Utils.addCoordsNoPrec(absPos, at.getCoords());
+					checkMaxY(currAbsPos, at);
+				}
+			}
+
+			// recursively searches for the rightmost coords
+			function checkMaxX(absPos, atom) {
+				var i, currAbsPos, at;
+				updateMaxX(absPos, minMax);
+				for (i = 0; i < atom.getBonds().length; i += 1) {
+					at = atom.getBonds(i).getAtom();
+					currAbsPos = Utils.addCoordsNoPrec(absPos, at.getCoords());
+					checkMaxX(currAbsPos, at);
+				}
+			}
+
+			// recursively searches for the leftmost coords
+			function checkMinX(absPos, atom) {
+				var i, currAbsPos, at;
+				updateMinX(absPos, minMax);
+				for (i = 0; i < atom.getBonds().length; i += 1) {
+					at = atom.getBonds(i).getAtom();
+					currAbsPos = Utils.addCoordsNoPrec(absPos, at.getCoords());
+					checkMinX(currAbsPos, at);
+				}
+			}
+
+			function updateArom(d) {
+				angular.forEach(this.decorate.aromatic, function (arom) {
+					var equal = Utils.compareFloats(arom.fromWhich[0], atom.getCoords("x"), 3)
+						&& Utils.compareFloats(arom.fromWhich[1], atom.getCoords("y"), 3);
+					if (equal) {
+						arom.fromWhich = Utils.addCoordsNoPrec(arom.fromWhich, d);
+						arom.coords = Utils.addCoordsNoPrec(arom.coords, d);
+					}
+				});
+			}
+		}
+
+		/**
+		* Translates the structure using vector d.
+		* @param {Atom|Arrow} obj - object to translate
+		* @param {Number} d - array of coords representing a vector
+		*/
+		function align(obj, d) {
+			var coords;
+			if (obj instanceof Atom) {
+				coords = obj.getCoords();
+				obj.setCoords([coords[0] + d[0], coords[1] + d[1]]);
+			} else if (obj instanceof Arrow) {
+				coords = obj.getOrigin();
+				obj.setOrigin([coords[0] + d[0], coords[1] + d[1]]);
+			}
+		}
 	}
 })();
 
@@ -1200,39 +1349,63 @@
 						structure = angular.copy(scope.chosenStructure.getStructure(mouseCoords, mouseFlags.downMouseCoords));
 						// and set its origin (which may be different from current mouse position)
 						structure.setOrigin(mouseFlags.downMouseCoords);
+						if (structure.getAromatic()) {
+							// if the chosen Structure object is aromatic,
+							// then add appropriate flag to the original Structure object
+							bond = Const.getBondByDirection(structure.getName()).bond;
+							structure.addDecorate("aromatic", {
+								fromWhich: [0, 0],
+								coords: [mouseFlags.downMouseCoords[0] + bond[0], mouseFlags.downMouseCoords[1] + bond[1]]
+							});
+						}
 					} else {
 						// otherwise get default Structure object
 						structure = angular.copy(scope.chosenStructure.getDefault());
 						// and set its origin
 						structure.setOrigin(mouseCoords);
+						if (structure.getAromatic()) {
+							// if the chosen Structure object is aromatic,
+							// then add appropriate flag to the original Structure object
+							bond = Const.getBondByDirection(structure.getName()).bond;
+							structure.addDecorate("aromatic", {
+								fromWhich: [0, 0],
+								coords: [mouseCoords[0] + bond[0], mouseCoords[1] + bond[1]]
+							});
+						}
 					}
 				} else {
 					// when the content is not empty
 					// Structure object already exists,
 					// so get it from Cache
 					structure = angular.copy(Cache.getCurrentStructure());
+					// calaculate new coords
+					newCoords = Utils.subtractCoords(mouseFlags.downMouseCoords, structure.getOrigin());
 					if (mouseFlags.movedOnEmpty) {
 						// if the mousemove event occurred before this mouseup event
 						// choose an appropriate Structure object from the StructureCluster object
 						structureAux = angular.copy(scope.chosenStructure.getStructure(mouseCoords, mouseFlags.downMouseCoords));
-						if (typeof structureAux.getDecorate("aromatic") !== "undefined") {
+						if (structureAux.getAromatic()) {
 							// if the chosen Structure object is aromatic,
 							// then add appropriate flag to the original Structure object
 							bond = Const.getBondByDirection(structureAux.getName()).bond;
-							structure.addDecorate("aromatic", [mouseFlags.downMouseCoords[0] + bond[0], mouseFlags.downMouseCoords[1] + bond[1]]);
+							structure.addDecorate("aromatic", {
+								fromWhich: angular.copy(newCoords),
+								coords: [mouseFlags.downMouseCoords[0] + bond[0], mouseFlags.downMouseCoords[1] + bond[1]]
+							});
 						}
 					} else {
 						// otherwise get default
 						structureAux = angular.copy(scope.chosenStructure.getDefault());
-						if (typeof structureAux.getDecorate("aromatic") !== "undefined") {
+						if (structureAux.getAromatic()) {
 							// if the chosen Structure object is aromatic,
 							// then add appropriate flag to the original Structure object
 							bond = Const.getBondByDirection(structureAux.getName()).bond;
-							structure.addDecorate("aromatic", [mouseCoords[0] + bond[0], mouseCoords[1] + bond[1]]);
+							structure.addDecorate("aromatic", {
+								fromWhich: angular.copy(newCoords),
+								coords: [mouseCoords[0] + bond[0], mouseCoords[1] + bond[1]]
+							});
 						}
 					}
-					// calaculate new coords
-					newCoords = Utils.subtractCoords(mouseFlags.downMouseCoords, structure.getOrigin());
 					// extract the first object from structures array and set its origin
 					structureAux.getStructure(0).setCoords(newCoords);
 					// add to the original Structure object
@@ -1308,20 +1481,32 @@
 					structure = angular.copy(scope.chosenStructure.getStructure(mouseCoords, mouseFlags.downMouseCoords));
 					// set its origin (which may be different from current mouse position)
 					structure.setOrigin(mouseFlags.downMouseCoords);
+					if (structure.getAromatic()) {
+						// if the chosen Structure object is aromatic,
+						// then add appropriate flag to the original Structure object
+						bond = Const.getBondByDirection(structure.getName()).bond;
+						structure.addDecorate("aromatic", {
+							fromWhich: angular.copy(newCoords),
+							coords: [mouseFlags.downMouseCoords[0] + bond[0], mouseFlags.downMouseCoords[1] + bond[1]]
+						});
+					}
 				} else {
 					// when the content is not empty, a Structure object already exists,
 					// so get it from Cache
 					structure = angular.copy(Cache.getCurrentStructure());
+					// calaculate new coords
+					newCoords = Utils.subtractCoords(mouseFlags.downMouseCoords, structure.getOrigin());
 					// choose an appropriate Structure object from the StructureCluster object
 					structureAux = angular.copy(scope.chosenStructure.getStructure(mouseCoords, mouseFlags.downMouseCoords));
-					if (typeof structureAux.getDecorate("aromatic") !== "undefined") {
+					if (structureAux.getAromatic()) {
 						// if the chosen Structure object is aromatic,
 						// then add appropriate flag to the original Structure object
 						bond = Const.getBondByDirection(structureAux.getName()).bond;
-						structure.addDecorate("aromatic", [mouseFlags.downMouseCoords[0] + bond[0], mouseFlags.downMouseCoords[1] + bond[1]]);
+						structure.addDecorate("aromatic", {
+							fromWhich: angular.copy(newCoords),
+							coords: [mouseFlags.downMouseCoords[0] + bond[0], mouseFlags.downMouseCoords[1] + bond[1]]
+						});
 					}
-					// calaculate new coords
-					newCoords = Utils.subtractCoords(mouseFlags.downMouseCoords, structure.getOrigin());
 					// extract the first object from structures array and set its origin
 					structureAux.getStructure(0).setCoords(newCoords);
 					// add to the original Structure object
@@ -1705,6 +1890,54 @@
 })();
 
 (function () {
+	"use strict";
+	angular.module("mmAngularDrawChem")
+		.factory("DrawChemUtils", DrawChemUtils);
+
+	DrawChemUtils.$inject = [];
+
+	function DrawChemUtils() {
+
+		var service = {};
+
+    service.addCoords = function(coords1, coords2, factor) {
+			return typeof factor === "undefined" ?
+				[(coords1[0] + coords2[0]).toFixed(2), (coords1[1] + coords2[1]).toFixed(2)]:
+				[(coords1[0] + factor * coords2[0]).toFixed(2), (coords1[1] + factor * coords2[1]).toFixed(2)];
+		}
+
+		service.addCoordsNoPrec = function(coords1, coords2, factor) {
+			return typeof factor === "undefined" ?
+				[coords1[0] + coords2[0], coords1[1] + coords2[1]]:
+				[coords1[0] + factor * coords2[0], coords1[1] + factor * coords2[1]];
+		}
+
+		service.isNumeric = function(obj) {
+			return obj - parseFloat(obj) >= 0;
+		}
+
+		service.isSmallLetter = function(obj) {
+			return obj >= "a" && obj <= "z";
+		}
+
+		service.compareFloats = function(float1, float2, prec) {
+			return float1.toFixed(prec) === float2.toFixed(prec);
+		}
+
+		service.invertLabel = function(str) {
+			var i, match = str.match(/[A-Z][a-z\d]*/g), output = "";
+			if (match === null) { return str; }
+			for (i = match.length - 1; i >= 0; i -= 1) {
+				output += match[i];
+			}
+			return output;
+		}
+
+		return service;
+	}
+})();
+
+(function () {
   "use strict";
   angular.module("mmAngularDrawChem")
     .directive("dcShortcuts", DcShortcuts);
@@ -1721,14 +1954,14 @@
       link: function (scope, element) {
 
         element.bind("keydown", function ($event) {
-          if ($event.ctrlKey && DrawChem.showEditor()) {
+          if (DrawChem.showEditor()) {
             $event.preventDefault();
             Shortcuts.down($event.keyCode);
           }
         });
 
         element.bind("keyup", function ($event) {
-          if ($event.ctrlKey && DrawChem.showEditor()) {
+          if (DrawChem.showEditor()) {
             $event.preventDefault();
             Shortcuts.released($event.keyCode);
             $rootScope.$digest();
@@ -1744,16 +1977,21 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemKeyShortcuts", DrawChemKeyShortcuts);
 
-	DrawChemKeyShortcuts.$inject = ["DrawChemActions"];
+	DrawChemKeyShortcuts.$inject = ["DrawChemActions", "DrawChemEdits"];
 
-	function DrawChemKeyShortcuts(Actions) {
+	function DrawChemKeyShortcuts(Actions, Edits) {
 
 		var keysPredefined = {
+				16: "shift",
         17: "ctrl",
+				65: "a",
+        68: "d",
         69: "e",
         70: "f",
         81: "q",
+				82: "r",
         84: "t",
+				87: "w",
         90: "z"
       },
       keyCombination = {},
@@ -1764,6 +2002,12 @@
     registerShortcut("ctrl+f", Actions.forward);
     registerShortcut("ctrl+t", Actions.transfer);
     registerShortcut("ctrl+q", Actions.close);
+		registerShortcut("shift+a", Edits.selectAll);
+		registerShortcut("shift+d", Edits.deselectAll);
+		registerShortcut("shift+q", Edits.alignUp);
+		registerShortcut("shift+w", Edits.alignDown);
+		registerShortcut("shift+r", Edits.alignRight);
+		registerShortcut("shift+e", Edits.alignLeft);
 
     service.down = function (keyCode) {
       setKey(keyCode, true);
@@ -1999,6 +2243,9 @@
 
 		var service = {}, minMax;
 
+		/**
+		* Marks all structures as selected.
+		*/
     service.selectAll = function () {
 			var structure = angular.copy(Cache.getCurrentStructure()), shape;
 			if (structure !== null) {
@@ -2009,6 +2256,9 @@
 			}
     };
 
+		/**
+		* Deselects all structures.
+		*/
 		service.deselectAll = function () {
 			var structure = angular.copy(Cache.getCurrentStructure());
 			if (structure !== null) {
@@ -2018,27 +2268,99 @@
 			}
     };
 
+		/**
+		* Aligns all structures to the uppermost point.
+		*/
 		service.alignUp = function () {
-			var structure = angular.copy(Cache.getCurrentStructure());
-			if (structure !== null && structure.selectedAll) {
-				structure.alignUp(minMax.minY);
-				Cache.addStructure(structure);
-				Utils.drawStructure(structure);
+			var structure = angular.copy(Cache.getCurrentStructure()), changed = false, shape;
+			if (structure !== null) {
+				changed = structure.alignUp(minMax.minY);
+				if (changed) {
+					Cache.addStructure(structure);
+					shape = Utils.drawStructure(structure);
+					minMax = shape.minMax;
+				}
+			}
+		};
+
+		/**
+		* Aligns all structures to the lowermost point.
+		*/
+		service.alignDown = function () {
+			var structure = angular.copy(Cache.getCurrentStructure()), changed = false, shape;
+			if (structure !== null) {
+				changed = structure.alignDown(minMax.maxY);
+				if (changed) {
+					Cache.addStructure(structure);
+					Utils.drawStructure(structure);
+					shape = Utils.drawStructure(structure);
+					minMax = shape.minMax;
+				}
+			}
+		};
+
+		/**
+		* Aligns all structures to the rightmost point.
+		*/
+		service.alignRight = function () {
+			var structure = angular.copy(Cache.getCurrentStructure()), changed = false, shape;
+			if (structure !== null) {
+				changed = structure.alignRight(minMax.maxX);
+				if (changed) {
+					Cache.addStructure(structure);
+					Utils.drawStructure(structure);
+					shape = Utils.drawStructure(structure);
+					minMax = shape.minMax;
+				}
+			}
+		};
+
+		/**
+		* Aligns all structures to the rightmost point.
+		*/
+		service.alignLeft = function () {
+			var structure = angular.copy(Cache.getCurrentStructure()), changed = false, shape;
+			if (structure !== null) {
+				changed = structure.alignLeft(minMax.minX);
+				if (changed) {
+					Cache.addStructure(structure);
+					Utils.drawStructure(structure);
+					shape = Utils.drawStructure(structure);
+					minMax = shape.minMax;
+				}
 			}
 		};
 
 		service.edits = {
 			"select all": {
 				action: service.selectAll,
-				id: "select-all"
+				id: "select-all",
+				shortcut: "shift + a"
 			},
 			"deselect all": {
 				action: service.deselectAll,
-				id: "deselect-all"
+				id: "deselect-all",
+				shortcut: "shift + d"
 			},
 			"align up": {
 				action: service.alignUp,
-				id: "align-up"
+				id: "align-up",
+				shortcut: "shift + q"
+			},
+			"align down": {
+				action: service.alignDown,
+				id: "align-down",
+				shortcut: "shift + w"
+			},
+			"align right": {
+				action: service.alignRight,
+				id: "align-right",
+				shortcut: "shift + r"
+			},
+			"align left": {
+				action: service.alignLeft,
+				id: "align-left",
+				shortcut: "shift + e"
 			}
 		};
 
@@ -2408,9 +2730,8 @@
 				firstAtom = new Atom([0, 0], [], "", dirs.current);
 				genAtoms(firstAtom, dirs, 6);
 				structure = new Structure(opposite, [firstAtom]);
-				if (typeof decorate !== "undefined") {
-					bond = Const.getBondByDirection(opposite).bond;
-					structure.addDecorate(decorate, [bond[0], bond[1]]);
+				if (decorate === "aromatic") {
+					structure.setAromatic();
 				}
 
 				return structure;
@@ -2742,12 +3063,13 @@
 	DrawChemShapes.$inject = [
 		"DCShape",
 		"DrawChemConst",
+		"DrawChemUtils",
 		"DCAtom",
 		"DCBond",
 		"DCArrow"
 	];
 
-	function DrawChemShapes(DCShape, Const, DCAtom, DCBond, DCArrow) {
+	function DrawChemShapes(DCShape, Const, Utils, DCAtom, DCBond, DCArrow) {
 
 		var service = {},
 			ARROW_START = Const.ARROW_START,
@@ -2784,13 +3106,16 @@
 			* @param {Number[]} pos - absolute coordinates of an atom
 			*/
 			function modStructure(struct, pos) {
-				var i, absPos, aux;
+				var i, absPos, aux, firstAtom;
 				for(i = 0; i < struct.length; i += 1) {
 					if (struct[i] instanceof Arrow) {
 						continue;
 					}
 
 					aux = struct[i] instanceof Atom ? struct[i]: struct[i].getAtom();
+
+					if (struct[i] instanceof Atom) { firstAtom = struct[i]; } // remember first atom in each structure
+
 					absPos = [aux.getCoords("x") + pos[0], aux.getCoords("y") + pos[1]];
 
 					if (found) { break; }
@@ -2802,7 +3127,7 @@
 						// and if a valid atom has not already been found
 							modStr = chooseMod(aux);
 							updateBonds(aux, modStr, absPos);
-							updateDecorate(modStr, absPos);
+							updateDecorate(modStr, absPos, firstAtom);
 							found = true;
 							return base;
 					}
@@ -2813,7 +3138,7 @@
 						// and if a valid atom has not already been found
 						modStr = chooseDirectionManually(aux);
 						updateBonds(aux, modStr, absPos);
-						updateDecorate(modStr, absPos);
+						updateDecorate(modStr, absPos, firstAtom);
 						found = true;
 						return base;
 					}
@@ -2827,11 +3152,14 @@
 				 * @param {Structure} modStr - Structure object which may contain decorate elements
 				 * @param {Number[]} abs - absolute coordinates
 				 */
-				function updateDecorate(modStr, abs) {
+				function updateDecorate(modStr, abs, firstAtom) {
 					var coords;
 					if (modStr !== null && typeof modStr.getDecorate("aromatic") !== "undefined") {
 						coords = Const.getBondByDirection(modStr.getName()).bond;
-						return base.addDecorate("aromatic", [coords[0] + abs[0], coords[1] + abs[1]]);
+						return base.addDecorate("aromatic", {
+							fromWhich: firstAtom.getCoords(),
+							coords: [coords[0] + abs[0], coords[1] + abs[1]]
+						});
 					}
 				}
 
@@ -3006,9 +3334,9 @@
 					mini += aux;
 				});
 				if (input.getDecorate("aromatic")) {
-					input.getDecorate("aromatic").forEach(function (coords) {
-						aux = "<circle class='arom' cx='" + coords[0] +
-						"' cy='" + coords[1] +
+					input.getDecorate("aromatic").forEach(function (arom) {
+						aux = "<circle class='arom' cx='" + arom.coords[0] +
+						"' cy='" + arom.coords[1] +
 						"' r='" + Const.AROMATIC_R +
 						"' ></circle>";
 						full += aux;
@@ -3035,7 +3363,7 @@
 					var i, aux, isPreceded = false, output = "";
 					for (i = 0; i < labelName.length; i += 1) {
 						aux = labelName.substr(i, 1);
-						if (isNumeric(aux)) {
+						if (Utils.isNumeric(aux)) {
 							output += "<tspan class='sub' dy='" + DCShape.fontSize * 0.25 + "' >" + aux + "</tspan>";
 							isPreceded = true;
 						} else if (isPreceded) {
@@ -3055,7 +3383,7 @@
 					for (i = 0; i < BONDS_AUX.length; i += 1) {
 						x = BONDS_AUX[i].bond[0];
 						y = BONDS_AUX[i].bond[1];
-						result = result.concat(addCoords([label.atomX, label.atomY], [x, y], factor));
+						result = result.concat(Utils.addCoords([label.atomX, label.atomY], [x, y], factor));
 					}
 					return "<polygon class='text' points='" + stringifyPaths([result])[0].line + "'></polygon>";
 				}
@@ -3075,7 +3403,7 @@
 					obj = input.getStructure(i);
 					if (obj instanceof Atom) {
 						atom = obj;
-						absPos = addCoordsNoPrec(origin, atom.getCoords());
+						absPos = Utils.addCoordsNoPrec(origin, atom.getCoords());
 						updateLabel(absPos, atom);
 						updateMinMax(absPos);
 						len = output.push(["M", absPos]);
@@ -3083,8 +3411,8 @@
 						connect(absPos, atom.getBonds(), output[len - 1], atom.selected);
 					} else if (obj instanceof Arrow) {
 						arrow = obj;
-						absPosStart = addCoordsNoPrec(origin, arrow.getOrigin());
-						absPosEnd = addCoordsNoPrec(origin, arrow.getEnd());
+						absPosStart = Utils.addCoordsNoPrec(origin, arrow.getOrigin());
+						absPosEnd = Utils.addCoordsNoPrec(origin, arrow.getEnd());
 						updateMinMax(absPosStart);
 						updateMinMax(absPosEnd);
 						if (arrow.selected) {
@@ -3108,16 +3436,16 @@
 						perpVectCoordsCCW = [vectCoords[1], -vectCoords[0]], endMarkerStart, startMarkerStart, M1, M2, L1, L2, L3, L4;
 					if (type === "one-way-arrow") {
 						endMarkerStart = [start[0] + vectCoords[0] * ARROW_START, start[1] + vectCoords[1] * ARROW_START];
-						L1 = addCoords(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
-						L2 = addCoords(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+						L1 = Utils.addCoords(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+						L2 = Utils.addCoords(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
 						return ["arrow", "M", start, "L", end, "M", endMarkerStart, "L", L1, "L", end, "L", L2, "Z"];
 					} else if (type === "two-way-arrow") {
 						endMarkerStart = [start[0] + vectCoords[0] * ARROW_START, start[1] + vectCoords[1] * ARROW_START];
 						startMarkerStart = [start[0] + vectCoords[0] * (1 - ARROW_START), start[1] + vectCoords[1] * (1 - ARROW_START)];
-						L1 = addCoords(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
-						L2 = addCoords(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
-						L3 = addCoords(startMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
-						L4 = addCoords(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+						L1 = Utils.addCoords(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+						L2 = Utils.addCoords(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+						L3 = Utils.addCoords(startMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+						L4 = Utils.addCoords(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
 						return [
 							"arrow",
 							"M", start, "L", end,
@@ -3126,15 +3454,15 @@
 						];
 					}
 					else if (type === "equilibrium-arrow") {
-						M1 = addCoords(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
-						L1 = addCoords(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
+						M1 = Utils.addCoords(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
+						L1 = Utils.addCoords(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
 						endMarkerStart = [parseFloat(M1[0]) + vectCoords[0] * ARROW_START, parseFloat(M1[1]) + vectCoords[1] * ARROW_START];
-						L2 = addCoords(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+						L2 = Utils.addCoords(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
 
-						M2 = addCoords(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
-						L3 = addCoords(start, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+						M2 = Utils.addCoords(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+						L3 = Utils.addCoords(start, perpVectCoordsCW, BETWEEN_DBL_BONDS);
 						startMarkerStart = [parseFloat(L3[0]) + vectCoords[0] * (1 - ARROW_START), parseFloat(L3[1]) + vectCoords[1] * (1 - ARROW_START)];
-						L4 = addCoords(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+						L4 = Utils.addCoords(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
 
 						return [
 							"arrow-eq",
@@ -3198,10 +3526,10 @@
 					var vectCoords = [end[0] - start[0], end[1] - start[1]],
 						perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
 						perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
-						M1 = addCoords(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
-						L1 = addCoords(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
-						M2 = addCoords(start, perpVectCoordsCW, BETWEEN_DBL_BONDS),
-						L2 = addCoords(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+						M1 = Utils.addCoords(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
+						L1 = Utils.addCoords(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
+						M2 = Utils.addCoords(start, perpVectCoordsCW, BETWEEN_DBL_BONDS),
+						L2 = Utils.addCoords(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
 					return ["M", M1, "L", L1, "M", M2, "L", L2];
 				}
 
@@ -3209,10 +3537,10 @@
 					var vectCoords = [end[0] - start[0], end[1] - start[1]],
 						perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
 						perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
-						M1 = addCoords(start, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
-						L1 = addCoords(end, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
-						M2 = addCoords(start, perpVectCoordsCW, BETWEEN_TRP_BONDS),
-						L2 = addCoords(end, perpVectCoordsCW, BETWEEN_TRP_BONDS);
+						M1 = Utils.addCoords(start, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
+						L1 = Utils.addCoords(end, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
+						M2 = Utils.addCoords(start, perpVectCoordsCW, BETWEEN_TRP_BONDS),
+						L2 = Utils.addCoords(end, perpVectCoordsCW, BETWEEN_TRP_BONDS);
 					return ["M", M1, "L", L1, "M", start, "L", end, "M", M2, "L", L2];
 				}
 
@@ -3220,8 +3548,8 @@
 					var vectCoords = [end[0] - start[0], end[1] - start[1]],
 						perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
 						perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
-						L1 = addCoords(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
-						L2 = addCoords(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+						L1 = Utils.addCoords(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
+						L2 = Utils.addCoords(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
 					return ["wedge", "M", start, "L", L1, "L", L2, "Z"];
 				}
 
@@ -3234,8 +3562,8 @@
 					for (i = max; i > 0; i -= 1) {
 						factor = factor + BETWEEN_DBL_BONDS / max;
 						currentEnd = [currentEnd[0] + vectCoords[0] / max, currentEnd[1] + vectCoords[1] / max];
-						M = addCoords(currentEnd, perpVectCoordsCCW, factor);
-						L = addCoords(currentEnd, perpVectCoordsCW, factor);
+						M = Utils.addCoords(currentEnd, perpVectCoordsCCW, factor);
+						L = Utils.addCoords(currentEnd, perpVectCoordsCW, factor);
 						result = result.concat(["M", M, "L", L]);
 					}
 					return result;
@@ -3331,7 +3659,7 @@
 
 							function hydrogensZeroOrLess() {
 								if (mode === "rl") {
-									labelNameObj.name = invertString(labelNameObj.name);
+									labelNameObj.name = Utils.invertGroup(labelNameObj.name);
 								}
 							}
 
@@ -3459,39 +3787,6 @@
 				result.push(lineStr);
 			}
 			return result;
-		}
-
-		function addCoords(coords1, coords2, factor) {
-			return typeof factor === "undefined" ?
-				[(coords1[0] + coords2[0]).toFixed(2), (coords1[1] + coords2[1]).toFixed(2)]:
-				[(coords1[0] + factor * coords2[0]).toFixed(2), (coords1[1] + factor * coords2[1]).toFixed(2)];
-		}
-
-		function addCoordsNoPrec(coords1, coords2, factor) {
-			return typeof factor === "undefined" ?
-				[coords1[0] + coords2[0], coords1[1] + coords2[1]]:
-				[coords1[0] + factor * coords2[0], coords1[1] + factor * coords2[1]];
-		}
-
-		function isNumeric(obj) {
-			return obj - parseFloat(obj) >= 0;
-		}
-
-		function isSmallLetter(obj) {
-			return obj >= "a" && obj <= "z";
-		}
-
-		function compareFloats(float1, float2, prec) {
-			return float1.toFixed(prec) === float2.toFixed(prec);
-		}
-
-		function invertString(str) {
-			var i, match = str.match(/[A-Z][a-z\d]*/g), output = "";
-			if (match === null) { return str; }
-			for (i = match.length - 1; i >= 0; i -= 1) {
-				output += match[i];
-			}
-			return output;
 		}
 	}
 })();
