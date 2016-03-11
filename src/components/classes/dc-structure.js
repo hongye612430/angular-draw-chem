@@ -157,6 +157,49 @@
 		}
 
 		/**
+		 * Calculates all extreme coordinates in structures markes as selected.
+		 * @returns {Object}
+		 */
+		Structure.prototype.findMinMax = function () {
+			var minMax = {}, i, struct, currOrig,	absPos, absPosStart, absPosEnd;
+			for (i = 0; i < this.structure.length; i += 1) {
+				struct = this.structure[i];
+				if (!struct.selected) { continue; }
+				if (struct instanceof Atom) {
+					currOrig = struct.getCoords();
+					absPos = Utils.addCoordsNoPrec(this.origin, currOrig);
+					checkStructure(absPos, struct);
+				} else if (struct instanceof Arrow) {
+					absPosStart = Utils.addCoordsNoPrec(this.origin, struct.getOrigin());
+					absPosEnd = Utils.addCoordsNoPrec(this.origin, struct.getEnd());
+					checkArrow(absPosStart);
+					checkArrow(absPosEnd);
+				}
+			}
+			return minMax;
+
+			function checkStructure(absPos, struct) {
+				var i, currAbsPos, at;
+				updateMinY(absPos, minMax);
+				updateMinX(absPos, minMax);
+				updateMaxY(absPos, minMax);
+				updateMaxX(absPos, minMax);
+				for (i = 0; i < struct.getBonds().length; i += 1) {
+					at = struct.getBonds(i).getAtom();
+					currAbsPos = Utils.addCoordsNoPrec(absPos, at.getCoords());
+					checkStructure(currAbsPos, at);
+				}
+			}
+
+			function checkArrow(absPos) {
+				updateMinY(absPos, minMax);
+				updateMinX(absPos, minMax);
+				updateMaxY(absPos, minMax);
+				updateMaxX(absPos, minMax);
+			}
+		}
+
+		/**
 		 * Adds a decorate element.
 		 * @param {String} decorate - an element to add to the decorate object
 		 */
@@ -197,7 +240,7 @@
 		* @param {Object} minMax - object containing minY coord
 		*/
 		function updateMinY(absPos, minMax) {
-			if (absPos[1] < minMax.minY) {
+			if (typeof minMax.minY === "undefined" || absPos[1] < minMax.minY) {
 				minMax.minY = absPos[1];
 			}
 		}
@@ -208,7 +251,7 @@
 		* @param {Object} minMax - object containing maxY coord
 		*/
 		function updateMaxY(absPos, minMax) {
-			if (absPos[1] > minMax.maxY) {
+			if (typeof minMax.maxY === "undefined" || absPos[1] > minMax.maxY) {
 				minMax.maxY = absPos[1];
 			}
 		}
@@ -219,7 +262,7 @@
 		* @param {Object} minMax - object containing maxX coord
 		*/
 		function updateMaxX(absPos, minMax) {
-			if (absPos[0] > minMax.maxX) {
+			if (typeof minMax.maxX === "undefined" || absPos[0] > minMax.maxX) {
 				minMax.maxX = absPos[0];
 			}
 		}
@@ -230,7 +273,7 @@
 		* @param {Object} minMax - object containing minX coord
 		*/
 		function updateMinX(absPos, minMax) {
-			if (absPos[0] < minMax.minX) {
+			if (typeof minMax.minX === "undefined" || absPos[0] < minMax.minX) {
 				minMax.minX = absPos[0];
 			}
 		}
@@ -256,13 +299,13 @@
 				updateMaxY(absPosEnd, minMax); // checks if arrow end is not upper than the start
 				d = coord - minMax.maxY;
 				align(arrow, [0, d]); // translates arrow
-			} else if (alignment === "right") {
+			} else if (alignment === "left") {
 				updateMinX(absPosEnd, minMax); // checks if arrow end is not upper than the start
 				d = coord - minMax.minX;
 				align(arrow, [d, 0]); // translates arrow
-			} else if (alignment === "left") {
+			} else if (alignment === "right") {
 				updateMaxX(absPosEnd, minMax); // checks if arrow end is not upper than the start
-				d = coord - minMax.minX;
+				d = coord - minMax.maxX;
 				align(arrow, [d, 0]); // translates arrow
 			}
 		}
@@ -277,8 +320,7 @@
 			var currAtOrig = atom.getCoords(), // relative coords of the atom
 				absPos = Utils.addCoordsNoPrec(this.origin, currAtOrig), // absolute coords of the first atom
 				// object with extreme coords
-				minMax = { minX: absPos[0], minY: absPos[1], maxX: absPos[0], maxY: absPos[1] },
-				d;
+				minMax = {}, d;
 
 			if (alignment === "up") {
 				checkMinY(absPos, atom); // searches the whole structure for the uppermost atom
