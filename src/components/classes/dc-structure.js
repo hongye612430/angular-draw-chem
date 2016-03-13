@@ -28,10 +28,17 @@
 			this.aromatic = false;
 		}
 
+		/**
+		* Marks structure as aromatic.
+		*/
 		Structure.prototype.setAromatic = function () {
 			this.aromatic = true;
 		}
 
+		/**
+		* Checks if structure is aromatic.
+		* @returns {Boolean}
+		*/
 		Structure.prototype.getAromatic = function () {
 			return this.aromatic;
 		}
@@ -61,6 +68,7 @@
 		/**
 		* Aligns all structures marked as selected to the uppermost point.
 		* @param {Number} minY - uppermost point
+		* @returns {Boolean} - if the position was changed
 		*/
 		Structure.prototype.alignUp = function (minY) {
 			return changeAlignment.call(this, "up", minY);
@@ -69,6 +77,7 @@
 		/**
 		* Aligns all structures marked as selected to the lowermost point.
 		* @param {Number} maxY - lowermost point
+		* @returns {Boolean} - if the position was changed
 		*/
 		Structure.prototype.alignDown = function (maxY) {
 			return changeAlignment.call(this, "down", maxY);
@@ -77,6 +86,7 @@
 		/**
 		* Aligns all structures marked as selected to the rightmost point.
 		* @param {Number} maxX - uppermost point
+		* @returns {Boolean} - if the position was changed
 		*/
 		Structure.prototype.alignRight = function (maxX) {
 			return changeAlignment.call(this, "right", maxX);
@@ -85,6 +95,7 @@
 		/**
 		* Aligns all structures marked as selected to the leftmost point.
 		* @param {Number} minX - leftmost point
+		* @returns {Boolean} - if the position was changed
 		*/
 		Structure.prototype.alignLeft = function (minX) {
 			return changeAlignment.call(this, "left", minX);
@@ -157,27 +168,30 @@
 		}
 
 		/**
-		 * Calculates all extreme coordinates in structures markes as selected.
+		 * Calculates all extreme coordinates of structures in structure array that are marked as selected.
 		 * @returns {Object}
 		 */
 		Structure.prototype.findMinMax = function () {
 			var minMax = {}, i, struct, currOrig,	absPos, absPosStart, absPosEnd;
+			// iterate over all structure in array
 			for (i = 0; i < this.structure.length; i += 1) {
 				struct = this.structure[i];
-				if (!struct.selected) { continue; }
-				if (struct instanceof Atom) {
-					currOrig = struct.getCoords();
-					absPos = Utils.addCoordsNoPrec(this.origin, currOrig);
-					checkStructure(absPos, struct);
-				} else if (struct instanceof Arrow) {
-					absPosStart = Utils.addCoordsNoPrec(this.origin, struct.getOrigin());
-					absPosEnd = Utils.addCoordsNoPrec(this.origin, struct.getEnd());
-					checkArrow(absPosStart);
-					checkArrow(absPosEnd);
+				if (!struct.selected) { continue; } // continue if not selected
+				if (struct instanceof Atom) { // if struct is an Atom object
+					currOrig = struct.getCoords(); // get relative coords of the first atom in structure
+					absPos = Utils.addCoordsNoPrec(this.origin, currOrig); // calculate its absolute position
+					checkStructure(absPos, struct); // recursively check all atoms in this structure
+				} else if (struct instanceof Arrow) { // if struct is an Arrow object
+					absPosStart = Utils.addCoordsNoPrec(this.origin, struct.getOrigin()); // calculate absolute coords of the beginning of the arrow
+					absPosEnd = Utils.addCoordsNoPrec(this.origin, struct.getEnd()); // calculate absolute coords of the end of the arrow
+					checkArrow(absPosStart); // check coords of the beginning of the arrow
+					checkArrow(absPosEnd); // check coords of the end of the arrow
 				}
 			}
 			return minMax;
 
+			// recursively checks all atoms in structure array,
+			// looks for extreme coords, and updates minMax object
 			function checkStructure(absPos, struct) {
 				var i, currAbsPos, at;
 				updateMinY(absPos, minMax);
@@ -191,6 +205,7 @@
 				}
 			}
 
+			// updates minMax object
 			function checkArrow(absPos) {
 				updateMinY(absPos, minMax);
 				updateMinX(absPos, minMax);
@@ -200,8 +215,10 @@
 		}
 
 		/**
-		 * Adds a decorate element.
-		 * @param {String} decorate - an element to add to the decorate object
+		 * Adds a decorate element (usually all aromatics).
+		 * @param {Object} obj - an element to add to the decorate object,
+		 *												has two fields: 'fromWhich' (holds relative coords of the first atom in structure containing this decorate element)
+		 *												and 'coords' (holds absolute position of the element - usually aromatic ring)
 		 */
 		Structure.prototype.addDecorate = function (decorate, obj) {
 			if (typeof this.decorate[decorate] === "undefined") {
@@ -218,17 +235,17 @@
 		* Iterates over structure array and changes alignment of each selected structure.
 		* @param {String} alignment - associated with alignment direction ("up", "down", "left", "right")
 		* @param {Number} coord - the most extreme coordinate (e.g. uppermost, rightmost, etc.)
+		* @returns {Boolean} true if position of any structure was changed
 		*/
 		function changeAlignment(alignment, coord) {
 			var i, changed = false;
 			for (i = 0; i < this.structure.length; i += 1) {
 				var struct = this.structure[i];
-				if (!struct.selected) { continue; }
-				changed = true;
+				if (!struct.selected) { continue; } // continue if not marked as selected
 				if (struct instanceof Arrow) {
-					setArrow.call(this, struct, alignment, coord);
+					changed = setArrow.call(this, struct, alignment, coord);
 				} else if (struct instanceof Atom) {
-					setAtom.call(this, struct, alignment, coord);
+					changed = setAtom.call(this, struct, alignment, coord);
 				}
 			}
 			return changed;
@@ -296,18 +313,22 @@
 				d = coord - minMax.minY;
 				align(arrow, [0, d]); // translates arrow
 			} else if (alignment === "down") {
-				updateMaxY(absPosEnd, minMax); // checks if arrow end is not upper than the start
+				updateMaxY(absPosEnd, minMax); // checks if arrow end is not lower than the start
 				d = coord - minMax.maxY;
 				align(arrow, [0, d]); // translates arrow
 			} else if (alignment === "left") {
-				updateMinX(absPosEnd, minMax); // checks if arrow end is not upper than the start
+				updateMinX(absPosEnd, minMax); // checks if arrow end is not more to the left than the start
 				d = coord - minMax.minX;
 				align(arrow, [d, 0]); // translates arrow
 			} else if (alignment === "right") {
-				updateMaxX(absPosEnd, minMax); // checks if arrow end is not upper than the start
+				updateMaxX(absPosEnd, minMax); // checks if arrow end is not more to the right than the start
 				d = coord - minMax.maxX;
 				align(arrow, [d, 0]); // translates arrow
 			}
+
+			// if d is equal to 0 (approx. to five decimal places), then return false
+			// which means that nothing changed, true otherwise
+			return !Utils.compareFloats(d, 0, 5);
 		}
 
 		/**
@@ -343,6 +364,10 @@
 				updateArom.call(this, [d, 0]); // updates coords of aromatic elements
 				align(atom, [d, 0]); // translates arrow
 			}
+
+			// if d is equal to 0 (approx. to five decimal places), then return false
+			// which means that nothing changed, true otherwise
+			return !Utils.compareFloats(d, 0, 5);
 
 			// recursively searches for the uppermost coords
 			function checkMinY(absPos, atom) {
@@ -388,6 +413,7 @@
 				}
 			}
 
+			// updates coords of aromatics if any exists
 			function updateArom(d) {
 				angular.forEach(this.decorate.aromatic, function (arom) {
 					var equal = Utils.compareFloats(arom.fromWhich[0], atom.getCoords("x"), 3)
