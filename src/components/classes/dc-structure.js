@@ -240,12 +240,14 @@
 		function changeAlignment(alignment, coord) {
 			var i, changed = false;
 			for (i = 0; i < this.structure.length; i += 1) {
-				var struct = this.structure[i];
+				var struct = this.structure[i], aux;
 				if (!struct.selected) { continue; } // continue if not marked as selected
 				if (struct instanceof Arrow) {
-					changed = setArrow.call(this, struct, alignment, coord);
+					aux = setArrow.call(this, struct, alignment, coord);
+					changed = changed ? true: aux;
 				} else if (struct instanceof Atom) {
-					changed = setAtom.call(this, struct, alignment, coord);
+					aux = setAtom.call(this, struct, alignment, coord);
+					changed = changed ? true: aux;
 				}
 			}
 			return changed;
@@ -364,7 +366,6 @@
 				updateArom.call(this, [d, 0]); // updates coords of aromatic elements
 				align(atom, [d, 0]); // translates arrow
 			}
-
 			// if d is equal to 0 (approx. to five decimal places), then return false
 			// which means that nothing changed, true otherwise
 			return !Utils.compareFloats(d, 0, 5);
