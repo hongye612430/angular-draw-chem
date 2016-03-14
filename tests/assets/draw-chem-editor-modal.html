@@ -26,14 +26,22 @@
 						<input class="form-control" type="text" ng-model="customLabel" placeholder="custom label">
 						<button ng-click="chooseCustomLabel(customLabel)" class="btn btn-primary" >Choose</button>
 					</div>
-				</form>
 			</div>
 			<dc-content
 				class="dc-editor-dialog-content"
 				ng-mousedown="doOnMouseDown($event)"
 				ng-mouseup="doOnMouseUp($event)"
 				ng-mousemove="doOnMouseMove($event)"
-				ng-bind-html="content()"></dc-content>
+				ng-bind-html="content()">
+			</dc-content>
+			<div id="#dc-status">
+					<span ng-repeat="structure in structures">
+						<label for="{{$index}}">structure {{$index}}
+							<input type="checkbox" ng-model="selection[$index]" id="dc-structure-{{$index}}" />
+						</label>
+					</span>
+			</div>
+			</form>
 		</div>
 	</div>
 </div>

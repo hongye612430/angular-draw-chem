@@ -6,12 +6,13 @@
 	DrawChemEditor.$inject = [
 		"DrawChemPaths",
 		"DrawChemCache",
+		"DrawChemDirectiveUtils",
 		"DrawChemDirectiveMouseActions",
 		"DrawChemMenuButtons",
 		"$sce"
 	];
 
-	function DrawChemEditor(Paths, Cache, MouseActions, MenuButtons, $sce) {
+	function DrawChemEditor(Paths, Cache, Utils, MouseActions, MenuButtons, $sce) {
 		return {
 			template: "<div ng-include=\"getEditorUrl()\"></div>",
 			scope: {
@@ -24,6 +25,25 @@
 				};
 
 				scope.pathToSvg = Paths.getPathToSvg();
+
+				scope.structures = [];
+
+				scope.trackingFn = function (structure, index) {
+					console.log(index + "" + structure.selected)
+					return index + "" + structure.selected;
+				}
+
+				scope.selection = {};
+
+				scope.$watchCollection("selection", function (newValues, oldValues) {
+					var structure = Cache.getCurrentStructure();
+					angular.forEach(newValues, function (value, key) {
+						scope.structures[key].selected = value;
+					});
+					if (structure !== null) {
+						Utils.drawStructure(structure);
+					}
+				});
 
 				// Sets width and height of the dialog box based on corresponding attributes.
 				scope.dialogStyle = {};
