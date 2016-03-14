@@ -568,6 +568,93 @@
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
+		.factory("DCSelection", DCSelection);
+
+	function DCSelection() {
+
+		var service = {};
+
+		/**
+		* Creates a new Selection.
+		* @class
+		* @param {Number[]} origin - coords of the origin relative to the absolute position of the 'parent' Structure object
+		* @param {Number[]} current - current absolute position of the mouse
+		*/
+		function Selection(origin, current) {
+			this.origin = origin;
+			this.current = current;
+			this.quarter = 4;
+		}
+
+		/**
+		 * Gets origin.
+		 * @returns {Number[]}
+		 */
+		Selection.prototype.getOrigin = function (coord) {
+			if (coord === "x") {
+				return this.origin[0];
+			} else if (coord === "y") {
+				return this.origin[1];
+			} else {
+				return this.origin;
+			}
+		};
+
+		/**
+		 * Sets origin.
+		 * @param {Number[]} - origin of the element
+		 */
+		Selection.prototype.setOrigin = function (origin) {
+			this.origin = origin;
+		};
+
+		/**
+		 * Gets current mouse position.
+		 * @returns {Number[]}
+		 */
+		Selection.prototype.getCurrent = function (coord) {
+			if (coord === "x") {
+				return this.current[0];
+			} else if (coord === "y") {
+				return this.current[1];
+			} else {
+				return this.current;
+			}
+		};
+
+    /**
+		 * Sets current mouse position.
+		 * @param {Number[]} - current mouse position.
+		 */
+		Selection.prototype.setCurrent = function (current) {
+		  this.current = current;
+		};
+
+		/**
+		 * Returns in which quarter is the rect (mouseDown coords as the beginning of the coordinate system).
+		 * @returns {Number}
+		 */
+		Selection.prototype.getQuarter = function () {
+			return this.quarter;
+		};
+
+		/**
+		 * Sets in which quarter is the rect (mouseDown coords as the beginning of the coordinate system).
+		 * @returns {Boolean}
+		 */
+		Selection.prototype.setQuarter = function (quarter) {
+			this.quarter = quarter;
+		};
+
+		service.Selection = Selection;
+
+		return service;
+	}
+})();
+
+(function () {
+	"use strict";
+	angular.module("mmAngularDrawChem")
 		.factory("DCShape", DCShape);
 
 	DCShape.$inject = ["DrawChemConst"];
@@ -609,6 +696,11 @@
 					},
 					"circle.edit": {
 						"stroke": "black",
+						"fill": "none"
+					},
+					"rect.selection": {
+						"stroke": "black",
+						"stroke-dasharray": "10 5",
 						"fill": "none"
 					}
 				},
@@ -777,12 +869,13 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DCStructure", DCStructure);
 
-	DCStructure.$inject = ["DCArrow", "DCAtom", "DrawChemUtils"];
+	DCStructure.$inject = ["DCArrow", "DCAtom", "DCSelection", "DrawChemUtils"];
 
-	function DCStructure(DCArrow, DCAtom, Utils) {
+	function DCStructure(DCArrow, DCAtom, DCSelection, Utils) {
 
 		var service = {},
 			Arrow = DCArrow.Arrow,
+			Selection = DCSelection.Selection,
 			Atom = DCAtom.Atom;
 
 		/**
@@ -795,7 +888,6 @@
 		function Structure(name, structure, decorate) {
 			this.name = name || "";
 			this.structure = structure || [];
-			this.transform = [];
 			this.origin = [];
 			this.selectedAll = false;
 			this.decorate = decorate || {};
@@ -825,6 +917,24 @@
 			this.selectedAll = true;
 			for (i = 0; i < this.structure.length; i += 1) {
 				this.structure[i].select();
+			}
+		};
+
+		/**
+		* Looks at the Selection object and sets structures in structure array as selected if they are inside the selection rectangle.
+		* @param {Selection} selection - Selection object
+		*/
+		Structure.prototype.select = function (selection) {
+			var i, struct, isInside;
+			for (i = 0; i < this.structure.length; i += 1) {
+				struct = this.structure[i];
+				if (struct instanceof Arrow) {
+					isInside = isArrowInsideRect.call(this, struct, selection);
+					if (isInside) { struct.select(); }
+				} else if (struct instanceof Atom) {
+					isInside = isAtomInsideRect.call(this, struct, selection);
+					if (isInside) { struct.select(); }
+				}
 			}
 		};
 
@@ -943,14 +1053,26 @@
 
 		/**
 		 * Calculates all extreme coordinates of structures in structure array that are marked as selected.
+		 * @param {Atom|Arrow} structure - structure object, i.e. Atom or Arrow object
 		 * @returns {Object}
 		 */
-		Structure.prototype.findMinMax = function () {
-			var minMax = {}, i, struct, currOrig,	absPos, absPosStart, absPosEnd;
+		Structure.prototype.findMinMax = function (struct) {
+			var minMax = {}, i;
 			// iterate over all structure in array
-			for (i = 0; i < this.structure.length; i += 1) {
-				struct = this.structure[i];
-				if (!struct.selected) { continue; } // continue if not selected
+			if (typeof struct === "undefined") {
+				for (i = 0; i < this.structure.length; i += 1) {
+					struct = this.structure[i];
+					if (!struct.selected) { continue; } // continue if not selected
+					checkStructObj.call(this, struct);
+				}
+			} else {
+				checkStructObj.call(this, struct);
+			}
+
+			return minMax;
+
+			function checkStructObj(struct) {
+				var currOrig,	absPos, absPosStart, absPosEnd;
 				if (struct instanceof Atom) { // if struct is an Atom object
 					currOrig = struct.getCoords(); // get relative coords of the first atom in structure
 					absPos = Utils.addCoordsNoPrec(this.origin, currOrig); // calculate its absolute position
@@ -962,7 +1084,6 @@
 					checkArrow(absPosEnd); // check coords of the end of the arrow
 				}
 			}
-			return minMax;
 
 			// recursively checks all atoms in structure array,
 			// looks for extreme coords, and updates minMax object
@@ -1004,6 +1125,70 @@
 		service.Structure = Structure;
 
 		return service;
+
+		/**
+		* Checks if Arrow object is inside the selection rectangle.
+		* @param {Arrow} arrow - Arrow object
+		* @param {Selection} selection - Selection object
+		* @returns {Boolean}
+		*/
+		function isArrowInsideRect(arrow, selection) {
+			var minMax = Structure.prototype.findMinMax.call(this, arrow);
+			return isInsideRectY.call(this, selection, minMax.minY)
+				&& isInsideRectY.call(this, selection, minMax.maxY)
+				&& isInsideRectX.call(this, selection, minMax.minX)
+				&& isInsideRectX.call(this, selection, minMax.maxX);
+		}
+
+		/**
+		* Checks if Atom object is inside the selection rectangle.
+		* @param {Atom} arrow - Atom object
+		* @param {Selection} selection - Selection object
+		* @returns {Boolean}
+		*/
+		function isAtomInsideRect(atom, selection) {
+			var minMax = Structure.prototype.findMinMax.call(this, atom);
+			return isInsideRectY.call(this, selection, minMax.minY)
+				&& isInsideRectY.call(this, selection, minMax.maxY)
+				&& isInsideRectX.call(this, selection, minMax.minX)
+				&& isInsideRectX.call(this, selection, minMax.maxX);
+		}
+
+		/**
+		* Checks if coord is inside the selection rectangle.
+		* @param {Selection} selection - Selection object
+		* @param {Number} coord - a coordinate to be checked
+		* @returns {Boolean}
+		*/
+		function isInsideRectY(selection, coord) {
+			var origin = Utils.addCoordsNoPrec(this.origin, selection.getOrigin()),
+				end = selection.getCurrent(),
+				quarter = selection.getQuarter();
+
+			if (quarter === 1 || quarter === 2) {
+				return coord <= origin[1] && coord >= end[1];
+			} else if (quarter === 3 || quarter === 4) {
+				return coord >= origin[1] && coord <= end[1];
+			}
+		}
+
+		/**
+		* Checks if coord is inside the selection rectangle.
+		* @param {Selection} selection - Selection object
+		* @param {Number} coord - a coordinate to be checked
+		* @returns {Boolean}
+		*/
+		function isInsideRectX(selection, coord) {
+			var origin = Utils.addCoordsNoPrec(this.origin, selection.getOrigin()),
+				end = selection.getCurrent(),
+				quarter = selection.getQuarter();
+
+			if (quarter === 1 || quarter === 4) {
+				return coord >= origin[0] && coord <= end[0];
+			} else if (quarter === 2 || quarter === 3) {
+				return coord <= origin[0] && coord >= end[0];
+			}
+		}
 
 		/**
 		* Iterates over structure array and changes alignment of each selected structure.
@@ -1259,13 +1444,15 @@
     "DrawChemCache",
     "DrawChemConst",
     "DCLabel",
-		"DCStructure"
+		"DCStructure",
+		"DCSelection"
   ];
 
-	function DrawChemDirectiveMouseActions(Flags, Utils, Shapes, Cache, Const, DCLabel, DCStructure) {
+	function DrawChemDirectiveMouseActions(Flags, Utils, Shapes, Cache, Const, DCLabel, DCStructure, DCSelection) {
 
 		var service = {},
       Label = DCLabel.Label,
+			Selection = DCSelection.Selection,
 			Structure = DCStructure.Structure,
       mouseFlags = Flags.mouseFlags;
 
@@ -1311,7 +1498,10 @@
 				return undefined;
 			}
 
-			if (Flags.selected === "arrow") {
+			if (Flags.selected === "select") {
+				structure = makeSelection(mouseCoords);
+				structure.getStructure().pop();
+			} else if (Flags.selected === "arrow") {
 				// if arrow was selected
 				// if content is empty or atom was not found
 				structure = addArrowOnEmptyContent();
@@ -1493,14 +1683,16 @@
         return undefined;
       }
 
-      if (mouseFlags.downOnAtom) {
-        // if an atom has been found
-        structure = modifyOnNonEmptyContent(scope, mouseCoords, true);
-      } else if (mouseFlags.mouseDown && Flags.selected === "arrow") {
+			if (Flags.selected === "select") {
+				structure = makeSelection(mouseCoords);
+			} else if (Flags.selected === "arrow") {
         // if an atom has not been found but the mouse is still down
 				// the content is either empty or the mousedown event occurred somewhere outside of the current Structure object
         structure = addArrowOnEmptyContent();
-      } else if (mouseFlags.mouseDown && Flags.selected === "structure") {
+      } else if (mouseFlags.downOnAtom) {
+        // if an atom has been found
+        structure = modifyOnNonEmptyContent(scope, mouseCoords, true);
+      } else if (Flags.selected === "structure") {
         // if an atom has not been found but the mouse is still down
 				// the content is either empty or the mousedown event occurred somewhere outside of the current Structure object
         structure = addStructureOnEmptyContent();
@@ -1596,6 +1788,35 @@
 				mouseFlags.downAtomCoords,
 				move
 			);
+		}
+
+		function makeSelection(mouseCoords) {
+			var structure, selection, newCoords, width, height;
+			if (Utils.isContentEmpty()) {
+				// if the content is empty
+				// new Structure object has to be created
+				structure = new Structure();
+				// set origin of the Structure object (which may be different from current mouse position)
+				structure.setOrigin(mouseFlags.downMouseCoords);
+				selection = new Selection([0, 0], mouseCoords);
+			} else {
+				// if the content is not empty, a Structure object already exists
+				// so get Structure object from Cache
+				structure = angular.copy(Cache.getCurrentStructure());
+				newCoords = Utils.subtractCoords(mouseFlags.downMouseCoords, structure.getOrigin());
+				selection = new Selection(newCoords, mouseCoords);
+			}
+			// checks to which 'quarter' the selection rect belongs (downMouseCoords as the beginning of the coordinate system)
+			width = mouseCoords[0] - mouseFlags.downMouseCoords[0];
+			height = mouseCoords[1] - mouseFlags.downMouseCoords[1];
+			if (width > 0 && height < 0) { selection.setQuarter(1); }
+			if (width < 0 && height < 0) { selection.setQuarter(2); }
+			if (width < 0 && height > 0) { selection.setQuarter(3); }
+			structure.select(selection);
+			// add Arrow object to the structures array in the Structure object
+			structure.addToStructures(selection);
+			// return Structure object
+			return structure;
 		}
 	}
 })();
@@ -2059,6 +2280,7 @@
         70: "f",
         81: "q",
 				82: "r",
+				83: "s",
         84: "t",
 				87: "w",
         90: "z"
@@ -2066,17 +2288,13 @@
       keyCombination = {},
       service = {};
 
-    registerShortcut("ctrl+z", Actions.undo);
-    registerShortcut("ctrl+e", Actions.clear);
-    registerShortcut("ctrl+f", Actions.forward);
-    registerShortcut("ctrl+t", Actions.transfer);
-    registerShortcut("ctrl+q", Actions.close);
-		registerShortcut("shift+a", Edits.selectAll);
-		registerShortcut("shift+d", Edits.deselectAll);
-		registerShortcut("shift+q", Edits.alignUp);
-		registerShortcut("shift+w", Edits.alignDown);
-		registerShortcut("shift+r", Edits.alignRight);
-		registerShortcut("shift+e", Edits.alignLeft);
+		angular.forEach(Actions.actions, function (action) {
+			registerShortcut(action.shortcut, action.action);
+		});
+
+		angular.forEach(Edits.edits, function (edit) {
+			registerShortcut(edit.shortcut, edit.action);
+		});
 
     service.down = function (keyCode) {
       setKey(keyCode, true);
@@ -2091,7 +2309,7 @@
 
     function registerShortcut(combination, cb) {
       var i,
-        keys = combination.split("+"),
+        keys = combination.split(" + "),
         currentCombination = { cb: cb, keys: {} };
 
       for (i = 0; i < keys.length; i += 1) {
@@ -2306,11 +2524,19 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemEdits", DrawChemEdits);
 
-	DrawChemEdits.$inject = ["DrawChemCache", "DrawChemDirectiveUtils"];
+	DrawChemEdits.$inject = ["DrawChemCache", "DrawChemDirectiveUtils", "DrawChemDirectiveFlags"];
 
-	function DrawChemEdits(Cache, Utils) {
+	function DrawChemEdits(Cache, Utils, Flags) {
 
 		var service = {};
+
+		/**
+		* Marks all structures as selected.
+		*/
+    service.select = function () {
+			service.deselectAll();
+			Flags.selected = "select";
+    };
 
 		/**
 		* Marks all structures as selected.
@@ -2397,6 +2623,11 @@
 		};
 
 		service.edits = {
+			"select": {
+				action: service.select,
+				id: "select",
+				shortcut: "shift + s"
+			},
 			"select all": {
 				action: service.selectAll,
 				id: "select-all",
@@ -3131,10 +3362,11 @@
 		"DrawChemUtils",
 		"DCAtom",
 		"DCBond",
-		"DCArrow"
+		"DCArrow",
+		"DCSelection"
 	];
 
-	function DrawChemShapes(DCShape, Const, Utils, DCAtom, DCBond, DCArrow) {
+	function DrawChemShapes(DCShape, Const, Utils, DCAtom, DCBond, DCArrow, DCSelection) {
 
 		var service = {},
 			ARROW_START = Const.ARROW_START,
@@ -3144,7 +3376,8 @@
 			BETWEEN_DBL_BONDS = Const.BETWEEN_DBL_BONDS,
 			BETWEEN_TRP_BONDS = Const.BETWEEN_TRP_BONDS,
 			Atom = DCAtom.Atom,
-			Arrow = DCArrow.Arrow;
+			Arrow = DCArrow.Arrow,
+			Selection = DCSelection.Selection;
 
 		/**
 		 * Modifies the structure.
@@ -3361,6 +3594,7 @@
 				paths = output.paths,
 				circles = output.circles,
 				labels = output.labels,
+				rects = output.rects,
 				minMax = output.minMax;
 			shape = new DCShape.Shape(genElements().full, genElements().mini, id);
 			shape.elementFull = shape.generateStyle("expanded") + shape.elementFull;
@@ -3374,6 +3608,16 @@
 			 */
 			function genElements() {
 				var full = "", mini = "", aux = "";
+				rects.forEach(function (rect) {
+					aux = "<rect class='" + rect.class +
+						"' x='" + rect.rect[0] +
+						"' y='" + rect.rect[1] +
+						"' width='" + rect.rect[2] +
+						"' height='" + rect.rect[3] +
+						"'></rect>";
+					full += aux;
+					mini += aux;
+				});
 				paths.forEach(function (path) {
 					if (typeof path.class !== "undefined") {
 						aux = "<path class='" + path.class + "' d='" + path.line + "'></path>";
@@ -3460,13 +3704,41 @@
 			* @returns {Object}
 			*/
 		  function parseInput(input) {
-				var output = [], circles = [], labels = [], i, absPos, absPosStart, absPosEnd, len, atom, arrow, obj,
+				var output = [], circles = [], labels = [], rects = [], i, absPos, absPosStart, absPosEnd, len, selection, atom, arrow, obj,
 					origin = input.getOrigin(), minMax = { minX: origin[0], maxX: origin[0], minY: origin[1], maxY: origin[1] },
-					circR = Const.CIRC_R;
+					circR = Const.CIRC_R, width, height, quarter, startX, startY;
 
 				for (i = 0; i < input.getStructure().length; i += 1) {
 					obj = input.getStructure(i);
-					if (obj instanceof Atom) {
+					if (obj instanceof Selection) {
+						selection = obj;
+						absPosStart = Utils.addCoordsNoPrec(origin, selection.getOrigin());
+						absPosEnd = selection.getCurrent();
+						quarter = selection.getQuarter();
+						if (quarter === 1) {
+							startX = absPosStart[0];
+							startY = absPosEnd[1];
+							width = absPosEnd[0] - startX;
+							height = absPosStart[1] - startY;
+						} else if (quarter === 2) {
+							startX = absPosEnd[0];
+							startY = absPosEnd[1];
+							width = absPosStart[0] - startX;
+							height = absPosStart[1] - startY;
+						} else if (quarter === 3) {
+							startX = absPosEnd[0];
+							startY = absPosStart[1];
+							width = absPosStart[0] - startX;
+							height = absPosEnd[1] - startY;
+						} else if (quarter === 4) {
+							startX = absPosStart[0];
+							startY = absPosStart[1];
+							width = absPosEnd[0] - startX;
+							height = absPosEnd[1] - startY;
+						}
+
+						rects.push({ class: "selection", rect: [startX, startY, width, height] });
+					} else if (obj instanceof Atom) {
 						atom = obj;
 						absPos = Utils.addCoordsNoPrec(origin, atom.getCoords());
 						updateLabel(absPos, atom);
@@ -3490,6 +3762,7 @@
 
 				return {
 					paths: stringifyPaths(output),
+					rects: rects,
 					circles: circles,
 					labels: labels,
 					minMax: minMax

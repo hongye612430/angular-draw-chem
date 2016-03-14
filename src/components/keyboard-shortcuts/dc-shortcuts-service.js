@@ -16,6 +16,7 @@
         70: "f",
         81: "q",
 				82: "r",
+				83: "s",
         84: "t",
 				87: "w",
         90: "z"
@@ -23,17 +24,13 @@
       keyCombination = {},
       service = {};
 
-    registerShortcut("ctrl+z", Actions.undo);
-    registerShortcut("ctrl+e", Actions.clear);
-    registerShortcut("ctrl+f", Actions.forward);
-    registerShortcut("ctrl+t", Actions.transfer);
-    registerShortcut("ctrl+q", Actions.close);
-		registerShortcut("shift+a", Edits.selectAll);
-		registerShortcut("shift+d", Edits.deselectAll);
-		registerShortcut("shift+q", Edits.alignUp);
-		registerShortcut("shift+w", Edits.alignDown);
-		registerShortcut("shift+r", Edits.alignRight);
-		registerShortcut("shift+e", Edits.alignLeft);
+		angular.forEach(Actions.actions, function (action) {
+			registerShortcut(action.shortcut, action.action);
+		});
+
+		angular.forEach(Edits.edits, function (edit) {
+			registerShortcut(edit.shortcut, edit.action);
+		});
 
     service.down = function (keyCode) {
       setKey(keyCode, true);
@@ -48,7 +45,7 @@
 
     function registerShortcut(combination, cb) {
       var i,
-        keys = combination.split("+"),
+        keys = combination.split(" + "),
         currentCombination = { cb: cb, keys: {} };
 
       for (i = 0; i < keys.length; i += 1) {

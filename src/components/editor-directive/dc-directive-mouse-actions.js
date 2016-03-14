@@ -10,13 +10,15 @@
     "DrawChemCache",
     "DrawChemConst",
     "DCLabel",
-		"DCStructure"
+		"DCStructure",
+		"DCSelection"
   ];
 
-	function DrawChemDirectiveMouseActions(Flags, Utils, Shapes, Cache, Const, DCLabel, DCStructure) {
+	function DrawChemDirectiveMouseActions(Flags, Utils, Shapes, Cache, Const, DCLabel, DCStructure, DCSelection) {
 
 		var service = {},
       Label = DCLabel.Label,
+			Selection = DCSelection.Selection,
 			Structure = DCStructure.Structure,
       mouseFlags = Flags.mouseFlags;
 
@@ -62,7 +64,10 @@
 				return undefined;
 			}
 
-			if (Flags.selected === "arrow") {
+			if (Flags.selected === "select") {
+				structure = makeSelection(mouseCoords);
+				structure.getStructure().pop();
+			} else if (Flags.selected === "arrow") {
 				// if arrow was selected
 				// if content is empty or atom was not found
 				structure = addArrowOnEmptyContent();
@@ -244,14 +249,16 @@
         return undefined;
       }
 
-      if (mouseFlags.downOnAtom) {
-        // if an atom has been found
-        structure = modifyOnNonEmptyContent(scope, mouseCoords, true);
-      } else if (mouseFlags.mouseDown && Flags.selected === "arrow") {
+			if (Flags.selected === "select") {
+				structure = makeSelection(mouseCoords);
+			} else if (Flags.selected === "arrow") {
         // if an atom has not been found but the mouse is still down
 				// the content is either empty or the mousedown event occurred somewhere outside of the current Structure object
         structure = addArrowOnEmptyContent();
-      } else if (mouseFlags.mouseDown && Flags.selected === "structure") {
+      } else if (mouseFlags.downOnAtom) {
+        // if an atom has been found
+        structure = modifyOnNonEmptyContent(scope, mouseCoords, true);
+      } else if (Flags.selected === "structure") {
         // if an atom has not been found but the mouse is still down
 				// the content is either empty or the mousedown event occurred somewhere outside of the current Structure object
         structure = addStructureOnEmptyContent();
@@ -347,6 +354,35 @@
 				mouseFlags.downAtomCoords,
 				move
 			);
+		}
+
+		function makeSelection(mouseCoords) {
+			var structure, selection, newCoords, width, height;
+			if (Utils.isContentEmpty()) {
+				// if the content is empty
+				// new Structure object has to be created
+				structure = new Structure();
+				// set origin of the Structure object (which may be different from current mouse position)
+				structure.setOrigin(mouseFlags.downMouseCoords);
+				selection = new Selection([0, 0], mouseCoords);
+			} else {
+				// if the content is not empty, a Structure object already exists
+				// so get Structure object from Cache
+				structure = angular.copy(Cache.getCurrentStructure());
+				newCoords = Utils.subtractCoords(mouseFlags.downMouseCoords, structure.getOrigin());
+				selection = new Selection(newCoords, mouseCoords);
+			}
+			// checks to which 'quarter' the selection rect belongs (downMouseCoords as the beginning of the coordinate system)
+			width = mouseCoords[0] - mouseFlags.downMouseCoords[0];
+			height = mouseCoords[1] - mouseFlags.downMouseCoords[1];
+			if (width > 0 && height < 0) { selection.setQuarter(1); }
+			if (width < 0 && height < 0) { selection.setQuarter(2); }
+			if (width < 0 && height > 0) { selection.setQuarter(3); }
+			structure.select(selection);
+			// add Arrow object to the structures array in the Structure object
+			structure.addToStructures(selection);
+			// return Structure object
+			return structure;
 		}
 	}
 })();

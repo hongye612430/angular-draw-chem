@@ -3,12 +3,13 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DCStructure", DCStructure);
 
-	DCStructure.$inject = ["DCArrow", "DCAtom", "DrawChemUtils"];
+	DCStructure.$inject = ["DCArrow", "DCAtom", "DCSelection", "DrawChemUtils"];
 
-	function DCStructure(DCArrow, DCAtom, Utils) {
+	function DCStructure(DCArrow, DCAtom, DCSelection, Utils) {
 
 		var service = {},
 			Arrow = DCArrow.Arrow,
+			Selection = DCSelection.Selection,
 			Atom = DCAtom.Atom;
 
 		/**
@@ -21,7 +22,6 @@
 		function Structure(name, structure, decorate) {
 			this.name = name || "";
 			this.structure = structure || [];
-			this.transform = [];
 			this.origin = [];
 			this.selectedAll = false;
 			this.decorate = decorate || {};
@@ -51,6 +51,24 @@
 			this.selectedAll = true;
 			for (i = 0; i < this.structure.length; i += 1) {
 				this.structure[i].select();
+			}
+		};
+
+		/**
+		* Looks at the Selection object and sets structures in structure array as selected if they are inside the selection rectangle.
+		* @param {Selection} selection - Selection object
+		*/
+		Structure.prototype.select = function (selection) {
+			var i, struct, isInside;
+			for (i = 0; i < this.structure.length; i += 1) {
+				struct = this.structure[i];
+				if (struct instanceof Arrow) {
+					isInside = isArrowInsideRect.call(this, struct, selection);
+					if (isInside) { struct.select(); }
+				} else if (struct instanceof Atom) {
+					isInside = isAtomInsideRect.call(this, struct, selection);
+					if (isInside) { struct.select(); }
+				}
 			}
 		};
 
@@ -169,14 +187,26 @@
 
 		/**
 		 * Calculates all extreme coordinates of structures in structure array that are marked as selected.
+		 * @param {Atom|Arrow} structure - structure object, i.e. Atom or Arrow object
 		 * @returns {Object}
 		 */
-		Structure.prototype.findMinMax = function () {
-			var minMax = {}, i, struct, currOrig,	absPos, absPosStart, absPosEnd;
+		Structure.prototype.findMinMax = function (struct) {
+			var minMax = {}, i;
 			// iterate over all structure in array
-			for (i = 0; i < this.structure.length; i += 1) {
-				struct = this.structure[i];
-				if (!struct.selected) { continue; } // continue if not selected
+			if (typeof struct === "undefined") {
+				for (i = 0; i < this.structure.length; i += 1) {
+					struct = this.structure[i];
+					if (!struct.selected) { continue; } // continue if not selected
+					checkStructObj.call(this, struct);
+				}
+			} else {
+				checkStructObj.call(this, struct);
+			}
+
+			return minMax;
+
+			function checkStructObj(struct) {
+				var currOrig,	absPos, absPosStart, absPosEnd;
 				if (struct instanceof Atom) { // if struct is an Atom object
 					currOrig = struct.getCoords(); // get relative coords of the first atom in structure
 					absPos = Utils.addCoordsNoPrec(this.origin, currOrig); // calculate its absolute position
@@ -188,7 +218,6 @@
 					checkArrow(absPosEnd); // check coords of the end of the arrow
 				}
 			}
-			return minMax;
 
 			// recursively checks all atoms in structure array,
 			// looks for extreme coords, and updates minMax object
@@ -230,6 +259,70 @@
 		service.Structure = Structure;
 
 		return service;
+
+		/**
+		* Checks if Arrow object is inside the selection rectangle.
+		* @param {Arrow} arrow - Arrow object
+		* @param {Selection} selection - Selection object
+		* @returns {Boolean}
+		*/
+		function isArrowInsideRect(arrow, selection) {
+			var minMax = Structure.prototype.findMinMax.call(this, arrow);
+			return isInsideRectY.call(this, selection, minMax.minY)
+				&& isInsideRectY.call(this, selection, minMax.maxY)
+				&& isInsideRectX.call(this, selection, minMax.minX)
+				&& isInsideRectX.call(this, selection, minMax.maxX);
+		}
+
+		/**
+		* Checks if Atom object is inside the selection rectangle.
+		* @param {Atom} arrow - Atom object
+		* @param {Selection} selection - Selection object
+		* @returns {Boolean}
+		*/
+		function isAtomInsideRect(atom, selection) {
+			var minMax = Structure.prototype.findMinMax.call(this, atom);
+			return isInsideRectY.call(this, selection, minMax.minY)
+				&& isInsideRectY.call(this, selection, minMax.maxY)
+				&& isInsideRectX.call(this, selection, minMax.minX)
+				&& isInsideRectX.call(this, selection, minMax.maxX);
+		}
+
+		/**
+		* Checks if coord is inside the selection rectangle.
+		* @param {Selection} selection - Selection object
+		* @param {Number} coord - a coordinate to be checked
+		* @returns {Boolean}
+		*/
+		function isInsideRectY(selection, coord) {
+			var origin = Utils.addCoordsNoPrec(this.origin, selection.getOrigin()),
+				end = selection.getCurrent(),
+				quarter = selection.getQuarter();
+
+			if (quarter === 1 || quarter === 2) {
+				return coord <= origin[1] && coord >= end[1];
+			} else if (quarter === 3 || quarter === 4) {
+				return coord >= origin[1] && coord <= end[1];
+			}
+		}
+
+		/**
+		* Checks if coord is inside the selection rectangle.
+		* @param {Selection} selection - Selection object
+		* @param {Number} coord - a coordinate to be checked
+		* @returns {Boolean}
+		*/
+		function isInsideRectX(selection, coord) {
+			var origin = Utils.addCoordsNoPrec(this.origin, selection.getOrigin()),
+				end = selection.getCurrent(),
+				quarter = selection.getQuarter();
+
+			if (quarter === 1 || quarter === 4) {
+				return coord >= origin[0] && coord <= end[0];
+			} else if (quarter === 2 || quarter === 3) {
+				return coord <= origin[0] && coord >= end[0];
+			}
+		}
 
 		/**
 		* Iterates over structure array and changes alignment of each selected structure.

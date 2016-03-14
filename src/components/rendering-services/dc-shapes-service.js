@@ -9,10 +9,11 @@
 		"DrawChemUtils",
 		"DCAtom",
 		"DCBond",
-		"DCArrow"
+		"DCArrow",
+		"DCSelection"
 	];
 
-	function DrawChemShapes(DCShape, Const, Utils, DCAtom, DCBond, DCArrow) {
+	function DrawChemShapes(DCShape, Const, Utils, DCAtom, DCBond, DCArrow, DCSelection) {
 
 		var service = {},
 			ARROW_START = Const.ARROW_START,
@@ -22,7 +23,8 @@
 			BETWEEN_DBL_BONDS = Const.BETWEEN_DBL_BONDS,
 			BETWEEN_TRP_BONDS = Const.BETWEEN_TRP_BONDS,
 			Atom = DCAtom.Atom,
-			Arrow = DCArrow.Arrow;
+			Arrow = DCArrow.Arrow,
+			Selection = DCSelection.Selection;
 
 		/**
 		 * Modifies the structure.
@@ -239,6 +241,7 @@
 				paths = output.paths,
 				circles = output.circles,
 				labels = output.labels,
+				rects = output.rects,
 				minMax = output.minMax;
 			shape = new DCShape.Shape(genElements().full, genElements().mini, id);
 			shape.elementFull = shape.generateStyle("expanded") + shape.elementFull;
@@ -252,6 +255,16 @@
 			 */
 			function genElements() {
 				var full = "", mini = "", aux = "";
+				rects.forEach(function (rect) {
+					aux = "<rect class='" + rect.class +
+						"' x='" + rect.rect[0] +
+						"' y='" + rect.rect[1] +
+						"' width='" + rect.rect[2] +
+						"' height='" + rect.rect[3] +
+						"'></rect>";
+					full += aux;
+					mini += aux;
+				});
 				paths.forEach(function (path) {
 					if (typeof path.class !== "undefined") {
 						aux = "<path class='" + path.class + "' d='" + path.line + "'></path>";
@@ -338,13 +351,41 @@
 			* @returns {Object}
 			*/
 		  function parseInput(input) {
-				var output = [], circles = [], labels = [], i, absPos, absPosStart, absPosEnd, len, atom, arrow, obj,
+				var output = [], circles = [], labels = [], rects = [], i, absPos, absPosStart, absPosEnd, len, selection, atom, arrow, obj,
 					origin = input.getOrigin(), minMax = { minX: origin[0], maxX: origin[0], minY: origin[1], maxY: origin[1] },
-					circR = Const.CIRC_R;
+					circR = Const.CIRC_R, width, height, quarter, startX, startY;
 
 				for (i = 0; i < input.getStructure().length; i += 1) {
 					obj = input.getStructure(i);
-					if (obj instanceof Atom) {
+					if (obj instanceof Selection) {
+						selection = obj;
+						absPosStart = Utils.addCoordsNoPrec(origin, selection.getOrigin());
+						absPosEnd = selection.getCurrent();
+						quarter = selection.getQuarter();
+						if (quarter === 1) {
+							startX = absPosStart[0];
+							startY = absPosEnd[1];
+							width = absPosEnd[0] - startX;
+							height = absPosStart[1] - startY;
+						} else if (quarter === 2) {
+							startX = absPosEnd[0];
+							startY = absPosEnd[1];
+							width = absPosStart[0] - startX;
+							height = absPosStart[1] - startY;
+						} else if (quarter === 3) {
+							startX = absPosEnd[0];
+							startY = absPosStart[1];
+							width = absPosStart[0] - startX;
+							height = absPosEnd[1] - startY;
+						} else if (quarter === 4) {
+							startX = absPosStart[0];
+							startY = absPosStart[1];
+							width = absPosEnd[0] - startX;
+							height = absPosEnd[1] - startY;
+						}
+
+						rects.push({ class: "selection", rect: [startX, startY, width, height] });
+					} else if (obj instanceof Atom) {
 						atom = obj;
 						absPos = Utils.addCoordsNoPrec(origin, atom.getCoords());
 						updateLabel(absPos, atom);
@@ -368,6 +409,7 @@
 
 				return {
 					paths: stringifyPaths(output),
+					rects: rects,
 					circles: circles,
 					labels: labels,
 					minMax: minMax

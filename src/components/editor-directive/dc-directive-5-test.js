@@ -399,4 +399,32 @@ describe("DrawChemEditor directive tests - part2", function () {
         "</g>" +
     "</svg>");
 	});
+
+	it("should select structures with selection tool", function () {
+    var custom = DrawChemStructures.cyclohexane(), i, structureArray;
+    DrawChem.runEditor("test");
+		expect(DrawChem.showEditor()).toEqual(true);
+    temp.find("#dc-" + custom.name).click();
+    temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "mouseup",
+			which: 1,
+			clientX: 100,
+			clientY: 100
+		});
+    temp.find("#dc-one-way-arrow").click();
+    temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "mousedown",
+			which: 1,
+			clientX: 200,
+			clientY: 120
+		});
+    temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "mouseup",
+			which: 1,
+			clientX: 200,
+			clientY: 120
+		});
+		temp.find("#dc-select").click();
+
+	});
 });

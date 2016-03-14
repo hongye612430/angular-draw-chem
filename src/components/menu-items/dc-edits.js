@@ -3,11 +3,19 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemEdits", DrawChemEdits);
 
-	DrawChemEdits.$inject = ["DrawChemCache", "DrawChemDirectiveUtils"];
+	DrawChemEdits.$inject = ["DrawChemCache", "DrawChemDirectiveUtils", "DrawChemDirectiveFlags"];
 
-	function DrawChemEdits(Cache, Utils) {
+	function DrawChemEdits(Cache, Utils, Flags) {
 
 		var service = {};
+
+		/**
+		* Marks all structures as selected.
+		*/
+    service.select = function () {
+			service.deselectAll();
+			Flags.selected = "select";
+    };
 
 		/**
 		* Marks all structures as selected.
@@ -94,6 +102,11 @@
 		};
 
 		service.edits = {
+			"select": {
+				action: service.select,
+				id: "select",
+				shortcut: "shift + s"
+			},
 			"select all": {
 				action: service.selectAll,
 				id: "select-all",

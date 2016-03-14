@@ -43,6 +43,11 @@
 					"circle.edit": {
 						"stroke": "black",
 						"fill": "none"
+					},
+					"rect.selection": {
+						"stroke": "black",
+						"stroke-dasharray": "10 5",
+						"fill": "none"
 					}
 				},
 				base: {

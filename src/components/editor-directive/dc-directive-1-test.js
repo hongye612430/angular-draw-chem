@@ -12,6 +12,11 @@ var styleExpanded = "circle.atom:hover{" +
 	"circle.edit{" +
 		"stroke:black;" +
 		"fill:none;" +
+	"}" +
+	"rect.selection{" +
+		"stroke:black;" +
+		"stroke-dasharray:10 5;" +
+		"fill:none;" +
 	"}",
 	styleBase = "path{" +
 		"stroke:black;" +
