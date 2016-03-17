@@ -28,7 +28,7 @@ describe("DrawChemEditor directive tests - part2", function () {
 	}));
 
   it("should align all selected structures to the uppermost point", function () {
-    var custom = DrawChemStructures.cyclohexane(), i, structureArray;
+    var custom = DrawChemStructures.cyclohexane();
     DrawChem.runEditor("test");
 		expect(DrawChem.showEditor()).toEqual(true);
     temp.find("#dc-" + custom.name).click();
@@ -94,7 +94,7 @@ describe("DrawChemEditor directive tests - part2", function () {
 	});
 
   it("should align all selected structures to the downmost point", function () {
-    var custom = DrawChemStructures.cyclohexane(), i, structureArray;
+    var custom = DrawChemStructures.cyclohexane();
     DrawChem.runEditor("test");
 		expect(DrawChem.showEditor()).toEqual(true);
     temp.find("#dc-" + custom.name).click();
@@ -160,7 +160,7 @@ describe("DrawChemEditor directive tests - part2", function () {
 	});
 
   it("should align all selected structures to the leftmost point", function () {
-    var custom = DrawChemStructures.cyclohexane(), i, structureArray;
+    var custom = DrawChemStructures.cyclohexane();
     DrawChem.runEditor("test");
 		expect(DrawChem.showEditor()).toEqual(true);
     temp.find("#dc-" + custom.name).click();
@@ -226,7 +226,7 @@ describe("DrawChemEditor directive tests - part2", function () {
 	});
 
   it("should align all selected structures to the rightmost point", function () {
-    var custom = DrawChemStructures.cyclohexane(), i, structureArray;
+    var custom = DrawChemStructures.cyclohexane();
     DrawChem.runEditor("test");
 		expect(DrawChem.showEditor()).toEqual(true);
     temp.find("#dc-" + custom.name).click();
@@ -291,8 +291,8 @@ describe("DrawChemEditor directive tests - part2", function () {
     "</svg>");
 	});
 
-	it("should not react to multiple clicking of 'align-right' if already aligned", function () {
-    var custom = DrawChemStructures.cyclohexane(), i, structureArray;
+	it("should not react to multiple clicking of 'align-...' if already aligned", function () {
+    var custom = DrawChemStructures.cyclohexane();
     DrawChem.runEditor("test");
 		expect(DrawChem.showEditor()).toEqual(true);
     temp.find("#dc-" + custom.name).click();
@@ -425,6 +425,22 @@ describe("DrawChemEditor directive tests - part2", function () {
 			clientY: 120
 		});
 		temp.find("#dc-select").click();
-
+		temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "mousedown",
+			which: 1,
+			clientX: 50,
+			clientY: 50
+		});
+    temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "mouseup",
+			which: 1,
+			clientX: 250,
+			clientY: 250
+		});
+		structureArray = DrawChemCache.getCurrentStructure().getStructure();
+    expect(structureArray.length).toEqual(2);
+    for (i = 0; i < structureArray.length; i++) {
+      expect(structureArray[i].selected).toEqual(true);
+    }
 	});
 });

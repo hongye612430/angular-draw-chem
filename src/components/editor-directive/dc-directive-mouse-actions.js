@@ -87,10 +87,6 @@
 				// then add it to Cache and draw it
         Cache.addStructure(structure);
         Utils.drawStructure(structure);
-				scope.structures = Cache.getCurrentStructure().getStructure();
-				for(i = 0; i < scope.structures.length; i += 1) {
-					scope.selection[i] = scope.structures[i].selected;
-				}
       }
 			// reset mouse flags at the end
       Utils.resetMouseFlags();

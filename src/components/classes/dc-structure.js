@@ -73,7 +73,30 @@
 		};
 
 		/**
-		* Deselcts all structures in structure array.
+		* Deletes all structures in structure array marked as selected.
+		*/
+		Structure.prototype.deleteSelected = function () {
+			var i, j, newStructure = [], newArom, current, equal, arom;
+			for (i = 0; i < this.structure.length; i += 1) {
+				current = this.structure[i];
+				if (!current.selected) {
+					newStructure.push(current);
+				} else if (current instanceof Atom && this.aromatic) {
+					newArom = [];
+					for (j = 0; j < this.decorate.aromatic.length; j += 1) {
+						arom = this.decorate.aromatic[j];
+						equal = Utils.compareFloats(arom.fromWhich[0], current.getCoords("x"), 3)
+							&& Utils.compareFloats(arom.fromWhich[1], current.getCoords("y"), 3);
+						if (!equal) { newArom.push(arom); }
+					}
+					this.decorate.aromatic = newArom;
+				}
+			}
+			this.structure = newStructure;
+		};
+
+		/**
+		* Deselects all structures in structure array.
 		*/
 		Structure.prototype.deselectAll = function () {
 			var i;

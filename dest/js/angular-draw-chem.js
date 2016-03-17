@@ -939,7 +939,30 @@
 		};
 
 		/**
-		* Deselcts all structures in structure array.
+		* Deletes all structures in structure array marked as selected.
+		*/
+		Structure.prototype.deleteSelected = function () {
+			var i, j, newStructure = [], newArom, current, equal, arom;
+			for (i = 0; i < this.structure.length; i += 1) {
+				current = this.structure[i];
+				if (!current.selected) {
+					newStructure.push(current);
+				} else if (current instanceof Atom && this.aromatic) {
+					newArom = [];
+					for (j = 0; j < this.decorate.aromatic.length; j += 1) {
+						arom = this.decorate.aromatic[j];
+						equal = Utils.compareFloats(arom.fromWhich[0], current.getCoords("x"), 3)
+							&& Utils.compareFloats(arom.fromWhich[1], current.getCoords("y"), 3);
+						if (!equal) { newArom.push(arom); }
+					}
+					this.decorate.aromatic = newArom;
+				}
+			}
+			this.structure = newStructure;
+		};
+
+		/**
+		* Deselects all structures in structure array.
 		*/
 		Structure.prototype.deselectAll = function () {
 			var i;
@@ -1521,10 +1544,6 @@
 				// then add it to Cache and draw it
         Cache.addStructure(structure);
         Utils.drawStructure(structure);
-				scope.structures = Cache.getCurrentStructure().getStructure();
-				for(i = 0; i < scope.structures.length; i += 1) {
-					scope.selection[i] = scope.structures[i].selected;
-				}
       }
 			// reset mouse flags at the end
       Utils.resetMouseFlags();
@@ -1947,25 +1966,6 @@
 
 				scope.pathToSvg = Paths.getPathToSvg();
 
-				scope.structures = [];
-
-				scope.trackingFn = function (structure, index) {
-					console.log(index + "" + structure.selected)
-					return index + "" + structure.selected;
-				}
-
-				scope.selection = {};
-
-				scope.$watchCollection("selection", function (newValues, oldValues) {
-					var structure = Cache.getCurrentStructure();
-					angular.forEach(newValues, function (value, key) {
-						scope.structures[key].selected = value;
-					});
-					if (structure !== null) {
-						Utils.drawStructure(structure);
-					}
-				});
-
 				// Sets width and height of the dialog box based on corresponding attributes.
 				scope.dialogStyle = {};
 
@@ -2307,7 +2307,8 @@
 				83: "s",
         84: "t",
 				87: "w",
-        90: "z"
+        90: "z",
+				127: "del"
       },
       keyCombination = {},
       service = {};
@@ -2555,6 +2556,18 @@
 		var service = {};
 
 		/**
+		* Deletes all structures marked as selected.
+		*/
+    service.deleteSelected = function () {
+			var structure = angular.copy(Cache.getCurrentStructure());
+			if (structure !== null) {
+				structure.deleteSelected();
+				Cache.addStructure(structure);
+				Utils.drawStructure(structure);
+			}
+    };
+
+		/**
 		* Marks all structures as selected.
 		*/
     service.select = function () {
@@ -2681,6 +2694,11 @@
 				action: service.alignLeft,
 				id: "align-left",
 				shortcut: "shift + e"
+			},
+			"delete selected": {
+				action: service.deleteSelected,
+				id: "delete-selected",
+				shortcut: "del"
 			}
 		};
 

@@ -34,13 +34,7 @@
 				ng-mousemove="doOnMouseMove($event)"
 				ng-bind-html="content()">
 			</dc-content>
-			<div id="#dc-status">
-					<span ng-repeat="structure in structures">
-						<label for="{{$index}}">structure {{$index}}
-							<input type="checkbox" ng-model="selection[$index]" id="dc-structure-{{$index}}" />
-						</label>
-					</span>
-			</div>
+			<div id="#dc-status"></div>
 			</form>
 		</div>
 	</div>

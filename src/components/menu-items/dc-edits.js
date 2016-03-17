@@ -10,6 +10,18 @@
 		var service = {};
 
 		/**
+		* Deletes all structures marked as selected.
+		*/
+    service.deleteSelected = function () {
+			var structure = angular.copy(Cache.getCurrentStructure());
+			if (structure !== null) {
+				structure.deleteSelected();
+				Cache.addStructure(structure);
+				Utils.drawStructure(structure);
+			}
+    };
+
+		/**
 		* Marks all structures as selected.
 		*/
     service.select = function () {
@@ -136,6 +148,11 @@
 				action: service.alignLeft,
 				id: "align-left",
 				shortcut: "shift + e"
+			},
+			"delete selected": {
+				action: service.deleteSelected,
+				id: "delete-selected",
+				shortcut: "del"
 			}
 		};
 

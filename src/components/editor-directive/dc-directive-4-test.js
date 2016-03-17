@@ -134,4 +134,61 @@ describe("DrawChemEditor directive tests - part2", function () {
       expect(structureArray[i].selected).toEqual(false);
     }
 	});
+
+	it("should delete all selected structures", function () {
+    var custom = DrawChemStructures.cyclohexane();
+    DrawChem.runEditor("test");
+		expect(DrawChem.showEditor()).toEqual(true);
+    temp.find("#dc-" + custom.name).click();
+    temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "mouseup",
+			which: 1,
+			clientX: 100,
+			clientY: 100
+		});
+    temp.find("#dc-one-way-arrow").click();
+    temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "mousedown",
+			which: 1,
+			clientX: 200,
+			clientY: 120
+		});
+    temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "mouseup",
+			which: 1,
+			clientX: 200,
+			clientY: 120
+		});
+		temp.find("#dc-select-all").click();
+		temp.find("#dc-delete-selected").click();
+		temp.find("#dc-" + custom.name).click();
+		temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "mousedown",
+			which: 1,
+			clientX: 400,
+			clientY: 400
+		});
+		temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "mouseup",
+			which: 1,
+			clientX: 400,
+			clientY: 400
+		});
+    expect(temp.find(".dc-editor-dialog-content").html()).toEqual(
+      "<svg>" +
+        "<g id=\"cmpd1\">" +
+          "<style type=\"text/css\">" +
+            styleBase + styleExpanded +
+          "</style>" +
+          "<path d=\"M 398 398 L 415.32 408 L 415.32 428 L 398 438 L 380.68 428 L 380.68 408 L 398 398 \"></path>" +
+          "<circle class=\"atom\" cx=\"398\" cy=\"398\" r=\"2.4\"></circle>" +
+          "<circle class=\"atom\" cx=\"415.32\" cy=\"408\" r=\"2.4\"></circle>" +
+          "<circle class=\"atom\" cx=\"415.32\" cy=\"428\" r=\"2.4\"></circle>" +
+          "<circle class=\"atom\" cx=\"398\" cy=\"438\" r=\"2.4\"></circle>" +
+          "<circle class=\"atom\" cx=\"380.68\" cy=\"428\" r=\"2.4\"></circle>" +
+          "<circle class=\"atom\" cx=\"380.68\" cy=\"408\" r=\"2.4\"></circle>" +
+          "<circle class=\"atom\" cx=\"398\" cy=\"398\" r=\"2.4\"></circle>" +
+        "</g>" +
+    "</svg>");
+	});
 });

@@ -19,7 +19,8 @@
 				83: "s",
         84: "t",
 				87: "w",
-        90: "z"
+        90: "z",
+				127: "del"
       },
       keyCombination = {},
       service = {};
