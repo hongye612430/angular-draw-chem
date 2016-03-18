@@ -2285,7 +2285,7 @@
 			return float1.toFixed(prec) === float2.toFixed(prec);
 		}
 
-		service.invertLabel = function(str) {
+		service.invertGroup = function(str) {
 			var i, match = str.match(/[A-Z][a-z\d]*/g), output = "";
 			if (match === null) { return str; }
 			for (i = match.length - 1; i >= 0; i -= 1) {
@@ -3694,7 +3694,6 @@
 					} else if (current instanceof Atom) {
 						absPos = [current.getCoords("x") + pos[0], current.getCoords("y") + pos[1]];
 						if (insideCircle(absPos, mouseCoords)) {
-							console.log("hi atom", origin, absPos, mouseCoords)
 							changeArray(absPos, current);
 						} else {
 							newAtomArray.push({ atom: current, coords: current.getCoords() });
@@ -3703,7 +3702,6 @@
 					} else if (current instanceof Bond) {
 						absPos = [current.getAtom().getCoords("x") + pos[0], current.getAtom().getCoords("y") + pos[1]];
 						if (insideCircle(absPos, mouseCoords)) {
-							console.log("hi bond", origin, absPos, mouseCoords)
 							changeArray(absPos, current.getAtom());
 						} else {
 							newBondArray.push(current);

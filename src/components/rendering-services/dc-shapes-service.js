@@ -227,7 +227,6 @@
 					} else if (current instanceof Atom) {
 						absPos = [current.getCoords("x") + pos[0], current.getCoords("y") + pos[1]];
 						if (insideCircle(absPos, mouseCoords)) {
-							console.log("hi atom", origin, absPos, mouseCoords)
 							changeArray(absPos, current);
 						} else {
 							newAtomArray.push({ atom: current, coords: current.getCoords() });
@@ -236,7 +235,6 @@
 					} else if (current instanceof Bond) {
 						absPos = [current.getAtom().getCoords("x") + pos[0], current.getAtom().getCoords("y") + pos[1]];
 						if (insideCircle(absPos, mouseCoords)) {
-							console.log("hi bond", origin, absPos, mouseCoords)
 							changeArray(absPos, current.getAtom());
 						} else {
 							newBondArray.push(current);

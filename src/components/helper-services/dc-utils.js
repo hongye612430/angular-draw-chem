@@ -33,7 +33,7 @@
 			return float1.toFixed(prec) === float2.toFixed(prec);
 		}
 
-		service.invertLabel = function(str) {
+		service.invertGroup = function(str) {
 			var i, match = str.match(/[A-Z][a-z\d]*/g), output = "";
 			if (match === null) { return str; }
 			for (i = match.length - 1; i >= 0; i -= 1) {
