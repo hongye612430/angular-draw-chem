@@ -10,6 +10,7 @@
 		var keysPredefined = {
 				16: "shift",
         17: "ctrl",
+				46: "del",
 				65: "a",
         68: "d",
         69: "e",
@@ -19,18 +20,21 @@
 				83: "s",
         84: "t",
 				87: "w",
-        90: "z",
-				127: "del"
+        90: "z"
       },
       keyCombination = {},
       service = {};
 
 		angular.forEach(Actions.actions, function (action) {
-			registerShortcut(action.shortcut, action.action);
+			if (typeof action.shortcut !== "undefined") {
+				registerShortcut(action.shortcut, action.action);
+			}
 		});
 
 		angular.forEach(Edits.edits, function (edit) {
-			registerShortcut(edit.shortcut, edit.action);
+			if (typeof edit.shortcut !== "undefined") {
+				registerShortcut(edit.shortcut, edit.action);
+			}
 		});
 
     service.down = function (keyCode) {

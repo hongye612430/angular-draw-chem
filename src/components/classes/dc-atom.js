@@ -269,7 +269,7 @@
 
 		/**
 		 * Gets an array of all atoms this atom is connected with
-		 * @returns {Atom[]|Atom}
+		 * @returns {Bond[]|Bond}
 		 */
 		Atom.prototype.getBonds = function (index) {
 			if (arguments.length === 0) {
@@ -277,6 +277,14 @@
 			} else {
 				return this.bonds[index];
 			}
+		}
+
+		/**
+		 * Sets an array of bonds
+		 * @param {Bond[]} bonds - array of Bond objects
+		 */
+		Atom.prototype.setBonds = function (bonds) {
+			this.bonds = bonds;
 		}
 
 		/**

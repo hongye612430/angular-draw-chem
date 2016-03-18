@@ -74,7 +74,9 @@
 		/**
 		 * Modifies the specified structure by adding a new structure to it.
 		 * @params {Structure} structure - a Structure object to modify,
-		 * @params {Number[]} clickCoords - coordinates of the mouse pointer
+		 * @params {Structure} chosenStructure - a Structure object to add,
+		 * @params {Number[]} clickCoords - coordinates of the mouse pointer,
+		 * @params {Number[]} downAtomCoords - coordinates of an atom on which 'mousedown' occurred,
 		 * @params {Boolean} mouseDownAndMove - true if 'mouseonmove' and 'mousedown' are true
 		 * @returns {Structure}
 		 */
@@ -85,6 +87,19 @@
 				mouseCoords,
 				downAtomCoords,
 				mouseDownAndMove
+			);
+		};
+
+		/**
+		 * Looks for an atom and deletes it.
+		 * @params {Structure} structure - a Structure object to modify,
+		 * @params {Number[]} mouseCoords - coordinates of the mouse pointer (where 'mouseup occurred')
+		 * @returns {Structure}
+		 */
+		service.deleteFromStructure = function (structure, mouseCoords) {
+			return Shapes.deleteFromStructure(
+				angular.copy(structure),
+				mouseCoords
 			);
 		};
 

@@ -12,6 +12,13 @@
 		/**
 		* Deletes all structures marked as selected.
 		*/
+    service.deleteFromStructure = function () {
+			Flags.selected = "delete";
+    };
+
+		/**
+		* Deletes all structures marked as selected.
+		*/
     service.deleteSelected = function () {
 			var structure = angular.copy(Cache.getCurrentStructure());
 			if (structure !== null) {
@@ -153,6 +160,10 @@
 				action: service.deleteSelected,
 				id: "delete-selected",
 				shortcut: "del"
+			},
+			"delete": {
+				action: service.deleteFromStructure,
+				id: "delete",
 			}
 		};
 

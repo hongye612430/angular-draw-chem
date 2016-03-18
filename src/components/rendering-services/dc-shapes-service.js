@@ -24,6 +24,7 @@
 			BETWEEN_TRP_BONDS = Const.BETWEEN_TRP_BONDS,
 			Atom = DCAtom.Atom,
 			Arrow = DCArrow.Arrow,
+			Bond = DCBond.Bond,
 			Selection = DCSelection.Selection;
 
 		/**
@@ -36,7 +37,7 @@
 		 * @returns {Structure}
 		 */
 		service.modifyStructure = function (base, mod, mousePos, down, mouseDownAndMove) {
-			var modStr,
+			var modStr, firstAtom,
 				found = false,
 				isInsideCircle,
 				origin = base.getOrigin();
@@ -51,7 +52,7 @@
 			* @param {Number[]} pos - absolute coordinates of an atom
 			*/
 			function modStructure(struct, pos) {
-				var i, absPos, aux, firstAtom;
+				var i, absPos, aux;
 				for(i = 0; i < struct.length; i += 1) {
 					if (struct[i] instanceof Arrow) {
 						continue;
@@ -72,7 +73,7 @@
 						// and if a valid atom has not already been found
 							modStr = chooseMod(aux);
 							updateBonds(aux, modStr, absPos);
-							updateDecorate(modStr, absPos, firstAtom);
+							updateDecorate(modStr, absPos);
 							found = true;
 							return base;
 					}
@@ -83,7 +84,7 @@
 						// and if a valid atom has not already been found
 						modStr = chooseDirectionManually(aux);
 						updateBonds(aux, modStr, absPos);
-						updateDecorate(modStr, absPos, firstAtom);
+						updateDecorate(modStr, absPos);
 						found = true;
 						return base;
 					}
@@ -97,9 +98,9 @@
 				 * @param {Structure} modStr - Structure object which may contain decorate elements
 				 * @param {Number[]} abs - absolute coordinates
 				 */
-				function updateDecorate(modStr, abs, firstAtom) {
+				function updateDecorate(modStr, abs) {
 					var coords;
-					if (modStr !== null && typeof modStr.getDecorate("aromatic") !== "undefined") {
+					if (modStr !== null && modStr.getAromatic() && typeof firstAtom !== "undefined") {
 						coords = Const.getBondByDirection(modStr.getName()).bond;
 						return base.addDecorate("aromatic", {
 							fromWhich: firstAtom.getCoords(),
@@ -197,7 +198,70 @@
 		}
 
 		/**
-		 * Checks if the mouse pointer is within a circle of an atom. If the atom is found, a function is called on it (if supplied).
+		 * Looks for an atom and deletes it.
+		 * @params {Structure} structure - a Structure object to modify,
+		 * @params {Number[]} mouseCoords - coordinates of the mouse pointer (where 'mouseup occurred')
+		 * @returns {Structure}
+		 */
+		service.deleteFromStructure = function (structure, mouseCoords) {
+			var origin = structure.getOrigin(), newAtomArray = [], aux = [];
+
+			check(structure.getStructure(), origin);
+
+			angular.forEach(newAtomArray, function (at) {
+				var atom = at.atom;
+				atom.setCoords(at.coords);
+				aux.push(atom);
+			});
+
+			structure.setStructure(aux);
+
+			return structure;
+
+			function check(struct, pos, prevAtom) {
+				var i, absPos, current, newBondArray = [];
+				for(i = 0; i < struct.length; i += 1) {
+					current = struct[i];
+					if (current instanceof Arrow) {
+						//
+					} else if (current instanceof Atom) {
+						absPos = [current.getCoords("x") + pos[0], current.getCoords("y") + pos[1]];
+						if (insideCircle(absPos, mouseCoords)) {
+							console.log("hi atom", origin, absPos, mouseCoords)
+							changeArray(absPos, current);
+						} else {
+							newAtomArray.push({ atom: current, coords: current.getCoords() });
+						}
+						check(current.getBonds(), absPos, current);
+					} else if (current instanceof Bond) {
+						absPos = [current.getAtom().getCoords("x") + pos[0], current.getAtom().getCoords("y") + pos[1]];
+						if (insideCircle(absPos, mouseCoords)) {
+							console.log("hi bond", origin, absPos, mouseCoords)
+							changeArray(absPos, current.getAtom());
+						} else {
+							newBondArray.push(current);
+						}
+						check(current.getAtom().getBonds(), absPos, current.getAtom());
+					}
+				}
+
+				if (typeof prevAtom !== "undefined") { prevAtom.setBonds(newBondArray); }
+
+				function changeArray(absPos, atom) {
+					var i, newCoords, newAbsPos, at;
+					for (i = 0; i < atom.getBonds().length; i += 1) {
+						at = atom.getBonds(i).getAtom();
+						newAbsPos = [at.getCoords("x") + absPos[0], at.getCoords("y") + absPos[1]];
+						newCoords = Utils.subtractCoords(newAbsPos, origin);
+						//at.setCoords(newCoords);
+						newAtomArray.push({ atom: at, coords: newCoords });
+					}
+				}
+			}
+		}
+
+		/**
+		 * Checks if the mouse pointer is within a circle of an atom.
 		 * @param {Structure} structure - a Structure object on which search is performed
 		 * @param {Number[]} position - set of coordinates against which the search is performed
 		 * @returns {Atom}

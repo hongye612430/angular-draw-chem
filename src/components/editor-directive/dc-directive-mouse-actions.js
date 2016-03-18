@@ -32,9 +32,15 @@
       mouseFlags.mouseDown = true;
 
 			// check if the event occurred on an atom
-			// if content is not empty and (label is selected or structure is selected)
+			// if content is not empty and (label is selected or structure is selected or delete is selected)
 			// otherwise there is no necessity for checking this
-			if (!Utils.isContentEmpty() && (Flags.selected === "label" || Flags.selected === "customLabel" || Flags.selected === "structure")) {
+			if (!Utils.isContentEmpty() &&
+						(
+							Flags.selected === "label"
+							|| Flags.selected === "customLabel"
+							|| Flags.selected === "structure"
+						)
+					) {
         // if content is not empty
         if ($event.target.nodeName === "tspan") {
           elem = angular.element($event.target).parent();
@@ -64,7 +70,9 @@
 				return undefined;
 			}
 
-			if (Flags.selected === "select") {
+			if (Flags.selected === "delete") {
+				structure = deleteFromStructure();
+			} else if (Flags.selected === "select") {
 				structure = makeSelection(mouseCoords);
 				structure.getStructure().pop();
 			} else if (Flags.selected === "arrow") {
@@ -90,6 +98,16 @@
       }
 			// reset mouse flags at the end
       Utils.resetMouseFlags();
+
+			// checks if mouseup occurred on an atom and modifies the structure accordingly
+			function deleteFromStructure() {
+				if (!Utils.isContentEmpty()) {
+					return Utils.deleteFromStructure(
+						Cache.getCurrentStructure(),
+						mouseCoords
+					);
+				}
+			}
 
       function modifyLabel() {
 				// copy structure from Cache

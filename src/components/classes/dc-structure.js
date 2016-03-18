@@ -77,14 +77,20 @@
 		*/
 		Structure.prototype.deleteSelected = function () {
 			var i, j, newStructure = [], newArom, current, equal, arom;
+			// iterates over all structures in 'structure' array (atoms, arrows, etc.)
 			for (i = 0; i < this.structure.length; i += 1) {
 				current = this.structure[i];
 				if (!current.selected) {
+					// if is not selected, then add to new array
+					// if not selected, it won't be included
 					newStructure.push(current);
 				} else if (current instanceof Atom && this.aromatic) {
 					newArom = [];
+					// iterate over aromatics array
 					for (j = 0; j < this.decorate.aromatic.length; j += 1) {
 						arom = this.decorate.aromatic[j];
+						// if structure associated with current atom has any aromatics
+						// then it won't be included in new 'aromatic' array
 						equal = Utils.compareFloats(arom.fromWhich[0], current.getCoords("x"), 3)
 							&& Utils.compareFloats(arom.fromWhich[1], current.getCoords("y"), 3);
 						if (!equal) { newArom.push(arom); }
