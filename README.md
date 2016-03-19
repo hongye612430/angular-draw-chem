@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/MMMalik/angular-draw-chem.svg?branch=master)](https://travis-ci.org/MMMalik/angular-draw-chem)
+
 aim of the project
 ------
 The aim of this project is to create a light-weight, AngularJS-based editor for producing structural formulas.
