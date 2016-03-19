@@ -34,8 +34,14 @@
 			return this.relativeEnd;
 		}
 
-		Arrow.prototype.getEnd = function () {
-			return this.end;
+		Arrow.prototype.getEnd = function (coord) {
+			if (coord === "x") {
+				return this.end[0];
+			} else if (coord === "y") {
+				return this.end[1];
+			} else {
+				return this.end;
+			}
 		}
 
 		Arrow.prototype.getDirection = function () {

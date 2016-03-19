@@ -45,4 +45,148 @@ describe("DrawChemEditor directive tests - part2", function () {
 		});
     expect(temp.find(".dc-editor-dialog-content").html()).toEqual("");
 	});
+
+	it("should do nothing when delete is performed, structure is present, but mouseup occurred outside of it", function () {
+		var custom = DrawChemStructures.cyclohexane();
+    DrawChem.runEditor("test");
+		expect(DrawChem.showEditor()).toEqual(true);
+		temp.find("#dc-" + custom.name).click();
+		temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "mouseup",
+			which: 1,
+			clientX: 100,
+			clientY: 100
+		});
+		expect(temp.find(".dc-editor-dialog-content").html()).toEqual(
+      "<svg>" +
+        "<g id=\"cmpd1\">" +
+          "<style type=\"text/css\">" +
+            styleBase + styleExpanded +
+          "</style>" +
+          "<path d=\"M 98 98 L 115.32 108 L 115.32 128 L 98 138 L 80.68 128 L 80.68 108 L 98 98 \"></path>" +
+          "<circle class=\"atom\" cx=\"98\" cy=\"98\" r=\"2.4\"></circle>" +
+          "<circle class=\"atom\" cx=\"115.32\" cy=\"108\" r=\"2.4\"></circle>" +
+          "<circle class=\"atom\" cx=\"115.32\" cy=\"128\" r=\"2.4\"></circle>" +
+          "<circle class=\"atom\" cx=\"98\" cy=\"138\" r=\"2.4\"></circle>" +
+          "<circle class=\"atom\" cx=\"80.68\" cy=\"128\" r=\"2.4\"></circle>" +
+          "<circle class=\"atom\" cx=\"80.68\" cy=\"108\" r=\"2.4\"></circle>" +
+          "<circle class=\"atom\" cx=\"98\" cy=\"98\" r=\"2.4\"></circle>" +
+        "</g>" +
+    "</svg>");
+    temp.find("#dc-delete").click();
+    temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "mousedown",
+			which: 1,
+			clientX: 200,
+			clientY: 120
+		});
+    temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "mouseup",
+			which: 1,
+			clientX: 200,
+			clientY: 120
+		});
+		expect(temp.find(".dc-editor-dialog-content").html()).toEqual(
+      "<svg>" +
+        "<g id=\"cmpd1\">" +
+          "<style type=\"text/css\">" +
+            styleBase + styleExpanded +
+          "</style>" +
+          "<path d=\"M 98 98 L 115.32 108 L 115.32 128 L 98 138 L 80.68 128 L 80.68 108 L 98 98 \"></path>" +
+          "<circle class=\"atom\" cx=\"98\" cy=\"98\" r=\"2.4\"></circle>" +
+          "<circle class=\"atom\" cx=\"115.32\" cy=\"108\" r=\"2.4\"></circle>" +
+          "<circle class=\"atom\" cx=\"115.32\" cy=\"128\" r=\"2.4\"></circle>" +
+          "<circle class=\"atom\" cx=\"98\" cy=\"138\" r=\"2.4\"></circle>" +
+          "<circle class=\"atom\" cx=\"80.68\" cy=\"128\" r=\"2.4\"></circle>" +
+          "<circle class=\"atom\" cx=\"80.68\" cy=\"108\" r=\"2.4\"></circle>" +
+          "<circle class=\"atom\" cx=\"98\" cy=\"98\" r=\"2.4\"></circle>" +
+        "</g>" +
+    "</svg>");
+	});
+
+	it("should delete a chosen atom", function () {
+		var custom = DrawChemStructures.cyclohexane();
+    DrawChem.runEditor("test");
+		expect(DrawChem.showEditor()).toEqual(true);
+		temp.find("#dc-" + custom.name).click();
+		temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "mouseup",
+			which: 1,
+			clientX: 100,
+			clientY: 100
+		});
+    temp.find("#dc-delete").click();
+    temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "mousedown",
+			which: 1,
+			clientX: 115,
+			clientY: 108
+		});
+    temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "mouseup",
+			which: 1,
+			clientX: 115,
+			clientY: 108
+		});
+		expect(temp.find(".dc-editor-dialog-content").html()).toEqual(
+      "<svg>" +
+        "<g id=\"cmpd1\">" +
+          "<style type=\"text/css\">" +
+            styleBase + styleExpanded +
+          "</style>" +
+          "<path d=\"M 98 98 \"></path>" +
+					"<path d=\"M 115.32 128 L 98 138 L 80.68 128 L 80.68 108 L 98 98 \"></path>" +
+          "<circle class=\"atom\" cx=\"98\" cy=\"98\" r=\"2.4\"></circle>" +
+          "<circle class=\"atom\" cx=\"115.32\" cy=\"128\" r=\"2.4\"></circle>" +
+          "<circle class=\"atom\" cx=\"98\" cy=\"138\" r=\"2.4\"></circle>" +
+          "<circle class=\"atom\" cx=\"80.68\" cy=\"128\" r=\"2.4\"></circle>" +
+          "<circle class=\"atom\" cx=\"80.68\" cy=\"108\" r=\"2.4\"></circle>" +
+          "<circle class=\"atom\" cx=\"98\" cy=\"98\" r=\"2.4\"></circle>" +
+        "</g>" +
+    "</svg>");
+	});
+
+	it("should delete a chosen arrow", function () {
+    DrawChem.runEditor("test");
+		expect(DrawChem.showEditor()).toEqual(true);
+		temp.find("#dc-one-way-arrow").click();
+		temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "mouseup",
+			which: 1,
+			clientX: 100,
+			clientY: 100
+		});
+		expect(temp.find(".dc-editor-dialog-content").html()).toEqual(
+      "<svg>" +
+        "<g id=\"cmpd1\">" +
+          "<style type=\"text/css\">" +
+            styleBase + styleExpanded +
+          "</style>" +
+          "<path class=\"arrow\" d=\"M 98 98 L 118 98 M 115 98 L 115.00 96.70 L 118 98 L 115.00 99.30 Z \"></path>" +
+        "</g>" +
+    	"</svg>"
+		);
+    temp.find("#dc-delete").click();
+    temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "mousedown",
+			which: 1,
+			clientX: 100,
+			clientY: 100
+		});
+    temp.find(".dc-editor-dialog-content").triggerHandler({
+			type : "mouseup",
+			which: 1,
+			clientX: 100,
+			clientY: 100
+		});
+		expect(temp.find(".dc-editor-dialog-content").html()).toEqual(
+			"<svg>" +
+				"<g id=\"cmpd1\">" +
+					"<style type=\"text/css\">" +
+						styleBase + styleExpanded +
+					"</style>" +
+				"</g>" +
+			"</svg>"
+		);
+	});
 });
