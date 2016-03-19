@@ -120,7 +120,40 @@
 			}
 		};
 
+		/**
+		* Moves structure.
+		*/
+    service.moveStructure = function () {
+			Flags.selected = "moveStructure";
+			return {
+				left: moveStructureTo("left"),
+				up: moveStructureTo("up"),
+				right: moveStructureTo("right"),
+				down: moveStructureTo("down")
+			};
+
+			function moveStructureTo(dir) {
+				return function (dir) {
+					var structure = angular.copy(Cache.getCurrentStructure());
+					if (structure !== null) {
+						structure.moveStructureTo(dir);
+					}
+				};
+			}
+    };
+
 		service.edits = {
+			"move": {
+				action: service.moveStructure,
+				id: "move",
+				shortcut: "arrows",
+				shortcutBind: {
+					left: service.moveStructure().left,
+					up: service.moveStructure().up,
+					right: service.moveStructure().right,
+					down: service.moveStructure().down
+				}
+			},
 			"select": {
 				action: service.select,
 				id: "select",

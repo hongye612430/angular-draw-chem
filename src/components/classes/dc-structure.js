@@ -44,6 +44,41 @@
 		}
 
 		/**
+		* Moves all structures marked as selected in a direction.
+		* @param {}
+		*/
+		Structure.prototype.moveStructureTo = function (direction) {
+			var origin, i, current;
+			// iterates over all structures in 'structure' array (atoms, arrows, etc.)
+			for (i = 0; i < this.structure.length; i += 1) {
+				current = this.structure[i];
+				if (!current.selected) { continue; }
+				if (current instanceof Atom) {
+					origin = current.getCoords();
+					console.log(origin)
+					move(origin, direction);
+					console.log(origin)
+				} else if (current instanceof Arrow) {
+					origin = current.getOrigin();
+					move(origin, direction);
+				}
+			}
+
+			function move(origin, direction) {
+				var distance = 5;
+				if (direction === "left") {
+					origin[0] -= distance;
+				} else if (direction === "right") {
+					origin[0] += distance;
+				} else if (direction === "up") {
+					origin[1] -= distance;
+				} else if (direction === "down") {
+					origin[1] += distance;
+				}
+			}
+		}
+
+		/**
 		* Sets all structures in structure array as selected.
 		*/
 		Structure.prototype.selectAll = function () {

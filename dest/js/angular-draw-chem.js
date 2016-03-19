@@ -935,6 +935,41 @@
 		}
 
 		/**
+		* Moves all structures marked as selected in a direction.
+		* @param {}
+		*/
+		Structure.prototype.moveStructureTo = function (direction) {
+			var origin, i, current;
+			// iterates over all structures in 'structure' array (atoms, arrows, etc.)
+			for (i = 0; i < this.structure.length; i += 1) {
+				current = this.structure[i];
+				if (!current.selected) { continue; }
+				if (current instanceof Atom) {
+					origin = current.getCoords();
+					console.log(origin)
+					move(origin, direction);
+					console.log(origin)
+				} else if (current instanceof Arrow) {
+					origin = current.getOrigin();
+					move(origin, direction);
+				}
+			}
+
+			function move(origin, direction) {
+				var distance = 5;
+				if (direction === "left") {
+					origin[0] -= distance;
+				} else if (direction === "right") {
+					origin[0] += distance;
+				} else if (direction === "up") {
+					origin[1] -= distance;
+				} else if (direction === "down") {
+					origin[1] += distance;
+				}
+			}
+		}
+
+		/**
 		* Sets all structures in structure array as selected.
 		*/
 		Structure.prototype.selectAll = function () {
@@ -2397,11 +2432,15 @@
 
 	DrawChemKeyShortcuts.$inject = ["DrawChemActions", "DrawChemEdits"];
 
-	function DrawChemKeyShortcuts(Actions, Edits) {
+	function DrawChemKeyShortcuts(Actions, Edits, Moves) {
 
 		var keysPredefined = {
 				16: "shift",
         17: "ctrl",
+				37: "leftarrow",
+				38: "uparrow",
+				39: "rightarrow",
+				40: "downarrow",
 				46: "del",
 				65: "a",
         68: "d",
@@ -2425,7 +2464,14 @@
 
 		angular.forEach(Edits.edits, function (edit) {
 			if (typeof edit.shortcut !== "undefined") {
-				registerShortcut(edit.shortcut, edit.action);
+				if (edit.shortcut === "arrows") {
+					registerShortcut("leftarrow", edit.shortcutBind.left);
+					registerShortcut("uparrow", edit.shortcutBind.up);
+					registerShortcut("rightarrow", edit.shortcutBind.right);
+					registerShortcut("downarrow", edit.shortcutBind.down);
+				} else {
+					registerShortcut(edit.shortcut, edit.action);
+				}
 			}
 		});
 
@@ -2442,12 +2488,19 @@
 
     function registerShortcut(combination, cb) {
       var i,
-        keys = combination.split(" + "),
+        keys,
         currentCombination = { cb: cb, keys: {} };
 
-      for (i = 0; i < keys.length; i += 1) {
-        currentCombination.keys[keys[i]] = false;
-      }
+			if (combination.indexOf(" + ") >= 0) {
+				keys = combination.split(" + ");
+				for (i = 0; i < keys.length; i += 1) {
+	        currentCombination.keys[keys[i]] = false;
+	      }
+			} else {
+				keys = combination;
+				currentCombination.keys[keys] = false;
+			}
+
       keyCombination[combination] = currentCombination;
     }
 
@@ -2774,7 +2827,40 @@
 			}
 		};
 
+		/**
+		* Moves structure.
+		*/
+    service.moveStructure = function () {
+			Flags.selected = "moveStructure";
+			return {
+				left: moveStructureTo("left"),
+				up: moveStructureTo("up"),
+				right: moveStructureTo("right"),
+				down: moveStructureTo("down")
+			};
+
+			function moveStructureTo(dir) {
+				return function (dir) {
+					var structure = angular.copy(Cache.getCurrentStructure());
+					if (structure !== null) {
+						structure.moveStructureTo(dir);
+					}
+				};
+			}
+    };
+
 		service.edits = {
+			"move": {
+				action: service.moveStructure,
+				id: "move",
+				shortcut: "arrows",
+				shortcutBind: {
+					left: service.moveStructure().left,
+					up: service.moveStructure().up,
+					right: service.moveStructure().right,
+					down: service.moveStructure().down
+				}
+			},
 			"select": {
 				action: service.select,
 				id: "select",

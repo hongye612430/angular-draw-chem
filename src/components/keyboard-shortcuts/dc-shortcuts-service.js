@@ -5,11 +5,15 @@
 
 	DrawChemKeyShortcuts.$inject = ["DrawChemActions", "DrawChemEdits"];
 
-	function DrawChemKeyShortcuts(Actions, Edits) {
+	function DrawChemKeyShortcuts(Actions, Edits, Moves) {
 
 		var keysPredefined = {
 				16: "shift",
         17: "ctrl",
+				37: "leftarrow",
+				38: "uparrow",
+				39: "rightarrow",
+				40: "downarrow",
 				46: "del",
 				65: "a",
         68: "d",
@@ -33,7 +37,14 @@
 
 		angular.forEach(Edits.edits, function (edit) {
 			if (typeof edit.shortcut !== "undefined") {
-				registerShortcut(edit.shortcut, edit.action);
+				if (edit.shortcut === "arrows") {
+					registerShortcut("leftarrow", edit.shortcutBind.left);
+					registerShortcut("uparrow", edit.shortcutBind.up);
+					registerShortcut("rightarrow", edit.shortcutBind.right);
+					registerShortcut("downarrow", edit.shortcutBind.down);
+				} else {
+					registerShortcut(edit.shortcut, edit.action);
+				}
 			}
 		});
 
@@ -50,12 +61,19 @@
 
     function registerShortcut(combination, cb) {
       var i,
-        keys = combination.split(" + "),
+        keys,
         currentCombination = { cb: cb, keys: {} };
 
-      for (i = 0; i < keys.length; i += 1) {
-        currentCombination.keys[keys[i]] = false;
-      }
+			if (combination.indexOf(" + ") >= 0) {
+				keys = combination.split(" + ");
+				for (i = 0; i < keys.length; i += 1) {
+	        currentCombination.keys[keys[i]] = false;
+	      }
+			} else {
+				keys = combination;
+				currentCombination.keys[keys] = false;
+			}
+
       keyCombination[combination] = currentCombination;
     }
 
