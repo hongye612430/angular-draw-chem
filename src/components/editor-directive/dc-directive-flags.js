@@ -20,6 +20,8 @@
 
 		service.customLabel = "";
 
+		service.focused = false;
+
     service.selected = "";
 
 		return service;

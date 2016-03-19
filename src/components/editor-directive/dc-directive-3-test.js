@@ -1,4 +1,4 @@
-describe("DrawChemEditor directive tests - part2", function () {
+describe("DrawChemEditor directive tests - part3", function () {
 	beforeEach(module("mmAngularDrawChem"));
 
 	var $scope, element, $rootScope, DrawChem, DrawChemShapes, DrawChemStructures, template, styleFull;

@@ -1,4 +1,4 @@
-describe("DrawChemEditor directive tests - part2", function () {
+describe("DrawChemEditor directive tests - part4", function () {
 	beforeEach(module("mmAngularDrawChem"));
 
 	var $scope, element, $rootScope, DrawChem, DrawChemCache, DrawChemShapes, DrawChemStructures, template, styleFull;
@@ -126,6 +126,8 @@ describe("DrawChemEditor directive tests - part2", function () {
           "<circle class=\"atom\" cx=\"80.68\" cy=\"128\" r=\"2.4\"></circle>" +
           "<circle class=\"atom\" cx=\"80.68\" cy=\"108\" r=\"2.4\"></circle>" +
           "<circle class=\"atom\" cx=\"98\" cy=\"98\" r=\"2.4\"></circle>" +
+					"<circle class=\"atom\" cx=\"198\" cy=\"118\" r=\"2.4\"></circle>" +
+					"<circle class=\"atom\" cx=\"218\" cy=\"118\" r=\"2.4\"></circle>" +
         "</g>" +
     "</svg>");
     structureArray = DrawChemCache.getCurrentStructure().getStructure();

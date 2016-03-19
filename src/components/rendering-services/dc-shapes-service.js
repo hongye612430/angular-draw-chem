@@ -400,6 +400,10 @@
 						"' r='" + Const.AROMATIC_R +
 						"' ></circle>";
 						full += aux;
+						aux = "<circle class='tr-arom' cx='" + arom.coords[0] +
+						"' cy='" + arom.coords[1] +
+						"' r='" + Const.AROMATIC_R +
+						"' ></circle>";
 						mini += aux;
 					})
 				}
@@ -487,7 +491,6 @@
 							width = absPosEnd[0] - startX;
 							height = absPosEnd[1] - startY;
 						}
-
 						rects.push({ class: "selection", rect: [startX, startY, width, height] });
 					} else if (obj instanceof Atom) {
 						atom = obj;
@@ -503,10 +506,8 @@
 						absPosEnd = Utils.addCoordsNoPrec(origin, arrow.getEnd());
 						updateMinMax(absPosStart);
 						updateMinMax(absPosEnd);
-						if (arrow.selected) {
-							circles.push({ selected: true, circle: [ absPosStart[0], absPosStart[1], circR ] })
-							circles.push({ selected: true, circle: [ absPosEnd[0], absPosEnd[1], circR ] })
-						}
+						circles.push({ selected: arrow.selected, circle: [ absPosStart[0], absPosStart[1], circR ] });
+						circles.push({ selected: arrow.selected, circle: [ absPosEnd[0], absPosEnd[1], circR ] });
 						output.push(calcArrow(absPosStart, absPosEnd, arrow.getType()));
 					}
 				}

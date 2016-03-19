@@ -3,6 +3,12 @@ var styleExpanded = "circle.atom:hover{" +
 		"stroke:black;" +
 		"stroke-width:0.8;" +
 	"}" +
+	"circle.arom:hover{" +
+		"opacity:0.3;" +
+		"stroke:black;" +
+		"stroke-width:0.8;" +
+		"fill:black;" +
+	"}" +
 	"text:hover{" +
 		"opacity:0.3;" +
 	"}" +
@@ -33,6 +39,11 @@ var styleExpanded = "circle.atom:hover{" +
 		"fill:none;" +
 	"}" +
 	"circle.arom{" +
+		"stroke:black;" +
+		"stroke-width:0.8;" +
+		"fill:none;" +
+	"}" +
+	"circle.tr-arom{" +
 		"stroke:black;" +
 		"stroke-width:0.8;" +
 		"fill:none;" +
@@ -140,12 +151,12 @@ describe("DrawChemEditor directive tests - part1", function () {
 		expect(parallelScope.input())
 			.toEqual(
 				"<svg viewBox='60.68 78.00 74.64 80.00' height='100%' width='100%' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' >" +
-					"<g id='cmpd1' >" +
+					"<g id='transfer' >" +
 						"<style type=\"text/css\">" +
 							styleBase +
 						"</style>" +
 						"<path d='M 98 98 L 115.32 108 L 115.32 128 L 98 138 L 80.68 128 L 80.68 108 L 98 98 '></path>" +
-						"<circle class='arom' cx='98' cy='118' r='9' ></circle>" +
+						"<circle class='tr-arom' cx='98' cy='118' r='9' ></circle>" +
 					"</g>" +
 				"</svg>"
 			);

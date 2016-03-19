@@ -6,13 +6,14 @@
 	DrawChemEditor.$inject = [
 		"DrawChemPaths",
 		"DrawChemCache",
+		"DrawChemDirectiveFlags",
 		"DrawChemDirectiveUtils",
 		"DrawChemDirectiveMouseActions",
 		"DrawChemMenuButtons",
 		"$sce"
 	];
 
-	function DrawChemEditor(Paths, Cache, Utils, MouseActions, MenuButtons, $sce) {
+	function DrawChemEditor(Paths, Cache, Flags, Utils, MouseActions, MenuButtons, $sce) {
 		return {
 			template: "<div ng-include=\"getEditorUrl()\"></div>",
 			scope: {
@@ -35,6 +36,14 @@
 				if (attrs.height) {
 					scope.dialogStyle.height = attrs.height;
 				}
+
+				scope.setFocus = function () {
+					Flags.focused = true;
+				};
+
+				scope.unsetFocus = function () {
+					Flags.focused = false;
+				};
 
 				// Returns content which will be bound in the dialog box.
 				scope.content = function () {

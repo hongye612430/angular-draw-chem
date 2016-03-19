@@ -6,28 +6,39 @@
   DcShortcuts.$inject = [
     "DrawChem",
     "DrawChemKeyShortcuts",
+    "DrawChemDirectiveFlags",
     "$rootScope"
   ];
 
-  function DcShortcuts(DrawChem, Shortcuts, $rootScope) {
+  function DcShortcuts(DrawChem, Shortcuts, Flags, $rootScope) {
     return {
       restrict: "A",
       link: function (scope, element) {
 
         element.bind("keydown", function ($event) {
-          if (DrawChem.showEditor()) {
+          if (DrawChem.showEditor() && (!Flags.focused || ctrlOrShift($event))) {
+            // should prevent default only if editor is shown and
+            // either custom label field is NOT focused
+            // or ctrl/shift key is involved
             $event.preventDefault();
             Shortcuts.down($event.keyCode);
           }
         });
 
         element.bind("keyup", function ($event) {
-          if (DrawChem.showEditor()) {
+          if (DrawChem.showEditor() && (!Flags.focused || ctrlOrShift($event))) {
+            // should prevent default only if editor is shown and
+            // either custom label field is NOT focused
+            // or ctrl/shift key is involved
             $event.preventDefault();
             Shortcuts.released($event.keyCode);
             $rootScope.$digest();
           }
         });
+
+        function ctrlOrShift($event) {
+          return $event.ctrlKey || $event.shiftKey;
+        }
       }
     }
   }

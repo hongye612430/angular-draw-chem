@@ -1,4 +1,4 @@
-describe("DrawChemEditor directive tests - part2", function () {
+describe("DrawChemEditor directive tests - part6", function () {
 	beforeEach(module("mmAngularDrawChem"));
 
 	var $scope, element, $rootScope, DrawChem, DrawChemCache, DrawChemShapes, DrawChemStructures, template, styleFull;
@@ -163,6 +163,8 @@ describe("DrawChemEditor directive tests - part2", function () {
             styleBase + styleExpanded +
           "</style>" +
           "<path class=\"arrow\" d=\"M 98 98 L 118 98 M 115 98 L 115.00 96.70 L 118 98 L 115.00 99.30 Z \"></path>" +
+					"<circle class=\"atom\" cx=\"98\" cy=\"98\" r=\"2.4\"></circle>" +
+					"<circle class=\"atom\" cx=\"118\" cy=\"98\" r=\"2.4\"></circle>" +
         "</g>" +
     	"</svg>"
 		);

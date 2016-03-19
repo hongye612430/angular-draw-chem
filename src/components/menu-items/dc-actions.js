@@ -61,7 +61,7 @@
 				shape, attr, content = "";
 
 			if (structure !== null) {
-				shape = DrawChemShapes.draw(structure, "cmpd1");
+				shape = DrawChemShapes.draw(structure, "transfer");
 				attr = {
 					"viewBox": (shape.minMax.minX - 20).toFixed(2) + " " +
 						(shape.minMax.minY - 20).toFixed(2) + " " +

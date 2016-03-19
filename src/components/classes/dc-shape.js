@@ -34,6 +34,12 @@
 						"stroke": "black",
 						"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
 					},
+					"circle.arom:hover": {
+						"opacity": "0.3",
+						"stroke": "black",
+						"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
+						"fill": "black"
+					},
 					"text:hover": {
 						"opacity": "0.3"
 					},
@@ -66,6 +72,11 @@
 						"fill": "none"
 					},
 					"circle.arom": {
+						"stroke": "black",
+						"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
+						"fill": "none"
+					},
+					"circle.tr-arom": {
 						"stroke": "black",
 						"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
 						"fill": "none"

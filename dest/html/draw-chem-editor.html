@@ -21,7 +21,7 @@
 					</div>
 					<!-- Custom label -->
 					<div class="form-group dc-input-right">
-						<input class="form-control" type="text" ng-model="customLabel" placeholder="custom label">
+						<input class="form-control" type="text" ng-focus="setFocus()" ng-blur="unsetFocus()" ng-model="customLabel" placeholder="custom label">
 						<button ng-click="chooseCustomLabel()" class="btn btn-primary" >Choose</button>
 					</div>
 				</form>

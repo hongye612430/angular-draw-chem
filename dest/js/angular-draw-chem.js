@@ -702,6 +702,12 @@
 						"stroke": "black",
 						"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
 					},
+					"circle.arom:hover": {
+						"opacity": "0.3",
+						"stroke": "black",
+						"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
+						"fill": "black"
+					},
 					"text:hover": {
 						"opacity": "0.3"
 					},
@@ -734,6 +740,11 @@
 						"fill": "none"
 					},
 					"circle.arom": {
+						"stroke": "black",
+						"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
+						"fill": "none"
+					},
+					"circle.tr-arom": {
 						"stroke": "black",
 						"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
 						"fill": "none"
@@ -1477,6 +1488,8 @@
 
 		service.customLabel = "";
 
+		service.focused = false;
+
     service.selected = "";
 
 		return service;
@@ -2007,13 +2020,14 @@
 	DrawChemEditor.$inject = [
 		"DrawChemPaths",
 		"DrawChemCache",
+		"DrawChemDirectiveFlags",
 		"DrawChemDirectiveUtils",
 		"DrawChemDirectiveMouseActions",
 		"DrawChemMenuButtons",
 		"$sce"
 	];
 
-	function DrawChemEditor(Paths, Cache, Utils, MouseActions, MenuButtons, $sce) {
+	function DrawChemEditor(Paths, Cache, Flags, Utils, MouseActions, MenuButtons, $sce) {
 		return {
 			template: "<div ng-include=\"getEditorUrl()\"></div>",
 			scope: {
@@ -2036,6 +2050,14 @@
 				if (attrs.height) {
 					scope.dialogStyle.height = attrs.height;
 				}
+
+				scope.setFocus = function () {
+					Flags.focused = true;
+				};
+
+				scope.unsetFocus = function () {
+					Flags.focused = false;
+				};
 
 				// Returns content which will be bound in the dialog box.
 				scope.content = function () {
@@ -2330,28 +2352,39 @@
   DcShortcuts.$inject = [
     "DrawChem",
     "DrawChemKeyShortcuts",
+    "DrawChemDirectiveFlags",
     "$rootScope"
   ];
 
-  function DcShortcuts(DrawChem, Shortcuts, $rootScope) {
+  function DcShortcuts(DrawChem, Shortcuts, Flags, $rootScope) {
     return {
       restrict: "A",
       link: function (scope, element) {
 
         element.bind("keydown", function ($event) {
-          if (DrawChem.showEditor()) {
+          if (DrawChem.showEditor() && (!Flags.focused || ctrlOrShift($event))) {
+            // should prevent default only if editor is shown and
+            // either custom label field is NOT focused
+            // or ctrl/shift key is involved
             $event.preventDefault();
             Shortcuts.down($event.keyCode);
           }
         });
 
         element.bind("keyup", function ($event) {
-          if (DrawChem.showEditor()) {
+          if (DrawChem.showEditor() && (!Flags.focused || ctrlOrShift($event))) {
+            // should prevent default only if editor is shown and
+            // either custom label field is NOT focused
+            // or ctrl/shift key is involved
             $event.preventDefault();
             Shortcuts.released($event.keyCode);
             $rootScope.$digest();
           }
         });
+
+        function ctrlOrShift($event) {
+          return $event.ctrlKey || $event.shiftKey;
+        }
       }
     }
   }
@@ -2510,7 +2543,7 @@
 				shape, attr, content = "";
 
 			if (structure !== null) {
-				shape = DrawChemShapes.draw(structure, "cmpd1");
+				shape = DrawChemShapes.draw(structure, "transfer");
 				attr = {
 					"viewBox": (shape.minMax.minX - 20).toFixed(2) + " " +
 						(shape.minMax.minY - 20).toFixed(2) + " " +
@@ -3881,6 +3914,10 @@
 						"' r='" + Const.AROMATIC_R +
 						"' ></circle>";
 						full += aux;
+						aux = "<circle class='tr-arom' cx='" + arom.coords[0] +
+						"' cy='" + arom.coords[1] +
+						"' r='" + Const.AROMATIC_R +
+						"' ></circle>";
 						mini += aux;
 					})
 				}
@@ -3968,7 +4005,6 @@
 							width = absPosEnd[0] - startX;
 							height = absPosEnd[1] - startY;
 						}
-
 						rects.push({ class: "selection", rect: [startX, startY, width, height] });
 					} else if (obj instanceof Atom) {
 						atom = obj;
@@ -3984,10 +4020,8 @@
 						absPosEnd = Utils.addCoordsNoPrec(origin, arrow.getEnd());
 						updateMinMax(absPosStart);
 						updateMinMax(absPosEnd);
-						if (arrow.selected) {
-							circles.push({ selected: true, circle: [ absPosStart[0], absPosStart[1], circR ] })
-							circles.push({ selected: true, circle: [ absPosEnd[0], absPosEnd[1], circR ] })
-						}
+						circles.push({ selected: arrow.selected, circle: [ absPosStart[0], absPosStart[1], circR ] });
+						circles.push({ selected: arrow.selected, circle: [ absPosEnd[0], absPosEnd[1], circR ] });
 						output.push(calcArrow(absPosStart, absPosEnd, arrow.getType()));
 					}
 				}
