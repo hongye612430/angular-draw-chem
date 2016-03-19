@@ -39,7 +39,7 @@
 		* Checks if structure is aromatic.
 		* @returns {Boolean}
 		*/
-		Structure.prototype.getAromatic = function () {
+		Structure.prototype.isAromatic = function () {
 			return this.aromatic;
 		}
 
@@ -212,6 +212,14 @@
 		 */
 		Structure.prototype.getDecorate = function (decorate) {
 			return this.decorate[decorate];
+		}
+
+		/**
+		 * Sets a decorate element.
+		 * @returns {Object}
+		 */
+		Structure.prototype.setDecorate = function (decorate, array) {
+			this.decorate[decorate] = array;
 		}
 
 		/**

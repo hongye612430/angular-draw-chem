@@ -919,7 +919,7 @@
 		* Checks if structure is aromatic.
 		* @returns {Boolean}
 		*/
-		Structure.prototype.getAromatic = function () {
+		Structure.prototype.isAromatic = function () {
 			return this.aromatic;
 		}
 
@@ -1092,6 +1092,14 @@
 		 */
 		Structure.prototype.getDecorate = function (decorate) {
 			return this.decorate[decorate];
+		}
+
+		/**
+		 * Sets a decorate element.
+		 * @returns {Object}
+		 */
+		Structure.prototype.setDecorate = function (decorate, array) {
+			this.decorate[decorate] = array;
 		}
 
 		/**
@@ -1669,7 +1677,7 @@
 						structure = angular.copy(scope.chosenStructure.getStructure(mouseCoords, mouseFlags.downMouseCoords));
 						// and set its origin (which may be different from current mouse position)
 						structure.setOrigin(mouseFlags.downMouseCoords);
-						if (structure.getAromatic()) {
+						if (structure.isAromatic()) {
 							// if the chosen Structure object is aromatic,
 							// then add appropriate flag to the original Structure object
 							bond = Const.getBondByDirection(structure.getName()).bond;
@@ -1683,7 +1691,7 @@
 						structure = angular.copy(scope.chosenStructure.getDefault());
 						// and set its origin
 						structure.setOrigin(mouseCoords);
-						if (structure.getAromatic()) {
+						if (structure.isAromatic()) {
 							// if the chosen Structure object is aromatic,
 							// then add appropriate flag to the original Structure object
 							bond = Const.getBondByDirection(structure.getName()).bond;
@@ -1704,7 +1712,7 @@
 						// if the mousemove event occurred before this mouseup event
 						// choose an appropriate Structure object from the StructureCluster object
 						structureAux = angular.copy(scope.chosenStructure.getStructure(mouseCoords, mouseFlags.downMouseCoords));
-						if (structureAux.getAromatic()) {
+						if (structureAux.isAromatic()) {
 							// if the chosen Structure object is aromatic,
 							// then add appropriate flag to the original Structure object
 							bond = Const.getBondByDirection(structureAux.getName()).bond;
@@ -1716,7 +1724,7 @@
 					} else {
 						// otherwise get default
 						structureAux = angular.copy(scope.chosenStructure.getDefault());
-						if (structureAux.getAromatic()) {
+						if (structureAux.isAromatic()) {
 							// if the chosen Structure object is aromatic,
 							// then add appropriate flag to the original Structure object
 							bond = Const.getBondByDirection(structureAux.getName()).bond;
@@ -1803,7 +1811,7 @@
 					structure = angular.copy(scope.chosenStructure.getStructure(mouseCoords, mouseFlags.downMouseCoords));
 					// set its origin (which may be different from current mouse position)
 					structure.setOrigin(mouseFlags.downMouseCoords);
-					if (structure.getAromatic()) {
+					if (structure.isAromatic()) {
 						// if the chosen Structure object is aromatic,
 						// then add appropriate flag to the original Structure object
 						bond = Const.getBondByDirection(structure.getName()).bond;
@@ -1820,7 +1828,7 @@
 					newCoords = Utils.subtractCoords(mouseFlags.downMouseCoords, structure.getOrigin());
 					// choose an appropriate Structure object from the StructureCluster object
 					structureAux = angular.copy(scope.chosenStructure.getStructure(mouseCoords, mouseFlags.downMouseCoords));
-					if (structureAux.getAromatic()) {
+					if (structureAux.isAromatic()) {
 						// if the chosen Structure object is aromatic,
 						// then add appropriate flag to the original Structure object
 						bond = Const.getBondByDirection(structureAux.getName()).bond;
@@ -3573,7 +3581,7 @@
 				 */
 				function updateDecorate(modStr, abs) {
 					var coords;
-					if (modStr !== null && modStr.getAromatic() && typeof firstAtom !== "undefined") {
+					if (modStr !== null && modStr.isAromatic() && typeof firstAtom !== "undefined") {
 						coords = Const.getBondByDirection(modStr.getName()).bond;
 						return base.addDecorate("aromatic", {
 							fromWhich: firstAtom.getCoords(),
@@ -3678,7 +3686,7 @@
 		 * @returns {Structure}
 		 */
 		service.deleteFromStructure = function (structure, mouseCoords) {
-			var origin = structure.getOrigin(), newAtomArray = [], aux = [];
+			var origin = structure.getOrigin(), newAtomArray = [], aux = [], aromaticArr, newAromaticArr;
 
 			// recursievly look for an atom to delete
 			check(structure.getStructure(), origin);
@@ -3693,6 +3701,18 @@
 				}
 				aux.push(obj);
 			});
+
+			if (structure.isAromatic()) {
+				// if is aromatic
+				aromaticArr = structure.getDecorate("aromatic");
+				newAromaticArr = [];
+				angular.forEach(aromaticArr, function (arom) {
+					if (!insideCircle(arom.coords, mouseCoords, Const.AROMATIC_R)) {
+						newAromaticArr.push(arom);
+					}
+				});
+				structure.setDecorate("aromatic", newAromaticArr);
+			}
 
 			structure.setStructure(aux);
 
@@ -4307,8 +4327,8 @@
 		 * @param {Number[]} point - coordinates of a point to be validated
 		 * @returns {Boolean}
 		 */
-		function insideCircle(center, point) {
-			var tolerance = Const.CIRC_R;
+		function insideCircle(center, point, tolerance) {
+			var tolerance = tolerance || Const.CIRC_R;
 			return Math.abs(center[0] - point[0]) < tolerance && Math.abs(center[1] - point[1]) < tolerance;
 		}
 

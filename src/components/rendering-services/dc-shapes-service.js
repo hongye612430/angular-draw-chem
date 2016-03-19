@@ -100,7 +100,7 @@
 				 */
 				function updateDecorate(modStr, abs) {
 					var coords;
-					if (modStr !== null && modStr.getAromatic() && typeof firstAtom !== "undefined") {
+					if (modStr !== null && modStr.isAromatic() && typeof firstAtom !== "undefined") {
 						coords = Const.getBondByDirection(modStr.getName()).bond;
 						return base.addDecorate("aromatic", {
 							fromWhich: firstAtom.getCoords(),
@@ -205,7 +205,7 @@
 		 * @returns {Structure}
 		 */
 		service.deleteFromStructure = function (structure, mouseCoords) {
-			var origin = structure.getOrigin(), newAtomArray = [], aux = [];
+			var origin = structure.getOrigin(), newAtomArray = [], aux = [], aromaticArr, newAromaticArr;
 
 			// recursievly look for an atom to delete
 			check(structure.getStructure(), origin);
@@ -220,6 +220,18 @@
 				}
 				aux.push(obj);
 			});
+
+			if (structure.isAromatic()) {
+				// if is aromatic
+				aromaticArr = structure.getDecorate("aromatic");
+				newAromaticArr = [];
+				angular.forEach(aromaticArr, function (arom) {
+					if (!insideCircle(arom.coords, mouseCoords, Const.AROMATIC_R)) {
+						newAromaticArr.push(arom);
+					}
+				});
+				structure.setDecorate("aromatic", newAromaticArr);
+			}
 
 			structure.setStructure(aux);
 
@@ -834,8 +846,8 @@
 		 * @param {Number[]} point - coordinates of a point to be validated
 		 * @returns {Boolean}
 		 */
-		function insideCircle(center, point) {
-			var tolerance = Const.CIRC_R;
+		function insideCircle(center, point, tolerance) {
+			var tolerance = tolerance || Const.CIRC_R;
 			return Math.abs(center[0] - point[0]) < tolerance && Math.abs(center[1] - point[1]) < tolerance;
 		}
 
