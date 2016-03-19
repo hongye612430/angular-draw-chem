@@ -86,8 +86,14 @@
 			return this.relativeEnd;
 		}
 
-		Arrow.prototype.getEnd = function () {
-			return this.end;
+		Arrow.prototype.getEnd = function (coord) {
+			if (coord === "x") {
+				return this.end[0];
+			} else if (coord === "y") {
+				return this.end[1];
+			} else {
+				return this.end;
+			}
 		}
 
 		Arrow.prototype.getDirection = function () {
@@ -3665,7 +3671,8 @@
 		}
 
 		/**
-		 * Looks for an atom and deletes it.
+		 * Looks for an atom Object (or Objects if more than one has the specified coords) and deletes it.
+		 * Attaches items in its 'bonds' array directly to 'structure' array in Structure object.
 		 * @params {Structure} structure - a Structure object to modify,
 		 * @params {Number[]} mouseCoords - coordinates of the mouse pointer (where 'mouseup occurred')
 		 * @returns {Structure}
@@ -3673,53 +3680,82 @@
 		service.deleteFromStructure = function (structure, mouseCoords) {
 			var origin = structure.getOrigin(), newAtomArray = [], aux = [];
 
+			// recursievly look for an atom to delete
 			check(structure.getStructure(), origin);
 
-			angular.forEach(newAtomArray, function (at) {
-				var atom = at.atom;
-				atom.setCoords(at.coords);
-				aux.push(atom);
+			// applies new coords to the found atom Objects
+			angular.forEach(newAtomArray, function (ob) {
+				var obj = ob.obj;
+				if (obj instanceof Arrow) {
+					obj.setOrigin(ob.coords);
+				} else if (obj instanceof Atom) {
+					obj.setCoords(ob.coords);
+				}
+				aux.push(obj);
 			});
 
 			structure.setStructure(aux);
 
 			return structure;
 
+			/**
+			* Recursively looks for atom Objects to delete.
+			* @param {Atom|Bond|Arrow} struct - 'structure' array or 'bonds' array,
+			* @param {Number[]} pos - current absolute position,
+			* @param {Atom} prevAtom - preceding atom Object (makes sense when iterating over 'bonds' array)
+			*/
 			function check(struct, pos, prevAtom) {
-				var i, absPos, current, newBondArray = [];
+				var i, absPos, current, newBondArray = [], absPosStart, absPosEnd;
 				for(i = 0; i < struct.length; i += 1) {
 					current = struct[i];
 					if (current instanceof Arrow) {
-						//
+						// current Object is arrow
+						absPosStart = [current.getOrigin("x") + pos[0], current.getOrigin("y") + pos[1]];
+						absPosEnd = [current.getEnd("x") + pos[0], current.getEnd("y") + pos[1]];
+						if (!(insideCircle(absPosStart, mouseCoords) || insideCircle(absPosEnd, mouseCoords))) {
+							// if this arrow was NOT chosen then don't apply any changes
+							// omit it otherwise
+							newAtomArray.push({ obj: current, coords: current.getOrigin() });
+						}
 					} else if (current instanceof Atom) {
+						// current Object is atom
 						absPos = [current.getCoords("x") + pos[0], current.getCoords("y") + pos[1]];
 						if (insideCircle(absPos, mouseCoords)) {
+							// if this atom was chosen then apply changes
 							changeArray(absPos, current);
 						} else {
-							newAtomArray.push({ atom: current, coords: current.getCoords() });
+							// don't change anything otherwise
+							newAtomArray.push({ obj: current, coords: current.getCoords() });
 						}
 						check(current.getBonds(), absPos, current);
 					} else if (current instanceof Bond) {
+						// current Object is bond
 						absPos = [current.getAtom().getCoords("x") + pos[0], current.getAtom().getCoords("y") + pos[1]];
 						if (insideCircle(absPos, mouseCoords)) {
+							// if atom at the end of this bond was chosen then apply changes
 							changeArray(absPos, current.getAtom());
 						} else {
+							// don't change anything otherwise
 							newBondArray.push(current);
 						}
 						check(current.getAtom().getBonds(), absPos, current.getAtom());
 					}
 				}
 
+				// when finished iterating over 'bonds' array
+				// set an array of all bond Objects that were NOT chosen
+				// otherwise prevAtom is undefined
 				if (typeof prevAtom !== "undefined") { prevAtom.setBonds(newBondArray); }
 
+				// extracts atom Objects from the 'bonds' array of the deleted atom Object
+				// adds them to 'newAtomArray' array and sets their new coords
 				function changeArray(absPos, atom) {
 					var i, newCoords, newAbsPos, at;
 					for (i = 0; i < atom.getBonds().length; i += 1) {
 						at = atom.getBonds(i).getAtom();
 						newAbsPos = [at.getCoords("x") + absPos[0], at.getCoords("y") + absPos[1]];
 						newCoords = Utils.subtractCoords(newAbsPos, origin);
-						//at.setCoords(newCoords);
-						newAtomArray.push({ atom: at, coords: newCoords });
+						newAtomArray.push({ obj: at, coords: newCoords });
 					}
 				}
 			}
