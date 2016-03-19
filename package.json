@@ -4,7 +4,7 @@
   "description": "AngularJS-based tool for drawing structural formulas in svg",
   "main": "./dest/js/angular-draw-chem.js",
   "scripts": {
-    "test": "./node_modules/.bin/karma start --single-run --browsers Chrome"
+    "test": "node_modules/karma/bin/karma start tests/karma.conf.js --single-run"
   },
   "repository": {
     "type": "git",
