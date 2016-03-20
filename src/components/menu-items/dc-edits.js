@@ -133,10 +133,12 @@
 			};
 
 			function moveStructureTo(dir) {
-				return function (dir) {
+				return function () {
 					var structure = angular.copy(Cache.getCurrentStructure());
 					if (structure !== null) {
 						structure.moveStructureTo(dir);
+						Cache.addStructure(structure);
+						Utils.drawStructure(structure);
 					}
 				};
 			}

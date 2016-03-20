@@ -115,6 +115,18 @@
 		};
 
 		/**
+		 * Updates end of the arrow.
+		 */
+		Arrow.prototype.updateEnd = function () {
+			if (typeof this.relativeEnd !== "undefined") {
+				this.end = [
+					this.origin[0] + this.relativeEnd[0],
+					this.origin[1] + this.relativeEnd[1],
+				];
+			}
+		};
+
+		/**
 		 * Gets origin of the arrow.
 		 * @returns {Number[]|Number}
 		 */
@@ -946,12 +958,11 @@
 				if (!current.selected) { continue; }
 				if (current instanceof Atom) {
 					origin = current.getCoords();
-					console.log(origin)
 					move(origin, direction);
-					console.log(origin)
 				} else if (current instanceof Arrow) {
 					origin = current.getOrigin();
 					move(origin, direction);
+					current.updateEnd();
 				}
 			}
 
@@ -2840,10 +2851,12 @@
 			};
 
 			function moveStructureTo(dir) {
-				return function (dir) {
+				return function () {
 					var structure = angular.copy(Cache.getCurrentStructure());
 					if (structure !== null) {
 						structure.moveStructureTo(dir);
+						Cache.addStructure(structure);
+						Utils.drawStructure(structure);
 					}
 				};
 			}

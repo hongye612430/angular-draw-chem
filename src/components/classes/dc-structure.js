@@ -55,12 +55,11 @@
 				if (!current.selected) { continue; }
 				if (current instanceof Atom) {
 					origin = current.getCoords();
-					console.log(origin)
 					move(origin, direction);
-					console.log(origin)
 				} else if (current instanceof Arrow) {
 					origin = current.getOrigin();
 					move(origin, direction);
+					current.updateEnd();
 				}
 			}
 

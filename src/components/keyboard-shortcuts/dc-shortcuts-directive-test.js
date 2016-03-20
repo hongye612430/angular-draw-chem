@@ -250,4 +250,74 @@ describe("dcShortcuts directive tests", function () {
 				"</svg>"
 			);
 	});
+
+	it("should move the selected structure after clicking on an arrow", function () {
+		var custom = DrawChemStructures.cyclohexane();
+		DrawChem.runEditor("test");
+		expect(DrawChem.showEditor()).toEqual(true);
+		editor.find("#dc-" + custom.name).click();
+		editor.find(".dc-editor-dialog-content").triggerHandler({
+			type : "mouseup",
+			which: 1,
+			clientX: 100,
+			clientY: 100
+		});
+		editor.find("#dc-select-all").click();
+    // arrow up
+		triggerKeyDown(temp, 38, false);
+		triggerKeyUp(temp, 38, false);
+		editor.find("#dc-deselect-all").click();
+		expect(editor.find(".dc-editor-dialog-content").html())
+			.toEqual(
+				"<svg>" +
+						"<g id=\"cmpd1\">" +
+							"<style type=\"text/css\">" +
+								styleBase + styleExpanded +
+							"</style>" +
+							"<path d=\"M 98 93 L 115.32 103 L 115.32 123 L 98 133 L 80.68 123 L 80.68 103 L 98 93 \"></path>" +
+							"<circle class=\"atom\" cx=\"98\" cy=\"93\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"103\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"123\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"98\" cy=\"133\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"123\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"103\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"98\" cy=\"93\" r=\"2.4\"></circle>" +
+						"</g>" +
+				"</svg>"
+			);
+	});
+
+	it("should not move any structure if not selected", function () {
+		var custom = DrawChemStructures.cyclohexane();
+		DrawChem.runEditor("test");
+		expect(DrawChem.showEditor()).toEqual(true);
+		editor.find("#dc-" + custom.name).click();
+		editor.find(".dc-editor-dialog-content").triggerHandler({
+			type : "mouseup",
+			which: 1,
+			clientX: 100,
+			clientY: 100
+		});
+    // arrow up
+		triggerKeyDown(temp, 38, false);
+		triggerKeyUp(temp, 38, false);
+		expect(editor.find(".dc-editor-dialog-content").html())
+			.toEqual(
+				"<svg>" +
+						"<g id=\"cmpd1\">" +
+							"<style type=\"text/css\">" +
+								styleBase + styleExpanded +
+							"</style>" +
+							"<path d=\"M 98 98 L 115.32 108 L 115.32 128 L 98 138 L 80.68 128 L 80.68 108 L 98 98 \"></path>" +
+							"<circle class=\"atom\" cx=\"98\" cy=\"98\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"108\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"128\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"98\" cy=\"138\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"128\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"108\" r=\"2.4\"></circle>" +
+							"<circle class=\"atom\" cx=\"98\" cy=\"98\" r=\"2.4\"></circle>" +
+						"</g>" +
+				"</svg>"
+			);
+	});
 })

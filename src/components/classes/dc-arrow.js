@@ -63,6 +63,18 @@
 		};
 
 		/**
+		 * Updates end of the arrow.
+		 */
+		Arrow.prototype.updateEnd = function () {
+			if (typeof this.relativeEnd !== "undefined") {
+				this.end = [
+					this.origin[0] + this.relativeEnd[0],
+					this.origin[1] + this.relativeEnd[1],
+				];
+			}
+		};
+
+		/**
 		 * Gets origin of the arrow.
 		 * @returns {Number[]|Number}
 		 */
