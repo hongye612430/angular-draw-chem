@@ -75,6 +75,8 @@
 			} else if (Flags.selected === "select") {
 				structure = makeSelection(mouseCoords);
 				structure.getStructure().pop();
+			} else if (Flags.selected === "moveStructure") {
+				structure = moveStructure(mouseCoords);
 			} else if (Flags.selected === "arrow") {
 				// if arrow was selected
 				// if content is empty or atom was not found
@@ -269,6 +271,8 @@
 
 			if (Flags.selected === "select") {
 				structure = makeSelection(mouseCoords);
+			} else if (Flags.selected === "moveStructure") {
+				structure = moveStructure(mouseCoords);
 			} else if (Flags.selected === "arrow") {
         // if an atom has not been found but the mouse is still down
 				// the content is either empty or the mousedown event occurred somewhere outside of the current Structure object
@@ -372,6 +376,17 @@
 				mouseFlags.downAtomCoords,
 				move
 			);
+		}
+
+		function moveStructure(mouseCoords) {
+			var structure, moveDistance;
+			if (!Utils.isContentEmpty()) {
+				// if the content is non-empty
+				structure = angular.copy(Cache.getCurrentStructure());
+				moveDistance = Utils.subtractCoords(mouseCoords, mouseFlags.downMouseCoords);
+				structure.moveStructureTo("mouse", moveDistance);
+			}
+			return structure;
 		}
 
 		function makeSelection(mouseCoords) {

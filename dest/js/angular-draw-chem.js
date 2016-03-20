@@ -950,7 +950,7 @@
 		* Moves all structures marked as selected in a direction.
 		* @param {}
 		*/
-		Structure.prototype.moveStructureTo = function (direction) {
+		Structure.prototype.moveStructureTo = function (direction, distance) {
 			var origin, i, current;
 			// iterates over all structures in 'structure' array (atoms, arrows, etc.)
 			for (i = 0; i < this.structure.length; i += 1) {
@@ -958,24 +958,42 @@
 				if (!current.selected) { continue; }
 				if (current instanceof Atom) {
 					origin = current.getCoords();
-					move(origin, direction);
+					move(origin, distance, direction, this, current);
 				} else if (current instanceof Arrow) {
 					origin = current.getOrigin();
-					move(origin, direction);
+					move(origin, distance, direction);
 					current.updateEnd();
 				}
 			}
 
-			function move(origin, direction) {
-				var distance = 5;
+			function move(origin, distance, direction, bind, current) {
+				var distance = distance || 5;
 				if (direction === "left") {
+					if (typeof bind !== "undefined") {
+						updateArom.call(bind, [-distance, 0], current);
+					}
 					origin[0] -= distance;
 				} else if (direction === "right") {
+					if (typeof bind !== "undefined") {
+						updateArom.call(bind, [distance, 0], current);
+					}
 					origin[0] += distance;
 				} else if (direction === "up") {
+					if (typeof bind !== "undefined") {
+						updateArom.call(bind, [0, -distance], current);
+					}
 					origin[1] -= distance;
 				} else if (direction === "down") {
+					if (typeof bind !== "undefined") {
+						updateArom.call(bind, [0, distance], current);
+					}
 					origin[1] += distance;
+				} else if (direction === "mouse") {
+					if (typeof bind !== "undefined") {
+						updateArom.call(bind, distance, current);
+					}
+					origin[0] += distance[0];
+					origin[1] += distance[1];
 				}
 			}
 		}
@@ -1415,22 +1433,22 @@
 			if (alignment === "up") {
 				checkMinY(absPos, atom); // searches the whole structure for the uppermost atom
 				d = coord - minMax.minY;
-				updateArom.call(this, [0, d]); // updates coords of aromatic elements
+				updateArom.call(this, [0, d], atom); // updates coords of aromatic elements
 				align(atom, [0, d]); // translates arrow
 			} else if (alignment === "down") {
 				checkMaxY(absPos, atom); // searches the whole structure for the uppermost atom
 				d = coord - minMax.maxY;
-				updateArom.call(this, [0, d]); // updates coords of aromatic elements
+				updateArom.call(this, [0, d], atom); // updates coords of aromatic elements
 				align(atom, [0, d]); // translates arrow
 			} else if (alignment === "left") {
 				checkMinX(absPos, atom); // searches the whole structure for the uppermost atom
 				d = coord - minMax.minX;
-				updateArom.call(this, [d, 0]); // updates coords of aromatic elements
+				updateArom.call(this, [d, 0], atom); // updates coords of aromatic elements
 				align(atom, [d, 0]); // translates arrow
 			} else if (alignment === "right") {
 				checkMaxX(absPos, atom); // searches the whole structure for the uppermost atom
 				d = coord - minMax.maxX;
-				updateArom.call(this, [d, 0]); // updates coords of aromatic elements
+				updateArom.call(this, [d, 0], atom); // updates coords of aromatic elements
 				align(atom, [d, 0]); // translates arrow
 			}
 			// if d is equal to 0 (approx. to five decimal places), then return false
@@ -1480,18 +1498,18 @@
 					checkMinX(currAbsPos, at);
 				}
 			}
+		}
 
-			// updates coords of aromatics if any exists
-			function updateArom(d) {
-				angular.forEach(this.decorate.aromatic, function (arom) {
-					var equal = Utils.compareFloats(arom.fromWhich[0], atom.getCoords("x"), 3)
-						&& Utils.compareFloats(arom.fromWhich[1], atom.getCoords("y"), 3);
-					if (equal) {
-						arom.fromWhich = Utils.addCoordsNoPrec(arom.fromWhich, d);
-						arom.coords = Utils.addCoordsNoPrec(arom.coords, d);
-					}
-				});
-			}
+		// updates coords of aromatics if any exists
+		function updateArom(d, atom) {
+			angular.forEach(this.decorate.aromatic, function (arom) {
+				var equal = Utils.compareFloats(arom.fromWhich[0], atom.getCoords("x"), 3)
+					&& Utils.compareFloats(arom.fromWhich[1], atom.getCoords("y"), 3);
+				if (equal) {
+					arom.fromWhich = Utils.addCoordsNoPrec(arom.fromWhich, d);
+					arom.coords = Utils.addCoordsNoPrec(arom.coords, d);
+				}
+			});
 		}
 
 		/**
@@ -1619,6 +1637,8 @@
 			} else if (Flags.selected === "select") {
 				structure = makeSelection(mouseCoords);
 				structure.getStructure().pop();
+			} else if (Flags.selected === "moveStructure") {
+				structure = moveStructure(mouseCoords);
 			} else if (Flags.selected === "arrow") {
 				// if arrow was selected
 				// if content is empty or atom was not found
@@ -1813,6 +1833,8 @@
 
 			if (Flags.selected === "select") {
 				structure = makeSelection(mouseCoords);
+			} else if (Flags.selected === "moveStructure") {
+				structure = moveStructure(mouseCoords);
 			} else if (Flags.selected === "arrow") {
         // if an atom has not been found but the mouse is still down
 				// the content is either empty or the mousedown event occurred somewhere outside of the current Structure object
@@ -1916,6 +1938,17 @@
 				mouseFlags.downAtomCoords,
 				move
 			);
+		}
+
+		function moveStructure(mouseCoords) {
+			var structure, moveDistance;
+			if (!Utils.isContentEmpty()) {
+				// if the content is non-empty
+				structure = angular.copy(Cache.getCurrentStructure());
+				moveDistance = Utils.subtractCoords(mouseCoords, mouseFlags.downMouseCoords);
+				structure.moveStructureTo("mouse", moveDistance);
+			}
+			return structure;
 		}
 
 		function makeSelection(mouseCoords) {
