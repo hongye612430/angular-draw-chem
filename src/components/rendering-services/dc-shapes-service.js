@@ -361,10 +361,10 @@
 				var full = "", mini = "", aux = "";
 				rects.forEach(function (rect) {
 					aux = "<rect class='" + rect.class +
-						"' x='" + rect.rect[0] +
-						"' y='" + rect.rect[1] +
-						"' width='" + rect.rect[2] +
-						"' height='" + rect.rect[3] +
+						"' x='" + rect.rect[0].toFixed(2) +
+						"' y='" + rect.rect[1].toFixed(2) +
+						"' width='" + rect.rect[2].toFixed(2) +
+						"' height='" + rect.rect[3].toFixed(2) +
 						"'></rect>";
 					full += aux;
 					mini += aux;
@@ -380,14 +380,14 @@
 				});
 				circles.forEach(function (circle) {
 					var aux = circle.selected ? "edit": "atom";
-					full += "<circle class='" + aux + "' cx='" + circle.circle[0] + "' cy='" + circle.circle[1] + "' r='" + circle.circle[2] + "' ></circle>";
+					full += "<circle class='" + aux + "' cx='" + circle.circle[0].toFixed(2) + "' cy='" + circle.circle[1].toFixed(2) + "' r='" + circle.circle[2].toFixed(2) + "' ></circle>";
 				});
 				labels.forEach(function (label) {
 					aux = drawDodecagon(label) +
-						"<text dy='0.2125em' x='" + label.labelX + "' " +
-						"atomx='" + label.atomX + "' " +
-						"atomy='" + label.atomY + "' " +
-						"y='" + label.labelY + "' " +
+						"<text dy='0.2125em' x='" + label.labelX.toFixed(2) + "' " +
+						"atomx='" + label.atomX.toFixed(2) + "' " +
+						"atomy='" + label.atomY.toFixed(2) + "' " +
+						"y='" + label.labelY.toFixed(2) + "' " +
 						"text-anchor='" + genTextAnchor(label.mode) + "' " +
 						">" + genLabel(label.label) + "</text>";
 					full += aux;
@@ -395,14 +395,14 @@
 				});
 				if (input.getDecorate("aromatic")) {
 					input.getDecorate("aromatic").forEach(function (arom) {
-						aux = "<circle class='arom' cx='" + arom.coords[0] +
-						"' cy='" + arom.coords[1] +
-						"' r='" + Const.AROMATIC_R +
+						aux = "<circle class='arom' cx='" + arom.coords[0].toFixed(2) +
+						"' cy='" + arom.coords[1].toFixed(2) +
+						"' r='" + Const.AROMATIC_R.toFixed(2) +
 						"' ></circle>";
 						full += aux;
-						aux = "<circle class='tr-arom' cx='" + arom.coords[0] +
-						"' cy='" + arom.coords[1] +
-						"' r='" + Const.AROMATIC_R +
+						aux = "<circle class='tr-arom' cx='" + arom.coords[0].toFixed(2) +
+						"' cy='" + arom.coords[1].toFixed(2) +
+						"' r='" + Const.AROMATIC_R.toFixed(2) +
 						"' ></circle>";
 						mini += aux;
 					})
@@ -447,7 +447,7 @@
 					for (i = 0; i < BONDS_AUX.length; i += 1) {
 						x = BONDS_AUX[i].bond[0];
 						y = BONDS_AUX[i].bond[1];
-						result = result.concat(Utils.addCoords([label.atomX, label.atomY], [x, y], factor));
+						result = result.concat(Utils.addCoordsNoPrec([label.atomX, label.atomY], [x, y], factor));
 					}
 					return "<polygon class='text' points='" + stringifyPaths([result])[0].line + "'></polygon>";
 				}
@@ -526,16 +526,16 @@
 						perpVectCoordsCCW = [vectCoords[1], -vectCoords[0]], endMarkerStart, startMarkerStart, M1, M2, L1, L2, L3, L4;
 					if (type === "one-way-arrow") {
 						endMarkerStart = [start[0] + vectCoords[0] * ARROW_START, start[1] + vectCoords[1] * ARROW_START];
-						L1 = Utils.addCoords(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
-						L2 = Utils.addCoords(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+						L1 = Utils.addCoordsNoPrec(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+						L2 = Utils.addCoordsNoPrec(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
 						return ["arrow", "M", start, "L", end, "M", endMarkerStart, "L", L1, "L", end, "L", L2, "Z"];
 					} else if (type === "two-way-arrow") {
 						endMarkerStart = [start[0] + vectCoords[0] * ARROW_START, start[1] + vectCoords[1] * ARROW_START];
 						startMarkerStart = [start[0] + vectCoords[0] * (1 - ARROW_START), start[1] + vectCoords[1] * (1 - ARROW_START)];
-						L1 = Utils.addCoords(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
-						L2 = Utils.addCoords(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
-						L3 = Utils.addCoords(startMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
-						L4 = Utils.addCoords(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+						L1 = Utils.addCoordsNoPrec(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+						L2 = Utils.addCoordsNoPrec(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+						L3 = Utils.addCoordsNoPrec(startMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+						L4 = Utils.addCoordsNoPrec(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
 						return [
 							"arrow",
 							"M", start, "L", end,
@@ -544,15 +544,15 @@
 						];
 					}
 					else if (type === "equilibrium-arrow") {
-						M1 = Utils.addCoords(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
-						L1 = Utils.addCoords(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
+						M1 = Utils.addCoordsNoPrec(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
+						L1 = Utils.addCoordsNoPrec(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
 						endMarkerStart = [parseFloat(M1[0]) + vectCoords[0] * ARROW_START, parseFloat(M1[1]) + vectCoords[1] * ARROW_START];
-						L2 = Utils.addCoords(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+						L2 = Utils.addCoordsNoPrec(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
 
-						M2 = Utils.addCoords(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
-						L3 = Utils.addCoords(start, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+						M2 = Utils.addCoordsNoPrec(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+						L3 = Utils.addCoordsNoPrec(start, perpVectCoordsCW, BETWEEN_DBL_BONDS);
 						startMarkerStart = [parseFloat(L3[0]) + vectCoords[0] * (1 - ARROW_START), parseFloat(L3[1]) + vectCoords[1] * (1 - ARROW_START)];
-						L4 = Utils.addCoords(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+						L4 = Utils.addCoordsNoPrec(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
 
 						return [
 							"arrow-eq",
@@ -616,10 +616,10 @@
 					var vectCoords = [end[0] - start[0], end[1] - start[1]],
 						perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
 						perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
-						M1 = Utils.addCoords(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
-						L1 = Utils.addCoords(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
-						M2 = Utils.addCoords(start, perpVectCoordsCW, BETWEEN_DBL_BONDS),
-						L2 = Utils.addCoords(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+						M1 = Utils.addCoordsNoPrec(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
+						L1 = Utils.addCoordsNoPrec(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
+						M2 = Utils.addCoordsNoPrec(start, perpVectCoordsCW, BETWEEN_DBL_BONDS),
+						L2 = Utils.addCoordsNoPrec(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
 					return ["M", M1, "L", L1, "M", M2, "L", L2];
 				}
 
@@ -627,10 +627,10 @@
 					var vectCoords = [end[0] - start[0], end[1] - start[1]],
 						perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
 						perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
-						M1 = Utils.addCoords(start, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
-						L1 = Utils.addCoords(end, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
-						M2 = Utils.addCoords(start, perpVectCoordsCW, BETWEEN_TRP_BONDS),
-						L2 = Utils.addCoords(end, perpVectCoordsCW, BETWEEN_TRP_BONDS);
+						M1 = Utils.addCoordsNoPrec(start, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
+						L1 = Utils.addCoordsNoPrec(end, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
+						M2 = Utils.addCoordsNoPrec(start, perpVectCoordsCW, BETWEEN_TRP_BONDS),
+						L2 = Utils.addCoordsNoPrec(end, perpVectCoordsCW, BETWEEN_TRP_BONDS);
 					return ["M", M1, "L", L1, "M", start, "L", end, "M", M2, "L", L2];
 				}
 
@@ -638,8 +638,8 @@
 					var vectCoords = [end[0] - start[0], end[1] - start[1]],
 						perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
 						perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
-						L1 = Utils.addCoords(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
-						L2 = Utils.addCoords(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+						L1 = Utils.addCoordsNoPrec(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
+						L2 = Utils.addCoordsNoPrec(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
 					return ["wedge", "M", start, "L", L1, "L", L2, "Z"];
 				}
 
@@ -652,8 +652,8 @@
 					for (i = max; i > 0; i -= 1) {
 						factor = factor + BETWEEN_DBL_BONDS / max;
 						currentEnd = [currentEnd[0] + vectCoords[0] / max, currentEnd[1] + vectCoords[1] / max];
-						M = Utils.addCoords(currentEnd, perpVectCoordsCCW, factor);
-						L = Utils.addCoords(currentEnd, perpVectCoordsCW, factor);
+						M = Utils.addCoordsNoPrec(currentEnd, perpVectCoordsCCW, factor);
+						L = Utils.addCoordsNoPrec(currentEnd, perpVectCoordsCW, factor);
 						result = result.concat(["M", M, "L", L]);
 					}
 					return result;
@@ -872,8 +872,8 @@
 						} else {
 							lineStr.line += point + " ";
 						}
-					} else {
-						lineStr.line += point[0] + " " + point[1] + " ";
+					} else if (typeof point[0] === "number") {
+						lineStr.line += point[0].toFixed(2) + " " + point[1].toFixed(2) + " ";
 					}
 				}
 				result.push(lineStr);

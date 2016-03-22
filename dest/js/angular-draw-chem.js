@@ -2417,6 +2417,22 @@
 			return output;
 		}
 
+		// this way, the array can be used circularly
+		service.moveToLeft = function(array, index, d) {
+			if (index - d < 0) {
+				return index - d + array.length;
+			}
+			return index - d;
+		}
+
+		// this way, the array can be used circularly
+		service.moveToRight = function(array, index, d) {
+			if (index + d > array.length - 1) {
+				return index + d - array.length;
+			}
+			return index + d;
+		}
+
 		/**
 		 * Subtracts the coords in the second array from the first array.
 		 * @param {Number[]} arr1 - first array
@@ -3145,26 +3161,26 @@
 			BONDS = Const.BONDS;
 
 		/**
-		 * Generates benzene structures in each defined direction.
+		 * Generates benzene structure in each of the defined directions.
 		 * @returns {StructureCluster}
 		 */
 		service.benzene = function () {
 			var cluster,
 				name = "benzene",
-				defs = generateSixMemberedRings("aromatic");
+				defs = generateRings(120, 6, "aromatic");
 
 			cluster = new StructureCluster(name, defs);
 			return cluster;
 		};
 
 		/**
-		 * Generates cyclohexane structures in each defined direction.
+		 * Generates cyclohexane structure in each of the defined directions.
 		 * @returns {StructureCluster}
 		 */
 		service.cyclohexane = function () {
 			var cluster,
 				name = "cyclohexane",
-				defs = generateSixMemberedRings();
+				defs = generateRings(120, 6);
 
 			cluster = new StructureCluster(name, defs);
 
@@ -3172,13 +3188,13 @@
 		};
 
 		/**
-		 * Generates cyclopentane structures in each defined direction.
+		 * Generates cyclopentane structure in each of the defined directions.
 		 * @returns {StructureCluster}
 		 */
 		service.cyclopentane = function () {
 			var cluster,
 				name = "cyclopentane",
-				defs = generateFiveMemberedRings();
+				defs = generateRings(108, 5);
 
 			cluster = new StructureCluster(name, defs);
 
@@ -3186,7 +3202,77 @@
 		};
 
 		/**
-		 * Generates single bond structures in each defined direction.
+		 * Generates a cyclopropane structure in each of the defined directions.
+		 * @returns {StructureCluster}
+		 */
+		service.cyclopropane = function () {
+			var cluster,
+				name = "cyclopropane",
+				defs = generateRings(60, 3);
+
+			cluster = new StructureCluster(name, defs);
+
+			return cluster;
+		};
+
+		/**
+		 * Generates a cyclobutane structure in each of the defined directions.
+		 * @returns {StructureCluster}
+		 */
+		service.cyclobutane = function () {
+			var cluster,
+				name = "cyclobutane",
+				defs = generateRings(90, 4);
+
+			cluster = new StructureCluster(name, defs);
+
+			return cluster;
+		};
+
+		/**
+		 * Generates a cycloheptane structure in each of the defined directions.
+		 * @returns {StructureCluster}
+		 */
+		service.cycloheptane = function () {
+			var cluster,
+				name = "cycloheptane",
+				defs = generateRings(128.57, 7);
+
+			cluster = new StructureCluster(name, defs);
+
+			return cluster;
+		};
+
+		/**
+		 * Generates a cyclooctane structure in each of the defined directions.
+		 * @returns {StructureCluster}
+		 */
+		service.cyclooctane = function () {
+			var cluster,
+				name = "cyclooctane",
+				defs = generateRings(135, 8);
+
+			cluster = new StructureCluster(name, defs);
+
+			return cluster;
+		};
+
+		/**
+		 * Generates a cyclononane structure in each of the defined directions.
+		 * @returns {StructureCluster}
+		 */
+		service.cyclooctane = function () {
+			var cluster,
+				name = "cyclononane",
+				defs = generateRings(140, 9);
+
+			cluster = new StructureCluster(name, defs);
+
+			return cluster;
+		};
+
+		/**
+		 * Generates single bond in each of the defined directions.
 		 * @returns {StructureCluster}
 		 */
 		service.singleBond = function () {
@@ -3201,7 +3287,7 @@
 		};
 
 		/**
-		 * Generates double bond structures in each defined direction.
+		 * Generates double bond in each of the defined directions.
 		 * @returns {StructureCluster}
 		 */
 		service.doubleBond = function () {
@@ -3216,7 +3302,7 @@
 		};
 
 		/**
-		 * Generates triple bond structures in each defined direction.
+		 * Generates triple bond in each of the defined directions.
 		 * @returns {StructureCluster}
 		 */
 		service.tripleBond = function () {
@@ -3231,7 +3317,7 @@
 		};
 
 		/**
-		 * Generates wedge bond structures in each defined direction.
+		 * Generates wedge bond in each of the defined directions.
 		 * @returns {StructureCluster}
 		 */
 		service.wedgeBond = function () {
@@ -3246,7 +3332,7 @@
 		};
 
 		/**
-		 * Generates wedge bond structures in each defined direction.
+		 * Generates wedge bond in each of the defined directions.
 		 * @returns {StructureCluster}
 		 */
 		service.dashBond = function () {
@@ -3264,6 +3350,16 @@
 		 * Stores all predefined structures.
 		 */
 		service.structures = {
+			"cyclopropane": {
+				action: createStructureAction(service.cyclopropane),
+				id: "cyclopropane",
+				thumbnail: true
+			},
+			"cyclobutane": {
+				action: createStructureAction(service.cyclobutane),
+				id: "cyclobutane",
+				thumbnail: true
+			},
 			"benzene": {
 				action: createStructureAction(service.benzene),
 				id: "benzene",
@@ -3276,7 +3372,23 @@
 			},
 			"cyclopentane": {
 				action: createStructureAction(service.cyclopentane),
-				id: "cyclopentane"
+				id: "cyclopentane",
+				thumbnail: true
+			},
+			"cycloheptane": {
+				action: createStructureAction(service.cycloheptane),
+				id: "cycloheptane",
+				thumbnail: true
+			},
+			"cyclooctane": {
+				action: createStructureAction(service.cyclooctane),
+				id: "cyclooctane",
+				thumbnail: true
+			},
+			"cyclononane": {
+				action: createStructureAction(service.cyclooctane),
+				id: "cyclooctane",
+				thumbnail: true
 			},
 			"single bond": {
 				action: createStructureAction(service.singleBond),
@@ -3315,74 +3427,29 @@
 		}
 
 		/**
-		 * Generates six-membered rings (120 deg between bonds) in each of defined direction.
-		 * @param {String} decorate - indicates decorate element (e.g. aromatic ring)
+		 * Generates a ring in each of the defined direction.
+		 * @param {Number} deg - angle in degs between two bonds in the ring,
+		 * @param {Number} size - size of the ring,
+		 * @param {String} decorate - indicates decorate element (e.g. aromatic ring),
 		 * @returns {Structure[]}
 		 */
-		function generateSixMemberedRings(decorate) {
+		function generateRings(deg, size, decorate) {
 			var i, direction, result = [];
 			for (i = 0; i < BONDS.length; i += 1) {
 				direction = BONDS[i].direction;
-				result.push(generateRing(direction));
+				result.push(genRing(direction, deg, size));
 			}
 
 			return result;
 
 			/**
-			 * Generates a six-membered ring in the specified direction.
-			 * This may be a little bit confusing, but in this function, the direction parameter (e.g. N, NE1)
-			 * is associated not only with the bond direction,
-			 * but is also used to indicate the relative position of an atom.
-			 * @param {String} direction - direction of the ring
+			 * Generates a ring.
+			 * @param {String} direction - in which direction the ring will be generated,
+			 * @param {Number} deg - angle in degs between two bonds in the ring,
+			 * @param {Number} size - size of the ring,
 			 * @returns {Structure}
 			 */
-			function generateRing(direction) {
-				var firstAtom, structure, bond,
-					dirs = calcDirections(direction),
-					opposite = Atom.getOppositeDirection(direction);
-
-				firstAtom = new Atom([0, 0], [], "", dirs.current);
-				genAtoms(firstAtom, dirs, 6);
-				structure = new Structure(opposite, [firstAtom]);
-				if (decorate === "aromatic") {
-					structure.setAromatic();
-				}
-
-				return structure;
-
-				/**
-				 * Recursievely generates atoms.
-				 * @param {Atom} atom - atom to which next atom will be added.
-				 * @param {Object} dirs - keeps track of attached bonds, next bond and next atom
-				 * @param {Number} depth - current depth of the structure tree
-				 */
-				function genAtoms(atom, dirs, depth) {
-					var newDirs = calcDirections(dirs.nextDirection), newAtom;
-					if (depth === 1) {
-						return atom.addBond(new Bond("single", new Atom(dirs.nextBond, [], "", [newDirs.current[0]])));
-					}
-					newAtom = new Atom(dirs.nextBond, [], "", newDirs.current);
-					atom.addBond(new Bond("single", newAtom));
-					genAtoms(newAtom, newDirs, depth - 1);
-				}
-			}
-		}
-
-		/**
-		 * Generates five-membered rings (108 deg between bonds) in each of defined direction.
-		 * @param {String} decorate - indicates decorate element (e.g. aromatic ring)
-		 * @returns {Structure[]}
-		 */
-		function generateFiveMemberedRings() {
-			var i, direction, result = [];
-			for (i = 0; i < BONDS.length; i += 1) {
-				direction = BONDS[i].direction;
-				result.push(generateRing(direction, 108, 5));
-			}
-
-			return result;
-
-			function generateRing(direction, deg, size) {
+			function genRing(direction, deg, size) {
 				var firstAtom, nextAtom, structure,
 					bond = Const.getBondByDirection(direction).bond,
 					rotVect = rotVectCW(bond, deg / 2);
@@ -3392,6 +3459,9 @@
 				firstAtom.addBond(new Bond("single", nextAtom));
 				genAtoms(nextAtom, size);
 				structure = new Structure(direction, [firstAtom]);
+				if (decorate === "aromatic") {
+					structure.setAromatic();
+				}
 
 				return structure;
 
@@ -3404,18 +3474,20 @@
 					var rotVect = rotVectCCW(prevAtom.getCoords(), 180 - deg),
 					  newAtom = new Atom(rotVect, [], "", []);
 					if (depth === 1) { return undefined; }
-					prevAtom.addBond(new Bond("single", newAtom));					
+					prevAtom.addBond(new Bond("single", newAtom));
 					genAtoms(newAtom, depth - 1);
 				}
 
-				function rotVectCW(vect, deg) {
+				// rotates a vector counter clock-wise
+				function rotVectCCW(vect, deg) {
 					var rads = deg * (Math.PI / 180),
 						rotX = vect[0] * Math.cos(rads) + vect[1] * Math.sin(rads),
 						rotY = vect[1] * Math.cos(rads) - vect[0] * Math.sin(rads);
 					return [rotX, rotY];
 				}
 
-				function rotVectCCW(vect, deg) {
+				// rotates a vector clock-wise
+				function rotVectCW(vect, deg) {
 					var rads = deg * (Math.PI / 180),
 						rotX = vect[0] * Math.cos(rads) - vect[1] * Math.sin(rads),
 						rotY = vect[0] * Math.sin(rads) + vect[1] * Math.cos(rads);
@@ -3447,49 +3519,6 @@
 			}
 
 			return result;
-		}
-
-		/**
-		 * Calculates attached bonds, next bond and next atom.
-		 * @param {String} direction - direction based on which calculations are made
-		 * @returns {Object}
-		 */
-		function calcDirections(direction) {
-			var i, left, right, next;
-
-			for (i = 0; i < BONDS.length; i += 1) {
-				if (BONDS[i].direction === direction) {
-					left = moveToLeft(BONDS, i, 4);
-					right = moveToRight(BONDS, i, 4);
-					next = moveToRight(BONDS, i, 2);
-					break;
-				}
-			}
-
-			return {
-				// attached bonds
-				current: [{ direction: BONDS[left].direction, type: "single" }, { direction: BONDS[right].direction, type: "single" }],
-				// next bond
-				nextBond: BONDS[right].bond,
-				// next direction
-				nextDirection: BONDS[next].direction
-			};
-
-			// this way, the array can be used circularly
-			function moveToLeft(array, index, d) {
-				if (index - d < 0) {
-					return index - d + array.length;
-				}
-				return index - d;
-			}
-
-			// this way, the array can be used circularly
-			function moveToRight(array, index, d) {
-				if (index + d > array.length - 1) {
-					return index + d - array.length;
-				}
-				return index + d;
-			}
 		}
 	}
 })();
@@ -4088,10 +4117,10 @@
 				var full = "", mini = "", aux = "";
 				rects.forEach(function (rect) {
 					aux = "<rect class='" + rect.class +
-						"' x='" + rect.rect[0] +
-						"' y='" + rect.rect[1] +
-						"' width='" + rect.rect[2] +
-						"' height='" + rect.rect[3] +
+						"' x='" + rect.rect[0].toFixed(2) +
+						"' y='" + rect.rect[1].toFixed(2) +
+						"' width='" + rect.rect[2].toFixed(2) +
+						"' height='" + rect.rect[3].toFixed(2) +
 						"'></rect>";
 					full += aux;
 					mini += aux;
@@ -4107,14 +4136,14 @@
 				});
 				circles.forEach(function (circle) {
 					var aux = circle.selected ? "edit": "atom";
-					full += "<circle class='" + aux + "' cx='" + circle.circle[0] + "' cy='" + circle.circle[1] + "' r='" + circle.circle[2] + "' ></circle>";
+					full += "<circle class='" + aux + "' cx='" + circle.circle[0].toFixed(2) + "' cy='" + circle.circle[1].toFixed(2) + "' r='" + circle.circle[2].toFixed(2) + "' ></circle>";
 				});
 				labels.forEach(function (label) {
 					aux = drawDodecagon(label) +
-						"<text dy='0.2125em' x='" + label.labelX + "' " +
-						"atomx='" + label.atomX + "' " +
-						"atomy='" + label.atomY + "' " +
-						"y='" + label.labelY + "' " +
+						"<text dy='0.2125em' x='" + label.labelX.toFixed(2) + "' " +
+						"atomx='" + label.atomX.toFixed(2) + "' " +
+						"atomy='" + label.atomY.toFixed(2) + "' " +
+						"y='" + label.labelY.toFixed(2) + "' " +
 						"text-anchor='" + genTextAnchor(label.mode) + "' " +
 						">" + genLabel(label.label) + "</text>";
 					full += aux;
@@ -4122,14 +4151,14 @@
 				});
 				if (input.getDecorate("aromatic")) {
 					input.getDecorate("aromatic").forEach(function (arom) {
-						aux = "<circle class='arom' cx='" + arom.coords[0] +
-						"' cy='" + arom.coords[1] +
-						"' r='" + Const.AROMATIC_R +
+						aux = "<circle class='arom' cx='" + arom.coords[0].toFixed(2) +
+						"' cy='" + arom.coords[1].toFixed(2) +
+						"' r='" + Const.AROMATIC_R.toFixed(2) +
 						"' ></circle>";
 						full += aux;
-						aux = "<circle class='tr-arom' cx='" + arom.coords[0] +
-						"' cy='" + arom.coords[1] +
-						"' r='" + Const.AROMATIC_R +
+						aux = "<circle class='tr-arom' cx='" + arom.coords[0].toFixed(2) +
+						"' cy='" + arom.coords[1].toFixed(2) +
+						"' r='" + Const.AROMATIC_R.toFixed(2) +
 						"' ></circle>";
 						mini += aux;
 					})
@@ -4174,7 +4203,7 @@
 					for (i = 0; i < BONDS_AUX.length; i += 1) {
 						x = BONDS_AUX[i].bond[0];
 						y = BONDS_AUX[i].bond[1];
-						result = result.concat(Utils.addCoords([label.atomX, label.atomY], [x, y], factor));
+						result = result.concat(Utils.addCoordsNoPrec([label.atomX, label.atomY], [x, y], factor));
 					}
 					return "<polygon class='text' points='" + stringifyPaths([result])[0].line + "'></polygon>";
 				}
@@ -4253,16 +4282,16 @@
 						perpVectCoordsCCW = [vectCoords[1], -vectCoords[0]], endMarkerStart, startMarkerStart, M1, M2, L1, L2, L3, L4;
 					if (type === "one-way-arrow") {
 						endMarkerStart = [start[0] + vectCoords[0] * ARROW_START, start[1] + vectCoords[1] * ARROW_START];
-						L1 = Utils.addCoords(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
-						L2 = Utils.addCoords(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+						L1 = Utils.addCoordsNoPrec(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+						L2 = Utils.addCoordsNoPrec(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
 						return ["arrow", "M", start, "L", end, "M", endMarkerStart, "L", L1, "L", end, "L", L2, "Z"];
 					} else if (type === "two-way-arrow") {
 						endMarkerStart = [start[0] + vectCoords[0] * ARROW_START, start[1] + vectCoords[1] * ARROW_START];
 						startMarkerStart = [start[0] + vectCoords[0] * (1 - ARROW_START), start[1] + vectCoords[1] * (1 - ARROW_START)];
-						L1 = Utils.addCoords(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
-						L2 = Utils.addCoords(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
-						L3 = Utils.addCoords(startMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
-						L4 = Utils.addCoords(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+						L1 = Utils.addCoordsNoPrec(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+						L2 = Utils.addCoordsNoPrec(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+						L3 = Utils.addCoordsNoPrec(startMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+						L4 = Utils.addCoordsNoPrec(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
 						return [
 							"arrow",
 							"M", start, "L", end,
@@ -4271,15 +4300,15 @@
 						];
 					}
 					else if (type === "equilibrium-arrow") {
-						M1 = Utils.addCoords(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
-						L1 = Utils.addCoords(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
+						M1 = Utils.addCoordsNoPrec(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
+						L1 = Utils.addCoordsNoPrec(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
 						endMarkerStart = [parseFloat(M1[0]) + vectCoords[0] * ARROW_START, parseFloat(M1[1]) + vectCoords[1] * ARROW_START];
-						L2 = Utils.addCoords(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+						L2 = Utils.addCoordsNoPrec(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
 
-						M2 = Utils.addCoords(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
-						L3 = Utils.addCoords(start, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+						M2 = Utils.addCoordsNoPrec(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+						L3 = Utils.addCoordsNoPrec(start, perpVectCoordsCW, BETWEEN_DBL_BONDS);
 						startMarkerStart = [parseFloat(L3[0]) + vectCoords[0] * (1 - ARROW_START), parseFloat(L3[1]) + vectCoords[1] * (1 - ARROW_START)];
-						L4 = Utils.addCoords(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+						L4 = Utils.addCoordsNoPrec(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
 
 						return [
 							"arrow-eq",
@@ -4343,10 +4372,10 @@
 					var vectCoords = [end[0] - start[0], end[1] - start[1]],
 						perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
 						perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
-						M1 = Utils.addCoords(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
-						L1 = Utils.addCoords(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
-						M2 = Utils.addCoords(start, perpVectCoordsCW, BETWEEN_DBL_BONDS),
-						L2 = Utils.addCoords(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+						M1 = Utils.addCoordsNoPrec(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
+						L1 = Utils.addCoordsNoPrec(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
+						M2 = Utils.addCoordsNoPrec(start, perpVectCoordsCW, BETWEEN_DBL_BONDS),
+						L2 = Utils.addCoordsNoPrec(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
 					return ["M", M1, "L", L1, "M", M2, "L", L2];
 				}
 
@@ -4354,10 +4383,10 @@
 					var vectCoords = [end[0] - start[0], end[1] - start[1]],
 						perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
 						perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
-						M1 = Utils.addCoords(start, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
-						L1 = Utils.addCoords(end, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
-						M2 = Utils.addCoords(start, perpVectCoordsCW, BETWEEN_TRP_BONDS),
-						L2 = Utils.addCoords(end, perpVectCoordsCW, BETWEEN_TRP_BONDS);
+						M1 = Utils.addCoordsNoPrec(start, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
+						L1 = Utils.addCoordsNoPrec(end, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
+						M2 = Utils.addCoordsNoPrec(start, perpVectCoordsCW, BETWEEN_TRP_BONDS),
+						L2 = Utils.addCoordsNoPrec(end, perpVectCoordsCW, BETWEEN_TRP_BONDS);
 					return ["M", M1, "L", L1, "M", start, "L", end, "M", M2, "L", L2];
 				}
 
@@ -4365,8 +4394,8 @@
 					var vectCoords = [end[0] - start[0], end[1] - start[1]],
 						perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
 						perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
-						L1 = Utils.addCoords(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
-						L2 = Utils.addCoords(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+						L1 = Utils.addCoordsNoPrec(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
+						L2 = Utils.addCoordsNoPrec(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
 					return ["wedge", "M", start, "L", L1, "L", L2, "Z"];
 				}
 
@@ -4379,8 +4408,8 @@
 					for (i = max; i > 0; i -= 1) {
 						factor = factor + BETWEEN_DBL_BONDS / max;
 						currentEnd = [currentEnd[0] + vectCoords[0] / max, currentEnd[1] + vectCoords[1] / max];
-						M = Utils.addCoords(currentEnd, perpVectCoordsCCW, factor);
-						L = Utils.addCoords(currentEnd, perpVectCoordsCW, factor);
+						M = Utils.addCoordsNoPrec(currentEnd, perpVectCoordsCCW, factor);
+						L = Utils.addCoordsNoPrec(currentEnd, perpVectCoordsCW, factor);
 						result = result.concat(["M", M, "L", L]);
 					}
 					return result;
@@ -4599,8 +4628,8 @@
 						} else {
 							lineStr.line += point + " ";
 						}
-					} else {
-						lineStr.line += point[0] + " " + point[1] + " ";
+					} else if (typeof point[0] === "number") {
+						lineStr.line += point[0].toFixed(2) + " " + point[1].toFixed(2) + " ";
 					}
 				}
 				result.push(lineStr);

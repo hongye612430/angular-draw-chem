@@ -42,6 +42,22 @@
 			return output;
 		}
 
+		// this way, the array can be used circularly
+		service.moveToLeft = function(array, index, d) {
+			if (index - d < 0) {
+				return index - d + array.length;
+			}
+			return index - d;
+		}
+
+		// this way, the array can be used circularly
+		service.moveToRight = function(array, index, d) {
+			if (index + d > array.length - 1) {
+				return index + d - array.length;
+			}
+			return index + d;
+		}
+
 		/**
 		 * Subtracts the coords in the second array from the first array.
 		 * @param {Number[]} arr1 - first array
