@@ -16,7 +16,7 @@
       link: function (scope, element) {
 
         element.bind("keydown", function ($event) {
-          if (DrawChem.showEditor() && (!Flags.focused || ctrlOrShift($event))) {
+          if (DrawChem.showEditor() && (!Flags.focused || $event.ctrlKey)) {
             // should prevent default only if editor is shown and
             // either custom label field is NOT focused
             // or ctrl/shift key is involved
@@ -26,7 +26,7 @@
         });
 
         element.bind("keyup", function ($event) {
-          if (DrawChem.showEditor() && (!Flags.focused || ctrlOrShift($event))) {
+          if (DrawChem.showEditor() && (!Flags.focused || $event.ctrlKey)) {
             // should prevent default only if editor is shown and
             // either custom label field is NOT focused
             // or ctrl/shift key is involved

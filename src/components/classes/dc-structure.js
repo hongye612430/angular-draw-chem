@@ -52,19 +52,27 @@
 			// iterates over all structures in 'structure' array (atoms, arrows, etc.)
 			for (i = 0; i < this.structure.length; i += 1) {
 				current = this.structure[i];
+				// if not selected then ignore it
 				if (!current.selected) { continue; }
 				if (current instanceof Atom) {
+					// if atom get coords and move
 					origin = current.getCoords();
 					move(origin, distance, direction, this, current);
 				} else if (current instanceof Arrow) {
+					// if arrow get coords and move
 					origin = current.getOrigin();
 					move(origin, distance, direction);
+					// update end coords
 					current.updateEnd();
 				}
 			}
 
 			function move(origin, distance, direction, bind, current) {
+				// by default moves by 5 (applies to keyboard moves)
 				var distance = distance || 5;
+
+				// changes coords according to chosen mode ('up', 'left', 'right', and 'down' for keyboard or 'mouse' for mouse moves)
+				// updates aromatics if any exists
 				if (direction === "left") {
 					if (typeof bind !== "undefined") {
 						updateArom.call(bind, [-distance, 0], current);

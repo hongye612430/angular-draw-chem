@@ -5,6 +5,7 @@
 
 	DrawChemStructures.$inject = [
 		"DrawChemConst",
+		"DrawChemUtils",
 		"DCStructure",
 		"DCStructureCluster",
 		"DCAtom",
@@ -12,7 +13,7 @@
 		"DrawChemDirectiveFlags"
 	];
 
-	function DrawChemStructures(Const, DCStructure, DCStructureCluster, DCAtom, DCBond, Flags) {
+	function DrawChemStructures(Const, Utils, DCStructure, DCStructureCluster, DCAtom, DCBond, Flags) {
 
 		var service = {},
 			Atom = DCAtom.Atom,
@@ -27,11 +28,10 @@
 		 */
 		service.benzene = function () {
 			var cluster,
-				multiplicity = "triple",
 				name = "benzene",
 				defs = generateSixMemberedRings("aromatic");
 
-			cluster = new StructureCluster(name, defs, multiplicity);
+			cluster = new StructureCluster(name, defs);
 			return cluster;
 		};
 
@@ -41,11 +41,24 @@
 		 */
 		service.cyclohexane = function () {
 			var cluster,
-				multiplicity = "double",
 				name = "cyclohexane",
 				defs = generateSixMemberedRings();
 
-			cluster = new StructureCluster(name, defs, multiplicity);
+			cluster = new StructureCluster(name, defs);
+
+			return cluster;
+		};
+
+		/**
+		 * Generates cyclopentane structures in each defined direction.
+		 * @returns {StructureCluster}
+		 */
+		service.cyclopentane = function () {
+			var cluster,
+				name = "cyclopentane",
+				defs = generateFiveMemberedRings();
+
+			cluster = new StructureCluster(name, defs);
 
 			return cluster;
 		};
@@ -139,6 +152,10 @@
 				id: "cyclohexane",
 				thumbnail: true
 			},
+			"cyclopentane": {
+				action: createStructureAction(service.cyclopentane),
+				id: "cyclopentane"
+			},
 			"single bond": {
 				action: createStructureAction(service.singleBond),
 				id: "single-bond",
@@ -176,7 +193,7 @@
 		}
 
 		/**
-		 * Generates six-membered rings (60 deg between bonds) in each of defined direction.
+		 * Generates six-membered rings (120 deg between bonds) in each of defined direction.
 		 * @param {String} decorate - indicates decorate element (e.g. aromatic ring)
 		 * @returns {Structure[]}
 		 */
@@ -226,48 +243,61 @@
 					atom.addBond(new Bond("single", newAtom));
 					genAtoms(newAtom, newDirs, depth - 1);
 				}
+			}
+		}
+
+		/**
+		 * Generates five-membered rings (108 deg between bonds) in each of defined direction.
+		 * @param {String} decorate - indicates decorate element (e.g. aromatic ring)
+		 * @returns {Structure[]}
+		 */
+		function generateFiveMemberedRings() {
+			var i, direction, result = [];
+			for (i = 0; i < BONDS.length; i += 1) {
+				direction = BONDS[i].direction;
+				result.push(generateRing(direction, 108, 5));
+			}
+
+			return result;
+
+			function generateRing(direction, deg, size) {
+				var firstAtom, nextAtom, structure,
+					bond = Const.getBondByDirection(direction).bond,
+					rotVect = rotVectCW(bond, deg / 2);
+
+				firstAtom = new Atom([0, 0], [], "", []);
+				nextAtom = new Atom(rotVect, [], "", []);
+				firstAtom.addBond(new Bond("single", nextAtom));
+				genAtoms(nextAtom, size);
+				structure = new Structure(direction, [firstAtom]);
+
+				return structure;
 
 				/**
-				 * Calculates attached bonds, next bond and next atom.
-				 * @param {String} direction - direction based on which calculations are made
-				 * @returns {Object}
+				 * Recursively generates atoms.
+				 * @param {Atom} prevAtom - previous atom (the one to which new atom will be added),
+				 * @param {Number} depth - current depth of the structure tree
 				 */
-				function calcDirections(direction) {
-					var i, left, right, next;
+				function genAtoms(prevAtom, depth) {
+					var rotVect = rotVectCCW(prevAtom.getCoords(), 180 - deg),
+					  newAtom = new Atom(rotVect, [], "", []);
+					if (depth === 1) { return undefined; }
+					prevAtom.addBond(new Bond("single", newAtom));					
+					genAtoms(newAtom, depth - 1);
+				}
 
-					for (i = 0; i < BONDS.length; i += 1) {
-						if (BONDS[i].direction === direction) {
-							left = moveToLeft(BONDS, i, 4);
-							right = moveToRight(BONDS, i, 4);
-							next = moveToRight(BONDS, i, 2);
-							break;
-						}
-					}
+				function rotVectCW(vect, deg) {
+					var rads = deg * (Math.PI / 180),
+						rotX = vect[0] * Math.cos(rads) + vect[1] * Math.sin(rads),
+						rotY = vect[1] * Math.cos(rads) - vect[0] * Math.sin(rads);
+					return [rotX, rotY];
+				}
 
-					return {
-						// attached bonds
-						current: [{ direction: BONDS[left].direction, type: "single" }, { direction: BONDS[right].direction, type: "single" }],
-						// next bond
-						nextBond: BONDS[right].bond,
-						// next direction
-						nextDirection: BONDS[next].direction
-					};
-
-					// this way, the array can be used circularly
-					function moveToLeft(array, index, d) {
-						if (index - d < 0) {
-							return index - d + array.length;
-						}
-						return index - d;
-					}
-
-					// this way, the array can be used circularly
-					function moveToRight(array, index, d) {
-						if (index + d > array.length - 1) {
-							return index + d - array.length;
-						}
-						return index + d;
-					}
+				function rotVectCCW(vect, deg) {
+					var rads = deg * (Math.PI / 180),
+						rotX = vect[0] * Math.cos(rads) - vect[1] * Math.sin(rads),
+						rotY = vect[0] * Math.sin(rads) + vect[1] * Math.cos(rads);
+					return [rotX, rotY];
 				}
 			}
 		}
@@ -295,6 +325,49 @@
 			}
 
 			return result;
+		}
+
+		/**
+		 * Calculates attached bonds, next bond and next atom.
+		 * @param {String} direction - direction based on which calculations are made
+		 * @returns {Object}
+		 */
+		function calcDirections(direction) {
+			var i, left, right, next;
+
+			for (i = 0; i < BONDS.length; i += 1) {
+				if (BONDS[i].direction === direction) {
+					left = moveToLeft(BONDS, i, 4);
+					right = moveToRight(BONDS, i, 4);
+					next = moveToRight(BONDS, i, 2);
+					break;
+				}
+			}
+
+			return {
+				// attached bonds
+				current: [{ direction: BONDS[left].direction, type: "single" }, { direction: BONDS[right].direction, type: "single" }],
+				// next bond
+				nextBond: BONDS[right].bond,
+				// next direction
+				nextDirection: BONDS[next].direction
+			};
+
+			// this way, the array can be used circularly
+			function moveToLeft(array, index, d) {
+				if (index - d < 0) {
+					return index - d + array.length;
+				}
+				return index - d;
+			}
+
+			// this way, the array can be used circularly
+			function moveToRight(array, index, d) {
+				if (index + d > array.length - 1) {
+					return index + d - array.length;
+				}
+				return index + d;
+			}
 		}
 	}
 })();

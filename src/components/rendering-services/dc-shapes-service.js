@@ -181,7 +181,7 @@
 				} else {
 					for(i = 0; i < mod.defs.length; i += 1) {
 						at = mod.defs[i];
-						next = current.getNext();
+						next = current.getNext() || "N";
 						if (next === "max") {
 							return null;
 						}
@@ -831,6 +831,8 @@
 				return "NW1";
 			} else if (check(-x1, -x, -y, -y1)) {
 				return "NW2";
+			} else {
+				return "N";
 			}
 
 			function check(arg1, arg2, arg3, arg4) {

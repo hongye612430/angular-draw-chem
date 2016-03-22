@@ -955,19 +955,27 @@
 			// iterates over all structures in 'structure' array (atoms, arrows, etc.)
 			for (i = 0; i < this.structure.length; i += 1) {
 				current = this.structure[i];
+				// if not selected then ignore it
 				if (!current.selected) { continue; }
 				if (current instanceof Atom) {
+					// if atom get coords and move
 					origin = current.getCoords();
 					move(origin, distance, direction, this, current);
 				} else if (current instanceof Arrow) {
+					// if arrow get coords and move
 					origin = current.getOrigin();
 					move(origin, distance, direction);
+					// update end coords
 					current.updateEnd();
 				}
 			}
 
 			function move(origin, distance, direction, bind, current) {
+				// by default moves by 5 (applies to keyboard moves)
 				var distance = distance || 5;
+
+				// changes coords according to chosen mode ('up', 'left', 'right', and 'down' for keyboard or 'mouse' for mouse moves)
+				// updates aromatics if any exists
 				if (direction === "left") {
 					if (typeof bind !== "undefined") {
 						updateArom.call(bind, [-distance, 0], current);
@@ -2441,7 +2449,7 @@
       link: function (scope, element) {
 
         element.bind("keydown", function ($event) {
-          if (DrawChem.showEditor() && (!Flags.focused || ctrlOrShift($event))) {
+          if (DrawChem.showEditor() && (!Flags.focused || $event.ctrlKey)) {
             // should prevent default only if editor is shown and
             // either custom label field is NOT focused
             // or ctrl/shift key is involved
@@ -2451,7 +2459,7 @@
         });
 
         element.bind("keyup", function ($event) {
-          if (DrawChem.showEditor() && (!Flags.focused || ctrlOrShift($event))) {
+          if (DrawChem.showEditor() && (!Flags.focused || $event.ctrlKey)) {
             // should prevent default only if editor is shown and
             // either custom label field is NOT focused
             // or ctrl/shift key is involved
@@ -3119,6 +3127,7 @@
 
 	DrawChemStructures.$inject = [
 		"DrawChemConst",
+		"DrawChemUtils",
 		"DCStructure",
 		"DCStructureCluster",
 		"DCAtom",
@@ -3126,7 +3135,7 @@
 		"DrawChemDirectiveFlags"
 	];
 
-	function DrawChemStructures(Const, DCStructure, DCStructureCluster, DCAtom, DCBond, Flags) {
+	function DrawChemStructures(Const, Utils, DCStructure, DCStructureCluster, DCAtom, DCBond, Flags) {
 
 		var service = {},
 			Atom = DCAtom.Atom,
@@ -3141,11 +3150,10 @@
 		 */
 		service.benzene = function () {
 			var cluster,
-				multiplicity = "triple",
 				name = "benzene",
 				defs = generateSixMemberedRings("aromatic");
 
-			cluster = new StructureCluster(name, defs, multiplicity);
+			cluster = new StructureCluster(name, defs);
 			return cluster;
 		};
 
@@ -3155,11 +3163,24 @@
 		 */
 		service.cyclohexane = function () {
 			var cluster,
-				multiplicity = "double",
 				name = "cyclohexane",
 				defs = generateSixMemberedRings();
 
-			cluster = new StructureCluster(name, defs, multiplicity);
+			cluster = new StructureCluster(name, defs);
+
+			return cluster;
+		};
+
+		/**
+		 * Generates cyclopentane structures in each defined direction.
+		 * @returns {StructureCluster}
+		 */
+		service.cyclopentane = function () {
+			var cluster,
+				name = "cyclopentane",
+				defs = generateFiveMemberedRings();
+
+			cluster = new StructureCluster(name, defs);
 
 			return cluster;
 		};
@@ -3253,6 +3274,10 @@
 				id: "cyclohexane",
 				thumbnail: true
 			},
+			"cyclopentane": {
+				action: createStructureAction(service.cyclopentane),
+				id: "cyclopentane"
+			},
 			"single bond": {
 				action: createStructureAction(service.singleBond),
 				id: "single-bond",
@@ -3290,7 +3315,7 @@
 		}
 
 		/**
-		 * Generates six-membered rings (60 deg between bonds) in each of defined direction.
+		 * Generates six-membered rings (120 deg between bonds) in each of defined direction.
 		 * @param {String} decorate - indicates decorate element (e.g. aromatic ring)
 		 * @returns {Structure[]}
 		 */
@@ -3340,48 +3365,61 @@
 					atom.addBond(new Bond("single", newAtom));
 					genAtoms(newAtom, newDirs, depth - 1);
 				}
+			}
+		}
+
+		/**
+		 * Generates five-membered rings (108 deg between bonds) in each of defined direction.
+		 * @param {String} decorate - indicates decorate element (e.g. aromatic ring)
+		 * @returns {Structure[]}
+		 */
+		function generateFiveMemberedRings() {
+			var i, direction, result = [];
+			for (i = 0; i < BONDS.length; i += 1) {
+				direction = BONDS[i].direction;
+				result.push(generateRing(direction, 108, 5));
+			}
+
+			return result;
+
+			function generateRing(direction, deg, size) {
+				var firstAtom, nextAtom, structure,
+					bond = Const.getBondByDirection(direction).bond,
+					rotVect = rotVectCW(bond, deg / 2);
+
+				firstAtom = new Atom([0, 0], [], "", []);
+				nextAtom = new Atom(rotVect, [], "", []);
+				firstAtom.addBond(new Bond("single", nextAtom));
+				genAtoms(nextAtom, size);
+				structure = new Structure(direction, [firstAtom]);
+
+				return structure;
 
 				/**
-				 * Calculates attached bonds, next bond and next atom.
-				 * @param {String} direction - direction based on which calculations are made
-				 * @returns {Object}
+				 * Recursively generates atoms.
+				 * @param {Atom} prevAtom - previous atom (the one to which new atom will be added),
+				 * @param {Number} depth - current depth of the structure tree
 				 */
-				function calcDirections(direction) {
-					var i, left, right, next;
+				function genAtoms(prevAtom, depth) {
+					var rotVect = rotVectCCW(prevAtom.getCoords(), 180 - deg),
+					  newAtom = new Atom(rotVect, [], "", []);
+					if (depth === 1) { return undefined; }
+					prevAtom.addBond(new Bond("single", newAtom));					
+					genAtoms(newAtom, depth - 1);
+				}
 
-					for (i = 0; i < BONDS.length; i += 1) {
-						if (BONDS[i].direction === direction) {
-							left = moveToLeft(BONDS, i, 4);
-							right = moveToRight(BONDS, i, 4);
-							next = moveToRight(BONDS, i, 2);
-							break;
-						}
-					}
+				function rotVectCW(vect, deg) {
+					var rads = deg * (Math.PI / 180),
+						rotX = vect[0] * Math.cos(rads) + vect[1] * Math.sin(rads),
+						rotY = vect[1] * Math.cos(rads) - vect[0] * Math.sin(rads);
+					return [rotX, rotY];
+				}
 
-					return {
-						// attached bonds
-						current: [{ direction: BONDS[left].direction, type: "single" }, { direction: BONDS[right].direction, type: "single" }],
-						// next bond
-						nextBond: BONDS[right].bond,
-						// next direction
-						nextDirection: BONDS[next].direction
-					};
-
-					// this way, the array can be used circularly
-					function moveToLeft(array, index, d) {
-						if (index - d < 0) {
-							return index - d + array.length;
-						}
-						return index - d;
-					}
-
-					// this way, the array can be used circularly
-					function moveToRight(array, index, d) {
-						if (index + d > array.length - 1) {
-							return index + d - array.length;
-						}
-						return index + d;
-					}
+				function rotVectCCW(vect, deg) {
+					var rads = deg * (Math.PI / 180),
+						rotX = vect[0] * Math.cos(rads) - vect[1] * Math.sin(rads),
+						rotY = vect[0] * Math.sin(rads) + vect[1] * Math.cos(rads);
+					return [rotX, rotY];
 				}
 			}
 		}
@@ -3409,6 +3447,49 @@
 			}
 
 			return result;
+		}
+
+		/**
+		 * Calculates attached bonds, next bond and next atom.
+		 * @param {String} direction - direction based on which calculations are made
+		 * @returns {Object}
+		 */
+		function calcDirections(direction) {
+			var i, left, right, next;
+
+			for (i = 0; i < BONDS.length; i += 1) {
+				if (BONDS[i].direction === direction) {
+					left = moveToLeft(BONDS, i, 4);
+					right = moveToRight(BONDS, i, 4);
+					next = moveToRight(BONDS, i, 2);
+					break;
+				}
+			}
+
+			return {
+				// attached bonds
+				current: [{ direction: BONDS[left].direction, type: "single" }, { direction: BONDS[right].direction, type: "single" }],
+				// next bond
+				nextBond: BONDS[right].bond,
+				// next direction
+				nextDirection: BONDS[next].direction
+			};
+
+			// this way, the array can be used circularly
+			function moveToLeft(array, index, d) {
+				if (index - d < 0) {
+					return index - d + array.length;
+				}
+				return index - d;
+			}
+
+			// this way, the array can be used circularly
+			function moveToRight(array, index, d) {
+				if (index + d > array.length - 1) {
+					return index + d - array.length;
+				}
+				return index + d;
+			}
 		}
 	}
 })();
@@ -3827,7 +3908,7 @@
 				} else {
 					for(i = 0; i < mod.defs.length; i += 1) {
 						at = mod.defs[i];
-						next = current.getNext();
+						next = current.getNext() || "N";
 						if (next === "max") {
 							return null;
 						}
@@ -4477,6 +4558,8 @@
 				return "NW1";
 			} else if (check(-x1, -x, -y, -y1)) {
 				return "NW2";
+			} else {
+				return "N";
 			}
 
 			function check(arg1, arg2, arg3, arg4) {
