@@ -1,0 +1,13 @@
+<!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>
+<svg viewBox='389.47 -7.86 131.46 131.46' height='100%' width='100%' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' >
+  <g id='cyclooctane' >
+    <style type="text/css">
+      path{stroke:black;stroke-width:1.4;fill:none;}
+      path.wedge{stroke:black;stroke-width:1.4;fill:black;}
+      circle.arom{stroke:black;stroke-width:1.4;fill:none;}
+      text{font-family:Arial;cursor:default;text-anchor:middle;dominant-baseline:middle;font-size:18px;}
+      polygon.text{fill:white;}
+    </style>
+    <path d='M 455.20 103.60 L 487.54 90.21 L 500.93 57.87 L 487.54 25.53 L 455.20 12.14 L 422.86 25.53 L 409.47 57.87 L 422.86 90.21 L 455.20 103.60 '></path>
+  </g>
+</svg>

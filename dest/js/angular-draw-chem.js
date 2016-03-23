@@ -3261,7 +3261,7 @@
 		 * Generates a cyclononane structure in each of the defined directions.
 		 * @returns {StructureCluster}
 		 */
-		service.cyclooctane = function () {
+		service.cyclononane = function () {
 			var cluster,
 				name = "cyclononane",
 				defs = generateRings(140, 9);
@@ -3386,8 +3386,8 @@
 				thumbnail: true
 			},
 			"cyclononane": {
-				action: createStructureAction(service.cyclooctane),
-				id: "cyclooctane",
+				action: createStructureAction(service.cyclononane),
+				id: "cyclononane",
 				thumbnail: true
 			},
 			"single bond": {

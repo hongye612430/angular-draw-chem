@@ -1,0 +1,13 @@
+<!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>
+<svg viewBox='360.45 94.10 89.50 89.50' height='100%' width='100%' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' >
+  <g id='cyclobutane' >
+    <style type="text/css">
+      path{stroke:black;stroke-width:1.4;fill:none;}
+      path.wedge{stroke:black;stroke-width:1.4;fill:black;}
+      circle.arom{stroke:black;stroke-width:1.4;fill:none;}
+      text{font-family:Arial;cursor:default;text-anchor:middle;dominant-baseline:middle;font-size:18px;}
+      polygon.text{fill:white;}
+    </style>
+    <path d='M 405.20 163.60 L 429.95 138.85 L 405.20 114.10 L 380.45 138.85 L 405.20 163.60 '></path>
+  </g>
+</svg>
