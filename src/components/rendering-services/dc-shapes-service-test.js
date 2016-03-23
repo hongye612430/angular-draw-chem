@@ -41,19 +41,19 @@ describe("DrawChemShapes service tests", function () {
 					"<style type=\"text/css\">" +
 						styleBase + styleExpanded +
 					"</style>" +
-					"<path d='M 10 10 L 25 25 L 45 45 L 75 75 '></path>" +
-					"<path d='M 25 25 L 50 50 '></path>" +
-					"<path d='M 10 10 L 15 20 '></path>" +
-					"<path d='M 10 10 L 5 26 '></path>" +
-					"<path d='M 10 10 L 14 12 '></path>" +
-					"<circle class='atom' cx='10' cy='10' r='2.4' ></circle>" +
-					"<circle class='atom' cx='25' cy='25' r='2.4' ></circle>" +
-					"<circle class='atom' cx='45' cy='45' r='2.4' ></circle>" +
-					"<circle class='atom' cx='75' cy='75' r='2.4' ></circle>" +
-					"<circle class='atom' cx='50' cy='50' r='2.4' ></circle>" +
-					"<circle class='atom' cx='15' cy='20' r='2.4' ></circle>" +
-					"<circle class='atom' cx='5' cy='26' r='2.4' ></circle>" +
-					"<circle class='atom' cx='14' cy='12' r='2.4' ></circle>" +
+					"<path d='M 10.00 10.00 L 25.00 25.00 L 45.00 45.00 L 75.00 75.00 '></path>" +
+					"<path d='M 25.00 25.00 L 50.00 50.00 '></path>" +
+					"<path d='M 10.00 10.00 L 15.00 20.00 '></path>" +
+					"<path d='M 10.00 10.00 L 5.00 26.00 '></path>" +
+					"<path d='M 10.00 10.00 L 14.00 12.00 '></path>" +
+					"<circle class='atom' cx='10.00' cy='10.00' r='2.40'></circle>" +
+					"<circle class='atom' cx='25.00' cy='25.00' r='2.40'></circle>" +
+					"<circle class='atom' cx='45.00' cy='45.00' r='2.40'></circle>" +
+					"<circle class='atom' cx='75.00' cy='75.00' r='2.40'></circle>" +
+					"<circle class='atom' cx='50.00' cy='50.00' r='2.40'></circle>" +
+					"<circle class='atom' cx='15.00' cy='20.00' r='2.40'></circle>" +
+					"<circle class='atom' cx='5.00' cy='26.00' r='2.40'></circle>" +
+					"<circle class='atom' cx='14.00' cy='12.00' r='2.40'></circle>" +
 				"</g>" +
 			"</svg>"
 		);

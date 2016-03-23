@@ -2396,6 +2396,21 @@
 				[coords1[0] + factor * coords2[0], coords1[1] + factor * coords2[1]];
 		}
 
+		/**
+		 * Compares coordinates in two arrays. Returns false if at least one of them is undefined or if any pair of the coordinates is inequal.
+		 * Returns true if they are equal.
+		 * @param {Number[]} arr1 - an array of coordinates,
+		 * @param {Number[]} arr2 - an array of coordinates,
+		 * @param {Number} prec - precision,
+		 * @returns {Boolean}
+		 */
+		service.compareCoords = function(arr1, arr2, prec) {
+			if (typeof arr1 === "undefined" || typeof arr2 === "undefined") {
+				return false;
+			}
+			return arr1[0].toFixed(prec) === arr2[0].toFixed(prec) && arr1[1].toFixed(prec) === arr2[1].toFixed(prec);
+		}
+
 		service.isNumeric = function(obj) {
 			return obj - parseFloat(obj) >= 0;
 		}
@@ -3451,14 +3466,15 @@
 			 */
 			function genRing(direction, deg, size) {
 				var firstAtom, nextAtom, structure,
-					bond = Const.getBondByDirection(direction).bond,
-					rotVect = rotVectCW(bond, deg / 2);
+					opposite = Atom.getOppositeDirection(direction),
+					bond = Const.getBondByDirection(opposite).bond,
+					rotVect = rotVectCCW(bond, deg / 2);
 
 				firstAtom = new Atom([0, 0], [], "", []);
 				nextAtom = new Atom(rotVect, [], "", []);
 				firstAtom.addBond(new Bond("single", nextAtom));
 				genAtoms(nextAtom, size);
-				structure = new Structure(direction, [firstAtom]);
+				structure = new Structure(opposite, [firstAtom]);
 				if (decorate === "aromatic") {
 					structure.setAromatic();
 				}
@@ -3471,7 +3487,7 @@
 				 * @param {Number} depth - current depth of the structure tree
 				 */
 				function genAtoms(prevAtom, depth) {
-					var rotVect = rotVectCCW(prevAtom.getCoords(), 180 - deg),
+					var rotVect = rotVectCW(prevAtom.getCoords(), 180 - deg),
 					  newAtom = new Atom(rotVect, [], "", []);
 					if (depth === 1) { return undefined; }
 					prevAtom.addBond(new Bond("single", newAtom));
@@ -3553,6 +3569,161 @@
 	}
 	
 })();
+(function () {
+	"use strict";
+	angular.module("mmAngularDrawChem")
+		.factory("DrawChemGenElements", DrawChemGenElements);
+
+	DrawChemGenElements.$inject = ["DrawChemConst", "DrawChemUtils", "DCShape"];
+
+	function DrawChemGenElements(Const, Utils, DCShape) {
+
+		var service = {},
+      BONDS_AUX = Const.BONDS_AUX,
+      BOND_LENGTH = Const.BOND_LENGTH,
+      AROMATIC_R = Const.AROMATIC_R;
+
+    service.generateRects = function (rects, obj) {
+      rects.forEach(function (rect) {
+        var aux =
+          "<rect class='" + rect.class +
+            "' x='" + rect.rect[0].toFixed(2) +
+            "' y='" + rect.rect[1].toFixed(2) +
+            "' width='" + rect.rect[2].toFixed(2) +
+            "' height='" + rect.rect[3].toFixed(2) +
+          "'></rect>";
+        obj.full += aux;
+        obj.mini += aux;
+      });
+    };
+
+    service.generatePaths = function (paths, obj) {
+      paths.forEach(function (path) {
+        var aux;
+        if (typeof path.class !== "undefined") {
+          aux = "<path class='" + path.class + "' d='" + path.line + "'></path>";
+        } else {
+          aux = "<path d='" + path.line + "'></path>";
+        }
+        obj.full += aux;
+        obj.mini += aux;
+      });
+    };
+
+    service.generateCircles = function (circles, obj) {
+      circles.forEach(function (circle) {
+        var aux = circle.selected ? "edit": "atom";
+        obj.full +=
+          "<circle class='" + aux +
+            "' cx='" + circle.circle[0].toFixed(2) +
+            "' cy='" + circle.circle[1].toFixed(2) +
+            "' r='" + circle.circle[2].toFixed(2) +
+          "'></circle>";
+      });
+    };
+
+    service.generateLabels = function (labels, obj) {
+      labels.forEach(function (label) {
+        var aux =
+          drawDodecagon(label) +
+          "<text dy='0.2125em' " +
+            "x='" + label.labelX.toFixed(2) + "' " +
+            "y='" + label.labelY.toFixed(2) + "' " +
+            "atomx='" + label.atomX.toFixed(2) + "' " +
+            "atomy='" + label.atomY.toFixed(2) + "' " +
+            "text-anchor='" + genTextAnchor(label.mode) + "' " +
+          ">" + genLabel(label.label) + "</text>";
+        obj.full += aux;
+        obj.mini += aux;
+      });
+    };
+
+    service.generateAromatics = function (input, obj) {
+      var aromatics = input.getDecorate("aromatic");
+      aromatics.forEach(function (arom) {
+        obj.full += genArom(arom, "arom");
+        obj.mini += genArom(arom, "tr-arom");
+      });
+
+      function genArom(arom, clazz) {
+        return "<circle class='" + clazz + "' " +
+          "cx='" + arom.coords[0].toFixed(2) + "' " +
+          "cy='" + arom.coords[1].toFixed(2) + "' " +
+          "r='" + AROMATIC_R.toFixed(2) + "' " +
+          "></circle>";
+      }
+    }
+
+    /**
+    * Transforms output into an array of strings.
+    * Basically, it translates each array of coordinates into its string representation.
+    * @returns {String[]}
+    */
+    service.stringifyPaths = function (output) {
+      var result = [], i, j, line, point, lineStr;
+      for (i = 0; i < output.length; i += 1) {
+        line = output[i];
+        lineStr = { line: "" };
+        for (j = 0; j < line.length; j += 1) {
+          point = line[j];
+          if (typeof point === "string") {
+            if (point === "arrow" || point === "arrow-eq" || point === "wedge") {
+              lineStr.class = point;
+            } else {
+              lineStr.line += point + " ";
+            }
+          } else if (typeof point[0] === "number") {
+            lineStr.line += point[0].toFixed(2) + " " + point[1].toFixed(2) + " ";
+          }
+        }
+        result.push(lineStr);
+      }
+      return result;
+    };
+
+		return service;
+
+    function drawDodecagon(label) {
+      var i, x, y, aux, factor,result = [];
+
+      factor = 0.5 * label.height / BOND_LENGTH;
+      for (i = 0; i < BONDS_AUX.length; i += 1) {
+        x = BONDS_AUX[i].bond[0];
+        y = BONDS_AUX[i].bond[1];
+        result = result.concat(Utils.addCoordsNoPrec([label.atomX, label.atomY], [x, y], factor));
+      }
+      return "<polygon class='text' points='" + service.stringifyPaths([result])[0].line + "'></polygon>";
+    }
+
+    function genTextAnchor(mode) {
+      if (mode === "rl") {
+        return "end";
+      } else if (mode === "lr") {
+        return "start";
+      } else {
+        return "start";
+      }
+    }
+
+    function genLabel(labelName) {
+      var i, aux, isPreceded = false, output = "";
+      for (i = 0; i < labelName.length; i += 1) {
+        aux = labelName.substr(i, 1);
+        if (Utils.isNumeric(aux)) {
+          output += "<tspan class='sub' dy='" + DCShape.fontSize * 0.25 + "' >" + aux + "</tspan>";
+          isPreceded = true;
+        } else if (isPreceded) {
+          output += "<tspan dy='-" + DCShape.fontSize * 0.25 + "' >" + aux + "</tspan>";
+          isPreceded = false;
+        } else {
+          output += "<tspan>" + aux + "</tspan>";
+        }
+      }
+      return output;
+    }
+	}
+})();
+
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
@@ -3763,13 +3934,14 @@
 		"DCShape",
 		"DrawChemConst",
 		"DrawChemUtils",
+		"DrawChemGenElements",
 		"DCAtom",
 		"DCBond",
 		"DCArrow",
 		"DCSelection"
 	];
 
-	function DrawChemShapes(DCShape, Const, Utils, DCAtom, DCBond, DCArrow, DCSelection) {
+	function DrawChemShapes(DCShape, Const, Utils, GenElements, DCAtom, DCBond, DCArrow, DCSelection) {
 
 		var service = {},
 			ARROW_START = Const.ARROW_START,
@@ -3834,7 +4006,7 @@
 							return base;
 					}
 
-					if (!isInsideCircle && compareCoords(down, absPos, 5)) {
+					if (!isInsideCircle && Utils.compareCoords(down, absPos, 5)) {
 						// if 'mousedown' was within a circle around an atom
 						// but 'mouseup' was not
 						// and if a valid atom has not already been found
@@ -3896,21 +4068,6 @@
 						}
 					}
 				}
-			}
-
-			/**
-			 * Compares coordinates in two arrays. Returns false if at least one of them is undefined or if any pair of the coordinates is inequal.
-			 * Returns true if they are equal.
-			 * @param {Number[]} arr1 - an array of coordinates,
-			 * @param {Number[]} arr2 - an array of coordinates,
-			 * @param {Number} prec - precision,
-			 * @returns {Boolean}
-			 */
-			function compareCoords(arr1, arr2, prec) {
-				if (typeof arr1 === "undefined" || typeof arr2 === "undefined") {
-					return false;
-				}
-				return arr1[0].toFixed(prec) === arr2[0].toFixed(prec) && arr1[1].toFixed(prec) === arr2[1].toFixed(prec);
 			}
 
 			/**
@@ -4114,99 +4271,18 @@
 			 * and each decorate element with suitable tags.
 			 */
 			function genElements() {
-				var full = "", mini = "", aux = "";
-				rects.forEach(function (rect) {
-					aux = "<rect class='" + rect.class +
-						"' x='" + rect.rect[0].toFixed(2) +
-						"' y='" + rect.rect[1].toFixed(2) +
-						"' width='" + rect.rect[2].toFixed(2) +
-						"' height='" + rect.rect[3].toFixed(2) +
-						"'></rect>";
-					full += aux;
-					mini += aux;
-				});
-				paths.forEach(function (path) {
-					if (typeof path.class !== "undefined") {
-						aux = "<path class='" + path.class + "' d='" + path.line + "'></path>";
-					} else {
-						aux = "<path d='" + path.line + "'></path>";
-					}
-					full += aux;
-					mini += aux;
-				});
-				circles.forEach(function (circle) {
-					var aux = circle.selected ? "edit": "atom";
-					full += "<circle class='" + aux + "' cx='" + circle.circle[0].toFixed(2) + "' cy='" + circle.circle[1].toFixed(2) + "' r='" + circle.circle[2].toFixed(2) + "' ></circle>";
-				});
-				labels.forEach(function (label) {
-					aux = drawDodecagon(label) +
-						"<text dy='0.2125em' x='" + label.labelX.toFixed(2) + "' " +
-						"atomx='" + label.atomX.toFixed(2) + "' " +
-						"atomy='" + label.atomY.toFixed(2) + "' " +
-						"y='" + label.labelY.toFixed(2) + "' " +
-						"text-anchor='" + genTextAnchor(label.mode) + "' " +
-						">" + genLabel(label.label) + "</text>";
-					full += aux;
-					mini += aux;
-				});
-				if (input.getDecorate("aromatic")) {
-					input.getDecorate("aromatic").forEach(function (arom) {
-						aux = "<circle class='arom' cx='" + arom.coords[0].toFixed(2) +
-						"' cy='" + arom.coords[1].toFixed(2) +
-						"' r='" + Const.AROMATIC_R.toFixed(2) +
-						"' ></circle>";
-						full += aux;
-						aux = "<circle class='tr-arom' cx='" + arom.coords[0].toFixed(2) +
-						"' cy='" + arom.coords[1].toFixed(2) +
-						"' r='" + Const.AROMATIC_R.toFixed(2) +
-						"' ></circle>";
-						mini += aux;
-					})
+				var result = { full: "", mini: "" };
+
+				GenElements.generateRects(rects, result);
+				GenElements.generatePaths(paths, result);
+				GenElements.generateCircles(circles, result);
+				GenElements.generateLabels(labels, result);
+
+				if (input.isAromatic()) {
+					GenElements.generateAromatics(input, result);
 				}
 
-				return {
-					full: full,
-					mini: mini
-				};
-
-				function genTextAnchor(mode) {
-					if (mode === "rl") {
-						return "end";
-					} else if (mode === "lr") {
-						return "start";
-					} else {
-						return "start";
-					}
-				}
-
-				function genLabel(labelName) {
-					var i, aux, isPreceded = false, output = "";
-					for (i = 0; i < labelName.length; i += 1) {
-						aux = labelName.substr(i, 1);
-						if (Utils.isNumeric(aux)) {
-							output += "<tspan class='sub' dy='" + DCShape.fontSize * 0.25 + "' >" + aux + "</tspan>";
-							isPreceded = true;
-						} else if (isPreceded) {
-							output += "<tspan dy='-" + DCShape.fontSize * 0.25 + "' >" + aux + "</tspan>";
-							isPreceded = false;
-						} else {
-							output += "<tspan>" + aux + "</tspan>";
-						}
-					}
-					return output;
-				}
-
-				function drawDodecagon(label) {
-					var i, x, y, aux, factor,result = [];
-
-					factor = 0.5 * label.height / BOND_LENGTH;
-					for (i = 0; i < BONDS_AUX.length; i += 1) {
-						x = BONDS_AUX[i].bond[0];
-						y = BONDS_AUX[i].bond[1];
-						result = result.concat(Utils.addCoordsNoPrec([label.atomX, label.atomY], [x, y], factor));
-					}
-					return "<polygon class='text' points='" + stringifyPaths([result])[0].line + "'></polygon>";
-				}
+				return result;
 			}
 
 			/**
@@ -4269,7 +4345,7 @@
 				}
 
 				return {
-					paths: stringifyPaths(output),
+					paths: GenElements.stringifyPaths(output),
 					rects: rects,
 					circles: circles,
 					labels: labels,
@@ -4608,33 +4684,6 @@
 		function insideCircle(center, point, tolerance) {
 			var tolerance = tolerance || Const.CIRC_R;
 			return Math.abs(center[0] - point[0]) < tolerance && Math.abs(center[1] - point[1]) < tolerance;
-		}
-
-		/**
-		* Transforms output into an array of strings.
-		* Basically, it translates each array of coordinates into its string representation.
-		* @returns {String[]}
-		*/
-		function stringifyPaths(output) {
-			var result = [], i, j, line, point, lineStr;
-			for (i = 0; i < output.length; i += 1) {
-				line = output[i];
-				lineStr = { line: "" };
-				for (j = 0; j < line.length; j += 1) {
-					point = line[j];
-					if (typeof point === "string") {
-						if (point === "arrow" || point === "arrow-eq" || point === "wedge") {
-							lineStr.class = point;
-						} else {
-							lineStr.line += point + " ";
-						}
-					} else if (typeof point[0] === "number") {
-						lineStr.line += point[0].toFixed(2) + " " + point[1].toFixed(2) + " ";
-					}
-				}
-				result.push(lineStr);
-			}
-			return result;
 		}
 	}
 })();

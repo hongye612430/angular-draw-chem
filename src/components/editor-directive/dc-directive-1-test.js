@@ -155,8 +155,8 @@ describe("DrawChemEditor directive tests - part1", function () {
 						"<style type=\"text/css\">" +
 							styleBase +
 						"</style>" +
-						"<path d='M 98 98 L 115.32 108 L 115.32 128 L 98 138 L 80.68 128 L 80.68 108 L 98 98 '></path>" +
-						"<circle class='tr-arom' cx='98' cy='118' r='9' ></circle>" +
+						"<path d='M 98.00 98.00 L 115.32 108.00 L 115.32 128.00 L 98.00 138.00 L 80.68 128.00 L 80.68 108.00 L 98.00 98.00 '></path>" +
+						"<circle class='tr-arom' cx='98.00' cy='118.00' r='9.00' ></circle>" +
 					"</g>" +
 				"</svg>"
 			);
@@ -588,14 +588,14 @@ describe("DrawChemEditor directive tests - part1", function () {
 				"</svg>"
 			);
 	});
+});
 
-	function stringCompare(str1, str2) {
-		var i;
-		for (i = 0; i < str1.length; i += 1) {
-			if (str1.substr(i, 1) !== str2.substr(i, 1)) {
-				console.log(str1.substr(i, 5), str2.substr(i, 5));
-				break;
-			}
+function stringCompare(str1, str2) {
+	var i;
+	for (i = 0; i < str1.length; i += 1) {
+		if (str1.substr(i, 1) !== str2.substr(i, 1)) {
+			console.log(str1.substr(i, 5), str2.substr(i, 5));
+			break;
 		}
 	}
-});
+}

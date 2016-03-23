@@ -313,14 +313,15 @@
 			 */
 			function genRing(direction, deg, size) {
 				var firstAtom, nextAtom, structure,
-					bond = Const.getBondByDirection(direction).bond,
-					rotVect = rotVectCW(bond, deg / 2);
+					opposite = Atom.getOppositeDirection(direction),
+					bond = Const.getBondByDirection(opposite).bond,
+					rotVect = rotVectCCW(bond, deg / 2);
 
 				firstAtom = new Atom([0, 0], [], "", []);
 				nextAtom = new Atom(rotVect, [], "", []);
 				firstAtom.addBond(new Bond("single", nextAtom));
 				genAtoms(nextAtom, size);
-				structure = new Structure(direction, [firstAtom]);
+				structure = new Structure(opposite, [firstAtom]);
 				if (decorate === "aromatic") {
 					structure.setAromatic();
 				}
@@ -333,7 +334,7 @@
 				 * @param {Number} depth - current depth of the structure tree
 				 */
 				function genAtoms(prevAtom, depth) {
-					var rotVect = rotVectCCW(prevAtom.getCoords(), 180 - deg),
+					var rotVect = rotVectCW(prevAtom.getCoords(), 180 - deg),
 					  newAtom = new Atom(rotVect, [], "", []);
 					if (depth === 1) { return undefined; }
 					prevAtom.addBond(new Bond("single", newAtom));

@@ -21,6 +21,21 @@
 				[coords1[0] + factor * coords2[0], coords1[1] + factor * coords2[1]];
 		}
 
+		/**
+		 * Compares coordinates in two arrays. Returns false if at least one of them is undefined or if any pair of the coordinates is inequal.
+		 * Returns true if they are equal.
+		 * @param {Number[]} arr1 - an array of coordinates,
+		 * @param {Number[]} arr2 - an array of coordinates,
+		 * @param {Number} prec - precision,
+		 * @returns {Boolean}
+		 */
+		service.compareCoords = function(arr1, arr2, prec) {
+			if (typeof arr1 === "undefined" || typeof arr2 === "undefined") {
+				return false;
+			}
+			return arr1[0].toFixed(prec) === arr2[0].toFixed(prec) && arr1[1].toFixed(prec) === arr2[1].toFixed(prec);
+		}
+
 		service.isNumeric = function(obj) {
 			return obj - parseFloat(obj) >= 0;
 		}
