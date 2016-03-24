@@ -73,15 +73,15 @@ describe("dcShortcuts directive tests", function () {
 							"<style type=\"text/css\">" +
 								styleBase + styleExpanded +
 							"</style>" +
-							"<path d=\"M 0 0 L 17.32 10 L 17.32 30 L 0 40 L -17.32 30 L -17.32 10 L 0 0 \"></path>" +
-							"<circle class=\"atom\" cx=\"0\" cy=\"0\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"17.32\" cy=\"10\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"17.32\" cy=\"30\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"0\" cy=\"40\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"-17.32\" cy=\"30\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"-17.32\" cy=\"10\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"0\" cy=\"0\" r=\"2.4\"></circle>" +
-							"<circle class=\"arom\" cx=\"0\" cy=\"20\" r=\"9\"></circle>" +
+							"<path d=\"M 0.00 0.00 L 17.32 10.00 L 17.32 30.00 L 0.00 40.00 L -17.32 30.00 L -17.32 10.00 L -0.00 -0.00 \"></path>" +
+							"<circle class=\"atom\" cx=\"0.00\" cy=\"0.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"17.32\" cy=\"10.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"17.32\" cy=\"30.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"0.00\" cy=\"40.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"-17.32\" cy=\"30.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"-17.32\" cy=\"10.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"-0.00\" cy=\"-0.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"arom\" cx=\"0.00\" cy=\"20.00\" r=\"9.00\"></circle>" +
 						"</g>" +
 				"</svg>"
 			);
@@ -101,15 +101,15 @@ describe("dcShortcuts directive tests", function () {
 							"<style type=\"text/css\">" +
 								styleBase + styleExpanded +
 							"</style>" +
-							"<path d=\"M 0 0 L 17.32 10 L 17.32 30 L 0 40 L -17.32 30 L -17.32 10 L 0 0 \"></path>" +
-							"<circle class=\"atom\" cx=\"0\" cy=\"0\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"17.32\" cy=\"10\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"17.32\" cy=\"30\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"0\" cy=\"40\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"-17.32\" cy=\"30\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"-17.32\" cy=\"10\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"0\" cy=\"0\" r=\"2.4\"></circle>" +
-							"<circle class=\"arom\" cx=\"0\" cy=\"20\" r=\"9\"></circle>" +
+							"<path d=\"M 0.00 0.00 L 17.32 10.00 L 17.32 30.00 L 0.00 40.00 L -17.32 30.00 L -17.32 10.00 L -0.00 -0.00 \"></path>" +
+							"<circle class=\"atom\" cx=\"0.00\" cy=\"0.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"17.32\" cy=\"10.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"17.32\" cy=\"30.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"0.00\" cy=\"40.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"-17.32\" cy=\"30.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"-17.32\" cy=\"10.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"-0.00\" cy=\"-0.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"arom\" cx=\"0.00\" cy=\"20.00\" r=\"9.00\"></circle>" +
 						"</g>" +
 				"</svg>"
 			);
@@ -147,8 +147,8 @@ describe("dcShortcuts directive tests", function () {
 						"<style type=\"text/css\">" +
 							styleBase +
 						"</style>" +
-						"<path d='M 98 98 L 115.32 108 L 115.32 128 L 98 138 L 80.68 128 L 80.68 108 L 98 98 '></path>" +
-						"<circle class='tr-arom' cx='98' cy='118' r='9' ></circle>" +
+						"<path d='M 98.00 98.00 L 115.32 108.00 L 115.32 128.00 L 98.00 138.00 L 80.68 128.00 L 80.68 108.00 L 98.00 98.00 '></path>" +
+						"<circle class='tr-arom' cx='98.00' cy='118.00' r='9.00' ></circle>" +
 					"</g>" +
 				"</svg>"
 			);
@@ -172,15 +172,15 @@ describe("dcShortcuts directive tests", function () {
 							"<style type=\"text/css\">" +
 								styleBase + styleExpanded +
 							"</style>" +
-							"<path d=\"M 0 0 L 17.32 10 L 17.32 30 L 0 40 L -17.32 30 L -17.32 10 L 0 0 \"></path>" +
-							"<circle class=\"atom\" cx=\"0\" cy=\"0\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"17.32\" cy=\"10\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"17.32\" cy=\"30\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"0\" cy=\"40\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"-17.32\" cy=\"30\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"-17.32\" cy=\"10\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"0\" cy=\"0\" r=\"2.4\"></circle>" +
-							"<circle class=\"arom\" cx=\"0\" cy=\"20\" r=\"9\"></circle>" +
+							"<path d=\"M 0.00 0.00 L 17.32 10.00 L 17.32 30.00 L 0.00 40.00 L -17.32 30.00 L -17.32 10.00 L -0.00 -0.00 \"></path>" +
+							"<circle class=\"atom\" cx=\"0.00\" cy=\"0.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"17.32\" cy=\"10.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"17.32\" cy=\"30.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"0.00\" cy=\"40.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"-17.32\" cy=\"30.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"-17.32\" cy=\"10.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"-0.00\" cy=\"-0.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"arom\" cx=\"0.00\" cy=\"20.00\" r=\"9.00\"></circle>" +
 						"</g>" +
 				"</svg>"
 			);
@@ -209,15 +209,15 @@ describe("dcShortcuts directive tests", function () {
 							"<style type=\"text/css\">" +
 								styleBase + styleExpanded +
 							"</style>" +
-							"<path d=\"M 0 0 L 17.32 10 L 17.32 30 L 0 40 L -17.32 30 L -17.32 10 L 0 0 \"></path>" +
-							"<circle class=\"atom\" cx=\"0\" cy=\"0\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"17.32\" cy=\"10\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"17.32\" cy=\"30\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"0\" cy=\"40\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"-17.32\" cy=\"30\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"-17.32\" cy=\"10\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"0\" cy=\"0\" r=\"2.4\"></circle>" +
-							"<circle class=\"arom\" cx=\"0\" cy=\"20\" r=\"9\"></circle>" +
+							"<path d=\"M 0.00 0.00 L 17.32 10.00 L 17.32 30.00 L 0.00 40.00 L -17.32 30.00 L -17.32 10.00 L -0.00 -0.00 \"></path>" +
+							"<circle class=\"atom\" cx=\"0.00\" cy=\"0.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"17.32\" cy=\"10.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"17.32\" cy=\"30.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"0.00\" cy=\"40.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"-17.32\" cy=\"30.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"-17.32\" cy=\"10.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"-0.00\" cy=\"-0.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"arom\" cx=\"0.00\" cy=\"20.00\" r=\"9.00\"></circle>" +
 						"</g>" +
 				"</svg>"
 			);
@@ -237,15 +237,15 @@ describe("dcShortcuts directive tests", function () {
 							"<style type=\"text/css\">" +
 								styleBase + styleExpanded +
 							"</style>" +
-							"<path d=\"M 0 0 L 17.32 10 L 17.32 30 L 0 40 L -17.32 30 L -17.32 10 L 0 0 \"></path>" +
-							"<circle class=\"atom\" cx=\"0\" cy=\"0\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"17.32\" cy=\"10\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"17.32\" cy=\"30\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"0\" cy=\"40\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"-17.32\" cy=\"30\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"-17.32\" cy=\"10\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"0\" cy=\"0\" r=\"2.4\"></circle>" +
-							"<circle class=\"arom\" cx=\"0\" cy=\"20\" r=\"9\"></circle>" +
+							"<path d=\"M 0.00 0.00 L 17.32 10.00 L 17.32 30.00 L 0.00 40.00 L -17.32 30.00 L -17.32 10.00 L -0.00 -0.00 \"></path>" +
+							"<circle class=\"atom\" cx=\"0.00\" cy=\"0.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"17.32\" cy=\"10.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"17.32\" cy=\"30.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"0.00\" cy=\"40.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"-17.32\" cy=\"30.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"-17.32\" cy=\"10.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"-0.00\" cy=\"-0.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"arom\" cx=\"0.00\" cy=\"20.00\" r=\"9.00\"></circle>" +
 						"</g>" +
 				"</svg>"
 			);
@@ -274,14 +274,14 @@ describe("dcShortcuts directive tests", function () {
 							"<style type=\"text/css\">" +
 								styleBase + styleExpanded +
 							"</style>" +
-							"<path d=\"M 98 93 L 115.32 103 L 115.32 123 L 98 133 L 80.68 123 L 80.68 103 L 98 93 \"></path>" +
-							"<circle class=\"atom\" cx=\"98\" cy=\"93\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"115.32\" cy=\"103\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"115.32\" cy=\"123\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"98\" cy=\"133\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"80.68\" cy=\"123\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"80.68\" cy=\"103\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"98\" cy=\"93\" r=\"2.4\"></circle>" +
+							"<path d=\"M 98.00 93.00 L 115.32 103.00 L 115.32 123.00 L 98.00 133.00 L 80.68 123.00 L 80.68 103.00 L 98.00 93.00 \"></path>" +
+							"<circle class=\"atom\" cx=\"98.00\" cy=\"93.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"103.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"123.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"98.00\" cy=\"133.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"123.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"103.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"98.00\" cy=\"93.00\" r=\"2.40\"></circle>" +
 						"</g>" +
 				"</svg>"
 			);
@@ -308,14 +308,14 @@ describe("dcShortcuts directive tests", function () {
 							"<style type=\"text/css\">" +
 								styleBase + styleExpanded +
 							"</style>" +
-							"<path d=\"M 98 98 L 115.32 108 L 115.32 128 L 98 138 L 80.68 128 L 80.68 108 L 98 98 \"></path>" +
-							"<circle class=\"atom\" cx=\"98\" cy=\"98\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"115.32\" cy=\"108\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"115.32\" cy=\"128\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"98\" cy=\"138\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"80.68\" cy=\"128\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"80.68\" cy=\"108\" r=\"2.4\"></circle>" +
-							"<circle class=\"atom\" cx=\"98\" cy=\"98\" r=\"2.4\"></circle>" +
+							"<path d=\"M 98.00 98.00 L 115.32 108.00 L 115.32 128.00 L 98.00 138.00 L 80.68 128.00 L 80.68 108.00 L 98.00 98.00 \"></path>" +
+							"<circle class=\"atom\" cx=\"98.00\" cy=\"98.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"108.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"128.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"98.00\" cy=\"138.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"128.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"108.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"98.00\" cy=\"98.00\" r=\"2.40\"></circle>" +
 						"</g>" +
 				"</svg>"
 			);
