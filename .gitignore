@@ -4,6 +4,5 @@ terminal-exec.sh
 .npmignore
 gh-pages
 .sass-cache
-gh-pages-src
 node_modules
 bower_components

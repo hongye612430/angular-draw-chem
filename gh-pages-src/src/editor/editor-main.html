@@ -1,0 +1,38 @@
+<div class="editor-main">
+  <div class="home row">
+    <div class="col-md-5">
+      Quick tips:
+      <ul class="list-unstyled tips">
+        <li>1. Open editor</li>
+        <li>2. Draw a structure</li>
+        <li>3. Click Actions/Transfer (or <i>ctrl+t</i>)</li>
+        <li>4. Click Actions/Close (or <i>ctrl+q</i>)</li>
+        <li>5. Copy the <code>svg</code> and place it within your <code>html</code></li>
+      </ul>
+    </div>
+    <div class="col-md-5">
+      <p><button class="btn btn-primary" ng-click="appCtrl.runEditor()"> Open Editor </button></p>
+    </div>
+  </div>
+  <div class="home row" ng-switch="mainCtrl.svg()">
+    <div class="col-md-5">
+      <p>
+        <strong>Output:</strong>
+        <div>
+          <span ng-switch-when=""><i>no structure transferred yet</i></span>
+          <div ng-switch-default class="structure" ng-bind-html="mainCtrl.input()"></div>
+        </div>
+      </p>
+    </div>
+    <div class="col-md-6">
+      <p>
+        <strong>Svg:</strong>
+        <div>
+          <span ng-switch-when=""><i>no structure transferred yet</i></span>
+          <pre ng-switch-default ng-bind="mainCtrl.svg()"></pre>
+        </div>
+      </p>
+    </div>
+    <div class="col-md-1"></div>
+  </div>
+</div>

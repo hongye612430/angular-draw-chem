@@ -1,0 +1,44 @@
+<p class="home">
+  <span>
+    <strong>aim of the project</strong>
+    The aim of this project is to create a light-weight molecule editor for drawing structural formulas based on <a href="//angularjs.org/">AngularJS</a>.
+    The editor is from the beginning designed to support <code>svg</code>, enabling the drawing of good-looking, scalable structures, ready to embed within <code>html</code>.
+  </span>
+<p class="home">
+  <span>
+    <strong>how to use it</strong>
+    You can use it by adding <code>mmAngularDrawChem</code> module to your project, making it available for the users of your website.
+    More information can be found in the <a href="#/editor/download">download</a> and <a href="#/editor/manual">manual</a> sections.
+    Also, do not hesitate to use <a href="#/editor">editor</a> directly on this website: make structures that you need, grab the <code>svg</code> and place it within your <code>html</code>!
+  </span>
+</p>
+<p class="home">
+  <span>
+    <strong>background</strong>
+    There are several molecule editors designed for drawing structural formulas (<a href="//en.wikipedia.org/wiki/Molecule_editor">wiki</a>). Most of them are, however, propietary (non-free) software or are at best licensed under more permissive GPL.
+    AngularDrawChem is, on the other hand, MIT licensed and it can be easily embedded within any AngularJS app (see <a href="#/editor/download">download</a> section for details).
+    It is not a big issue if your website is not based on AngularJS - you can still use AngularDrawChem, since AngularJS can be easily integrated with an existing code already written with other frameworks in mind.
+  </span>
+</p>
+<p class="home">
+  <span>
+    <strong>issues</strong>
+    If you spot anything wrong or want to comment on any problem, just <a href="//github.com/MMMalik/angular-draw-chem/issues">open an issue</a>.
+    As for the cross-browser compatibility, the app was extensively tested on Chrome (48) and Firefox (44) on Ubuntu 14.04 and no major issues were spotted.
+    A small issue arises on Chrome when using <i>ctrl+t</i> shortcut for transferring <code>svg</code>, since the browser opens a new tab instead and I couldn't override this default behaviour.
+    Under Windows 10, there seems to be a conflict between AngularDrawChem's <code>onMouseMove</code> events and Firefox's (44) default behaviour ('cloned' structures appearing in lower-right corner, slower reaction to mouse move).
+    No such problems were noticed on Chrome (48) and Edge (25).
+  </span>
+</p>
+<p class="home">
+  <strong>soon</strong>
+  The current version <span ng-if="appCtrl.version !== 'unstable'"><span>(</span><span ng-bind="appCtrl.version"></span><span>)</span></span> of AngularDrawChem has few serious shortcomings.
+  First of all, five-membered rings are not supported. Moreover, the selection and alignment tools don't work, labeling tools lack flexibility, the whole UI is rather limited.
+  In general, the following features need to be implemented:
+<p>
+<ul class="last">
+  <li>more keyboard shortcuts</li>
+  <li>improved labeling</li>
+  <li>new predefined structures (five-membered rings)</li>
+  <li>better reaction schemes (selection tools, alignment)</li>
+</ul>

@@ -1,0 +1,63 @@
+<!doctype html>
+<html class="no-js" lang="">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Angular Chemistry</title>
+    <meta name="description" content="AngularJS-based tool for drawing structural formulas in svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="stylesheets/main.min.css">
+    <link rel="stylesheet" href="stylesheets/github.ttf">
+    <link rel="stylesheet" href="stylesheets/draw-chem-editor-modal.min.css">
+    <base href="/angular-draw-chem/">
+  </head>
+  <body dc-shortcuts ng-app="angularDrawChemSite" ng-controller="AppCtrl as appCtrl">
+    <div class="row">
+      <div class="col-md-2 col-xs-3">
+        <div class="sidebar" ng-controller="SidebarCtrl as ctrl">
+          <img class="logo" ng-src="images/svg/logo.svg"></img>
+          <sidebar-menu menu-items="ctrl.menuItems"></sidebar-menu>
+          <div class="sidebar-additional">
+            <p>
+              <span>version: </span>
+              <span ng-switch="appCtrl.version">
+                <span ng-switch-when="unstable" class="text-danger" ng-bind="appCtrl.version"></span>
+                <span ng-switch-default ng-bind="appCtrl.version"></span>
+              </span>
+            </p>
+            <p>license: MIT</p>
+            <p>maintained by: <a href="https://github.com/MMMalik">mmmalik</a></p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-10 col-xs-9">
+        <div class="row">
+          <div class="col-xs-10">
+            <div class="content">
+              <div class="content-title">
+                <h2>AngularDrawChem <small>an editor for generating structural formulas in svg</small></h2>
+              </div>
+              <div ng-view></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div draw-chem-editor dc-modal show-editor="appCtrl.showEditor()" width="1000px" height="600px"></div>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.0-beta.2/angular.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.0-beta.2/angular-sanitize.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.0-beta.2/angular-route.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/1.1.0/ui-bootstrap-tpls.min.js"></script>
+    <script src="javascripts/angular-draw-chem.js"></script>
+    <script src="javascripts/app-concat.js"></script>
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-72823584-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </body>
+</html>

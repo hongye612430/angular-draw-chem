@@ -1,0 +1,16 @@
+<div class="home">
+  <p>Download from Github</p>
+  <ul class="list-unstyled">
+    <li ng-repeat="release in submenuCtrl.releases">
+      <span ng-bind="release.name"></span>: <a ng-href="{{release.zip}}">zipball</a> <a ng-href="{{release.tar}}">tarball</a>
+    </li>
+  </ul>
+</div>
+<div class="home">
+  <p>Download from npm</p>
+  <code>npm i angular-draw-chem</code>
+</div>
+<div class="home">
+  <p>Download from bower</p>
+  <code>bower install angular-draw-chem</code>
+</div>
