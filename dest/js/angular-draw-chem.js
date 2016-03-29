@@ -2579,6 +2579,22 @@
 			return index + d;
 		}
 
+		// rotates a vector counter clock-wise
+		service.rotVectCCW = function (vect, deg) {
+			var rads = deg * (Math.PI / 180),
+				rotX = vect[0] * Math.cos(rads) + vect[1] * Math.sin(rads),
+				rotY = vect[1] * Math.cos(rads) - vect[0] * Math.sin(rads);
+			return [rotX, rotY];
+		}
+
+		// rotates a vector clock-wise
+		service.rotVectCW = function (vect, deg) {
+			var rads = deg * (Math.PI / 180),
+				rotX = vect[0] * Math.cos(rads) - vect[1] * Math.sin(rads),
+				rotY = vect[0] * Math.sin(rads) + vect[1] * Math.cos(rads);
+			return [rotX, rotY];
+		}
+
 		/**
 		 * Checks if a point is inside an area delimited by a circle.
 		 * @param {Number[]} center - coordinates of the center of a circle
@@ -3610,7 +3626,7 @@
 				var firstAtom, nextAtom, structure,
 					opposite = Atom.getOppositeDirection(direction),
 					bond = Const.getBondByDirection(opposite).bond,
-					rotVect = rotVectCCW(bond, deg / 2);
+					rotVect = Utils.rotVectCCW(bond, deg / 2);
 
 				firstAtom = new Atom([0, 0], [], "", []);
 				nextAtom = new Atom(rotVect, [], "", []);
@@ -3629,27 +3645,11 @@
 				 * @param {Number} depth - current depth of the structure tree
 				 */
 				function genAtoms(prevAtom, depth) {
-					var rotVect = rotVectCW(prevAtom.getCoords(), 180 - deg),
+					var rotVect = Utils.rotVectCW(prevAtom.getCoords(), 180 - deg),
 					  newAtom = new Atom(rotVect, [], "", []);
 					if (depth === 1) { return undefined; }
 					prevAtom.addBond(new Bond("single", newAtom));
 					genAtoms(newAtom, depth - 1);
-				}
-
-				// rotates a vector counter clock-wise
-				function rotVectCCW(vect, deg) {
-					var rads = deg * (Math.PI / 180),
-						rotX = vect[0] * Math.cos(rads) + vect[1] * Math.sin(rads),
-						rotY = vect[1] * Math.cos(rads) - vect[0] * Math.sin(rads);
-					return [rotX, rotY];
-				}
-
-				// rotates a vector clock-wise
-				function rotVectCW(vect, deg) {
-					var rads = deg * (Math.PI / 180),
-						rotX = vect[0] * Math.cos(rads) - vect[1] * Math.sin(rads),
-						rotY = vect[0] * Math.sin(rads) + vect[1] * Math.cos(rads);
-					return [rotX, rotY];
 				}
 			}
 		}
