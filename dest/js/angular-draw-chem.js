@@ -4137,11 +4137,11 @@
 					if (isInsideCircle && !mouseDownAndMove) {
 						// if 'mouseup' was within a circle around an atom
 						// and if a valid atom has not already been found
-							modStr = chooseMod(aux);
-							updateBonds(aux, modStr, absPos);
-							updateDecorate(modStr, absPos);
-							found = true;
-							return base;
+						modStr = chooseMod(aux);
+						updateBonds(aux, modStr, absPos);
+						updateDecorate(modStr, absPos);
+						found = true;
+						return base;
 					}
 
 					if (!isInsideCircle && Utils.compareCoords(down, absPos, 5)) {
