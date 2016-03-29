@@ -3,9 +3,9 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemUtils", DrawChemUtils);
 
-	DrawChemUtils.$inject = [];
+	DrawChemUtils.$inject = ["DrawChemConst"];
 
-	function DrawChemUtils() {
+	function DrawChemUtils(Const) {
 
 		var service = {};
 
@@ -71,6 +71,17 @@
 				return index + d - array.length;
 			}
 			return index + d;
+		}
+
+		/**
+		 * Checks if a point is inside an area delimited by a circle.
+		 * @param {Number[]} center - coordinates of the center of a circle
+		 * @param {Number[]} point - coordinates of a point to be validated
+		 * @returns {Boolean}
+		 */
+		service.insideCircle = function (center, point, tolerance) {
+			var tolerance = tolerance || Const.CIRC_R;
+			return Math.abs(center[0] - point[0]) < tolerance && Math.abs(center[1] - point[1]) < tolerance;
 		}
 
 		/**

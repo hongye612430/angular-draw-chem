@@ -17,12 +17,8 @@
 	function DrawChemShapes(DCShape, Const, Utils, GenElements, DCAtom, DCBond, DCArrow, DCSelection) {
 
 		var service = {},
-			ARROW_START = Const.ARROW_START,
-			ARROW_SIZE = Const.ARROW_SIZE,
 			BOND_LENGTH = Const.BOND_LENGTH,
 			BONDS_AUX = Const.BONDS_AUX,
-			BETWEEN_DBL_BONDS = Const.BETWEEN_DBL_BONDS,
-			BETWEEN_TRP_BONDS = Const.BETWEEN_TRP_BONDS,
 			Atom = DCAtom.Atom,
 			Arrow = DCArrow.Arrow,
 			Bond = DCBond.Bond,
@@ -67,7 +63,7 @@
 
 					if (found) { break; }
 
-					isInsideCircle = insideCircle(absPos, mousePos);
+					isInsideCircle = Utils.insideCircle(absPos, mousePos);
 
 					if (isInsideCircle && !mouseDownAndMove) {
 						// if 'mouseup' was within a circle around an atom
@@ -212,7 +208,7 @@
 				aromaticArr = structure.getDecorate("aromatic");
 				newAromaticArr = [];
 				angular.forEach(aromaticArr, function (arom) {
-					if (!insideCircle(arom.coords, mouseCoords, Const.AROMATIC_R)) {
+					if (!Utils.insideCircle(arom.coords, mouseCoords, Const.AROMATIC_R)) {
 						newAromaticArr.push(arom);
 					}
 				});
@@ -237,7 +233,7 @@
 						// current Object is arrow
 						absPosStart = [current.getOrigin("x") + pos[0], current.getOrigin("y") + pos[1]];
 						absPosEnd = [current.getEnd("x") + pos[0], current.getEnd("y") + pos[1]];
-						if (!(insideCircle(absPosStart, mouseCoords) || insideCircle(absPosEnd, mouseCoords))) {
+						if (!(Utils.insideCircle(absPosStart, mouseCoords) || Utils.insideCircle(absPosEnd, mouseCoords))) {
 							// if this arrow was NOT chosen then don't apply any changes
 							// omit it otherwise
 							newAtomArray.push({ obj: current, coords: current.getOrigin() });
@@ -245,7 +241,7 @@
 					} else if (current instanceof Atom) {
 						// current Object is atom
 						absPos = [current.getCoords("x") + pos[0], current.getCoords("y") + pos[1]];
-						if (insideCircle(absPos, mouseCoords)) {
+						if (Utils.insideCircle(absPos, mouseCoords)) {
 							// if this atom was chosen then apply changes
 							changeArray(absPos, current);
 						} else {
@@ -256,7 +252,7 @@
 					} else if (current instanceof Bond) {
 						// current Object is bond
 						absPos = [current.getAtom().getCoords("x") + pos[0], current.getAtom().getCoords("y") + pos[1]];
-						if (insideCircle(absPos, mouseCoords)) {
+						if (Utils.insideCircle(absPos, mouseCoords)) {
 							// if atom at the end of this bond was chosen then apply changes
 							changeArray(absPos, current.getAtom());
 						} else {
@@ -309,7 +305,7 @@
 					}
 					aux = struct[i] instanceof Atom ? struct[i]: struct[i].getAtom();
 					absPos = [aux.getCoords("x") + pos[0], aux.getCoords("y") + pos[1]];
-					if (!found && insideCircle(absPos, position)) {
+					if (!found && Utils.insideCircle(absPos, position)) {
 						found = true;
 						foundObj.foundAtom = aux;
 						foundObj.absPos = absPos;
@@ -375,28 +371,7 @@
 						absPosStart = Utils.addCoordsNoPrec(origin, selection.getOrigin());
 						absPosEnd = selection.getCurrent();
 						quarter = selection.getQuarter();
-						if (quarter === 1) {
-							startX = absPosStart[0];
-							startY = absPosEnd[1];
-							width = absPosEnd[0] - startX;
-							height = absPosStart[1] - startY;
-						} else if (quarter === 2) {
-							startX = absPosEnd[0];
-							startY = absPosEnd[1];
-							width = absPosStart[0] - startX;
-							height = absPosStart[1] - startY;
-						} else if (quarter === 3) {
-							startX = absPosEnd[0];
-							startY = absPosStart[1];
-							width = absPosStart[0] - startX;
-							height = absPosEnd[1] - startY;
-						} else if (quarter === 4) {
-							startX = absPosStart[0];
-							startY = absPosStart[1];
-							width = absPosEnd[0] - startX;
-							height = absPosEnd[1] - startY;
-						}
-						rects.push({ class: "selection", rect: [startX, startY, width, height] });
+						rects.push(DCSelection.calcRect(quarter, absPosStart, absPosEnd));
 					} else if (obj instanceof Atom) {
 						atom = obj;
 						absPos = Utils.addCoordsNoPrec(origin, atom.getCoords());
@@ -413,7 +388,7 @@
 						updateMinMax(absPosEnd);
 						circles.push({ selected: arrow.selected, circle: [ absPosStart[0], absPosStart[1], circR ] });
 						circles.push({ selected: arrow.selected, circle: [ absPosEnd[0], absPosEnd[1], circR ] });
-						output.push(calcArrow(absPosStart, absPosEnd, arrow.getType()));
+						output.push(DCArrow.calcArrow(absPosStart, absPosEnd, arrow.getType()));
 					}
 				}
 
@@ -424,48 +399,6 @@
 					labels: labels,
 					minMax: minMax
 				};
-
-				function calcArrow(start, end, type) {
-					var vectCoords = [end[0] - start[0], end[1] - start[1]],
-						perpVectCoordsCW = [-vectCoords[1], vectCoords[0]],
-						perpVectCoordsCCW = [vectCoords[1], -vectCoords[0]], endMarkerStart, startMarkerStart, M1, M2, L1, L2, L3, L4;
-					if (type === "one-way-arrow") {
-						endMarkerStart = [start[0] + vectCoords[0] * ARROW_START, start[1] + vectCoords[1] * ARROW_START];
-						L1 = Utils.addCoordsNoPrec(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
-						L2 = Utils.addCoordsNoPrec(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
-						return ["arrow", "M", start, "L", end, "M", endMarkerStart, "L", L1, "L", end, "L", L2, "Z"];
-					} else if (type === "two-way-arrow") {
-						endMarkerStart = [start[0] + vectCoords[0] * ARROW_START, start[1] + vectCoords[1] * ARROW_START];
-						startMarkerStart = [start[0] + vectCoords[0] * (1 - ARROW_START), start[1] + vectCoords[1] * (1 - ARROW_START)];
-						L1 = Utils.addCoordsNoPrec(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
-						L2 = Utils.addCoordsNoPrec(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
-						L3 = Utils.addCoordsNoPrec(startMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
-						L4 = Utils.addCoordsNoPrec(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
-						return [
-							"arrow",
-							"M", start, "L", end,
-							"M", endMarkerStart, "L", L1, "L", end, "L", L2, "Z",
-							"M", startMarkerStart, "L", L3, "L", start, "L", L4, "Z"
-						];
-					}
-					else if (type === "equilibrium-arrow") {
-						M1 = Utils.addCoordsNoPrec(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
-						L1 = Utils.addCoordsNoPrec(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
-						endMarkerStart = [parseFloat(M1[0]) + vectCoords[0] * ARROW_START, parseFloat(M1[1]) + vectCoords[1] * ARROW_START];
-						L2 = Utils.addCoordsNoPrec(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
-
-						M2 = Utils.addCoordsNoPrec(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
-						L3 = Utils.addCoordsNoPrec(start, perpVectCoordsCW, BETWEEN_DBL_BONDS);
-						startMarkerStart = [parseFloat(L3[0]) + vectCoords[0] * (1 - ARROW_START), parseFloat(L3[1]) + vectCoords[1] * (1 - ARROW_START)];
-						L4 = Utils.addCoordsNoPrec(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
-
-						return [
-							"arrow-eq",
-							"M", M1, "L", L1, "L", L2,
-							"M", M2, "L", L3, "L", L4
-						];
-					}
-				}
 
 				/**
 				* Recursively translates the input, until it finds an element with an empty 'bonds' array.
@@ -502,66 +435,19 @@
 							newLen = output.push(["M", prevAbsPos, "L", absPos]);
 						}
 					} else if (bondType === "double") {
-						output.push(calcDoubleBondCoords(prevAbsPos, absPos));
+						output.push(DCBond.calcDoubleBondCoords(prevAbsPos, absPos));
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "triple") {
-						output.push(calcTripleBondCoords(prevAbsPos, absPos));
+						output.push(DCBond.calcTripleBondCoords(prevAbsPos, absPos));
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "wedge") {
-						output.push(calcWedgeBondCoords(prevAbsPos, absPos));
+						output.push(DCBond.calcWedgeBondCoords(prevAbsPos, absPos));
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "dash") {
-						output.push(calcDashBondCoords(prevAbsPos, absPos));
+						output.push(DCBond.calcDashBondCoords(prevAbsPos, absPos));
 						newLen = output.push(["M", absPos]);
 					}
 					connect(absPos, atom.getBonds(), output[newLen - 1], selected);
-				}
-
-				function calcDoubleBondCoords(start, end) {
-					var vectCoords = [end[0] - start[0], end[1] - start[1]],
-						perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
-						perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
-						M1 = Utils.addCoordsNoPrec(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
-						L1 = Utils.addCoordsNoPrec(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
-						M2 = Utils.addCoordsNoPrec(start, perpVectCoordsCW, BETWEEN_DBL_BONDS),
-						L2 = Utils.addCoordsNoPrec(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
-					return ["M", M1, "L", L1, "M", M2, "L", L2];
-				}
-
-				function calcTripleBondCoords(start, end) {
-					var vectCoords = [end[0] - start[0], end[1] - start[1]],
-						perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
-						perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
-						M1 = Utils.addCoordsNoPrec(start, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
-						L1 = Utils.addCoordsNoPrec(end, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
-						M2 = Utils.addCoordsNoPrec(start, perpVectCoordsCW, BETWEEN_TRP_BONDS),
-						L2 = Utils.addCoordsNoPrec(end, perpVectCoordsCW, BETWEEN_TRP_BONDS);
-					return ["M", M1, "L", L1, "M", start, "L", end, "M", M2, "L", L2];
-				}
-
-				function calcWedgeBondCoords(start, end) {
-					var vectCoords = [end[0] - start[0], end[1] - start[1]],
-						perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
-						perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
-						L1 = Utils.addCoordsNoPrec(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
-						L2 = Utils.addCoordsNoPrec(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
-					return ["wedge", "M", start, "L", L1, "L", L2, "Z"];
-				}
-
-				function calcDashBondCoords(start, end) {
-					var i, max = 7, factor = BETWEEN_DBL_BONDS / max, M, L, currentEnd = start, result = [],
-						vectCoords = [end[0] - start[0], end[1] - start[1]],
-						perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
-						perpVectCoordsCW = [vectCoords[1], -vectCoords[0]];
-
-					for (i = max; i > 0; i -= 1) {
-						factor = factor + BETWEEN_DBL_BONDS / max;
-						currentEnd = [currentEnd[0] + vectCoords[0] / max, currentEnd[1] + vectCoords[1] / max];
-						M = Utils.addCoordsNoPrec(currentEnd, perpVectCoordsCCW, factor);
-						L = Utils.addCoordsNoPrec(currentEnd, perpVectCoordsCW, factor);
-						result = result.concat(["M", M, "L", L]);
-					}
-					return result;
 				}
 
 				function updateLabel(absPos, atom) {
@@ -747,16 +633,5 @@
 		}
 
 		return service;
-
-		/**
-		 * Checks if a point is inside an area delimited by a circle.
-		 * @param {Number[]} center - coordinates of the center of a circle
-		 * @param {Number[]} point - coordinates of a point to be validated
-		 * @returns {Boolean}
-		 */
-		function insideCircle(center, point, tolerance) {
-			var tolerance = tolerance || Const.CIRC_R;
-			return Math.abs(center[0] - point[0]) < tolerance && Math.abs(center[1] - point[1]) < tolerance;
-		}
 	}
 })();

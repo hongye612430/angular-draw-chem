@@ -3,9 +3,15 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DCArrow", DCArrow);
 
-	function DCArrow() {
+	DCArrow.$inject = ["DrawChemUtils", "DrawChemConst"];
 
-		var service = {};
+	function DCArrow(Utils, Const) {
+
+		var service = {},
+		  ARROW_START = Const.ARROW_START,
+		  ARROW_SIZE = Const.ARROW_SIZE,
+		  BETWEEN_DBL_BONDS = Const.BETWEEN_DBL_BONDS,
+		  BETWEEN_TRP_BONDS = Const.BETWEEN_TRP_BONDS;
 
 		/**
 		* Creates a new Arrow.
@@ -89,6 +95,47 @@
 		};
 
 		service.Arrow = Arrow;
+
+		service.calcArrow = function (start, end, type) {
+			var vectCoords = [end[0] - start[0], end[1] - start[1]],
+				perpVectCoordsCW = [-vectCoords[1], vectCoords[0]],
+				perpVectCoordsCCW = [vectCoords[1], -vectCoords[0]], endMarkerStart, startMarkerStart, M1, M2, L1, L2, L3, L4;
+			if (type === "one-way-arrow") {
+				endMarkerStart = [start[0] + vectCoords[0] * ARROW_START, start[1] + vectCoords[1] * ARROW_START];
+				L1 = Utils.addCoordsNoPrec(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+				L2 = Utils.addCoordsNoPrec(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+				return ["arrow", "M", start, "L", end, "M", endMarkerStart, "L", L1, "L", end, "L", L2, "Z"];
+			} else if (type === "two-way-arrow") {
+				endMarkerStart = [start[0] + vectCoords[0] * ARROW_START, start[1] + vectCoords[1] * ARROW_START];
+				startMarkerStart = [start[0] + vectCoords[0] * (1 - ARROW_START), start[1] + vectCoords[1] * (1 - ARROW_START)];
+				L1 = Utils.addCoordsNoPrec(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+				L2 = Utils.addCoordsNoPrec(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+				L3 = Utils.addCoordsNoPrec(startMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+				L4 = Utils.addCoordsNoPrec(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+				return [
+					"arrow",
+					"M", start, "L", end,
+					"M", endMarkerStart, "L", L1, "L", end, "L", L2, "Z",
+					"M", startMarkerStart, "L", L3, "L", start, "L", L4, "Z"
+				];
+			}
+			else if (type === "equilibrium-arrow") {
+				M1 = Utils.addCoordsNoPrec(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
+				L1 = Utils.addCoordsNoPrec(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
+				endMarkerStart = [parseFloat(M1[0]) + vectCoords[0] * ARROW_START, parseFloat(M1[1]) + vectCoords[1] * ARROW_START];
+				L2 = Utils.addCoordsNoPrec(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+
+				M2 = Utils.addCoordsNoPrec(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+				L3 = Utils.addCoordsNoPrec(start, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+				startMarkerStart = [parseFloat(L3[0]) + vectCoords[0] * (1 - ARROW_START), parseFloat(L3[1]) + vectCoords[1] * (1 - ARROW_START)];
+				L4 = Utils.addCoordsNoPrec(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+				return [
+					"arrow-eq",
+					"M", M1, "L", L1, "L", L2,
+					"M", M2, "L", L3, "L", L4
+				];
+			}
+		}
 
 		return service;
 	}
