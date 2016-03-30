@@ -39,6 +39,9 @@
 			// default angle between two bonds (in degrees)
 			service.ANGLE = 120;
 
+			// maximum number of bonds at one atom
+			service.MAX_BONDS = 10;
+
 			// the default r of an aromatic circle
 			service.AROMATIC_R = service.BOND_LENGTH * 0.45;
 

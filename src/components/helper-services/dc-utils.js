@@ -99,21 +99,24 @@
 			var inBonds = atom.getAttachedBonds("in") || [],
 			  outBonds = atom.getAttachedBonds("out") || [];
 
-			return checkVector(vector);
+			if (inBonds.length + outBonds.length >= Const.MAX_BONDS) {
+				return "full atom";
+			}
 
-			function checkVector(vector) {
-				var done = true;
-				checkBonds(inBonds);
-				checkBonds(outBonds);
+			checkVector(vector);
 
-				if (done) { return vector; }
+			return vector;
 
-				function checkBonds(bonds) {
-					var i;
+			function checkVector(vect) {
+				checkBonds(inBonds, "in");
+				checkBonds(outBonds, "out");
+
+				function checkBonds(bonds, type) {
+					var i, currentVect;
 					for (i = 0; i < bonds.length; i += 1) {
-						if (service.compareCoords(bonds[i].vector, vector, 5)) {
-							vector = service.rotVectCW(vector, freq);
-							done = false;
+						currentVect = type === "in" ? service.rotVectCW(bonds[i].vector, 180): bonds[i].vector;
+						if (service.compareCoords(currentVect, vect, 5)) {
+							vector = service.rotVectCW(vect, freq);
 							checkVector(vector);
 						}
 					}

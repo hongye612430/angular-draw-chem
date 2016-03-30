@@ -259,7 +259,7 @@ describe("DrawChemEditor directive tests - part1", function () {
 			clientX: 100,
 			clientY: 100
 		});
-		temp.find("#dc-" + add.name).click();
+		temp.find("#dc-single-bond").click();
 		expect(element.isolateScope().chosenStructure.getDefault()).toEqual(add.getDefault());
 		temp.find(".dc-editor-dialog-content").triggerHandler({
 			type : "mousedown",
@@ -344,7 +344,7 @@ describe("DrawChemEditor directive tests - part1", function () {
 			clientX: 100,
 			clientY: 100
 		});
-		temp.find("#dc-" + add.name).click();
+		temp.find("#dc-single-bond").click();
 		expect(element.isolateScope().chosenStructure.getDefault()).toEqual(add.getDefault());
 		temp.find(".dc-editor-dialog-content").triggerHandler({
 			type : "mousedown",
@@ -464,7 +464,7 @@ describe("DrawChemEditor directive tests - part1", function () {
 			clientX: 100,
 			clientY: 100
 		});
-		temp.find("#dc-" + add.name).click();
+		temp.find("#dc-single-bond").click();
 		expect(element.isolateScope().chosenStructure.getDefault()).toEqual(add.getDefault());
 		temp.find(".dc-editor-dialog-content").triggerHandler({
 			type : "mousedown",
@@ -514,7 +514,7 @@ describe("DrawChemEditor directive tests - part1", function () {
 			clientX: 100,
 			clientY: 100
 		});
-		temp.find("#dc-" + add.name).click();
+		temp.find("#dc-single-bond").click();
 		expect(element.isolateScope().chosenStructure.getDefault()).toEqual(add.getDefault());
 		temp.find(".dc-editor-dialog-content").triggerHandler({
 			type : "mousedown",

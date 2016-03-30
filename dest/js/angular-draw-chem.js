@@ -993,11 +993,12 @@
 		* @param {String} name - name of the cluster
 		* @param {Structure[]} defs - array of Structure objects belonging to the cluster
 		*/
-		function StructureCluster(name, defs, ringSize, angle) {
+		function StructureCluster(name, defs, multiplicity, ringSize, angle) {
 			this.name = name;
 			this.defs = defs;
 			this.ringSize = ringSize || 0;
 			this.angle = angle;
+			this.multiplicity = multiplicity;
 			this.defaultStructure = defs[0];
 		}
 
@@ -1007,6 +1008,10 @@
 
 		StructureCluster.prototype.getName = function () {
 			return this.name;
+		};
+
+		StructureCluster.prototype.getMult = function () {
+			return this.multiplicity;
 		};
 
 		StructureCluster.prototype.getRingSize = function () {
@@ -1020,16 +1025,6 @@
 		StructureCluster.prototype.getDefault = function () {
 			return this.defaultStructure;
 		};
-
-		/*StructureCluster.prototype.getStructure = function (mouseCoords1, mouseCoords2) {
-			var i,
-				direction = DrawChemShapes.getDirection(mouseCoords1, mouseCoords2);
-			for (i = 0; i < this.defs.length; i += 1) {
-				if (this.defs[i].getName() === direction) {
-					return this.defs[i];
-				}
-			}
-		};*/
 
 		service.StructureCluster = StructureCluster;
 
@@ -2423,6 +2418,9 @@
 			// default angle between two bonds (in degrees)
 			service.ANGLE = 120;
 
+			// maximum number of bonds at one atom
+			service.MAX_BONDS = 10;
+
 			// the default r of an aromatic circle
 			service.AROMATIC_R = service.BOND_LENGTH * 0.45;
 
@@ -2616,21 +2614,24 @@
 			var inBonds = atom.getAttachedBonds("in") || [],
 			  outBonds = atom.getAttachedBonds("out") || [];
 
-			return checkVector(vector);
+			if (inBonds.length + outBonds.length >= Const.MAX_BONDS) {
+				return "full atom";
+			}
 
-			function checkVector(vector) {
-				var done = true;
-				checkBonds(inBonds);
-				checkBonds(outBonds);
+			checkVector(vector);
 
-				if (done) { return vector; }
+			return vector;
 
-				function checkBonds(bonds) {
-					var i;
+			function checkVector(vect) {
+				checkBonds(inBonds, "in");
+				checkBonds(outBonds, "out");
+
+				function checkBonds(bonds, type) {
+					var i, currentVect;
 					for (i = 0; i < bonds.length; i += 1) {
-						if (service.compareCoords(bonds[i].vector, vector, 5)) {
-							vector = service.rotVectCW(vector, freq);
-							done = false;
+						currentVect = type === "in" ? service.rotVectCW(bonds[i].vector, 180): bonds[i].vector;
+						if (service.compareCoords(currentVect, vect, 5)) {
+							vector = service.rotVectCW(vect, freq);
 							checkVector(vector);
 						}
 					}
@@ -3412,7 +3413,7 @@
 				angle = 120,
 				defs = service.generateRings(angle, ringSize, "aromatic");
 
-			cluster = new StructureCluster(name, defs, ringSize, angle, true);
+			cluster = new StructureCluster(name, defs, 0, ringSize, angle, true);
 			return cluster;
 		};
 
@@ -3427,7 +3428,7 @@
 				angle = 120,
 				defs = service.generateRings(angle, ringSize);
 
-			cluster = new StructureCluster(name, defs, ringSize, angle);
+			cluster = new StructureCluster(name, defs, 0, ringSize, angle);
 
 			return cluster;
 		};
@@ -3443,7 +3444,7 @@
 				angle = 108,
 				defs = service.generateRings(angle, ringSize);
 
-			cluster = new StructureCluster(name, defs, ringSize, angle);
+			cluster = new StructureCluster(name, defs, 0, ringSize, angle);
 
 			return cluster;
 		};
@@ -4221,7 +4222,9 @@
 						// if 'mouseup' was within a circle around an atom
 						// and if a valid atom has not already been found
 						vector = chooseDirectionAutomatically(aux);
-						updateAtom(vector, aux);
+						if (vector !== "full atom") {
+						  updateAtom(vector, aux);
+						}
 						//updateBonds(aux, modStr, absPos);
 						//updateDecorate(modStr, absPos);
 						found = true;

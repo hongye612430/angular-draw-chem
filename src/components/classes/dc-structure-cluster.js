@@ -15,11 +15,12 @@
 		* @param {String} name - name of the cluster
 		* @param {Structure[]} defs - array of Structure objects belonging to the cluster
 		*/
-		function StructureCluster(name, defs, ringSize, angle) {
+		function StructureCluster(name, defs, multiplicity, ringSize, angle) {
 			this.name = name;
 			this.defs = defs;
 			this.ringSize = ringSize || 0;
 			this.angle = angle;
+			this.multiplicity = multiplicity;
 			this.defaultStructure = defs[0];
 		}
 
@@ -29,6 +30,10 @@
 
 		StructureCluster.prototype.getName = function () {
 			return this.name;
+		};
+
+		StructureCluster.prototype.getMult = function () {
+			return this.multiplicity;
 		};
 
 		StructureCluster.prototype.getRingSize = function () {
@@ -42,16 +47,6 @@
 		StructureCluster.prototype.getDefault = function () {
 			return this.defaultStructure;
 		};
-
-		/*StructureCluster.prototype.getStructure = function (mouseCoords1, mouseCoords2) {
-			var i,
-				direction = DrawChemShapes.getDirection(mouseCoords1, mouseCoords2);
-			for (i = 0; i < this.defs.length; i += 1) {
-				if (this.defs[i].getName() === direction) {
-					return this.defs[i];
-				}
-			}
-		};*/
 
 		service.StructureCluster = StructureCluster;
 

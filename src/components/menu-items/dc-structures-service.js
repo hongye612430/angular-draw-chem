@@ -33,7 +33,7 @@
 				angle = 120,
 				defs = service.generateRings(angle, ringSize, "aromatic");
 
-			cluster = new StructureCluster(name, defs, ringSize, angle, true);
+			cluster = new StructureCluster(name, defs, 0, ringSize, angle, true);
 			return cluster;
 		};
 
@@ -48,7 +48,7 @@
 				angle = 120,
 				defs = service.generateRings(angle, ringSize);
 
-			cluster = new StructureCluster(name, defs, ringSize, angle);
+			cluster = new StructureCluster(name, defs, 0, ringSize, angle);
 
 			return cluster;
 		};
@@ -64,7 +64,7 @@
 				angle = 108,
 				defs = service.generateRings(angle, ringSize);
 
-			cluster = new StructureCluster(name, defs, ringSize, angle);
+			cluster = new StructureCluster(name, defs, 0, ringSize, angle);
 
 			return cluster;
 		};

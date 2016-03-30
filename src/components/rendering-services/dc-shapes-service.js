@@ -70,7 +70,9 @@
 						// if 'mouseup' was within a circle around an atom
 						// and if a valid atom has not already been found
 						vector = chooseDirectionAutomatically(aux);
-						updateAtom(vector, aux);
+						if (vector !== "full atom") {
+						  updateAtom(vector, aux);
+						}
 						//updateBonds(aux, modStr, absPos);
 						//updateDecorate(modStr, absPos);
 						found = true;
