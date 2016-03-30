@@ -73,6 +73,63 @@
 			return index + d;
 		}
 
+		service.calcPossibleBonds = function (vector, freq) {
+			var possibleBonds = [], i;
+			for (i = 0; i < 360 / freq; i += 1) {
+				vector = service.rotVectCW(vector, freq);
+				possibleBonds.push(vector);
+			}
+			return possibleBonds;
+		};
+
+		service.getClosestBond = function (down, mousePos, possibleBonds) {
+			var vector = [mousePos[0] - down[0], mousePos[1] - down[1]], angle, i, currVector, minAngle = Math.PI, minIndex = 0, structure;
+			for (i = 0; i < possibleBonds.length; i += 1) {
+				currVector = possibleBonds[i];
+				angle = Math.acos(service.dotProduct(service.norm(currVector), service.norm(vector)));
+				if (Math.abs(angle) < minAngle) {
+					minAngle = Math.abs(angle);
+					minIndex = i;
+				}
+			}
+			return possibleBonds[minIndex];
+		};
+
+		service.checkAttachedBonds = function (vector, atom, freq) {
+			var inBonds = atom.getAttachedBonds("in") || [],
+			  outBonds = atom.getAttachedBonds("out") || [];
+
+			return checkVector(vector);
+
+			function checkVector(vector) {
+				var done = true;
+				checkBonds(inBonds);
+				checkBonds(outBonds);
+
+				if (done) { return vector; }
+
+				function checkBonds(bonds) {
+					var i;
+					for (i = 0; i < bonds.length; i += 1) {
+						if (service.compareCoords(bonds[i].vector, vector, 5)) {
+							vector = service.rotVectCW(vector, freq);
+							done = false;
+							checkVector(vector);
+						}
+					}
+				}
+			}
+		};
+
+		service.dotProduct = function (v1, v2) {
+			return v1[0] * v2[0] + v1[1] * v2[1];
+		};
+
+		service.norm = function (v) {
+			var len = Math.sqrt(v[0] * v[0] + v[1] * v[1]);
+			return [v[0] / len, v[1] / len];
+		};
+
 		// rotates a vector counter clock-wise
 		service.rotVectCCW = function (vect, deg) {
 			var rads = deg * (Math.PI / 180),

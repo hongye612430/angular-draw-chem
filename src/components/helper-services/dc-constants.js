@@ -33,6 +33,12 @@
 			// https://en.wikipedia.org/wiki/Wikipedia:Manual_of_Style/Chemistry/Structure_drawing
 			service.WIDTH_TO_LENGTH = 0.04;
 
+			// angle between possible bonds when adding a new bond (in degrees)
+			service.FREQ = 15;
+
+			// default angle between two bonds (in degrees)
+			service.ANGLE = 120;
+
 			// the default r of an aromatic circle
 			service.AROMATIC_R = service.BOND_LENGTH * 0.45;
 

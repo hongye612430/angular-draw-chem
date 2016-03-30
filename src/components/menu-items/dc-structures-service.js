@@ -29,9 +29,11 @@
 		service.benzene = function () {
 			var cluster,
 				name = "benzene",
-				defs = generateRings(120, 6, "aromatic");
+				ringSize = 6,
+				angle = 120,
+				defs = service.generateRings(angle, ringSize, "aromatic");
 
-			cluster = new StructureCluster(name, defs);
+			cluster = new StructureCluster(name, defs, ringSize, angle, true);
 			return cluster;
 		};
 
@@ -42,9 +44,11 @@
 		service.cyclohexane = function () {
 			var cluster,
 				name = "cyclohexane",
-				defs = generateRings(120, 6);
+				ringSize = 6,
+				angle = 120,
+				defs = service.generateRings(angle, ringSize);
 
-			cluster = new StructureCluster(name, defs);
+			cluster = new StructureCluster(name, defs, ringSize, angle);
 
 			return cluster;
 		};
@@ -56,9 +60,11 @@
 		service.cyclopentane = function () {
 			var cluster,
 				name = "cyclopentane",
-				defs = generateRings(108, 5);
+				ringSize = 5,
+				angle = 108,
+				defs = service.generateRings(angle, ringSize);
 
-			cluster = new StructureCluster(name, defs);
+			cluster = new StructureCluster(name, defs, ringSize, angle);
 
 			return cluster;
 		};
@@ -70,7 +76,7 @@
 		service.cyclopropane = function () {
 			var cluster,
 				name = "cyclopropane",
-				defs = generateRings(60, 3);
+				defs = service.generateRings(60, 3);
 
 			cluster = new StructureCluster(name, defs);
 
@@ -84,7 +90,7 @@
 		service.cyclobutane = function () {
 			var cluster,
 				name = "cyclobutane",
-				defs = generateRings(90, 4);
+				defs = service.generateRings(90, 4);
 
 			cluster = new StructureCluster(name, defs);
 
@@ -98,7 +104,7 @@
 		service.cycloheptane = function () {
 			var cluster,
 				name = "cycloheptane",
-				defs = generateRings(128.57, 7);
+				defs = service.generateRings(128.57, 7);
 
 			cluster = new StructureCluster(name, defs);
 
@@ -112,7 +118,7 @@
 		service.cyclooctane = function () {
 			var cluster,
 				name = "cyclooctane",
-				defs = generateRings(135, 8);
+				defs = service.generateRings(135, 8);
 
 			cluster = new StructureCluster(name, defs);
 
@@ -126,7 +132,7 @@
 		service.cyclononane = function () {
 			var cluster,
 				name = "cyclononane",
-				defs = generateRings(140, 9);
+				defs = service.generateRings(140, 9);
 
 			cluster = new StructureCluster(name, defs);
 
@@ -139,9 +145,9 @@
 		 */
 		service.singleBond = function () {
 			var cluster,
-				multiplicity = "single",
-				name = "single-bond",
-				defs = generateBonds("single", multiplicity);
+				multiplicity = 1,
+				name = "single",
+				defs = service.generateBonds(name, multiplicity);
 
 			cluster = new StructureCluster(name, defs, multiplicity);
 
@@ -154,9 +160,9 @@
 		 */
 		service.doubleBond = function () {
 			var cluster,
-				multiplicity = "double",
-				name = "double-bond",
-				defs = generateBonds("double", multiplicity);
+				multiplicity = 2,
+				name = "double",
+				defs = service.generateBonds(name, multiplicity);
 
 			cluster = new StructureCluster(name, defs, multiplicity);
 
@@ -169,9 +175,9 @@
 		 */
 		service.tripleBond = function () {
 			var cluster,
-				multiplicity = "triple",
-				name = "triple-bond",
-				defs = generateBonds("triple", multiplicity);
+				multiplicity = 3,
+				name = "triple",
+				defs = service.generateBonds(name, multiplicity);
 
 			cluster = new StructureCluster(name, defs, multiplicity);
 
@@ -184,9 +190,9 @@
 		 */
 		service.wedgeBond = function () {
 			var cluster,
-				multiplicity = "single",
-				name = "wedge-bond",
-				defs = generateBonds("wedge", multiplicity);
+				multiplicity = 1,
+				name = "wedge",
+				defs = service.generateBonds(name, multiplicity);
 
 			cluster = new StructureCluster(name, defs, multiplicity);
 
@@ -199,9 +205,9 @@
 		 */
 		service.dashBond = function () {
 			var cluster,
-				multiplicity = "single",
-				name = "dash-bond",
-				defs = generateBonds("dash", multiplicity);
+				multiplicity = 1,
+				name = "dash",
+				defs = service.generateBonds(name, multiplicity);
 
 			cluster = new StructureCluster(name, defs, multiplicity);
 
@@ -279,14 +285,32 @@
 			}
 		};
 
-		return service;
-
-		function createStructureAction(cb) {
-			return function (scope) {
-				scope.chosenStructure = cb();
-				Flags.selected = "structure";
+		/**
+		 * Generates single bonds in all defined directions.
+		 * @param {String} type - bond type, e.g. 'single', 'double'.
+		 * @returns {Structure[]}
+		 */
+		service.generateBonds = function(type, mult) {
+			var i, bond, direction, result = [];
+			for (i = 0; i < BONDS.length; i += 1) {
+				bond = BONDS[i].bond;
+				direction = BONDS[i].direction;
+				result.push(
+					new Structure(
+						direction,
+						[
+							new Atom([0, 0], [service.generateBond(bond, type, mult)],
+								{ out: [{ vector: bond, multiplicity: mult }] } )
+						]
+					)
+				);
 			}
-		}
+			return result;
+		};
+
+		service.generateBond = function (bond, type, mult) {
+			return new Bond(type, new Atom(bond, [], { in: [{ vector: angular.copy(bond), multiplicity: mult }] }));
+		};
 
 		/**
 		 * Generates a ring in each of the defined direction.
@@ -295,11 +319,11 @@
 		 * @param {String} decorate - indicates decorate element (e.g. aromatic ring),
 		 * @returns {Structure[]}
 		 */
-		function generateRings(deg, size, decorate) {
+		service.generateRings = function (deg, size, decorate) {
 			var i, direction, result = [];
 			for (i = 0; i < BONDS.length; i += 1) {
 				direction = BONDS[i].direction;
-				result.push(genRing(direction, deg, size));
+				result.push(genRing(direction, deg, size, decorate));
 			}
 
 			return result;
@@ -311,61 +335,51 @@
 			 * @param {Number} size - size of the ring,
 			 * @returns {Structure}
 			 */
-			function genRing(direction, deg, size) {
+			function genRing(direction, deg, size, decorate) {
 				var firstAtom, nextAtom, structure,
 					opposite = Atom.getOppositeDirection(direction),
 					bond = Const.getBondByDirection(opposite).bond,
 					rotVect = Utils.rotVectCCW(bond, deg / 2);
 
-				firstAtom = new Atom([0, 0], [], "", []);
-				nextAtom = new Atom(rotVect, [], "", []);
+				firstAtom = new Atom([0, 0], [], { out: [{ vector: angular.copy(rotVect), multiplicity: 1 }] });
+				nextAtom = new Atom(rotVect, [], { in: [{ vector: angular.copy(rotVect), multiplicity: 1 }] });
 				firstAtom.addBond(new Bond("single", nextAtom));
-				genAtoms(nextAtom, size);
+				service.generateRing(nextAtom, size, deg, firstAtom);
 				structure = new Structure(opposite, [firstAtom]);
 				if (decorate === "aromatic") {
 					structure.setAromatic();
 				}
 
 				return structure;
-
-				/**
-				 * Recursively generates atoms.
-				 * @param {Atom} prevAtom - previous atom (the one to which new atom will be added),
-				 * @param {Number} depth - current depth of the structure tree
-				 */
-				function genAtoms(prevAtom, depth) {
-					var rotVect = Utils.rotVectCW(prevAtom.getCoords(), 180 - deg),
-					  newAtom = new Atom(rotVect, [], "", []);
-					if (depth === 1) { return undefined; }
-					prevAtom.addBond(new Bond("single", newAtom));
-					genAtoms(newAtom, depth - 1);
-				}
 			}
-		}
+		};
 
 		/**
-		 * Generates single bonds in all defined directions.
-		 * @param {String} type - bond type, e.g. 'single', 'double'.
-		 * @returns {Structure[]}
+		 * Recursively generates atoms in a circular manner.
+		 * @param {Atom} atom - atom, to which new atom will be added,
+		 * @param {Number} depth - starting/current depth of the structure tree
 		 */
-		function generateBonds(type, multiplicity) {
-			var i, bond, direction, result = [];
-			for (i = 0; i < BONDS.length; i += 1) {
-				bond = BONDS[i].bond;
-				direction = BONDS[i].direction;
-				result.push(
-					new Structure(
-						direction,
-						[
-							new Atom([0, 0], [
-								new Bond(type, new Atom(bond, [], "", [{ direction: Atom.getOppositeDirection(direction), type: multiplicity }]))
-							], "")
-						]
-					)
-				);
-			}
+		service.generateRing = function(atom, depth, deg, firstAtom) {
+			var rotVect = Utils.rotVectCW(atom.getCoords(), 180 - deg),
+				newAtom = new Atom(rotVect, []);
 
-			return result;
+			atom.attachBond("out", { vector: angular.copy(rotVect), multiplicity: 1 });
+			if (depth === 1) {
+				firstAtom.attachBond("in", { vector: angular.copy(atom.getCoords()), multiplicity: 1 });
+				return;
+			}
+			newAtom.attachBond("in", { vector: angular.copy(rotVect), multiplicity: 1 });
+			atom.addBond(new Bond("single", newAtom));
+			service.generateRing(newAtom, depth - 1, deg, firstAtom);
+		};
+
+		return service;
+
+		function createStructureAction(cb) {
+			return function (scope) {
+				scope.chosenStructure = cb();
+				Flags.selected = "structure";
+			}
 		}
 	}
 })();

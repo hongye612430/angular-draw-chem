@@ -8,13 +8,14 @@
 		"DrawChemConst",
 		"DrawChemUtils",
 		"DrawChemGenElements",
+		"DrawChemStructures",
 		"DCAtom",
 		"DCBond",
 		"DCArrow",
 		"DCSelection"
 	];
 
-	function DrawChemShapes(DCShape, Const, Utils, GenElements, DCAtom, DCBond, DCArrow, DCSelection) {
+	function DrawChemShapes(DCShape, Const, Utils, GenElements, Structures, DCAtom, DCBond, DCArrow, DCSelection) {
 
 		var service = {},
 			BOND_LENGTH = Const.BOND_LENGTH,
@@ -34,7 +35,7 @@
 		 * @returns {Structure}
 		 */
 		service.modifyStructure = function (base, mod, mousePos, down, mouseDownAndMove) {
-			var modStr, firstAtom,
+			var modStr, firstAtom, vector,
 				found = false,
 				isInsideCircle,
 				origin = base.getOrigin();
@@ -68,9 +69,10 @@
 					if (isInsideCircle && !mouseDownAndMove) {
 						// if 'mouseup' was within a circle around an atom
 						// and if a valid atom has not already been found
-						modStr = chooseMod(aux);
-						updateBonds(aux, modStr, absPos);
-						updateDecorate(modStr, absPos);
+						vector = chooseDirectionAutomatically(aux);
+						updateAtom(vector, aux);
+						//updateBonds(aux, modStr, absPos);
+						//updateDecorate(modStr, absPos);
 						found = true;
 						return base;
 					}
@@ -79,15 +81,48 @@
 						// if 'mousedown' was within a circle around an atom
 						// but 'mouseup' was not
 						// and if a valid atom has not already been found
-						modStr = chooseDirectionManually(aux);
-						updateBonds(aux, modStr, absPos);
-						updateDecorate(modStr, absPos);
+						vector = chooseDirectionManually(aux);
+						updateAtom(vector, aux);
+						//updateBonds(aux, modStr, absPos);
+						//updateDecorate(modStr, absPos);
 						found = true;
 						return base;
 					}
 
 					// if none of the above was true, then continue looking down the structure tree
 					modStructure(aux.getBonds(), absPos);
+				}
+
+				/**
+				* Updates atom.
+				* @param {number[]} vector - indicates direction, in which the change should be made,
+				* @param {Atom} atom - Atom object that is going to be modified
+				*/
+				function updateAtom(vector, atom) {
+					var name = mod.getName(), // gets name of the `StructureCluster `object
+					  size = mod.getRingSize(), // gets size of the ring (defaults to 0 for non-rings)
+						bond, angle, nextAtom, rotVect;
+					if (size > 1) {
+						// if we are dealing with a ring
+						angle = mod.getAngle(); // gets angle between bonds inside the ring
+						rotVect = Utils.rotVectCCW(vector, angle / 2); // adjust to angle bisector
+						// define next `Atom` object
+						nextAtom = new Atom(rotVect, [], { in: [{ vector: angular.copy(rotVect), multiplicity: 1 }] });
+						// attach it to the starting `atom`
+						atom.addBond(new Bond("single", nextAtom));
+						// update `attachedBonds` arrays
+						atom.attachBond("out", { vector: angular.copy(rotVect), multiplicity: 1 });
+						// recursively generate the rest
+						Structures.generateRing(nextAtom, size, angle, atom);
+					} else {
+						// if we are dealing with a bond,
+						// generate `Bond` object in the direction indicated by `vector`
+						bond = Structures.generateBond(vector, name, 1);
+						// attach it to the starting `atom`
+						atom.addBond(bond);
+						// update `attachedBonds` arrays
+						atom.attachBond("out", { vector: angular.copy(vector), multiplicity: 1 });
+					}
 				}
 
 				/**
@@ -140,14 +175,70 @@
 			}
 
 			/**
-			 * Lets the user decide in which of the eight directions the next bond is going to be pointing.
-			 * Draws a circle around a chosen atom and divides it into eight equal parts. Checks to which part the coordinates
-			 * associated with the 'mouseup' event belong and chooses the suitable bond.
+			 * Lets the user decide in which direction the next bond is going to be.
+			 * Enables rotating the bond around an atom (by a degree defined in Constants).
 			 * @param {Atom} current - currently active Atom object
-			 * @returns {Atom[]}
+			 * @returns {number[]}
 			 */
 			function chooseDirectionManually(current) {
-				return chooseMod(current, service.getDirection(mousePos, down));
+				var inBonds = current.getAttachedBonds("in"), // attached incoming bonds
+				  outBonds = current.getAttachedBonds("out"), // attached outcoming bonds
+					possibleBonds, firstInBond, firstOutBond, angle, vect;
+
+				if (typeof inBonds !== "undefined" && typeof outBonds !== "undefined") {
+					// if both in- and outcoming bonds are defined,
+					// get first in- and first outcoming bond,
+					firstInBond = inBonds[0].vector;
+					firstOutBond = outBonds[0].vector;
+					// find angle between them
+					angle = Math.acos(Utils.dotProduct(Utils.norm(firstInBond), Utils.norm(firstOutBond))) * 180 / Math.PI;
+					// construct angle bisector
+					vect = Utils.rotVectCCW(firstInBond, (180 - angle) / 2);
+				} else if (typeof inBonds !== "undefined") {
+					vect = inBonds[0].vector;
+				} else if (typeof outBonds !== "undefined") {
+					vect = outBonds[0].vector;
+				} else {
+					// defaults to bond in north direction
+					vect = Const.BOND_N;
+				}
+				// finds all possible bonds, starting with `vect` and rotating it every `Const.FREQ`
+				possibleBonds = Utils.calcPossibleBonds(vect, Const.FREQ);
+				// returns that vector from `possibleBonds` array,
+				// that is closest to the vector made with `down` and `mousePos` coordinates
+				return Utils.getClosestBond(down, mousePos, possibleBonds);
+			}
+
+			/**
+			 * Automatically decides in which direction the next bond is going to be.
+			 * @param {Atom} current - currently active Atom object
+			 * @returns {number[]}
+			 */
+			function chooseDirectionAutomatically(current) {
+				var inBonds = current.getAttachedBonds("in"), // attached incoming bonds
+				  outBonds = current.getAttachedBonds("out"), // attached outcoming bonds
+					possibleBonds, firstInBond, firstOutBond, angle, vect;
+
+				if (typeof inBonds !== "undefined" && typeof outBonds !== "undefined") {
+					// if both in- and outcoming bonds are defined,
+					// get first in- and first outcoming bond,
+					firstInBond = inBonds[0].vector;
+					firstOutBond = outBonds[0].vector;
+					// find angle between them
+					angle = Math.acos(Utils.dotProduct(Utils.norm(firstInBond), Utils.norm(firstOutBond))) * 180 / Math.PI;
+					// construct angle bisector
+					vect = Utils.rotVectCCW(firstInBond, (180 - angle) / 2);
+				} else if (typeof inBonds !== "undefined") {
+					vect = Utils.rotVectCCW(inBonds[0].vector, Const.ANGLE / 2);
+				} else if (typeof outBonds !== "undefined") {
+					vect = Utils.rotVectCCW(outBonds[0].vector, Const.ANGLE);
+				} else {
+					// defaults to bond in north direction
+					vect = Const.BOND_N;
+				}
+				// recursively checks if this bond is already attached,
+				// if so, rotates it about `Const.FREQ`
+				return Utils.checkAttachedBonds(vect, current, Const.FREQ);
 			}
 
 			/**

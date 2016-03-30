@@ -14,14 +14,12 @@
 		* @class
 		* @param {Number[]} coords - an array with coordinates of the atom
 		* @param {Bond[]} - an array of bonds coming out of the atom
-		* @param {String} - additional info (not used yet...)
 		* @param {String[]} - directions of all bonds coming out or coming in
 		*/
-		function Atom(coords, bonds, info, attachedBonds) {
+		function Atom(coords, bonds, attachedBonds) {
 			this.coords = coords;
 			this.bonds = bonds;
-			this.info = info;
-			this.attachedBonds = attachedBonds || [];
+			this.attachedBonds = attachedBonds || {};
 			this.next = "";
 			this.selected = false;
 			this.label;
@@ -73,8 +71,11 @@
 		 * Adds a bond to the attachedBonds array.
 		 * @param {String} bond - direction of a bond
 		 */
-		Atom.prototype.attachBond = function (bond) {
-			this.attachedBonds.push(bond);
+		Atom.prototype.attachBond = function (type, bond) {
+			if (typeof this.attachedBonds[type] === "undefined") {
+				this.attachedBonds[type] = [];
+			}
+			this.attachedBonds[type].push(bond);
 		};
 
 		/**
@@ -184,19 +185,14 @@
 		};
 
 		/**
-		 * Gets additional info.
-		 * @returns {String}
-		 */
-		Atom.prototype.getInfo = function () {
-			return this.info;
-		}
-
-		/**
 		 * Gets attached bonds.
 		 * @returns {String[]}
 		 */
-		Atom.prototype.getAttachedBonds = function () {
-			return this.attachedBonds;
+		Atom.prototype.getAttachedBonds = function (type) {
+			if (typeof type === "undefined") {
+				return this.attachedBonds;
+			}
+			return this.attachedBonds[type];
 		}
 
 		/**
