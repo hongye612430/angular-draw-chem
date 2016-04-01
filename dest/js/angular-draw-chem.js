@@ -198,9 +198,9 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DCAtom", DCAtom);
 
-	DCAtom.$inject = ["DrawChemConst"];
+	DCAtom.$inject = ["DrawChemConst", "DrawChemUtils"];
 
-	function DCAtom(DrawChemConst) {
+	function DCAtom(Const, Utils) {
 
 		var service = {};
 
@@ -218,7 +218,6 @@
 			this.next = "";
 			this.selected = false;
 			this.label;
-			this.calculateNext();
 		}
 
 		Atom.prototype.select = function () {
@@ -234,33 +233,11 @@
 		 * @param {String} direction - direction of a bond
 		 */
 		Atom.getOppositeDirection = function (direction) {
-			switch (direction) {
-				case "N":
-					return "S";
-				case "NE1":
-					return "SW1";
-				case "NE2":
-					return "SW2";
-				case "E":
-					return "W";
-				case "SE1":
-					return "NW1";
-				case "SE2":
-					return "NW2";
-				case "S":
-					return "N";
-				case "SW1":
-					return "NE1";
-				case "SW2":
-					return "NE2";
-				case "W":
-					return "E";
-				case "NW1":
-					return "SE1";
-				case "NW2":
-					return "SE2";
-			}
-		}
+			var DIRS = Const.DIRECTIONS,
+			  index = DIRS.indexOf(direction),
+			  movedIndex = Utils.moveToRight(DIRS, index, DIRS.length / 2);
+			return DIRS[movedIndex];
+		};
 
 		/**
 		 * Adds a bond to the attachedBonds array.
@@ -271,104 +248,6 @@
 				this.attachedBonds[type] = [];
 			}
 			this.attachedBonds[type].push(bond);
-		};
-
-		/**
-		 * Calculates direction of the bond that should be attached next.
-		 */
-		Atom.prototype.calculateNext = function () {
-			if (this.attachedBonds.length === 1) {
-				this.next = checkIfLenOne.call(this);
-			} else if (this.attachedBonds.length === 2) {
-				this.next = checkIfLenTwo.call(this);
-			} else if (this.attachedBonds.length > 2 && this.attachedBonds.length < 12) {
-				this.next = check.call(this);
-			} else if (this.attachedBonds.length >= 12) {
-				this.next = "max";
-			} else {
-				this.next = "";
-			}
-
-			function checkIfLenOne() {
-				var str = this.attachedBonds[0].direction;
-				switch (str) {
-					case "N":
-						return "SE1";
-					case "NE1":
-						return "SE2";
-					case "NE2":
-						return "S";
-					case "E":
-						return "SW1";
-					case "SE1":
-						return "SW2";
-					case "SE2":
-						return "W";
-					case "S":
-						return "NW1";
-					case "SW1":
-						return "NW2";
-					case "SW2":
-						return "N";
-					case "W":
-						return "NE1";
-					case "NW1":
-						return "NE2";
-					case "NW2":
-						return "E";
-				}
-			}
-
-			function checkIfLenTwo() {
-				if (contains.call(this, "N", "SE1")) {
-					return "SW2";
-				} else if (contains.call(this, "NE1", "SE2")) {
-					return "W";
-				} else if (contains.call(this, "NE2", "S")) {
-					return "NW1";
-				} else if (contains.call(this, "E", "SW1")) {
-					return "NW2";
-				} else if (contains.call(this, "SE1", "SW2")) {
-					return "N";
-				} else if (contains.call(this, "SE2", "W")) {
-					return "NE1";
-				} else if (contains.call(this, "S", "NW1")) {
-					return "NE2";
-				} else if (contains.call(this, "SW1", "NW2")) {
-					return "E";
-				} else if (contains.call(this, "SW2", "N")) {
-					return "SE1";
-				} else if (contains.call(this, "W", "NE1")) {
-					return "SE2";
-				} else if (contains.call(this, "NW1", "NE2")) {
-					return "S";
-				} else if (contains.call(this, "NW2", "E")) {
-					return "SW1";
-				} else {
-					check.call(this);
-				}
-
-				function contains(d1, d2) {
-					return (this.attachedBonds[0].direction === d1 && this.attachedBonds[1].direction === d2) ||
-						(this.attachedBonds[0].direction === d2 && this.attachedBonds[1].direction === d1);
-				}
-			}
-
-			function check() {
-				var i, j, bonds = DrawChemConst.BONDS, current, found;
-				for(i = 0; i < bonds.length; i += 1) {
-					current = bonds[i].direction;
-					found = "";
-					for (j = 0; j < this.attachedBonds.length; j += 1) {
-						if (this.attachedBonds[j].direction === current) {
-							found = current;
-						}
-					}
-					if (found === "") {
-						return current;
-					}
-				}
-			}
 		};
 
 		/**
@@ -2382,7 +2261,9 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemConst", DrawChemConst);
 
-	function DrawChemConst() {
+	DrawChemConst.$inject = ["DrawChemUtils"];
+
+	function DrawChemConst(Utils) {
 
 		var service = {};
 
@@ -2397,15 +2278,8 @@
 
 		function init() {
 
-			var calcBond, calcBondAux1, calcBondAux2, calcBondAux3;
-
 			// the default bond length
 			service.BOND_LENGTH = service.SET_BOND_LENGTH || 20;
-
-			calcBond = parseFloat((service.BOND_LENGTH * Math.sqrt(3) / 2).toFixed(2));
-			calcBondAux1 = parseFloat((service.BOND_LENGTH * Math.sin(Math.PI / 12)).toFixed(2));
-			calcBondAux2 = parseFloat((service.BOND_LENGTH * Math.cos(Math.PI / 12)).toFixed(2));
-			calcBondAux3 = parseFloat((service.BOND_LENGTH * Math.sin(Math.PI / 4)).toFixed(2));
 
 			// proportion of the bond width to bond length
 			// 0.04 corresponds to the ACS settings in ChemDraw, according to
@@ -2421,83 +2295,34 @@
 			// maximum number of bonds at one atom
 			service.MAX_BONDS = 10;
 
-			// the default r of an aromatic circle
+			// default r of an aromatic circle
 			service.AROMATIC_R = service.BOND_LENGTH * 0.45;
 
-			// the default distance between two parallel bonds in double bonds (as a percent of the bond length);
+			// default distance between two parallel bonds in double bonds (as a percent of the bond length);
 			service.BETWEEN_DBL_BONDS = 0.065;
 
-			// the default distance between two furthest bonds in triple bonds (as a percent of the bond length);
+			// default distance between two furthest bonds in triple bonds (as a percent of the bond length);
 			service.BETWEEN_TRP_BONDS = 0.1;
 
-			// the default arrow size (as a percent of the bond length);
+			// default arrow size (as a percent of the bond length);
 			service.ARROW_SIZE = 0.065;
 
-			// the default strating point of the arrow head (as a percent of the bond length);
+			// default starting point of the arrow head (as a percent of the bond length);
 			service.ARROW_START = 0.85;
 
-			// the default bond width
+			// default bond width
 			service.BOND_WIDTH = (service.BOND_LENGTH * service.WIDTH_TO_LENGTH).toFixed(2);
 
-			// the default r of a circle around an atom
+			// default r of a circle around an atom
 			service.CIRC_R = service.BOND_LENGTH * 0.12;
 
-			// all bonds (starting from bond in north direction, going clock-wise), every 15 deg
-			service.BOND_N = [0, -service.BOND_LENGTH];
-			service.BOND_N_NE1 = [calcBondAux1, -calcBondAux2];
-			service.BOND_NE1 = [service.BOND_LENGTH / 2, -calcBond];
-			service.BOND_NE1_NE2 = [calcBondAux3, -calcBondAux3];
-			service.BOND_NE2 = [calcBond, -service.BOND_LENGTH / 2];
-			service.BOND_NE2_E = [calcBondAux2, -calcBondAux1];
-			service.BOND_E = [service.BOND_LENGTH, 0];
-			service.BOND_E_SE1 = [calcBondAux2, calcBondAux1];
-			service.BOND_SE1 = [calcBond, service.BOND_LENGTH / 2],
-			service.BOND_SE1_SE2 = [calcBondAux3, calcBondAux3];
-			service.BOND_SE2 = [service.BOND_LENGTH / 2, calcBond];
-			service.BOND_SE2_S = [calcBondAux1, calcBondAux2];
-			service.BOND_S = [0, service.BOND_LENGTH];
-			service.BOND_S_SW1 = [-calcBondAux1, calcBondAux2];
-			service.BOND_SW1 = [-service.BOND_LENGTH / 2, calcBond];
-			service.BOND_SW1_SW2 = [-calcBondAux3, calcBondAux3];
-			service.BOND_SW2 = [-calcBond, service.BOND_LENGTH / 2];
-			service.BOND_SW2_W = [-calcBondAux2, calcBondAux1];
-			service.BOND_W = [-service.BOND_LENGTH, 0];
-			service.BOND_W_NW1 = [-calcBondAux2, -calcBondAux1];
-			service.BOND_NW1 = [-calcBond, -service.BOND_LENGTH / 2];
-			service.BOND_NW1_NW2 = [-calcBondAux3, -calcBondAux3];
-			service.BOND_NW2 = [-service.BOND_LENGTH / 2, -calcBond];
-			service.BOND_NW2_N = [-calcBondAux1, -calcBondAux2];
+			// default directions, clock-wise
+			service.DIRECTIONS = ["N", "NE1", "NE2", "E", "SE1", "SE2", "S", "SW1", "SW2", "W", "NW1", "NW2"];
 
-			// bonds as array
-			service.BONDS = [
-				{ direction: "N", bond: service.BOND_N },
-				{ direction: "NE1", bond: service.BOND_NE1 },
-				{ direction: "NE2", bond: service.BOND_NE2 },
-				{ direction: "E", bond: service.BOND_E },
-				{ direction: "SE1", bond: service.BOND_SE1 },
-				{ direction: "SE2", bond: service.BOND_SE2 },
-				{ direction: "S", bond: service.BOND_S },
-				{ direction: "SW1", bond: service.BOND_SW1 },
-				{ direction: "SW2", bond: service.BOND_SW2 },
-				{ direction: "W", bond: service.BOND_W },
-				{ direction: "NW1", bond: service.BOND_NW1 },
-				{ direction: "NW2", bond: service.BOND_NW2 }
-			];
+			// bonds + their directions
+			service.BONDS = [];
 
-			service.BONDS_AUX = [
-				{ direction: "N_NE1", bond: service.BOND_N_NE1 },
-				{ direction: "NE1_NE2", bond: service.BOND_NE1_NE2 },
-				{ direction: "NE2_E", bond: service.BOND_NE2_E },
-				{ direction: "E_SE1", bond: service.BOND_E_SE1 },
-				{ direction: "SE1_SE2", bond: service.BOND_SE1_SE2 },
-				{ direction: "SE2_S", bond: service.BOND_SE2_S },
-				{ direction: "S_SW1", bond: service.BOND_S_SW1 },
-				{ direction: "SW1_SW2", bond: service.BOND_SW1_SW2 },
-				{ direction: "SW2_W", bond: service.BOND_SW2_W },
-				{ direction: "W_NW1", bond: service.BOND_W_NW1 },
-				{ direction: "NW1_NW2", bond: service.BOND_NW1_NW2 },
-				{ direction: "NW2_N", bond: service.BOND_NW2_N }
-			];
+			generateBonds();
 
 			service.getBondByDirection = function (direction) {
 				var i;
@@ -2506,6 +2331,16 @@
 						return service.BONDS[i];
 					}
 				}
+			};
+
+			function generateBonds() {
+				var vector = [0, -service.BOND_LENGTH];
+				service.DIRECTIONS.forEach(function (direction) {
+					var name = "BOND_" + direction;
+					service[name] = vector;
+					service.BONDS.push({ direction: direction, bond: vector });
+					vector = Utils.rotVectCW(vector, 30);
+				});
 			}
 		}
 
@@ -2518,9 +2353,7 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemUtils", DrawChemUtils);
 
-	DrawChemUtils.$inject = ["DrawChemConst"];
-
-	function DrawChemUtils(Const) {
+	function DrawChemUtils() {
 
 		var service = {};
 
@@ -2610,11 +2443,11 @@
 			return possibleBonds[minIndex];
 		};
 
-		service.checkAttachedBonds = function (vector, atom, freq) {
+		service.checkAttachedBonds = function (vector, atom, freq, maxBonds) {
 			var inBonds = atom.getAttachedBonds("in") || [],
 			  outBonds = atom.getAttachedBonds("out") || [];
 
-			if (inBonds.length + outBonds.length >= Const.MAX_BONDS) {
+			if (inBonds.length + outBonds.length >= maxBonds) {
 				return "full atom";
 			}
 
@@ -2671,9 +2504,8 @@
 		 * @returns {Boolean}
 		 */
 		service.insideCircle = function (center, point, tolerance) {
-			var tolerance = tolerance || Const.CIRC_R;
 			return Math.abs(center[0] - point[0]) < tolerance && Math.abs(center[1] - point[1]) < tolerance;
-		}
+		};
 
 		/**
 		 * Subtracts the coords in the second array from the first array.
@@ -2683,7 +2515,7 @@
 		 */
 		service.subtractCoords = function (arr1, arr2) {
 			return [arr1[0] - arr2[0], arr1[1] - arr2[1]];
-		}
+		};
 
 		return service;
 	}
@@ -4187,7 +4019,7 @@
 		 * @returns {Structure}
 		 */
 		service.modifyStructure = function (base, mod, mousePos, down, mouseDownAndMove) {
-			var modStr, firstAtom, vector,
+			var firstAtom, vector,
 				found = false,
 				isInsideCircle,
 				origin = base.getOrigin();
@@ -4216,7 +4048,7 @@
 
 					if (found) { break; }
 
-					isInsideCircle = Utils.insideCircle(absPos, mousePos);
+					isInsideCircle = Utils.insideCircle(absPos, mousePos, Const.CIRC_R);
 
 					if (isInsideCircle && !mouseDownAndMove) {
 						// if 'mouseup' was within a circle around an atom
@@ -4225,7 +4057,6 @@
 						if (vector !== "full atom") {
 						  updateAtom(vector, aux);
 						}
-						//updateBonds(aux, modStr, absPos);
 						//updateDecorate(modStr, absPos);
 						found = true;
 						return base;
@@ -4237,7 +4068,6 @@
 						// and if a valid atom has not already been found
 						vector = chooseDirectionManually(aux);
 						updateAtom(vector, aux);
-						//updateBonds(aux, modStr, absPos);
 						//updateDecorate(modStr, absPos);
 						found = true;
 						return base;
@@ -4294,38 +4124,6 @@
 						});
 					}
 				}
-
-				/**
-				 * Updates bonds array in an Atom object.
-				 * @param {Atom} atom - an Atom object or Bond object to update
-				 * @param {Atom[]} modStr - an array of Atom objects to attach
-				 * @param {Number[]} absPos - absolute position of the atom to update
-				 */
-				function updateBonds(atom, modStr, absPos) {
-					if (modStr !== null) {
-						modifyExisting(modStr, absPos);
-						atom.addBonds(modStr.getStructure(0).getBonds());
-					}
-				}
-
-				/**
-				 * Checks if an atom already exists. If it does, that atoms attachedBonds array is updated.
-				 * @param {Atom[]} modStr - an array of Atom objects
-				 * @param {Number[]} absPos - absolute position of the atom to update
-				 */
-				function modifyExisting(modStr, absPos) {
-					var i, newAbsPos, atom, newName,
-						struct = modStr.getStructure(0).getBonds();
-					for(i = 0; i < struct.length; i += 1) {
-						newAbsPos = [struct[i].getAtom().getCoords("x") + absPos[0], struct[i].getAtom().getCoords("y") + absPos[1]];
-						atom = service.isWithin(base, newAbsPos).foundAtom;
-						if (typeof atom !== "undefined") {
-							newName = Atom.getOppositeDirection(modStr.getName());
-							atom.attachBond({ direction: newName, type: mod.getBondsMultiplicity() });
-							return atom.calculateNext();
-						}
-					}
-				}
 			}
 
 			/**
@@ -4371,7 +4169,7 @@
 			function chooseDirectionAutomatically(current) {
 				var inBonds = current.getAttachedBonds("in"), // attached incoming bonds
 				  outBonds = current.getAttachedBonds("out"), // attached outcoming bonds
-					possibleBonds, firstInBond, firstOutBond, angle, vect;
+					possibleBonds, firstInBond, firstOutBond, angle, vect, vectAux;
 
 				if (typeof inBonds !== "undefined" && typeof outBonds !== "undefined") {
 					// if both in- and outcoming bonds are defined,
@@ -4381,7 +4179,12 @@
 					// find angle between them
 					angle = Math.acos(Utils.dotProduct(Utils.norm(firstInBond), Utils.norm(firstOutBond))) * 180 / Math.PI;
 					// construct angle bisector
-					vect = Utils.rotVectCCW(firstInBond, (180 - angle) / 2);
+					vectAux = Utils.rotVectCCW(firstInBond, (180 - angle) / 2);
+					if (Utils.compareCoords(vectAux, firstOutBond, 5)) {
+						vect = Utils.rotVectCW(firstInBond, (180 - angle) / 2);
+					} else {
+						vect = vectAux;
+					}
 				} else if (typeof inBonds !== "undefined") {
 					vect = Utils.rotVectCCW(inBonds[0].vector, Const.ANGLE / 2);
 				} else if (typeof outBonds !== "undefined") {
@@ -4391,8 +4194,8 @@
 					vect = Const.BOND_N;
 				}
 				// recursively checks if this bond is already attached,
-				// if so, rotates it about `Const.FREQ`
-				return Utils.checkAttachedBonds(vect, current, Const.FREQ);
+				// if so, rotates it by `Const.FREQ` clockwise
+				return Utils.checkAttachedBonds(vect, current, Const.FREQ, Const.MAX_BONDS);
 			}
 
 			/**
@@ -4478,7 +4281,7 @@
 						// current Object is arrow
 						absPosStart = [current.getOrigin("x") + pos[0], current.getOrigin("y") + pos[1]];
 						absPosEnd = [current.getEnd("x") + pos[0], current.getEnd("y") + pos[1]];
-						if (!(Utils.insideCircle(absPosStart, mouseCoords) || Utils.insideCircle(absPosEnd, mouseCoords))) {
+						if (!(Utils.insideCircle(absPosStart, mouseCoords, Const.CIRC_R) || Utils.insideCircle(absPosEnd, mouseCoords, Const.CIRC_R))) {
 							// if this arrow was NOT chosen then don't apply any changes
 							// omit it otherwise
 							newAtomArray.push({ obj: current, coords: current.getOrigin() });
@@ -4486,7 +4289,7 @@
 					} else if (current instanceof Atom) {
 						// current Object is atom
 						absPos = [current.getCoords("x") + pos[0], current.getCoords("y") + pos[1]];
-						if (Utils.insideCircle(absPos, mouseCoords)) {
+						if (Utils.insideCircle(absPos, mouseCoords, Const.CIRC_R)) {
 							// if this atom was chosen then apply changes
 							changeArray(absPos, current);
 						} else {
@@ -4497,7 +4300,7 @@
 					} else if (current instanceof Bond) {
 						// current Object is bond
 						absPos = [current.getAtom().getCoords("x") + pos[0], current.getAtom().getCoords("y") + pos[1]];
-						if (Utils.insideCircle(absPos, mouseCoords)) {
+						if (Utils.insideCircle(absPos, mouseCoords, Const.CIRC_R)) {
 							// if atom at the end of this bond was chosen then apply changes
 							changeArray(absPos, current.getAtom());
 						} else {
@@ -4550,7 +4353,7 @@
 					}
 					aux = struct[i] instanceof Atom ? struct[i]: struct[i].getAtom();
 					absPos = [aux.getCoords("x") + pos[0], aux.getCoords("y") + pos[1]];
-					if (!found && Utils.insideCircle(absPos, position)) {
+					if (!found && Utils.insideCircle(absPos, position, Const.CIRC_R)) {
 						found = true;
 						foundObj.foundAtom = aux;
 						foundObj.absPos = absPos;
@@ -4826,54 +4629,6 @@
 						minMax.minY = absPos[1];
 					}
 				}
-			}
-		}
-
-		/**
-		 * Divides a circle (center at pos2) into 12 parts and checks to which part the coords at pos1 belong.
-		 * @param {Number[]} pos1 - coordinates of the center
-		 * @param {Number[]} pos2 - coords to check
-		 * @returns {String}
-		 */
-		service.getDirection = function (pos1, pos2) {
-			var alpha = Math.PI / 6,
-				r = Math.sqrt(Math.pow((pos1[0] - pos2[0]), 2) + Math.pow((pos1[1] - pos2[1]), 2)),
-				x = Math.sin(alpha / 2) * r,
-				x1 = Math.cos(3 * alpha / 2) * r,
-				y = Math.cos(alpha / 2) * r,
-				y1 = Math.sin(3 * alpha / 2) * r;
-
-			if (check(-x, x, -r, -y)) {
-				return "N";
-			} else if (check(x, x1, -y, -y1)) {
-				return "NE1";
-			} else if (check(x1, y, -y1, -x)) {
-				return "NE2";
-			} else if (check(y, r, -x, x)) {
-				return "E";
-			} else if (check(x1, y, x, y1)) {
-				return "SE1";
-			} else if (check(x, x1, y1, y)) {
-				return "SE2";
-			} else if (check(-x, x, y, r)) {
-				return "S";
-			} else if (check(-x1, -x, y1, y)) {
-				return "SW1";
-			} else if (check(-y, -x1, x, y1)) {
-				return "SW2";
-			} else if (check(-r, -y, -x, x)) {
-				return "W";
-			} else if (check(-y, -x1, -y1, -x)) {
-				return "NW1";
-			} else if (check(-x1, -x, -y, -y1)) {
-				return "NW2";
-			} else {
-				return "N";
-			}
-
-			function check(arg1, arg2, arg3, arg4) {
-				return pos1[0] >= (pos2[0] + arg1) && pos1[0] <= (pos2[0] + arg2) &&
-					pos1[1] >= (pos2[1] + arg3) && pos1[1] <= (pos2[1] + arg4);
 			}
 		}
 

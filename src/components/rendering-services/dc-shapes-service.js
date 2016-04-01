@@ -35,7 +35,7 @@
 		 * @returns {Structure}
 		 */
 		service.modifyStructure = function (base, mod, mousePos, down, mouseDownAndMove) {
-			var modStr, firstAtom, vector,
+			var firstAtom, vector,
 				found = false,
 				isInsideCircle,
 				origin = base.getOrigin();
@@ -64,7 +64,7 @@
 
 					if (found) { break; }
 
-					isInsideCircle = Utils.insideCircle(absPos, mousePos);
+					isInsideCircle = Utils.insideCircle(absPos, mousePos, Const.CIRC_R);
 
 					if (isInsideCircle && !mouseDownAndMove) {
 						// if 'mouseup' was within a circle around an atom
@@ -73,7 +73,6 @@
 						if (vector !== "full atom") {
 						  updateAtom(vector, aux);
 						}
-						//updateBonds(aux, modStr, absPos);
 						//updateDecorate(modStr, absPos);
 						found = true;
 						return base;
@@ -85,7 +84,6 @@
 						// and if a valid atom has not already been found
 						vector = chooseDirectionManually(aux);
 						updateAtom(vector, aux);
-						//updateBonds(aux, modStr, absPos);
 						//updateDecorate(modStr, absPos);
 						found = true;
 						return base;
@@ -142,38 +140,6 @@
 						});
 					}
 				}
-
-				/**
-				 * Updates bonds array in an Atom object.
-				 * @param {Atom} atom - an Atom object or Bond object to update
-				 * @param {Atom[]} modStr - an array of Atom objects to attach
-				 * @param {Number[]} absPos - absolute position of the atom to update
-				 */
-				function updateBonds(atom, modStr, absPos) {
-					if (modStr !== null) {
-						modifyExisting(modStr, absPos);
-						atom.addBonds(modStr.getStructure(0).getBonds());
-					}
-				}
-
-				/**
-				 * Checks if an atom already exists. If it does, that atoms attachedBonds array is updated.
-				 * @param {Atom[]} modStr - an array of Atom objects
-				 * @param {Number[]} absPos - absolute position of the atom to update
-				 */
-				function modifyExisting(modStr, absPos) {
-					var i, newAbsPos, atom, newName,
-						struct = modStr.getStructure(0).getBonds();
-					for(i = 0; i < struct.length; i += 1) {
-						newAbsPos = [struct[i].getAtom().getCoords("x") + absPos[0], struct[i].getAtom().getCoords("y") + absPos[1]];
-						atom = service.isWithin(base, newAbsPos).foundAtom;
-						if (typeof atom !== "undefined") {
-							newName = Atom.getOppositeDirection(modStr.getName());
-							atom.attachBond({ direction: newName, type: mod.getBondsMultiplicity() });
-							return atom.calculateNext();
-						}
-					}
-				}
 			}
 
 			/**
@@ -219,7 +185,7 @@
 			function chooseDirectionAutomatically(current) {
 				var inBonds = current.getAttachedBonds("in"), // attached incoming bonds
 				  outBonds = current.getAttachedBonds("out"), // attached outcoming bonds
-					possibleBonds, firstInBond, firstOutBond, angle, vect;
+					possibleBonds, firstInBond, firstOutBond, angle, vect, vectAux;
 
 				if (typeof inBonds !== "undefined" && typeof outBonds !== "undefined") {
 					// if both in- and outcoming bonds are defined,
@@ -229,7 +195,12 @@
 					// find angle between them
 					angle = Math.acos(Utils.dotProduct(Utils.norm(firstInBond), Utils.norm(firstOutBond))) * 180 / Math.PI;
 					// construct angle bisector
-					vect = Utils.rotVectCCW(firstInBond, (180 - angle) / 2);
+					vectAux = Utils.rotVectCCW(firstInBond, (180 - angle) / 2);
+					if (Utils.compareCoords(vectAux, firstOutBond, 5)) {
+						vect = Utils.rotVectCW(firstInBond, (180 - angle) / 2);
+					} else {
+						vect = vectAux;
+					}
 				} else if (typeof inBonds !== "undefined") {
 					vect = Utils.rotVectCCW(inBonds[0].vector, Const.ANGLE / 2);
 				} else if (typeof outBonds !== "undefined") {
@@ -239,8 +210,8 @@
 					vect = Const.BOND_N;
 				}
 				// recursively checks if this bond is already attached,
-				// if so, rotates it about `Const.FREQ`
-				return Utils.checkAttachedBonds(vect, current, Const.FREQ);
+				// if so, rotates it by `Const.FREQ` clockwise
+				return Utils.checkAttachedBonds(vect, current, Const.FREQ, Const.MAX_BONDS);
 			}
 
 			/**
@@ -326,7 +297,7 @@
 						// current Object is arrow
 						absPosStart = [current.getOrigin("x") + pos[0], current.getOrigin("y") + pos[1]];
 						absPosEnd = [current.getEnd("x") + pos[0], current.getEnd("y") + pos[1]];
-						if (!(Utils.insideCircle(absPosStart, mouseCoords) || Utils.insideCircle(absPosEnd, mouseCoords))) {
+						if (!(Utils.insideCircle(absPosStart, mouseCoords, Const.CIRC_R) || Utils.insideCircle(absPosEnd, mouseCoords, Const.CIRC_R))) {
 							// if this arrow was NOT chosen then don't apply any changes
 							// omit it otherwise
 							newAtomArray.push({ obj: current, coords: current.getOrigin() });
@@ -334,7 +305,7 @@
 					} else if (current instanceof Atom) {
 						// current Object is atom
 						absPos = [current.getCoords("x") + pos[0], current.getCoords("y") + pos[1]];
-						if (Utils.insideCircle(absPos, mouseCoords)) {
+						if (Utils.insideCircle(absPos, mouseCoords, Const.CIRC_R)) {
 							// if this atom was chosen then apply changes
 							changeArray(absPos, current);
 						} else {
@@ -345,7 +316,7 @@
 					} else if (current instanceof Bond) {
 						// current Object is bond
 						absPos = [current.getAtom().getCoords("x") + pos[0], current.getAtom().getCoords("y") + pos[1]];
-						if (Utils.insideCircle(absPos, mouseCoords)) {
+						if (Utils.insideCircle(absPos, mouseCoords, Const.CIRC_R)) {
 							// if atom at the end of this bond was chosen then apply changes
 							changeArray(absPos, current.getAtom());
 						} else {
@@ -398,7 +369,7 @@
 					}
 					aux = struct[i] instanceof Atom ? struct[i]: struct[i].getAtom();
 					absPos = [aux.getCoords("x") + pos[0], aux.getCoords("y") + pos[1]];
-					if (!found && Utils.insideCircle(absPos, position)) {
+					if (!found && Utils.insideCircle(absPos, position, Const.CIRC_R)) {
 						found = true;
 						foundObj.foundAtom = aux;
 						foundObj.absPos = absPos;
@@ -674,54 +645,6 @@
 						minMax.minY = absPos[1];
 					}
 				}
-			}
-		}
-
-		/**
-		 * Divides a circle (center at pos2) into 12 parts and checks to which part the coords at pos1 belong.
-		 * @param {Number[]} pos1 - coordinates of the center
-		 * @param {Number[]} pos2 - coords to check
-		 * @returns {String}
-		 */
-		service.getDirection = function (pos1, pos2) {
-			var alpha = Math.PI / 6,
-				r = Math.sqrt(Math.pow((pos1[0] - pos2[0]), 2) + Math.pow((pos1[1] - pos2[1]), 2)),
-				x = Math.sin(alpha / 2) * r,
-				x1 = Math.cos(3 * alpha / 2) * r,
-				y = Math.cos(alpha / 2) * r,
-				y1 = Math.sin(3 * alpha / 2) * r;
-
-			if (check(-x, x, -r, -y)) {
-				return "N";
-			} else if (check(x, x1, -y, -y1)) {
-				return "NE1";
-			} else if (check(x1, y, -y1, -x)) {
-				return "NE2";
-			} else if (check(y, r, -x, x)) {
-				return "E";
-			} else if (check(x1, y, x, y1)) {
-				return "SE1";
-			} else if (check(x, x1, y1, y)) {
-				return "SE2";
-			} else if (check(-x, x, y, r)) {
-				return "S";
-			} else if (check(-x1, -x, y1, y)) {
-				return "SW1";
-			} else if (check(-y, -x1, x, y1)) {
-				return "SW2";
-			} else if (check(-r, -y, -x, x)) {
-				return "W";
-			} else if (check(-y, -x1, -y1, -x)) {
-				return "NW1";
-			} else if (check(-x1, -x, -y, -y1)) {
-				return "NW2";
-			} else {
-				return "N";
-			}
-
-			function check(arg1, arg2, arg3, arg4) {
-				return pos1[0] >= (pos2[0] + arg1) && pos1[0] <= (pos2[0] + arg2) &&
-					pos1[1] >= (pos2[1] + arg3) && pos1[1] <= (pos2[1] + arg4);
 			}
 		}
 

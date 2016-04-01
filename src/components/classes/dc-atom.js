@@ -3,9 +3,9 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DCAtom", DCAtom);
 
-	DCAtom.$inject = ["DrawChemConst"];
+	DCAtom.$inject = ["DrawChemConst", "DrawChemUtils"];
 
-	function DCAtom(DrawChemConst) {
+	function DCAtom(Const, Utils) {
 
 		var service = {};
 
@@ -23,7 +23,6 @@
 			this.next = "";
 			this.selected = false;
 			this.label;
-			this.calculateNext();
 		}
 
 		Atom.prototype.select = function () {
@@ -39,33 +38,11 @@
 		 * @param {String} direction - direction of a bond
 		 */
 		Atom.getOppositeDirection = function (direction) {
-			switch (direction) {
-				case "N":
-					return "S";
-				case "NE1":
-					return "SW1";
-				case "NE2":
-					return "SW2";
-				case "E":
-					return "W";
-				case "SE1":
-					return "NW1";
-				case "SE2":
-					return "NW2";
-				case "S":
-					return "N";
-				case "SW1":
-					return "NE1";
-				case "SW2":
-					return "NE2";
-				case "W":
-					return "E";
-				case "NW1":
-					return "SE1";
-				case "NW2":
-					return "SE2";
-			}
-		}
+			var DIRS = Const.DIRECTIONS,
+			  index = DIRS.indexOf(direction),
+			  movedIndex = Utils.moveToRight(DIRS, index, DIRS.length / 2);
+			return DIRS[movedIndex];
+		};
 
 		/**
 		 * Adds a bond to the attachedBonds array.
@@ -76,104 +53,6 @@
 				this.attachedBonds[type] = [];
 			}
 			this.attachedBonds[type].push(bond);
-		};
-
-		/**
-		 * Calculates direction of the bond that should be attached next.
-		 */
-		Atom.prototype.calculateNext = function () {
-			if (this.attachedBonds.length === 1) {
-				this.next = checkIfLenOne.call(this);
-			} else if (this.attachedBonds.length === 2) {
-				this.next = checkIfLenTwo.call(this);
-			} else if (this.attachedBonds.length > 2 && this.attachedBonds.length < 12) {
-				this.next = check.call(this);
-			} else if (this.attachedBonds.length >= 12) {
-				this.next = "max";
-			} else {
-				this.next = "";
-			}
-
-			function checkIfLenOne() {
-				var str = this.attachedBonds[0].direction;
-				switch (str) {
-					case "N":
-						return "SE1";
-					case "NE1":
-						return "SE2";
-					case "NE2":
-						return "S";
-					case "E":
-						return "SW1";
-					case "SE1":
-						return "SW2";
-					case "SE2":
-						return "W";
-					case "S":
-						return "NW1";
-					case "SW1":
-						return "NW2";
-					case "SW2":
-						return "N";
-					case "W":
-						return "NE1";
-					case "NW1":
-						return "NE2";
-					case "NW2":
-						return "E";
-				}
-			}
-
-			function checkIfLenTwo() {
-				if (contains.call(this, "N", "SE1")) {
-					return "SW2";
-				} else if (contains.call(this, "NE1", "SE2")) {
-					return "W";
-				} else if (contains.call(this, "NE2", "S")) {
-					return "NW1";
-				} else if (contains.call(this, "E", "SW1")) {
-					return "NW2";
-				} else if (contains.call(this, "SE1", "SW2")) {
-					return "N";
-				} else if (contains.call(this, "SE2", "W")) {
-					return "NE1";
-				} else if (contains.call(this, "S", "NW1")) {
-					return "NE2";
-				} else if (contains.call(this, "SW1", "NW2")) {
-					return "E";
-				} else if (contains.call(this, "SW2", "N")) {
-					return "SE1";
-				} else if (contains.call(this, "W", "NE1")) {
-					return "SE2";
-				} else if (contains.call(this, "NW1", "NE2")) {
-					return "S";
-				} else if (contains.call(this, "NW2", "E")) {
-					return "SW1";
-				} else {
-					check.call(this);
-				}
-
-				function contains(d1, d2) {
-					return (this.attachedBonds[0].direction === d1 && this.attachedBonds[1].direction === d2) ||
-						(this.attachedBonds[0].direction === d2 && this.attachedBonds[1].direction === d1);
-				}
-			}
-
-			function check() {
-				var i, j, bonds = DrawChemConst.BONDS, current, found;
-				for(i = 0; i < bonds.length; i += 1) {
-					current = bonds[i].direction;
-					found = "";
-					for (j = 0; j < this.attachedBonds.length; j += 1) {
-						if (this.attachedBonds[j].direction === current) {
-							found = current;
-						}
-					}
-					if (found === "") {
-						return current;
-					}
-				}
-			}
 		};
 
 		/**

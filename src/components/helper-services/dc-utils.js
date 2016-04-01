@@ -3,9 +3,7 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemUtils", DrawChemUtils);
 
-	DrawChemUtils.$inject = ["DrawChemConst"];
-
-	function DrawChemUtils(Const) {
+	function DrawChemUtils() {
 
 		var service = {};
 
@@ -95,11 +93,11 @@
 			return possibleBonds[minIndex];
 		};
 
-		service.checkAttachedBonds = function (vector, atom, freq) {
+		service.checkAttachedBonds = function (vector, atom, freq, maxBonds) {
 			var inBonds = atom.getAttachedBonds("in") || [],
 			  outBonds = atom.getAttachedBonds("out") || [];
 
-			if (inBonds.length + outBonds.length >= Const.MAX_BONDS) {
+			if (inBonds.length + outBonds.length >= maxBonds) {
 				return "full atom";
 			}
 
@@ -156,9 +154,8 @@
 		 * @returns {Boolean}
 		 */
 		service.insideCircle = function (center, point, tolerance) {
-			var tolerance = tolerance || Const.CIRC_R;
 			return Math.abs(center[0] - point[0]) < tolerance && Math.abs(center[1] - point[1]) < tolerance;
-		}
+		};
 
 		/**
 		 * Subtracts the coords in the second array from the first array.
@@ -168,7 +165,7 @@
 		 */
 		service.subtractCoords = function (arr1, arr2) {
 			return [arr1[0] - arr2[0], arr1[1] - arr2[1]];
-		}
+		};
 
 		return service;
 	}
