@@ -102,16 +102,16 @@
 				perpVectCoordsCCW = [vectCoords[1], -vectCoords[0]], endMarkerStart, startMarkerStart, M1, M2, L1, L2, L3, L4;
 			if (type === "one-way-arrow") {
 				endMarkerStart = [start[0] + vectCoords[0] * ARROW_START, start[1] + vectCoords[1] * ARROW_START];
-				L1 = Utils.addCoordsNoPrec(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
-				L2 = Utils.addCoordsNoPrec(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+				L1 = Utils.addVectors(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+				L2 = Utils.addVectors(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
 				return ["arrow", "M", start, "L", end, "M", endMarkerStart, "L", L1, "L", end, "L", L2, "Z"];
 			} else if (type === "two-way-arrow") {
 				endMarkerStart = [start[0] + vectCoords[0] * ARROW_START, start[1] + vectCoords[1] * ARROW_START];
 				startMarkerStart = [start[0] + vectCoords[0] * (1 - ARROW_START), start[1] + vectCoords[1] * (1 - ARROW_START)];
-				L1 = Utils.addCoordsNoPrec(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
-				L2 = Utils.addCoordsNoPrec(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
-				L3 = Utils.addCoordsNoPrec(startMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
-				L4 = Utils.addCoordsNoPrec(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+				L1 = Utils.addVectors(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+				L2 = Utils.addVectors(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+				L3 = Utils.addVectors(startMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+				L4 = Utils.addVectors(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
 				return [
 					"arrow",
 					"M", start, "L", end,
@@ -120,15 +120,15 @@
 				];
 			}
 			else if (type === "equilibrium-arrow") {
-				M1 = Utils.addCoordsNoPrec(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
-				L1 = Utils.addCoordsNoPrec(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
+				M1 = Utils.addVectors(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
+				L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
 				endMarkerStart = [parseFloat(M1[0]) + vectCoords[0] * ARROW_START, parseFloat(M1[1]) + vectCoords[1] * ARROW_START];
-				L2 = Utils.addCoordsNoPrec(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+				L2 = Utils.addVectors(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
 
-				M2 = Utils.addCoordsNoPrec(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
-				L3 = Utils.addCoordsNoPrec(start, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+				M2 = Utils.addVectors(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+				L3 = Utils.addVectors(start, perpVectCoordsCW, BETWEEN_DBL_BONDS);
 				startMarkerStart = [parseFloat(L3[0]) + vectCoords[0] * (1 - ARROW_START), parseFloat(L3[1]) + vectCoords[1] * (1 - ARROW_START)];
-				L4 = Utils.addCoordsNoPrec(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+				L4 = Utils.addVectors(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
 				return [
 					"arrow-eq",
 					"M", M1, "L", L1, "L", L2,

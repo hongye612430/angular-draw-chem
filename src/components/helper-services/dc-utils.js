@@ -7,45 +7,66 @@
 
 		var service = {};
 
-    service.addCoords = function(coords1, coords2, factor) {
+		/**
+		* Adds two vectors. Optionally multiplies the second vector by a factor. Returns a new array.
+		* @param {number[]} v1 - first vector,
+		* @param {number[]} v2 - second vector,
+		* @param {number} factor - multiplies second vector by a factor (optional)
+		* @returns {number[]}
+		*/
+		service.addVectors = function(v1, v2, factor) {
 			return typeof factor === "undefined" ?
-				[(coords1[0] + coords2[0]).toFixed(2), (coords1[1] + coords2[1]).toFixed(2)]:
-				[(coords1[0] + factor * coords2[0]).toFixed(2), (coords1[1] + factor * coords2[1]).toFixed(2)];
-		}
-
-		service.addCoordsNoPrec = function(coords1, coords2, factor) {
-			return typeof factor === "undefined" ?
-				[coords1[0] + coords2[0], coords1[1] + coords2[1]]:
-				[coords1[0] + factor * coords2[0], coords1[1] + factor * coords2[1]];
-		}
+				[v1[0] + v2[0], v1[1] + v2[1]]:
+				[v1[0] + factor * v2[0], v1[1] + factor * v2[1]];
+		};
 
 		/**
-		 * Compares coordinates in two arrays. Returns false if at least one of them is undefined or if any pair of the coordinates is inequal.
+		 * Compares two vectors. Returns false if at least one of them is undefined or if any pair of the coordinates is not equal.
 		 * Returns true if they are equal.
-		 * @param {Number[]} arr1 - an array of coordinates,
-		 * @param {Number[]} arr2 - an array of coordinates,
-		 * @param {Number} prec - precision,
-		 * @returns {Boolean}
+		 * @param {number[]} v1 - first vector,
+		 * @param {number[]} v2 - second vector,
+		 * @param {number} prec - precision,
+		 * @returns {boolean}
 		 */
-		service.compareCoords = function(arr1, arr2, prec) {
-			if (typeof arr1 === "undefined" || typeof arr2 === "undefined") {
+		service.compareVectors = function(v1, v2, prec) {
+			if (typeof v1 === "undefined" || typeof v2 === "undefined") {
 				return false;
 			}
-			return arr1[0].toFixed(prec) === arr2[0].toFixed(prec) && arr1[1].toFixed(prec) === arr2[1].toFixed(prec);
-		}
+			return v1[0].toFixed(prec) === v2[0].toFixed(prec) && v1[1].toFixed(prec) === v2[1].toFixed(prec);
+		};
 
+		/**
+		* Checks if value is numeric.
+		* @param {*} obj - a value to check
+		* @returns {boolean}
+		*/
 		service.isNumeric = function(obj) {
 			return obj - parseFloat(obj) >= 0;
-		}
+		};
 
-		service.isSmallLetter = function(obj) {
-			return obj >= "a" && obj <= "z";
-		}
+		/**
+		* Checks if string is a small letter.
+		* @param {string} str - a value to check
+		* @returns {boolean}
+		*/
+		service.isSmallLetter = function(str) {
+			return str >= "a" && str <= "z";
+		};
 
+		/**
+		* Compares two floats to n decimal places, where n is indicated by `prec` parameter.
+		* @param {number} prec - precision (number of decimal places)
+		* @returns {boolean}
+		*/
 		service.compareFloats = function(float1, float2, prec) {
 			return float1.toFixed(prec) === float2.toFixed(prec);
-		}
+		};
 
+		/**
+		* Inverts a chemical group, e.g. makes 'BnO' from 'OBn' or 'NCS' from 'SCN'.
+		* @param {string} - a group to invert
+		* @returns {string}
+		*/
 		service.invertGroup = function(str) {
 			var i, match = str.match(/[A-Z][a-z\d]*/g), output = "";
 			if (match === null) { return str; }
@@ -53,24 +74,45 @@
 				output += match[i];
 			}
 			return output;
-		}
+		};
 
-		// this way, the array can be used circularly
+		/**
+		* Moves index of an array to the beginning by n, where n is defined by parameter `d`.
+		* Jumps to the end if negative index would be returned. This way, the array can be used circularly.
+		* @param {Array} array - an array,
+		* @param {number} index - a starting index,
+		* @param {number} d - how far the index should be moved,
+		* @returns {number}
+		*/
 		service.moveToLeft = function(array, index, d) {
 			if (index - d < 0) {
 				return index - d + array.length;
 			}
 			return index - d;
-		}
+		};
 
-		// this way, the array can be used circularly
+		/**
+		* Moves index of an array to the end by n, where n is defined by parameter `d`.
+		* Jumps to the beginning if an index would be returned that exceeds length of the array - 1.
+		* This way, the array can be used circularly.
+		* @param {Array} array - an array,
+		* @param {number} index - a starting index,
+		* @param {number} d - how far the index should be moved,
+		* @returns {number}
+		*/
 		service.moveToRight = function(array, index, d) {
 			if (index + d > array.length - 1) {
 				return index + d - array.length;
 			}
 			return index + d;
-		}
+		};
 
+		/**
+		* Calculates all possible bonds (vectors) by starting from a supplied `vector` and rotating it by an angle defined as `freq` parameter.
+		* @param {number[]} vector - starting vector,
+		* @param {number} freq - angle in degrees,
+		* @returns {Array}
+		*/
 		service.calcPossibleBonds = function (vector, freq) {
 			var possibleBonds = [], i;
 			for (i = 0; i < 360 / freq; i += 1) {
@@ -80,6 +122,13 @@
 			return possibleBonds;
 		};
 
+		/**
+		* Calculates the closest bond (vector) in `possibleBonds` array to vector starting at `down` coords and ending at `mousePos` coords.
+		* @param {number[]} down - first set of coordinates,
+		* @param {number[]} mousePos - second set of coordinates,
+		* @param {Array} possibleBonds - an array of bonds (vectors),
+		* @returns {number[]}
+		*/
 		service.getClosestBond = function (down, mousePos, possibleBonds) {
 			var vector = [mousePos[0] - down[0], mousePos[1] - down[1]], angle, i, currVector, minAngle = Math.PI, minIndex = 0, structure;
 			for (i = 0; i < possibleBonds.length; i += 1) {
@@ -93,11 +142,22 @@
 			return possibleBonds[minIndex];
 		};
 
+		/**
+		* Checks if a bond (vector) exists in an `attachedBonds` array in an `Atom` object.
+		* If so, this bond is rotated by an angle and the check is repeated, until free space is found.
+		* If `attachedBonds` array already contains max number of bonds, 'full atom' flag is returned.
+		* @param {number[]} vector - vector to check,
+		* @param {Atom} atom - atom object,
+		* @param {number} freq - angle,
+		* @param {number} maxBonds - max number of bonds (vectors) permitted,
+		* @returns {number|string}
+		*/
 		service.checkAttachedBonds = function (vector, atom, freq, maxBonds) {
 			var inBonds = atom.getAttachedBonds("in") || [],
 			  outBonds = atom.getAttachedBonds("out") || [];
 
 			if (inBonds.length + outBonds.length >= maxBonds) {
+				// if already max bonds
 				return "full atom";
 			}
 
@@ -105,15 +165,27 @@
 
 			return vector;
 
+			/**
+			* Recursively checks if this vector already exists.
+			* @param {number[]} vect - vector to check
+			*/
 			function checkVector(vect) {
 				checkBonds(inBonds, "in");
 				checkBonds(outBonds, "out");
 
+				/**
+				* Recursively checks if this vector already exists.
+				* @param {object[]} bonds - vectors to check
+				* @param {string} type - type of bonds, either 'in' or 'out'
+				*/
 				function checkBonds(bonds, type) {
 					var i, currentVect;
 					for (i = 0; i < bonds.length; i += 1) {
+						// if the vector to compare is incoming, it has to be rotated by 180 degs
 						currentVect = type === "in" ? service.rotVectCW(bonds[i].vector, 180): bonds[i].vector;
-						if (service.compareCoords(currentVect, vect, 5)) {
+						if (service.compareVectors(currentVect, vect, 5)) {
+							// if compared vectors are equals, the starting vectors has to be rotated by `freq`
+							// and check has to be repeated (on both arrays, 'in' and 'out')
 							vector = service.rotVectCW(vect, freq);
 							checkVector(vector);
 						}
@@ -122,49 +194,71 @@
 			}
 		};
 
+		/**
+		* Calculates dot product of two vectors.
+		* @param {number[]} v1 - first vector,
+		* @param {number[]} v2 - second vector,
+		* @returns {number[]}
+		*/
 		service.dotProduct = function (v1, v2) {
 			return v1[0] * v2[0] + v1[1] * v2[1];
 		};
 
+		/**
+		* Normalizes a vector.
+		* @param {number[]} v - vector to normalize,
+		* @returns {number[]}
+		*/
 		service.norm = function (v) {
 			var len = Math.sqrt(v[0] * v[0] + v[1] * v[1]);
 			return [v[0] / len, v[1] / len];
 		};
 
-		// rotates a vector counter clock-wise
+		/**
+		* Rotates a vector counter clock-wise (with y axis pointing down and x axis pointing right).
+		* @param {number[]} vect - vector to rotate,
+		* @param {number} deg - an angle in degrees,
+		* @returns {number[]}
+		*/
 		service.rotVectCCW = function (vect, deg) {
 			var rads = deg * (Math.PI / 180),
 				rotX = vect[0] * Math.cos(rads) + vect[1] * Math.sin(rads),
 				rotY = vect[1] * Math.cos(rads) - vect[0] * Math.sin(rads);
 			return [rotX, rotY];
-		}
+		};
 
-		// rotates a vector clock-wise
+		/**
+		* Rotates a vector clock-wise (with y axis pointing down and x axis pointing right).
+		* @param {number[]} vect - vector to rotate,
+		* @param {number} deg - an angle in degrees,
+		* @returns {number[]}
+		*/
 		service.rotVectCW = function (vect, deg) {
 			var rads = deg * (Math.PI / 180),
 				rotX = vect[0] * Math.cos(rads) - vect[1] * Math.sin(rads),
 				rotY = vect[0] * Math.sin(rads) + vect[1] * Math.cos(rads);
 			return [rotX, rotY];
-		}
+		};
 
 		/**
 		 * Checks if a point is inside an area delimited by a circle.
-		 * @param {Number[]} center - coordinates of the center of a circle
-		 * @param {Number[]} point - coordinates of a point to be validated
-		 * @returns {Boolean}
+		 * @param {number[]} center - coordinates of the center of a circle,
+		 * @param {number[]} point - coordinates of a point to be validated,
+		 * @param {number} tolerance - r of the circle,
+		 * @returns {boolean}
 		 */
 		service.insideCircle = function (center, point, tolerance) {
 			return Math.abs(center[0] - point[0]) < tolerance && Math.abs(center[1] - point[1]) < tolerance;
 		};
 
 		/**
-		 * Subtracts the coords in the second array from the first array.
-		 * @param {Number[]} arr1 - first array
-		 * @param {Number[]} arr2 - second array
+		 * Subtracts second vector from first vectors.
+		 * @param {number[]} v1 - first vector,
+		 * @param {number[]} v2 - second vector
 		 * @returns {Number[]}
 		 */
-		service.subtractCoords = function (arr1, arr2) {
-			return [arr1[0] - arr2[0], arr1[1] - arr2[1]];
+		service.subtractVectors = function (v1, v2) {
+			return [v1[0] - v2[0], v1[1] - v2[1]];
 		};
 
 		return service;

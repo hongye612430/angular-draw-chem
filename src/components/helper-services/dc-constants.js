@@ -11,13 +11,22 @@
 
 		service.SET_BOND_LENGTH;
 
+		/**
+		* Sets length of the bond and then initializes other constants.
+		* For use at config step.
+		* @param {number} length - length of the bond
+		*/
 		service.setBondLength = function (length) {
 			service.SET_BOND_LENGTH = length;
-			init();
+			init(); // initialize all constants
 		}
 
+		// initialize all constants
 		init();
 
+		/**
+		* Initializes all constants.
+		*/
 		function init() {
 
 			// the default bond length
@@ -64,8 +73,14 @@
 			// bonds + their directions
 			service.BONDS = [];
 
+			// adds all bonds to `service`, e.g. `service.BOND_N`
 			generateBonds();
 
+			/**
+			* Returns a bond vector associated with a direction.
+			* @param {string} direction - direction of the bond
+			* @returns {number[]}
+			*/
 			service.getBondByDirection = function (direction) {
 				var i;
 				for (i = 0; i < service.BONDS.length; i += 1) {
@@ -75,13 +90,15 @@
 				}
 			};
 
+			// adds all bonds to `service`, e.g. `service.BOND_N`
+			// then to `service.BONDS` array
 			function generateBonds() {
-				var vector = [0, -service.BOND_LENGTH];
+				var vector = [0, -service.BOND_LENGTH]; // starting vector, north direction
 				service.DIRECTIONS.forEach(function (direction) {
 					var name = "BOND_" + direction;
-					service[name] = vector;
-					service.BONDS.push({ direction: direction, bond: vector });
-					vector = Utils.rotVectCW(vector, 30);
+					service[name] = vector; // add vector to `service`
+					service.BONDS.push({ direction: direction, bond: vector }); // add bond to `BONDS` array
+					vector = Utils.rotVectCW(vector, 30); // rotate vector by 30 degrees
 				});
 			}
 		}

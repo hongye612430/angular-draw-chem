@@ -78,7 +78,7 @@
 						return base;
 					}
 
-					if (!isInsideCircle && Utils.compareCoords(down, absPos, 5)) {
+					if (!isInsideCircle && Utils.compareVectors(down, absPos, 5)) {
 						// if 'mousedown' was within a circle around an atom
 						// but 'mouseup' was not
 						// and if a valid atom has not already been found
@@ -196,7 +196,7 @@
 					angle = Math.acos(Utils.dotProduct(Utils.norm(firstInBond), Utils.norm(firstOutBond))) * 180 / Math.PI;
 					// construct angle bisector
 					vectAux = Utils.rotVectCCW(firstInBond, (180 - angle) / 2);
-					if (Utils.compareCoords(vectAux, firstOutBond, 5)) {
+					if (Utils.compareVectors(vectAux, firstOutBond, 5)) {
 						vect = Utils.rotVectCW(firstInBond, (180 - angle) / 2);
 					} else {
 						vect = vectAux;
@@ -339,7 +339,7 @@
 					for (i = 0; i < atom.getBonds().length; i += 1) {
 						at = atom.getBonds(i).getAtom();
 						newAbsPos = [at.getCoords("x") + absPos[0], at.getCoords("y") + absPos[1]];
-						newCoords = Utils.subtractCoords(newAbsPos, origin);
+						newCoords = Utils.subtractVectors(newAbsPos, origin);
 						newAtomArray.push({ obj: at, coords: newCoords });
 					}
 				}
@@ -432,13 +432,13 @@
 					obj = input.getStructure(i);
 					if (obj instanceof Selection) {
 						selection = obj;
-						absPosStart = Utils.addCoordsNoPrec(origin, selection.getOrigin());
+						absPosStart = Utils.addVectors(origin, selection.getOrigin());
 						absPosEnd = selection.getCurrent();
 						quarter = selection.getQuarter();
 						rects.push(DCSelection.calcRect(quarter, absPosStart, absPosEnd));
 					} else if (obj instanceof Atom) {
 						atom = obj;
-						absPos = Utils.addCoordsNoPrec(origin, atom.getCoords());
+						absPos = Utils.addVectors(origin, atom.getCoords());
 						updateLabel(absPos, atom);
 						updateMinMax(absPos);
 						len = output.push(["M", absPos]);
@@ -446,8 +446,8 @@
 						connect(absPos, atom.getBonds(), output[len - 1], atom.selected);
 					} else if (obj instanceof Arrow) {
 						arrow = obj;
-						absPosStart = Utils.addCoordsNoPrec(origin, arrow.getOrigin());
-						absPosEnd = Utils.addCoordsNoPrec(origin, arrow.getEnd());
+						absPosStart = Utils.addVectors(origin, arrow.getOrigin());
+						absPosEnd = Utils.addVectors(origin, arrow.getEnd());
 						updateMinMax(absPosStart);
 						updateMinMax(absPosEnd);
 						circles.push({ selected: arrow.selected, circle: [ absPosStart[0], absPosStart[1], circR ] });

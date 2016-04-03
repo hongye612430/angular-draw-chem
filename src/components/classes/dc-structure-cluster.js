@@ -15,12 +15,11 @@
 		* @param {String} name - name of the cluster
 		* @param {Structure[]} defs - array of Structure objects belonging to the cluster
 		*/
-		function StructureCluster(name, defs, multiplicity, ringSize, angle) {
+		function StructureCluster(name, defs, ringSize, angle) {
 			this.name = name;
 			this.defs = defs;
 			this.ringSize = ringSize || 0;
 			this.angle = angle;
-			this.multiplicity = multiplicity;
 			this.defaultStructure = defs[0];
 		}
 
@@ -30,10 +29,6 @@
 
 		StructureCluster.prototype.getName = function () {
 			return this.name;
-		};
-
-		StructureCluster.prototype.getMult = function () {
-			return this.multiplicity;
 		};
 
 		StructureCluster.prototype.getRingSize = function () {

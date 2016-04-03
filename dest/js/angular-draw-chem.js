@@ -154,16 +154,16 @@
 				perpVectCoordsCCW = [vectCoords[1], -vectCoords[0]], endMarkerStart, startMarkerStart, M1, M2, L1, L2, L3, L4;
 			if (type === "one-way-arrow") {
 				endMarkerStart = [start[0] + vectCoords[0] * ARROW_START, start[1] + vectCoords[1] * ARROW_START];
-				L1 = Utils.addCoordsNoPrec(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
-				L2 = Utils.addCoordsNoPrec(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+				L1 = Utils.addVectors(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+				L2 = Utils.addVectors(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
 				return ["arrow", "M", start, "L", end, "M", endMarkerStart, "L", L1, "L", end, "L", L2, "Z"];
 			} else if (type === "two-way-arrow") {
 				endMarkerStart = [start[0] + vectCoords[0] * ARROW_START, start[1] + vectCoords[1] * ARROW_START];
 				startMarkerStart = [start[0] + vectCoords[0] * (1 - ARROW_START), start[1] + vectCoords[1] * (1 - ARROW_START)];
-				L1 = Utils.addCoordsNoPrec(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
-				L2 = Utils.addCoordsNoPrec(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
-				L3 = Utils.addCoordsNoPrec(startMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
-				L4 = Utils.addCoordsNoPrec(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+				L1 = Utils.addVectors(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+				L2 = Utils.addVectors(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+				L3 = Utils.addVectors(startMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+				L4 = Utils.addVectors(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
 				return [
 					"arrow",
 					"M", start, "L", end,
@@ -172,15 +172,15 @@
 				];
 			}
 			else if (type === "equilibrium-arrow") {
-				M1 = Utils.addCoordsNoPrec(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
-				L1 = Utils.addCoordsNoPrec(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
+				M1 = Utils.addVectors(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
+				L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
 				endMarkerStart = [parseFloat(M1[0]) + vectCoords[0] * ARROW_START, parseFloat(M1[1]) + vectCoords[1] * ARROW_START];
-				L2 = Utils.addCoordsNoPrec(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+				L2 = Utils.addVectors(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
 
-				M2 = Utils.addCoordsNoPrec(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
-				L3 = Utils.addCoordsNoPrec(start, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+				M2 = Utils.addVectors(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+				L3 = Utils.addVectors(start, perpVectCoordsCW, BETWEEN_DBL_BONDS);
 				startMarkerStart = [parseFloat(L3[0]) + vectCoords[0] * (1 - ARROW_START), parseFloat(L3[1]) + vectCoords[1] * (1 - ARROW_START)];
-				L4 = Utils.addCoordsNoPrec(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+				L4 = Utils.addVectors(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
 				return [
 					"arrow-eq",
 					"M", M1, "L", L1, "L", L2,
@@ -205,11 +205,11 @@
 		var service = {};
 
 		/**
-		* Creates a new Atom.
+		* Creates a new `Atom` object.
 		* @class
-		* @param {Number[]} coords - an array with coordinates of the atom
-		* @param {Bond[]} - an array of bonds coming out of the atom
-		* @param {String[]} - directions of all bonds coming out or coming in
+		* @param {number[]} coords - an array with coordinates of the atom,
+		* @param {Bond[]} bonds - an array of bonds coming out of the atom,
+		* @param {object} attachedBonds - directions of all bonds coming out or coming in as object: { in: [{ vector: `number[]`, multiplicity: `number` }], out: [same] }
 		*/
 		function Atom(coords, bonds, attachedBonds) {
 			this.coords = coords;
@@ -220,17 +220,24 @@
 			this.label;
 		}
 
+		/**
+		* Marks `Atom` object as selected.
+		*/
 		Atom.prototype.select = function () {
 			this.selected = true;
 		};
 
+		/**
+		* Unmarks selection.
+		*/
 		Atom.prototype.deselect = function () {
 			this.selected = false;
 		};
 
 		/**
 		 * Calculates direction of an opposite bond.
-		 * @param {String} direction - direction of a bond
+		 * @param {string} direction - direction of the bond
+		 * @returns {string}
 		 */
 		Atom.getOppositeDirection = function (direction) {
 			var DIRS = Const.DIRECTIONS,
@@ -241,10 +248,12 @@
 
 		/**
 		 * Adds a bond to the attachedBonds array.
-		 * @param {String} bond - direction of a bond
+		 * @param {string} type - type of the bond, i.e. 'in' or 'out',
+		 * @param {object} bond - bond defined as { vector: `number[]`, multiplicity: `number` }
 		 */
 		Atom.prototype.attachBond = function (type, bond) {
 			if (typeof this.attachedBonds[type] === "undefined") {
+				// initiates array if it does not exist
 				this.attachedBonds[type] = [];
 			}
 			this.attachedBonds[type].push(bond);
@@ -252,76 +261,11 @@
 
 		/**
 		 * Sets coordinates of the atom.
-		 * @param {Number[]} coords - an array with coordinates of the atom
+		 * @param {number[]} coords - an array with coordinates of the atom
 		 */
 		Atom.prototype.setCoords = function (coords) {
 			this.coords = coords;
 		};
-
-		/**
-		 * Gets attached bonds.
-		 * @returns {String[]}
-		 */
-		Atom.prototype.getAttachedBonds = function (type) {
-			if (typeof type === "undefined") {
-				return this.attachedBonds;
-			}
-			return this.attachedBonds[type];
-		}
-
-		/**
-		 * Sets coordinates of a preceding atom.
-		 * @param {Number[]} coords - an array with coordinates of the atom
-		 */
-		Atom.prototype.setPreceding = function (coords) {
-			this.preceding = coords;
-		};
-
-		/**
-		 * Gets coordinates of the atom.
-		 * @returns {Number[]|Number}
-		 */
-		Atom.prototype.getPreceding = function (coord) {
-			if (coord === "x") {
-				return this.preceding[0];
-			} else if (coord === "y") {
-				return this.preceding[1];
-			} else {
-				return this.preceding;
-			}
-		};
-
-		/**
-		 * Gets symbol of the next bond.
-		 * @returns {String}
-		 */
-		Atom.prototype.getNext = function () {
-			return this.next;
-		}
-
-		/**
-		 * Sets Label object.
-		 * @param {Label} label - a Label object
-		 */
-		Atom.prototype.setLabel = function (label) {
-			this.label = label;
-		}
-
-		/**
-		 * Gets Label object.
-		 * @returns {Label}
-		 */
-		Atom.prototype.getLabel = function () {
-			return this.label;
-		}
-
-		/**
-		 * Sets symbol of the next bond.
-		 * @param {String} - symbol of the next bond
-		 */
-		Atom.prototype.setNext = function (symbol) {
-			this.next = symbol;
-		}
 
 		/**
 		 * Gets coordinates of the atom.
@@ -338,44 +282,116 @@
 		};
 
 		/**
-		 * Gets an array of all atoms this atom is connected with
-		 * @returns {Bond[]|Bond}
+		 * Gets all attached bonds.
+		 * @param {string} type - type of the bond, 'in' or 'out'
+		 * @returns {object|object[]} - returns an object if `type` is not supplied, an array of objects if `type` is supplied
+		 */
+		Atom.prototype.getAttachedBonds = function (type) {
+			if (typeof type === "undefined") {
+				// returns an object holding both 'in' and 'out' properties
+				return this.attachedBonds;
+			}
+			return this.attachedBonds[type];
+		};
+
+		/**
+		 * Sets `Label` object.
+		 * @param {Label} label - a `Label` object
+		 */
+		Atom.prototype.setLabel = function (label) {
+			this.label = label;
+		};
+
+		/**
+		 * Gets` Label` object.
+		 * @returns {Label}
+		 */
+		Atom.prototype.getLabel = function () {
+			return this.label;
+		};
+
+		/**
+		 * Gets an array of all `Bonds` objects coming out of this `Atom` object.
+		 * @param {number} index - an index of desired `Bond` object
+		 * @returns {Bond[]|Bond} - returns an array of `Bonds` if index is not supplied, a `Bond` object at specifed index otherwise
 		 */
 		Atom.prototype.getBonds = function (index) {
-			if (arguments.length === 0) {
+			if (typeof index === "undefined") {
 				return this.bonds;
 			} else {
 				return this.bonds[index];
 			}
-		}
+		};
 
 		/**
-		 * Sets an array of bonds
-		 * @param {Bond[]} bonds - array of Bond objects
+		 * Sets an array of `Bond' objects coming out of this `Atom` object.
+		 * @param {Bond[]} bonds - array of `Bond` objects
 		 */
 		Atom.prototype.setBonds = function (bonds) {
 			this.bonds = bonds;
-		}
+		};
 
 		/**
-		 * Adds a new atom to the bonds array.
-		 * @param {Atom} atom - a new Atom object to be added
+		 * Adds a new `Bond` object to the array.
+		 * @param {Bond} bond - a new `Bond` object to be added to this `Atom` object
 		 */
 		Atom.prototype.addBond = function (bond) {
 			this.bonds.push(bond);
-		}
+		};
 
 		/**
-		 * Adds new bonds.
-		 * @param {Bond[]} bonds - an array of bonds to be added
+		 * Adds new `Bond` objects to the array.
+		 * @param {Bond[]} bonds - an array of `Bond` objects to be added
 		 */
 		Atom.prototype.addBonds = function (bonds) {
 			bonds.forEach(function (bond) {
 				this.bonds.push(bond);
 			}, this);
-		}
+		};
 
 		service.Atom = Atom;
+
+		return service;
+	}
+})();
+
+(function () {
+	"use strict";
+	angular.module("mmAngularDrawChem")
+		.factory("DCBondStructure", DCBondStructure);
+
+	function DCBondStructure() {
+
+		var service = {};
+
+    /**
+		* Creates a new `BondStructure` object.
+		* @class
+    * @param {string} name - name of the cyclic structure,
+    * @param {number} multiplicity - multiplicity of the bond
+		*/
+    function BondStructure(name, multiplicity) {
+      this.name = name;
+      this.multiplicity = multiplicity;
+    }
+
+    /**
+    * Gets name of bond structure.
+    * @returns {string}
+    */
+    BondStructure.prototype.getName = function () {
+      return this.name;
+    };
+
+    /**
+    * Gets multiplicity of the bond.
+    * @returns {number}
+    */
+    BondStructure.prototype.getMultiplicity = function () {
+      return this.multiplicity;
+    };
+
+    service.BondStructure = BondStructure;
 
 		return service;
 	}
@@ -443,10 +459,10 @@
 			var vectCoords = [end[0] - start[0], end[1] - start[1]],
 				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
 				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
-				M1 = Utils.addCoordsNoPrec(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
-				L1 = Utils.addCoordsNoPrec(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
-				M2 = Utils.addCoordsNoPrec(start, perpVectCoordsCW, BETWEEN_DBL_BONDS),
-				L2 = Utils.addCoordsNoPrec(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+				M1 = Utils.addVectors(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
+				L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
+				M2 = Utils.addVectors(start, perpVectCoordsCW, BETWEEN_DBL_BONDS),
+				L2 = Utils.addVectors(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
 			return ["M", M1, "L", L1, "M", M2, "L", L2];
 		};
 
@@ -454,10 +470,10 @@
 			var vectCoords = [end[0] - start[0], end[1] - start[1]],
 				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
 				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
-				M1 = Utils.addCoordsNoPrec(start, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
-				L1 = Utils.addCoordsNoPrec(end, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
-				M2 = Utils.addCoordsNoPrec(start, perpVectCoordsCW, BETWEEN_TRP_BONDS),
-				L2 = Utils.addCoordsNoPrec(end, perpVectCoordsCW, BETWEEN_TRP_BONDS);
+				M1 = Utils.addVectors(start, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
+				L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
+				M2 = Utils.addVectors(start, perpVectCoordsCW, BETWEEN_TRP_BONDS),
+				L2 = Utils.addVectors(end, perpVectCoordsCW, BETWEEN_TRP_BONDS);
 			return ["M", M1, "L", L1, "M", start, "L", end, "M", M2, "L", L2];
 		};
 
@@ -465,8 +481,8 @@
 			var vectCoords = [end[0] - start[0], end[1] - start[1]],
 				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
 				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
-				L1 = Utils.addCoordsNoPrec(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
-				L2 = Utils.addCoordsNoPrec(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+				L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
+				L2 = Utils.addVectors(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
 			return ["wedge", "M", start, "L", L1, "L", L2, "Z"];
 		};
 
@@ -479,12 +495,74 @@
 			for (i = max; i > 0; i -= 1) {
 				factor = factor + BETWEEN_DBL_BONDS / max;
 				currentEnd = [currentEnd[0] + vectCoords[0] / max, currentEnd[1] + vectCoords[1] / max];
-				M = Utils.addCoordsNoPrec(currentEnd, perpVectCoordsCCW, factor);
-				L = Utils.addCoordsNoPrec(currentEnd, perpVectCoordsCW, factor);
+				M = Utils.addVectors(currentEnd, perpVectCoordsCCW, factor);
+				L = Utils.addVectors(currentEnd, perpVectCoordsCW, factor);
 				result = result.concat(["M", M, "L", L]);
 			}
 			return result;
 		};
+
+		return service;
+	}
+})();
+
+(function () {
+	"use strict";
+	angular.module("mmAngularDrawChem")
+		.factory("DCCyclicStructure", DCCyclicStructure);
+
+	function DCCyclicStructure() {
+
+		var service = {};
+
+    /**
+		* Creates a new `CyclicStructure` object.
+		* @class
+    * @param {string} name - name of the cyclic structure,
+    * @param {number} ringSize - size of the ring,
+    * @param {number} angle - angle in degrees between two bonds (vectors) in the ring,
+    * @param {boolean} aromatic - true if structure is aromatic
+		*/
+    function CyclicStructure(name, ringSize, angle, aromatic) {
+      this.name = name;
+      this.ringSize = ringSize;
+      this.angle = angle;
+      this.aromatic = aromatic;
+    }
+
+    /**
+    * Gets name of cyclic structure.
+    * @returns {string}
+    */
+    CyclicStructure.prototype.getName = function () {
+      return this.name;
+    };
+
+    /**
+    * Gets ring size of cyclic structure.
+    * @returns {number}
+    */
+    CyclicStructure.prototype.getRingSize = function () {
+      return this.ringSize;
+    };
+
+    /**
+    * Gets angle in degrees between two bonds (vectors) in the ring.
+    * @returns {string}
+    */
+    CyclicStructure.prototype.getAngle = function () {
+      return this.angle;
+    };
+
+    /**
+    * Checks if structure is aromatic.
+    * @returns {boolean}
+    */
+    CyclicStructure.prototype.isAromatic = function () {
+      return !!this.aromatic;
+    };
+
+    service.CyclicStructure = CyclicStructure;
 
 		return service;
 	}
@@ -872,12 +950,11 @@
 		* @param {String} name - name of the cluster
 		* @param {Structure[]} defs - array of Structure objects belonging to the cluster
 		*/
-		function StructureCluster(name, defs, multiplicity, ringSize, angle) {
+		function StructureCluster(name, defs, ringSize, angle) {
 			this.name = name;
 			this.defs = defs;
 			this.ringSize = ringSize || 0;
 			this.angle = angle;
-			this.multiplicity = multiplicity;
 			this.defaultStructure = defs[0];
 		}
 
@@ -887,10 +964,6 @@
 
 		StructureCluster.prototype.getName = function () {
 			return this.name;
-		};
-
-		StructureCluster.prototype.getMult = function () {
-			return this.multiplicity;
 		};
 
 		StructureCluster.prototype.getRingSize = function () {
@@ -1219,11 +1292,11 @@
 				var currOrig,	absPos, absPosStart, absPosEnd;
 				if (struct instanceof Atom) { // if struct is an Atom object
 					currOrig = struct.getCoords(); // get relative coords of the first atom in structure
-					absPos = Utils.addCoordsNoPrec(this.origin, currOrig); // calculate its absolute position
+					absPos = Utils.addVectors(this.origin, currOrig); // calculate its absolute position
 					checkStructure(absPos, struct); // recursively check all atoms in this structure
 				} else if (struct instanceof Arrow) { // if struct is an Arrow object
-					absPosStart = Utils.addCoordsNoPrec(this.origin, struct.getOrigin()); // calculate absolute coords of the beginning of the arrow
-					absPosEnd = Utils.addCoordsNoPrec(this.origin, struct.getEnd()); // calculate absolute coords of the end of the arrow
+					absPosStart = Utils.addVectors(this.origin, struct.getOrigin()); // calculate absolute coords of the beginning of the arrow
+					absPosEnd = Utils.addVectors(this.origin, struct.getEnd()); // calculate absolute coords of the end of the arrow
 					checkArrow(absPosStart); // check coords of the beginning of the arrow
 					checkArrow(absPosEnd); // check coords of the end of the arrow
 				}
@@ -1239,7 +1312,7 @@
 				updateMaxX(absPos, minMax);
 				for (i = 0; i < struct.getBonds().length; i += 1) {
 					at = struct.getBonds(i).getAtom();
-					currAbsPos = Utils.addCoordsNoPrec(absPos, at.getCoords());
+					currAbsPos = Utils.addVectors(absPos, at.getCoords());
 					checkStructure(currAbsPos, at);
 				}
 			}
@@ -1305,7 +1378,7 @@
 		* @returns {Boolean}
 		*/
 		function isInsideRectY(selection, coord) {
-			var origin = Utils.addCoordsNoPrec(this.origin, selection.getOrigin()),
+			var origin = Utils.addVectors(this.origin, selection.getOrigin()),
 				end = selection.getCurrent(),
 				quarter = selection.getQuarter();
 
@@ -1323,7 +1396,7 @@
 		* @returns {Boolean}
 		*/
 		function isInsideRectX(selection, coord) {
-			var origin = Utils.addCoordsNoPrec(this.origin, selection.getOrigin()),
+			var origin = Utils.addVectors(this.origin, selection.getOrigin()),
 				end = selection.getCurrent(),
 				quarter = selection.getQuarter();
 
@@ -1407,8 +1480,8 @@
 		* @param {Number} coord - the most extreme coord
 		*/
 		function setArrow(arrow, alignment, coord) {
-			var absPosStart = Utils.addCoordsNoPrec(this.origin, arrow.getOrigin()), // absolute coords of arrow start
-				absPosEnd = Utils.addCoordsNoPrec(this.origin, arrow.getEnd()), // absolute coords of arrow end
+			var absPosStart = Utils.addVectors(this.origin, arrow.getOrigin()), // absolute coords of arrow start
+				absPosEnd = Utils.addVectors(this.origin, arrow.getEnd()), // absolute coords of arrow end
 				// object with extreme coords
 				minMax = { minX: absPosStart[0], minY: absPosStart[1], maxX: absPosStart[0], maxY: absPosStart[1] },
 				d;
@@ -1444,7 +1517,7 @@
 		*/
 		function setAtom(atom, alignment, coord) {
 			var currAtOrig = atom.getCoords(), // relative coords of the atom
-				absPos = Utils.addCoordsNoPrec(this.origin, currAtOrig), // absolute coords of the first atom
+				absPos = Utils.addVectors(this.origin, currAtOrig), // absolute coords of the first atom
 				// object with extreme coords
 				minMax = {}, d;
 
@@ -1479,7 +1552,7 @@
 				updateMinY(absPos, minMax);
 				for (i = 0; i < atom.getBonds().length; i += 1) {
 					at = atom.getBonds(i).getAtom();
-					currAbsPos = Utils.addCoordsNoPrec(absPos, at.getCoords());
+					currAbsPos = Utils.addVectors(absPos, at.getCoords());
 					checkMinY(currAbsPos, at);
 				}
 			}
@@ -1490,7 +1563,7 @@
 				updateMaxY(absPos, minMax);
 				for (i = 0; i < atom.getBonds().length; i += 1) {
 					at = atom.getBonds(i).getAtom();
-					currAbsPos = Utils.addCoordsNoPrec(absPos, at.getCoords());
+					currAbsPos = Utils.addVectors(absPos, at.getCoords());
 					checkMaxY(currAbsPos, at);
 				}
 			}
@@ -1501,7 +1574,7 @@
 				updateMaxX(absPos, minMax);
 				for (i = 0; i < atom.getBonds().length; i += 1) {
 					at = atom.getBonds(i).getAtom();
-					currAbsPos = Utils.addCoordsNoPrec(absPos, at.getCoords());
+					currAbsPos = Utils.addVectors(absPos, at.getCoords());
 					checkMaxX(currAbsPos, at);
 				}
 			}
@@ -1512,7 +1585,7 @@
 				updateMinX(absPos, minMax);
 				for (i = 0; i < atom.getBonds().length; i += 1) {
 					at = atom.getBonds(i).getAtom();
-					currAbsPos = Utils.addCoordsNoPrec(absPos, at.getCoords());
+					currAbsPos = Utils.addVectors(absPos, at.getCoords());
 					checkMinX(currAbsPos, at);
 				}
 			}
@@ -1524,8 +1597,8 @@
 				var equal = Utils.compareFloats(arom.fromWhich[0], atom.getCoords("x"), 3)
 					&& Utils.compareFloats(arom.fromWhich[1], atom.getCoords("y"), 3);
 				if (equal) {
-					arom.fromWhich = Utils.addCoordsNoPrec(arom.fromWhich, d);
-					arom.coords = Utils.addCoordsNoPrec(arom.coords, d);
+					arom.fromWhich = Utils.addVectors(arom.fromWhich, d);
+					arom.coords = Utils.addVectors(arom.coords, d);
 				}
 			});
 		}
@@ -1739,7 +1812,7 @@
 						// get default arrow
 						arrow = angular.copy(scope.chosenArrow.getDefault());
 						// calculate and set coords
-						newCoords = Utils.subtractCoords(mouseCoords, structure.getOrigin());
+						newCoords = Utils.subtractVectors(mouseCoords, structure.getOrigin());
 						arrow.setOrigin(newCoords);
 					}
 				} else {
@@ -1754,7 +1827,7 @@
 						// otherwise get default arrow
 						arrow = angular.copy(scope.chosenArrow.getDefault());
 					}
-					newCoords = Utils.subtractCoords(mouseFlags.downMouseCoords, structure.getOrigin());
+					newCoords = Utils.subtractVectors(mouseFlags.downMouseCoords, structure.getOrigin());
 					// calculate and set coords
 					arrow.setOrigin(newCoords);
 				}
@@ -1804,7 +1877,7 @@
 					// so get it from Cache
 					structure = angular.copy(Cache.getCurrentStructure());
 					// calaculate new coords
-					newCoords = Utils.subtractCoords(mouseFlags.downMouseCoords, structure.getOrigin());
+					newCoords = Utils.subtractVectors(mouseFlags.downMouseCoords, structure.getOrigin());
 					if (mouseFlags.movedOnEmpty) {
 						// if the mousemove event occurred before this mouseup event
 						// choose an appropriate Structure object from the StructureCluster object
@@ -1892,7 +1965,7 @@
 					structure = angular.copy(Cache.getCurrentStructure());
 					// choose appropriate arrow from ArrowCluster object
 					arrow = angular.copy(scope.chosenArrow.getArrow(mouseCoords, mouseFlags.downMouseCoords));
-					newCoords = Utils.subtractCoords(mouseFlags.downMouseCoords, structure.getOrigin());
+					newCoords = Utils.subtractVectors(mouseFlags.downMouseCoords, structure.getOrigin());
 					// calculate and set coords
 					arrow.setOrigin(newCoords);
 				}
@@ -1924,7 +1997,7 @@
 					// so get it from Cache
 					structure = angular.copy(Cache.getCurrentStructure());
 					// calaculate new coords
-					newCoords = Utils.subtractCoords(mouseFlags.downMouseCoords, structure.getOrigin());
+					newCoords = Utils.subtractVectors(mouseFlags.downMouseCoords, structure.getOrigin());
 					// choose an appropriate Structure object from the StructureCluster object
 					structureAux = angular.copy(scope.chosenStructure.getStructure(mouseCoords, mouseFlags.downMouseCoords));
 					if (structureAux.isAromatic()) {
@@ -1963,7 +2036,7 @@
 			if (!Utils.isContentEmpty()) {
 				// if the content is non-empty
 				structure = angular.copy(Cache.getCurrentStructure());
-				moveDistance = Utils.subtractCoords(mouseCoords, mouseFlags.downMouseCoords);
+				moveDistance = Utils.subtractVectors(mouseCoords, mouseFlags.downMouseCoords);
 				structure.moveStructureTo("mouse", moveDistance);
 			}
 			return structure;
@@ -1982,7 +2055,7 @@
 				// if the content is not empty, a Structure object already exists
 				// so get Structure object from Cache
 				structure = angular.copy(Cache.getCurrentStructure());
-				newCoords = Utils.subtractCoords(mouseFlags.downMouseCoords, structure.getOrigin());
+				newCoords = Utils.subtractVectors(mouseFlags.downMouseCoords, structure.getOrigin());
 				selection = new Selection(newCoords, mouseCoords);
 			}
 			// checks to which 'quarter' the selection rect belongs (downMouseCoords as the beginning of the coordinate system)
@@ -2046,7 +2119,7 @@
 		 * @param {Number[]} arr2 - second array
 		 * @returns {Number[]}
 		 */
-		service.subtractCoords = function (arr1, arr2) {
+		service.subtractVectors = function (arr1, arr2) {
 			return [arr1[0] - arr2[0], arr1[1] - arr2[1]];
 		}
 
@@ -2269,13 +2342,22 @@
 
 		service.SET_BOND_LENGTH;
 
+		/**
+		* Sets length of the bond and then initializes other constants.
+		* For use at config step.
+		* @param {number} length - length of the bond
+		*/
 		service.setBondLength = function (length) {
 			service.SET_BOND_LENGTH = length;
-			init();
+			init(); // initialize all constants
 		}
 
+		// initialize all constants
 		init();
 
+		/**
+		* Initializes all constants.
+		*/
 		function init() {
 
 			// the default bond length
@@ -2322,8 +2404,14 @@
 			// bonds + their directions
 			service.BONDS = [];
 
+			// adds all bonds to `service`, e.g. `service.BOND_N`
 			generateBonds();
 
+			/**
+			* Returns a bond vector associated with a direction.
+			* @param {string} direction - direction of the bond
+			* @returns {number[]}
+			*/
 			service.getBondByDirection = function (direction) {
 				var i;
 				for (i = 0; i < service.BONDS.length; i += 1) {
@@ -2333,13 +2421,15 @@
 				}
 			};
 
+			// adds all bonds to `service`, e.g. `service.BOND_N`
+			// then to `service.BONDS` array
 			function generateBonds() {
-				var vector = [0, -service.BOND_LENGTH];
+				var vector = [0, -service.BOND_LENGTH]; // starting vector, north direction
 				service.DIRECTIONS.forEach(function (direction) {
 					var name = "BOND_" + direction;
-					service[name] = vector;
-					service.BONDS.push({ direction: direction, bond: vector });
-					vector = Utils.rotVectCW(vector, 30);
+					service[name] = vector; // add vector to `service`
+					service.BONDS.push({ direction: direction, bond: vector }); // add bond to `BONDS` array
+					vector = Utils.rotVectCW(vector, 30); // rotate vector by 30 degrees
 				});
 			}
 		}
@@ -2357,45 +2447,66 @@
 
 		var service = {};
 
-    service.addCoords = function(coords1, coords2, factor) {
+		/**
+		* Adds two vectors. Optionally multiplies the second vector by a factor. Returns a new array.
+		* @param {number[]} v1 - first vector,
+		* @param {number[]} v2 - second vector,
+		* @param {number} factor - multiplies second vector by a factor (optional)
+		* @returns {number[]}
+		*/
+		service.addVectors = function(v1, v2, factor) {
 			return typeof factor === "undefined" ?
-				[(coords1[0] + coords2[0]).toFixed(2), (coords1[1] + coords2[1]).toFixed(2)]:
-				[(coords1[0] + factor * coords2[0]).toFixed(2), (coords1[1] + factor * coords2[1]).toFixed(2)];
-		}
-
-		service.addCoordsNoPrec = function(coords1, coords2, factor) {
-			return typeof factor === "undefined" ?
-				[coords1[0] + coords2[0], coords1[1] + coords2[1]]:
-				[coords1[0] + factor * coords2[0], coords1[1] + factor * coords2[1]];
-		}
+				[v1[0] + v2[0], v1[1] + v2[1]]:
+				[v1[0] + factor * v2[0], v1[1] + factor * v2[1]];
+		};
 
 		/**
-		 * Compares coordinates in two arrays. Returns false if at least one of them is undefined or if any pair of the coordinates is inequal.
+		 * Compares two vectors. Returns false if at least one of them is undefined or if any pair of the coordinates is not equal.
 		 * Returns true if they are equal.
-		 * @param {Number[]} arr1 - an array of coordinates,
-		 * @param {Number[]} arr2 - an array of coordinates,
-		 * @param {Number} prec - precision,
-		 * @returns {Boolean}
+		 * @param {number[]} v1 - first vector,
+		 * @param {number[]} v2 - second vector,
+		 * @param {number} prec - precision,
+		 * @returns {boolean}
 		 */
-		service.compareCoords = function(arr1, arr2, prec) {
-			if (typeof arr1 === "undefined" || typeof arr2 === "undefined") {
+		service.compareVectors = function(v1, v2, prec) {
+			if (typeof v1 === "undefined" || typeof v2 === "undefined") {
 				return false;
 			}
-			return arr1[0].toFixed(prec) === arr2[0].toFixed(prec) && arr1[1].toFixed(prec) === arr2[1].toFixed(prec);
-		}
+			return v1[0].toFixed(prec) === v2[0].toFixed(prec) && v1[1].toFixed(prec) === v2[1].toFixed(prec);
+		};
 
+		/**
+		* Checks if value is numeric.
+		* @param {*} obj - a value to check
+		* @returns {boolean}
+		*/
 		service.isNumeric = function(obj) {
 			return obj - parseFloat(obj) >= 0;
-		}
+		};
 
-		service.isSmallLetter = function(obj) {
-			return obj >= "a" && obj <= "z";
-		}
+		/**
+		* Checks if string is a small letter.
+		* @param {string} str - a value to check
+		* @returns {boolean}
+		*/
+		service.isSmallLetter = function(str) {
+			return str >= "a" && str <= "z";
+		};
 
+		/**
+		* Compares two floats to n decimal places, where n is indicated by `prec` parameter.
+		* @param {number} prec - precision (number of decimal places)
+		* @returns {boolean}
+		*/
 		service.compareFloats = function(float1, float2, prec) {
 			return float1.toFixed(prec) === float2.toFixed(prec);
-		}
+		};
 
+		/**
+		* Inverts a chemical group, e.g. makes 'BnO' from 'OBn' or 'NCS' from 'SCN'.
+		* @param {string} - a group to invert
+		* @returns {string}
+		*/
 		service.invertGroup = function(str) {
 			var i, match = str.match(/[A-Z][a-z\d]*/g), output = "";
 			if (match === null) { return str; }
@@ -2403,24 +2514,45 @@
 				output += match[i];
 			}
 			return output;
-		}
+		};
 
-		// this way, the array can be used circularly
+		/**
+		* Moves index of an array to the beginning by n, where n is defined by parameter `d`.
+		* Jumps to the end if negative index would be returned. This way, the array can be used circularly.
+		* @param {Array} array - an array,
+		* @param {number} index - a starting index,
+		* @param {number} d - how far the index should be moved,
+		* @returns {number}
+		*/
 		service.moveToLeft = function(array, index, d) {
 			if (index - d < 0) {
 				return index - d + array.length;
 			}
 			return index - d;
-		}
+		};
 
-		// this way, the array can be used circularly
+		/**
+		* Moves index of an array to the end by n, where n is defined by parameter `d`.
+		* Jumps to the beginning if an index would be returned that exceeds length of the array - 1.
+		* This way, the array can be used circularly.
+		* @param {Array} array - an array,
+		* @param {number} index - a starting index,
+		* @param {number} d - how far the index should be moved,
+		* @returns {number}
+		*/
 		service.moveToRight = function(array, index, d) {
 			if (index + d > array.length - 1) {
 				return index + d - array.length;
 			}
 			return index + d;
-		}
+		};
 
+		/**
+		* Calculates all possible bonds (vectors) by starting from a supplied `vector` and rotating it by an angle defined as `freq` parameter.
+		* @param {number[]} vector - starting vector,
+		* @param {number} freq - angle in degrees,
+		* @returns {Array}
+		*/
 		service.calcPossibleBonds = function (vector, freq) {
 			var possibleBonds = [], i;
 			for (i = 0; i < 360 / freq; i += 1) {
@@ -2430,6 +2562,13 @@
 			return possibleBonds;
 		};
 
+		/**
+		* Calculates the closest bond (vector) in `possibleBonds` array to vector starting at `down` coords and ending at `mousePos` coords.
+		* @param {number[]} down - first set of coordinates,
+		* @param {number[]} mousePos - second set of coordinates,
+		* @param {Array} possibleBonds - an array of bonds (vectors),
+		* @returns {number[]}
+		*/
 		service.getClosestBond = function (down, mousePos, possibleBonds) {
 			var vector = [mousePos[0] - down[0], mousePos[1] - down[1]], angle, i, currVector, minAngle = Math.PI, minIndex = 0, structure;
 			for (i = 0; i < possibleBonds.length; i += 1) {
@@ -2443,11 +2582,22 @@
 			return possibleBonds[minIndex];
 		};
 
+		/**
+		* Checks if a bond (vector) exists in an `attachedBonds` array in an `Atom` object.
+		* If so, this bond is rotated by an angle and the check is repeated, until free space is found.
+		* If `attachedBonds` array already contains max number of bonds, 'full atom' flag is returned.
+		* @param {number[]} vector - vector to check,
+		* @param {Atom} atom - atom object,
+		* @param {number} freq - angle,
+		* @param {number} maxBonds - max number of bonds (vectors) permitted,
+		* @returns {number|string}
+		*/
 		service.checkAttachedBonds = function (vector, atom, freq, maxBonds) {
 			var inBonds = atom.getAttachedBonds("in") || [],
 			  outBonds = atom.getAttachedBonds("out") || [];
 
 			if (inBonds.length + outBonds.length >= maxBonds) {
+				// if already max bonds
 				return "full atom";
 			}
 
@@ -2455,15 +2605,27 @@
 
 			return vector;
 
+			/**
+			* Recursively checks if this vector already exists.
+			* @param {number[]} vect - vector to check
+			*/
 			function checkVector(vect) {
 				checkBonds(inBonds, "in");
 				checkBonds(outBonds, "out");
 
+				/**
+				* Recursively checks if this vector already exists.
+				* @param {object[]} bonds - vectors to check
+				* @param {string} type - type of bonds, either 'in' or 'out'
+				*/
 				function checkBonds(bonds, type) {
 					var i, currentVect;
 					for (i = 0; i < bonds.length; i += 1) {
+						// if the vector to compare is incoming, it has to be rotated by 180 degs
 						currentVect = type === "in" ? service.rotVectCW(bonds[i].vector, 180): bonds[i].vector;
-						if (service.compareCoords(currentVect, vect, 5)) {
+						if (service.compareVectors(currentVect, vect, 5)) {
+							// if compared vectors are equals, the starting vectors has to be rotated by `freq`
+							// and check has to be repeated (on both arrays, 'in' and 'out')
 							vector = service.rotVectCW(vect, freq);
 							checkVector(vector);
 						}
@@ -2472,49 +2634,71 @@
 			}
 		};
 
+		/**
+		* Calculates dot product of two vectors.
+		* @param {number[]} v1 - first vector,
+		* @param {number[]} v2 - second vector,
+		* @returns {number[]}
+		*/
 		service.dotProduct = function (v1, v2) {
 			return v1[0] * v2[0] + v1[1] * v2[1];
 		};
 
+		/**
+		* Normalizes a vector.
+		* @param {number[]} v - vector to normalize,
+		* @returns {number[]}
+		*/
 		service.norm = function (v) {
 			var len = Math.sqrt(v[0] * v[0] + v[1] * v[1]);
 			return [v[0] / len, v[1] / len];
 		};
 
-		// rotates a vector counter clock-wise
+		/**
+		* Rotates a vector counter clock-wise (with y axis pointing down and x axis pointing right).
+		* @param {number[]} vect - vector to rotate,
+		* @param {number} deg - an angle in degrees,
+		* @returns {number[]}
+		*/
 		service.rotVectCCW = function (vect, deg) {
 			var rads = deg * (Math.PI / 180),
 				rotX = vect[0] * Math.cos(rads) + vect[1] * Math.sin(rads),
 				rotY = vect[1] * Math.cos(rads) - vect[0] * Math.sin(rads);
 			return [rotX, rotY];
-		}
+		};
 
-		// rotates a vector clock-wise
+		/**
+		* Rotates a vector clock-wise (with y axis pointing down and x axis pointing right).
+		* @param {number[]} vect - vector to rotate,
+		* @param {number} deg - an angle in degrees,
+		* @returns {number[]}
+		*/
 		service.rotVectCW = function (vect, deg) {
 			var rads = deg * (Math.PI / 180),
 				rotX = vect[0] * Math.cos(rads) - vect[1] * Math.sin(rads),
 				rotY = vect[0] * Math.sin(rads) + vect[1] * Math.cos(rads);
 			return [rotX, rotY];
-		}
+		};
 
 		/**
 		 * Checks if a point is inside an area delimited by a circle.
-		 * @param {Number[]} center - coordinates of the center of a circle
-		 * @param {Number[]} point - coordinates of a point to be validated
-		 * @returns {Boolean}
+		 * @param {number[]} center - coordinates of the center of a circle,
+		 * @param {number[]} point - coordinates of a point to be validated,
+		 * @param {number} tolerance - r of the circle,
+		 * @returns {boolean}
 		 */
 		service.insideCircle = function (center, point, tolerance) {
 			return Math.abs(center[0] - point[0]) < tolerance && Math.abs(center[1] - point[1]) < tolerance;
 		};
 
 		/**
-		 * Subtracts the coords in the second array from the first array.
-		 * @param {Number[]} arr1 - first array
-		 * @param {Number[]} arr2 - second array
+		 * Subtracts second vector from first vectors.
+		 * @param {number[]} v1 - first vector,
+		 * @param {number[]} v2 - second vector
 		 * @returns {Number[]}
 		 */
-		service.subtractCoords = function (arr1, arr2) {
-			return [arr1[0] - arr2[0], arr1[1] - arr2[1]];
+		service.subtractVectors = function (v1, v2) {
+			return [v1[0] - v2[0], v1[1] - v2[1]];
 		};
 
 		return service;
@@ -3222,209 +3406,43 @@
 		"DCStructureCluster",
 		"DCAtom",
 		"DCBond",
+		"DCCyclicStructure",
+		"DCBondStructure",
 		"DrawChemDirectiveFlags"
 	];
 
-	function DrawChemStructures(Const, Utils, DCStructure, DCStructureCluster, DCAtom, DCBond, Flags) {
+	function DrawChemStructures(Const, Utils, DCStructure, DCStructureCluster, DCAtom, DCBond, DCCyclicStructure, DCBondStructure, Flags) {
 
 		var service = {},
 			Atom = DCAtom.Atom,
 			Bond = DCBond.Bond,
+			CyclicStructure = DCCyclicStructure.CyclicStructure,
+			BondStructure = DCBondStructure.BondStructure,
 			Structure = DCStructure.Structure,
 			StructureCluster = DCStructureCluster.StructureCluster,
-			BONDS = Const.BONDS;
+			BONDS = Const.BONDS, cyclicStructures, bondStructures;
 
-		/**
-		 * Generates benzene structure in each of the defined directions.
-		 * @returns {StructureCluster}
-		 */
-		service.benzene = function () {
-			var cluster,
-				name = "benzene",
-				ringSize = 6,
-				angle = 120,
-				defs = service.generateRings(angle, ringSize, "aromatic");
+		cyclicStructures = [
+			new CyclicStructure("cyclopropane", 3, 60),
+			new CyclicStructure("cyclobutane", 4, 90),
+			new CyclicStructure("cyclopentane", 5, 108),
+			new CyclicStructure("cyclohexane", 6, 120),
+			new CyclicStructure("benzene", 6, 120, true),
+			new CyclicStructure("cycloheptane", 7, 128.57),
+			new CyclicStructure("cyclooctane", 8, 135),
+			new CyclicStructure("cyclononane", 9, 140)
+		];
 
-			cluster = new StructureCluster(name, defs, 0, ringSize, angle, true);
-			return cluster;
-		};
+		bondStructures = [
+			new BondStructure("single", 1),
+			new BondStructure("wedge", 1),
+			new BondStructure("dash", 1),
+			new BondStructure("double", 2),
+			new BondStructure("triple", 3)
+		];
 
-		/**
-		 * Generates cyclohexane structure in each of the defined directions.
-		 * @returns {StructureCluster}
-		 */
-		service.cyclohexane = function () {
-			var cluster,
-				name = "cyclohexane",
-				ringSize = 6,
-				angle = 120,
-				defs = service.generateRings(angle, ringSize);
-
-			cluster = new StructureCluster(name, defs, 0, ringSize, angle);
-
-			return cluster;
-		};
-
-		/**
-		 * Generates cyclopentane structure in each of the defined directions.
-		 * @returns {StructureCluster}
-		 */
-		service.cyclopentane = function () {
-			var cluster,
-				name = "cyclopentane",
-				ringSize = 5,
-				angle = 108,
-				defs = service.generateRings(angle, ringSize);
-
-			cluster = new StructureCluster(name, defs, 0, ringSize, angle);
-
-			return cluster;
-		};
-
-		/**
-		 * Generates a cyclopropane structure in each of the defined directions.
-		 * @returns {StructureCluster}
-		 */
-		service.cyclopropane = function () {
-			var cluster,
-				name = "cyclopropane",
-				defs = service.generateRings(60, 3);
-
-			cluster = new StructureCluster(name, defs);
-
-			return cluster;
-		};
-
-		/**
-		 * Generates a cyclobutane structure in each of the defined directions.
-		 * @returns {StructureCluster}
-		 */
-		service.cyclobutane = function () {
-			var cluster,
-				name = "cyclobutane",
-				defs = service.generateRings(90, 4);
-
-			cluster = new StructureCluster(name, defs);
-
-			return cluster;
-		};
-
-		/**
-		 * Generates a cycloheptane structure in each of the defined directions.
-		 * @returns {StructureCluster}
-		 */
-		service.cycloheptane = function () {
-			var cluster,
-				name = "cycloheptane",
-				defs = service.generateRings(128.57, 7);
-
-			cluster = new StructureCluster(name, defs);
-
-			return cluster;
-		};
-
-		/**
-		 * Generates a cyclooctane structure in each of the defined directions.
-		 * @returns {StructureCluster}
-		 */
-		service.cyclooctane = function () {
-			var cluster,
-				name = "cyclooctane",
-				defs = service.generateRings(135, 8);
-
-			cluster = new StructureCluster(name, defs);
-
-			return cluster;
-		};
-
-		/**
-		 * Generates a cyclononane structure in each of the defined directions.
-		 * @returns {StructureCluster}
-		 */
-		service.cyclononane = function () {
-			var cluster,
-				name = "cyclononane",
-				defs = service.generateRings(140, 9);
-
-			cluster = new StructureCluster(name, defs);
-
-			return cluster;
-		};
-
-		/**
-		 * Generates single bond in each of the defined directions.
-		 * @returns {StructureCluster}
-		 */
-		service.singleBond = function () {
-			var cluster,
-				multiplicity = 1,
-				name = "single",
-				defs = service.generateBonds(name, multiplicity);
-
-			cluster = new StructureCluster(name, defs, multiplicity);
-
-			return cluster;
-		};
-
-		/**
-		 * Generates double bond in each of the defined directions.
-		 * @returns {StructureCluster}
-		 */
-		service.doubleBond = function () {
-			var cluster,
-				multiplicity = 2,
-				name = "double",
-				defs = service.generateBonds(name, multiplicity);
-
-			cluster = new StructureCluster(name, defs, multiplicity);
-
-			return cluster;
-		};
-
-		/**
-		 * Generates triple bond in each of the defined directions.
-		 * @returns {StructureCluster}
-		 */
-		service.tripleBond = function () {
-			var cluster,
-				multiplicity = 3,
-				name = "triple",
-				defs = service.generateBonds(name, multiplicity);
-
-			cluster = new StructureCluster(name, defs, multiplicity);
-
-			return cluster;
-		};
-
-		/**
-		 * Generates wedge bond in each of the defined directions.
-		 * @returns {StructureCluster}
-		 */
-		service.wedgeBond = function () {
-			var cluster,
-				multiplicity = 1,
-				name = "wedge",
-				defs = service.generateBonds(name, multiplicity);
-
-			cluster = new StructureCluster(name, defs, multiplicity);
-
-			return cluster;
-		};
-
-		/**
-		 * Generates wedge bond in each of the defined directions.
-		 * @returns {StructureCluster}
-		 */
-		service.dashBond = function () {
-			var cluster,
-				multiplicity = 1,
-				name = "dash",
-				defs = service.generateBonds(name, multiplicity);
-
-			cluster = new StructureCluster(name, defs, multiplicity);
-
-			return cluster;
-		};
+		addCyclicStructures();
+		addBondStructures();
 
 		/**
 		 * Stores all predefined structures.
@@ -3499,7 +3517,7 @@
 
 		/**
 		 * Generates single bonds in all defined directions.
-		 * @param {String} type - bond type, e.g. 'single', 'double'.
+		 * @param {string} type - bond type, e.g. 'single', 'double',
 		 * @returns {Structure[]}
 		 */
 		service.generateBonds = function(type, mult) {
@@ -3520,34 +3538,41 @@
 			return result;
 		};
 
+		/**
+		* Generates a `Bond` object.
+		* @param {number[]} bond - vector associated with this bond,
+		* @param {string} type - bond type, e.g. 'single', 'double',
+		* @param {number} mult - bond multiplicity,
+		* @returns {Bond}
+		*/
 		service.generateBond = function (bond, type, mult) {
 			return new Bond(type, new Atom(bond, [], { in: [{ vector: angular.copy(bond), multiplicity: mult }] }));
 		};
 
 		/**
 		 * Generates a ring in each of the defined direction.
-		 * @param {Number} deg - angle in degs between two bonds in the ring,
-		 * @param {Number} size - size of the ring,
-		 * @param {String} decorate - indicates decorate element (e.g. aromatic ring),
+		 * @param {number} deg - angle in degs between two bonds in the ring,
+		 * @param {number} size - size of the ring,
+		 * @param {string} decorate - indicates decorate element (e.g. aromatic ring),
 		 * @returns {Structure[]}
 		 */
-		service.generateRings = function (deg, size, decorate) {
+		service.generateRings = function (deg, size, aromatic) {
 			var i, direction, result = [];
 			for (i = 0; i < BONDS.length; i += 1) {
 				direction = BONDS[i].direction;
-				result.push(genRing(direction, deg, size, decorate));
+				result.push(genRing(direction, deg, size, aromatic));
 			}
 
 			return result;
 
 			/**
 			 * Generates a ring.
-			 * @param {String} direction - in which direction the ring will be generated,
-			 * @param {Number} deg - angle in degs between two bonds in the ring,
-			 * @param {Number} size - size of the ring,
+			 * @param {string} direction - in which direction the ring will be generated,
+			 * @param {number} deg - angle in degs between two bonds (vectors) in the ring,
+			 * @param {number} size - size of the ring,
 			 * @returns {Structure}
 			 */
-			function genRing(direction, deg, size, decorate) {
+			function genRing(direction, deg, size) {
 				var firstAtom, nextAtom, structure,
 					opposite = Atom.getOppositeDirection(direction),
 					bond = Const.getBondByDirection(opposite).bond,
@@ -3558,7 +3583,7 @@
 				firstAtom.addBond(new Bond("single", nextAtom));
 				service.generateRing(nextAtom, size, deg, firstAtom);
 				structure = new Structure(opposite, [firstAtom]);
-				if (decorate === "aromatic") {
+				if (aromatic) {
 					structure.setAromatic();
 				}
 
@@ -3567,9 +3592,11 @@
 		};
 
 		/**
-		 * Recursively generates atoms in a circular manner.
-		 * @param {Atom} atom - atom, to which new atom will be added,
-		 * @param {Number} depth - starting/current depth of the structure tree
+		 * Recursively generates atoms in a circular manner (generates a ring as a result).
+		 * @param {Atom} atom - `Atom` object, to which new atom will be added,
+		 * @param {number} depth - starting/current depth of the structure tree,
+		 * @param {number} deg - angle between bonds (vectors),
+		 * @param {Atom} firstAtom - first `Atom` object in this cyclic structure
 		 */
 		service.generateRing = function(atom, depth, deg, firstAtom) {
 			var rotVect = Utils.rotVectCW(atom.getCoords(), 180 - deg),
@@ -3587,11 +3614,48 @@
 
 		return service;
 
+		/**
+		* Adds an action associated with a button.
+		* @param {Function} cb - a callback fn to invoke after clicking on the button,
+		* @returns {Function}
+		*/
 		function createStructureAction(cb) {
 			return function (scope) {
 				scope.chosenStructure = cb();
 				Flags.selected = "structure";
 			}
+		}
+
+		/**
+		* Defines functions associated with bonds.
+		*/
+		function addBondStructures() {
+			bondStructures.forEach(function (bondStr) {
+				var name = bondStr.getName(),
+					multiplicity = bondStr.getMultiplicity();
+				service[name + "Bond"] = function () {
+					var defs = service.generateBonds(name, multiplicity),
+					  cluster = new StructureCluster(name, defs);
+					return cluster;
+				};
+			});
+		}
+
+		/**
+		* Defines functions associated with cyclic structures.
+		*/
+		function addCyclicStructures() {
+			cyclicStructures.forEach(function (cyclic) {
+				var name = cyclic.getName(),
+				  ringSize = cyclic.getRingSize(),
+					angle = cyclic.getAngle(),
+					aromatic = cyclic.isAromatic();
+				service[name] = function () {
+					var defs = service.generateRings(angle, ringSize, aromatic),
+						cluster = new StructureCluster(name, defs, ringSize, angle);
+					return cluster;
+				};
+			});
 		}
 	}
 })();
@@ -3747,7 +3811,7 @@
       for (i = 0; i < BONDS_AUX.length; i += 1) {
         x = BONDS_AUX[i].bond[0];
         y = BONDS_AUX[i].bond[1];
-        result = result.concat(Utils.addCoordsNoPrec([label.atomX, label.atomY], [x, y], factor));
+        result = result.concat(Utils.addVectors([label.atomX, label.atomY], [x, y], factor));
       }
       return "<polygon class='text' points='" + service.stringifyPaths([result])[0].line + "'></polygon>";
     }
@@ -4062,7 +4126,7 @@
 						return base;
 					}
 
-					if (!isInsideCircle && Utils.compareCoords(down, absPos, 5)) {
+					if (!isInsideCircle && Utils.compareVectors(down, absPos, 5)) {
 						// if 'mousedown' was within a circle around an atom
 						// but 'mouseup' was not
 						// and if a valid atom has not already been found
@@ -4180,7 +4244,7 @@
 					angle = Math.acos(Utils.dotProduct(Utils.norm(firstInBond), Utils.norm(firstOutBond))) * 180 / Math.PI;
 					// construct angle bisector
 					vectAux = Utils.rotVectCCW(firstInBond, (180 - angle) / 2);
-					if (Utils.compareCoords(vectAux, firstOutBond, 5)) {
+					if (Utils.compareVectors(vectAux, firstOutBond, 5)) {
 						vect = Utils.rotVectCW(firstInBond, (180 - angle) / 2);
 					} else {
 						vect = vectAux;
@@ -4323,7 +4387,7 @@
 					for (i = 0; i < atom.getBonds().length; i += 1) {
 						at = atom.getBonds(i).getAtom();
 						newAbsPos = [at.getCoords("x") + absPos[0], at.getCoords("y") + absPos[1]];
-						newCoords = Utils.subtractCoords(newAbsPos, origin);
+						newCoords = Utils.subtractVectors(newAbsPos, origin);
 						newAtomArray.push({ obj: at, coords: newCoords });
 					}
 				}
@@ -4416,13 +4480,13 @@
 					obj = input.getStructure(i);
 					if (obj instanceof Selection) {
 						selection = obj;
-						absPosStart = Utils.addCoordsNoPrec(origin, selection.getOrigin());
+						absPosStart = Utils.addVectors(origin, selection.getOrigin());
 						absPosEnd = selection.getCurrent();
 						quarter = selection.getQuarter();
 						rects.push(DCSelection.calcRect(quarter, absPosStart, absPosEnd));
 					} else if (obj instanceof Atom) {
 						atom = obj;
-						absPos = Utils.addCoordsNoPrec(origin, atom.getCoords());
+						absPos = Utils.addVectors(origin, atom.getCoords());
 						updateLabel(absPos, atom);
 						updateMinMax(absPos);
 						len = output.push(["M", absPos]);
@@ -4430,8 +4494,8 @@
 						connect(absPos, atom.getBonds(), output[len - 1], atom.selected);
 					} else if (obj instanceof Arrow) {
 						arrow = obj;
-						absPosStart = Utils.addCoordsNoPrec(origin, arrow.getOrigin());
-						absPosEnd = Utils.addCoordsNoPrec(origin, arrow.getEnd());
+						absPosStart = Utils.addVectors(origin, arrow.getOrigin());
+						absPosEnd = Utils.addVectors(origin, arrow.getEnd());
 						updateMinMax(absPosStart);
 						updateMinMax(absPosEnd);
 						circles.push({ selected: arrow.selected, circle: [ absPosStart[0], absPosStart[1], circR ] });

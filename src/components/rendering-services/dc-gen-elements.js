@@ -119,7 +119,7 @@
       for (i = 0; i < BONDS_AUX.length; i += 1) {
         x = BONDS_AUX[i].bond[0];
         y = BONDS_AUX[i].bond[1];
-        result = result.concat(Utils.addCoordsNoPrec([label.atomX, label.atomY], [x, y], factor));
+        result = result.concat(Utils.addVectors([label.atomX, label.atomY], [x, y], factor));
       }
       return "<polygon class='text' points='" + service.stringifyPaths([result])[0].line + "'></polygon>";
     }

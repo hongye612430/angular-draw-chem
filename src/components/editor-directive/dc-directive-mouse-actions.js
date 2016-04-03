@@ -159,7 +159,7 @@
 						// get default arrow
 						arrow = angular.copy(scope.chosenArrow.getDefault());
 						// calculate and set coords
-						newCoords = Utils.subtractCoords(mouseCoords, structure.getOrigin());
+						newCoords = Utils.subtractVectors(mouseCoords, structure.getOrigin());
 						arrow.setOrigin(newCoords);
 					}
 				} else {
@@ -174,7 +174,7 @@
 						// otherwise get default arrow
 						arrow = angular.copy(scope.chosenArrow.getDefault());
 					}
-					newCoords = Utils.subtractCoords(mouseFlags.downMouseCoords, structure.getOrigin());
+					newCoords = Utils.subtractVectors(mouseFlags.downMouseCoords, structure.getOrigin());
 					// calculate and set coords
 					arrow.setOrigin(newCoords);
 				}
@@ -224,7 +224,7 @@
 					// so get it from Cache
 					structure = angular.copy(Cache.getCurrentStructure());
 					// calaculate new coords
-					newCoords = Utils.subtractCoords(mouseFlags.downMouseCoords, structure.getOrigin());
+					newCoords = Utils.subtractVectors(mouseFlags.downMouseCoords, structure.getOrigin());
 					if (mouseFlags.movedOnEmpty) {
 						// if the mousemove event occurred before this mouseup event
 						// choose an appropriate Structure object from the StructureCluster object
@@ -312,7 +312,7 @@
 					structure = angular.copy(Cache.getCurrentStructure());
 					// choose appropriate arrow from ArrowCluster object
 					arrow = angular.copy(scope.chosenArrow.getArrow(mouseCoords, mouseFlags.downMouseCoords));
-					newCoords = Utils.subtractCoords(mouseFlags.downMouseCoords, structure.getOrigin());
+					newCoords = Utils.subtractVectors(mouseFlags.downMouseCoords, structure.getOrigin());
 					// calculate and set coords
 					arrow.setOrigin(newCoords);
 				}
@@ -344,7 +344,7 @@
 					// so get it from Cache
 					structure = angular.copy(Cache.getCurrentStructure());
 					// calaculate new coords
-					newCoords = Utils.subtractCoords(mouseFlags.downMouseCoords, structure.getOrigin());
+					newCoords = Utils.subtractVectors(mouseFlags.downMouseCoords, structure.getOrigin());
 					// choose an appropriate Structure object from the StructureCluster object
 					structureAux = angular.copy(scope.chosenStructure.getStructure(mouseCoords, mouseFlags.downMouseCoords));
 					if (structureAux.isAromatic()) {
@@ -383,7 +383,7 @@
 			if (!Utils.isContentEmpty()) {
 				// if the content is non-empty
 				structure = angular.copy(Cache.getCurrentStructure());
-				moveDistance = Utils.subtractCoords(mouseCoords, mouseFlags.downMouseCoords);
+				moveDistance = Utils.subtractVectors(mouseCoords, mouseFlags.downMouseCoords);
 				structure.moveStructureTo("mouse", moveDistance);
 			}
 			return structure;
@@ -402,7 +402,7 @@
 				// if the content is not empty, a Structure object already exists
 				// so get Structure object from Cache
 				structure = angular.copy(Cache.getCurrentStructure());
-				newCoords = Utils.subtractCoords(mouseFlags.downMouseCoords, structure.getOrigin());
+				newCoords = Utils.subtractVectors(mouseFlags.downMouseCoords, structure.getOrigin());
 				selection = new Selection(newCoords, mouseCoords);
 			}
 			// checks to which 'quarter' the selection rect belongs (downMouseCoords as the beginning of the coordinate system)

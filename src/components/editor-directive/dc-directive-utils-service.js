@@ -44,7 +44,7 @@
 		 * @param {Number[]} arr2 - second array
 		 * @returns {Number[]}
 		 */
-		service.subtractCoords = function (arr1, arr2) {
+		service.subtractVectors = function (arr1, arr2) {
 			return [arr1[0] - arr2[0], arr1[1] - arr2[1]];
 		}
 

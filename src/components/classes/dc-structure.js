@@ -306,11 +306,11 @@
 				var currOrig,	absPos, absPosStart, absPosEnd;
 				if (struct instanceof Atom) { // if struct is an Atom object
 					currOrig = struct.getCoords(); // get relative coords of the first atom in structure
-					absPos = Utils.addCoordsNoPrec(this.origin, currOrig); // calculate its absolute position
+					absPos = Utils.addVectors(this.origin, currOrig); // calculate its absolute position
 					checkStructure(absPos, struct); // recursively check all atoms in this structure
 				} else if (struct instanceof Arrow) { // if struct is an Arrow object
-					absPosStart = Utils.addCoordsNoPrec(this.origin, struct.getOrigin()); // calculate absolute coords of the beginning of the arrow
-					absPosEnd = Utils.addCoordsNoPrec(this.origin, struct.getEnd()); // calculate absolute coords of the end of the arrow
+					absPosStart = Utils.addVectors(this.origin, struct.getOrigin()); // calculate absolute coords of the beginning of the arrow
+					absPosEnd = Utils.addVectors(this.origin, struct.getEnd()); // calculate absolute coords of the end of the arrow
 					checkArrow(absPosStart); // check coords of the beginning of the arrow
 					checkArrow(absPosEnd); // check coords of the end of the arrow
 				}
@@ -326,7 +326,7 @@
 				updateMaxX(absPos, minMax);
 				for (i = 0; i < struct.getBonds().length; i += 1) {
 					at = struct.getBonds(i).getAtom();
-					currAbsPos = Utils.addCoordsNoPrec(absPos, at.getCoords());
+					currAbsPos = Utils.addVectors(absPos, at.getCoords());
 					checkStructure(currAbsPos, at);
 				}
 			}
@@ -392,7 +392,7 @@
 		* @returns {Boolean}
 		*/
 		function isInsideRectY(selection, coord) {
-			var origin = Utils.addCoordsNoPrec(this.origin, selection.getOrigin()),
+			var origin = Utils.addVectors(this.origin, selection.getOrigin()),
 				end = selection.getCurrent(),
 				quarter = selection.getQuarter();
 
@@ -410,7 +410,7 @@
 		* @returns {Boolean}
 		*/
 		function isInsideRectX(selection, coord) {
-			var origin = Utils.addCoordsNoPrec(this.origin, selection.getOrigin()),
+			var origin = Utils.addVectors(this.origin, selection.getOrigin()),
 				end = selection.getCurrent(),
 				quarter = selection.getQuarter();
 
@@ -494,8 +494,8 @@
 		* @param {Number} coord - the most extreme coord
 		*/
 		function setArrow(arrow, alignment, coord) {
-			var absPosStart = Utils.addCoordsNoPrec(this.origin, arrow.getOrigin()), // absolute coords of arrow start
-				absPosEnd = Utils.addCoordsNoPrec(this.origin, arrow.getEnd()), // absolute coords of arrow end
+			var absPosStart = Utils.addVectors(this.origin, arrow.getOrigin()), // absolute coords of arrow start
+				absPosEnd = Utils.addVectors(this.origin, arrow.getEnd()), // absolute coords of arrow end
 				// object with extreme coords
 				minMax = { minX: absPosStart[0], minY: absPosStart[1], maxX: absPosStart[0], maxY: absPosStart[1] },
 				d;
@@ -531,7 +531,7 @@
 		*/
 		function setAtom(atom, alignment, coord) {
 			var currAtOrig = atom.getCoords(), // relative coords of the atom
-				absPos = Utils.addCoordsNoPrec(this.origin, currAtOrig), // absolute coords of the first atom
+				absPos = Utils.addVectors(this.origin, currAtOrig), // absolute coords of the first atom
 				// object with extreme coords
 				minMax = {}, d;
 
@@ -566,7 +566,7 @@
 				updateMinY(absPos, minMax);
 				for (i = 0; i < atom.getBonds().length; i += 1) {
 					at = atom.getBonds(i).getAtom();
-					currAbsPos = Utils.addCoordsNoPrec(absPos, at.getCoords());
+					currAbsPos = Utils.addVectors(absPos, at.getCoords());
 					checkMinY(currAbsPos, at);
 				}
 			}
@@ -577,7 +577,7 @@
 				updateMaxY(absPos, minMax);
 				for (i = 0; i < atom.getBonds().length; i += 1) {
 					at = atom.getBonds(i).getAtom();
-					currAbsPos = Utils.addCoordsNoPrec(absPos, at.getCoords());
+					currAbsPos = Utils.addVectors(absPos, at.getCoords());
 					checkMaxY(currAbsPos, at);
 				}
 			}
@@ -588,7 +588,7 @@
 				updateMaxX(absPos, minMax);
 				for (i = 0; i < atom.getBonds().length; i += 1) {
 					at = atom.getBonds(i).getAtom();
-					currAbsPos = Utils.addCoordsNoPrec(absPos, at.getCoords());
+					currAbsPos = Utils.addVectors(absPos, at.getCoords());
 					checkMaxX(currAbsPos, at);
 				}
 			}
@@ -599,7 +599,7 @@
 				updateMinX(absPos, minMax);
 				for (i = 0; i < atom.getBonds().length; i += 1) {
 					at = atom.getBonds(i).getAtom();
-					currAbsPos = Utils.addCoordsNoPrec(absPos, at.getCoords());
+					currAbsPos = Utils.addVectors(absPos, at.getCoords());
 					checkMinX(currAbsPos, at);
 				}
 			}
@@ -611,8 +611,8 @@
 				var equal = Utils.compareFloats(arom.fromWhich[0], atom.getCoords("x"), 3)
 					&& Utils.compareFloats(arom.fromWhich[1], atom.getCoords("y"), 3);
 				if (equal) {
-					arom.fromWhich = Utils.addCoordsNoPrec(arom.fromWhich, d);
-					arom.coords = Utils.addCoordsNoPrec(arom.coords, d);
+					arom.fromWhich = Utils.addVectors(arom.fromWhich, d);
+					arom.coords = Utils.addVectors(arom.coords, d);
 				}
 			});
 		}
