@@ -18,14 +18,20 @@
 		  Arrow = DCArrow.Arrow;
 
 		/**
-		* Creates a new ArrowCluster.
+		* Creates a new `ArrowCluster` object.
 		* @class
+		* @param {string} name - name of the cluster,
+		* @param {Arrow[]} defs - array of `Arrow` objects
 		*/
 		function ArrowCluster(name, defs) {
 			this.name = name;
 			this.defs = defs;
 		}
 
+		/**
+		* Gets default `Arrow` object.
+		* @returns {Arrow}
+		*/
 		ArrowCluster.prototype.getDefault = function () {
       var i;
 			for (i = 0; i < this.defs.length; i += 1) {
@@ -33,8 +39,14 @@
           return this.defs[i];
         }
 			}
-		}
+		};
 
+		/**
+		* Gets a suitable `Arrow` based on supplied coordinates.
+		* @param {number[]} mouseCoords1 - coordinates associated with onMouseDown event,
+		* @param {number[]} mouseCoords2 - coordinates associated with onMouseUp event,
+		* @returns {Arrow}
+		*/
     ArrowCluster.prototype.getArrow = function (mouseCoords1, mouseCoords2) {
 			var possibleVectors = [], vector, i;
 			for (i = 0; i < this.defs.length; i += 1) {
@@ -68,6 +80,8 @@
 		/**
 		* Creates a new `Arrow` object.
 		* @class
+		* @param {string} type - arrow type (one-way, etc.),
+		* @param {number[]} relativeEnd - building vector
 		*/
 		function Arrow(type, relativeEnd) {
 			this.type = type;
@@ -75,22 +89,41 @@
 			this.relativeEnd = relativeEnd;
 		}
 
+		/**
+		* Marks this `Arrow` object as selected.
+		*/
 		Arrow.prototype.select = function () {
 			this.selected = true;
 		};
 
+		/**
+		* Unmarks selection of this `Arrow`.
+		*/
 		Arrow.prototype.deselect = function () {
 			this.selected = false;
-		}
+		};
 
+		/**
+		* Gets type of this `Arrow` object.
+		* @returns {string}
+		*/
 		Arrow.prototype.getType = function () {
 			return this.type;
-		}
+		};
 
+		/**
+		* Gets relative end (vector) of this `Arrow` object.
+		* @returns {number[]}
+		*/
 		Arrow.prototype.getRelativeEnd = function () {
 			return this.relativeEnd;
-		}
+		};
 
+		/**
+		* Gets end coordinates of this `Arrow` object in relation to its origin.
+		* @param {string} coord - which coord to return ('x' or 'y'),
+		* @returns {number|number[]}
+		*/
 		Arrow.prototype.getEnd = function (coord) {
 			if (coord === "x") {
 				return this.end[0];
@@ -99,15 +132,11 @@
 			} else {
 				return this.end;
 			}
-		}
-
-		Arrow.prototype.getDirection = function () {
-			return this.direction;
-		}
+		};
 
 		/**
-		 * Sets origin of the arrow.
-		 * @param {Number[]} coords - an array with coordinates of the beginning coords of the arrow
+		 * Sets origin of this `Arrow` object.
+		 * @param {number[]} origin - beginning coords of the arrow
 		 */
 		Arrow.prototype.setOrigin = function (origin) {
 			this.origin = origin;
@@ -120,21 +149,10 @@
 		};
 
 		/**
-		 * Updates end of the arrow.
-		 */
-		Arrow.prototype.updateEnd = function () {
-			if (typeof this.relativeEnd !== "undefined") {
-				this.end = [
-					this.origin[0] + this.relativeEnd[0],
-					this.origin[1] + this.relativeEnd[1],
-				];
-			}
-		};
-
-		/**
-		 * Gets origin of the arrow.
-		 * @returns {Number[]|Number}
-		 */
+		* Gets start coordinates of this `Arrow` object.
+		* @param {string} coord - which coord to return ('x' or 'y'),
+		* @returns {number|number[]}
+		*/
 		Arrow.prototype.getOrigin = function (coord) {
 			if (coord === "x") {
 				return this.origin[0];
@@ -145,8 +163,27 @@
 			}
 		};
 
+		/**
+		 * Updates end coordinates of this `Arrow` object (in relation to its origin).
+		 */
+		Arrow.prototype.updateEnd = function () {
+			if (typeof this.relativeEnd !== "undefined") {
+				this.end = [
+					this.origin[0] + this.relativeEnd[0],
+					this.origin[1] + this.relativeEnd[1],
+				];
+			}
+		};
+
 		service.Arrow = Arrow;
 
+		/**
+		* Calculates data for the svg instructions in `path` element.
+		* @param {number[]} start - start coordinates (absolute) of the arrow,
+		* @param {number[]} end - end coordinates (absolute) of the arrow,
+		* @param {string} type - arrow type (one-way, etc.),
+		* @returns {Array}
+		*/
 		service.calcArrow = function (start, end, type) {
 			var vectCoords = [end[0] - start[0], end[1] - start[1]],
 				perpVectCoordsCW = [-vectCoords[1], vectCoords[0]],
@@ -944,10 +981,12 @@
 		var service = {};
 
 		/**
-		* Creates a new StructureCluster object.
+		* Creates a new `StructureCluster` object.
 		* @class
-		* @param {String} name - name of the cluster
-		* @param {Structure[]} defs - array of Structure objects belonging to the cluster
+		* @param {string} name - name of the cluster,
+		* @param {Structure[]} defs - array of Structure objects belonging to the cluster,
+		* @param {number} ringSize - size of the associated ring, defaults to 0 for acyclic structures,
+		* @param {number} angle - angle between bonds in cyclic structures
 		*/
 		function StructureCluster(name, defs, ringSize, angle) {
 			this.name = name;
@@ -957,26 +996,52 @@
 			this.defaultStructure = defs[0];
 		}
 
+		/**
+		* Gets `defs` array.
+		* @returns {Structure[]}
+		*/
 		StructureCluster.prototype.getDefs = function () {
 			return this.defs;
 		};
 
+		/**
+		* Gets name of the cluster.
+		* @returns {string}
+		*/
 		StructureCluster.prototype.getName = function () {
 			return this.name;
 		};
 
+		/**
+		* Gets size of the associated ring. Defaults to 0 for acyclic structures.
+		* @returns {number}
+		*/
 		StructureCluster.prototype.getRingSize = function () {
 			return this.ringSize;
 		};
 
+		/**
+		* Gets angle between bonds (vectors) in the associated ring.
+		* @returns {number}
+		*/
 		StructureCluster.prototype.getAngle = function () {
 			return this.angle;
 		};
 
+		/**
+		* Gets default `Structure` object.
+		* @returns {Structure}
+		*/
 		StructureCluster.prototype.getDefault = function () {
 			return this.defaultStructure;
 		};
 
+		/**
+		* Gets a suitable `Structure` based on supplied coordinates.
+		* @param {number[]} mouseCoords1 - coordinates associated with onMouseDown event,
+		* @param {number[]} mouseCoords2 - coordinates associated with onMouseUp event,
+		* @returns {Structure}
+		*/
 		StructureCluster.prototype.getStructure = function (mouseCoords1, mouseCoords2) {
 			var i, possibleVectors = [], vector, bond;
 			for (i = 0; i < Const.BONDS.length; i += 1) {
