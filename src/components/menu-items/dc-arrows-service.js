@@ -3,9 +3,9 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemArrows", DrawChemArrows);
 
-	DrawChemArrows.$inject = ["DrawChemDirectiveFlags", "DrawChemConst", "DCArrow", "DCArrowCluster"];
+	DrawChemArrows.$inject = ["DrawChemDirectiveFlags", "DrawChemUtils", "DrawChemConst", "DCArrow", "DCArrowCluster"];
 
-	function DrawChemArrows(Flags, Const, DCArrow, DCArrowCluster) {
+	function DrawChemArrows(Flags, Utils, Const, DCArrow, DCArrowCluster) {
 
 		var service = {},
 			BONDS = Const.BONDS,
@@ -46,11 +46,13 @@
 		}
 
 		function generateArrows(type) {
-			var i, direction, bond, result = [];
-			for (i = 0; i < BONDS.length; i += 1) {
-				direction = BONDS[i].direction;
-				bond = BONDS[i].bond;
-				result.push(new Arrow(type, direction, bond));
+			var startVector = Const.BOND_N, result = [], i,
+			  possibleVectors = Utils.calcPossibleVectors(startVector, Const.FREQ);
+
+			possibleVectors.push(startVector);
+
+			for (i = 0; i < possibleVectors.length; i += 1) {
+				result.push(new Arrow(type, possibleVectors[i]));
 			}
 			return result;
 		}

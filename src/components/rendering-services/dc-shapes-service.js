@@ -171,10 +171,10 @@
 					vect = Const.BOND_N;
 				}
 				// finds all possible bonds, starting with `vect` and rotating it every `Const.FREQ`
-				possibleBonds = Utils.calcPossibleBonds(vect, Const.FREQ);
+				possibleBonds = Utils.calcPossibleVectors(vect, Const.FREQ);
 				// returns that vector from `possibleBonds` array,
 				// that is closest to the vector made with `down` and `mousePos` coordinates
-				return Utils.getClosestBond(down, mousePos, possibleBonds);
+				return Utils.getClosestVector(down, mousePos, possibleBonds);
 			}
 
 			/**
@@ -212,34 +212,6 @@
 				// recursively checks if this bond is already attached,
 				// if so, rotates it by `Const.FREQ` clockwise
 				return Utils.checkAttachedBonds(vect, current, Const.FREQ, Const.MAX_BONDS);
-			}
-
-			/**
-			 * Chooses a suitable modification from mod object.
-			 * @param {Atom} current - currently active Atom object
-			 * @param {String|undefined} - outgoing direction (either manually or automatically set)
-			 * @returns {Atom[]}
-			 */
-			function chooseMod(current, output) {
-				var i, at, name, toCompare, next;
-				if (mod.defs.length === 1) {
-					return mod.getDefault().getStructure(0).getBonds();
-				} else {
-					for(i = 0; i < mod.defs.length; i += 1) {
-						at = mod.defs[i];
-						next = current.getNext() || "N";
-						if (next === "max") {
-							return null;
-						}
-						name = at.getName();
-						toCompare = output || next;
-						if (toCompare === name) {
-							current.attachBond({ direction: name, type: mod.getBondsMultiplicity() });
-							current.calculateNext();
-							return at;
-						}
-					}
-				}
 			}
 		}
 

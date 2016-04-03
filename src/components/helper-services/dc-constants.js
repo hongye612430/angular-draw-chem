@@ -68,7 +68,12 @@
 			service.CIRC_R = service.BOND_LENGTH * 0.12;
 
 			// default directions, clock-wise
-			service.DIRECTIONS = ["N", "NE1", "NE2", "E", "SE1", "SE2", "S", "SW1", "SW2", "W", "NW1", "NW2"];
+			service.DIRECTIONS = [
+				"N", "NE1", "NE2", "NE3", "NE4", "NE5",
+				"E", "SE1", "SE2", "SE3", "SE4", "SE5",
+				"S", "SW1", "SW2", "SW3", "SW4", "SW5",
+				"W", "NW1", "NW2", "NW3", "NW4", "NW5"
+			];
 
 			// bonds + their directions
 			service.BONDS = [];
@@ -98,7 +103,7 @@
 					var name = "BOND_" + direction;
 					service[name] = vector; // add vector to `service`
 					service.BONDS.push({ direction: direction, bond: vector }); // add bond to `BONDS` array
-					vector = Utils.rotVectCW(vector, 30); // rotate vector by 30 degrees
+					vector = Utils.rotVectCW(vector, service.FREQ); // rotate vector by default angle
 				});
 			}
 		}

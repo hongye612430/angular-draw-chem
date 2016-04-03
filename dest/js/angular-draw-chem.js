@@ -10,11 +10,12 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DCArrowCluster", DCArrowCluster);
 
-  DCArrowCluster.$inject = ["DrawChemShapes"];
+  DCArrowCluster.$inject = ["DrawChemUtils", "DrawChemConst", "DCArrow"];
 
-	function DCArrowCluster(DrawChemShapes) {
+	function DCArrowCluster(Utils, Const, DCArrow) {
 
-		var service = {};
+		var service = {},
+		  Arrow = DCArrow.Arrow;
 
 		/**
 		* Creates a new ArrowCluster.
@@ -28,20 +29,19 @@
 		ArrowCluster.prototype.getDefault = function () {
       var i;
 			for (i = 0; i < this.defs.length; i += 1) {
-			  if(this.defs[i].getDirection() === "E") {
+			  if(Utils.compareVectors(this.defs[i].getRelativeEnd(), Const.BOND_E, 5)) {
           return this.defs[i];
         }
 			}
 		}
 
     ArrowCluster.prototype.getArrow = function (mouseCoords1, mouseCoords2) {
-			var i,
-				direction = DrawChemShapes.getDirection(mouseCoords1, mouseCoords2);
+			var possibleVectors = [], vector, i;
 			for (i = 0; i < this.defs.length; i += 1) {
-				if (this.defs[i].getDirection() === direction) {
-					return this.defs[i];
-				}
+				possibleVectors.push(this.defs[i].getRelativeEnd());
 			}
+			vector = Utils.getClosestVector(mouseCoords1, mouseCoords2, possibleVectors);
+			return new Arrow(this.name, vector);
 		};
 
 		service.ArrowCluster = ArrowCluster;
@@ -66,13 +66,12 @@
 		  BETWEEN_TRP_BONDS = Const.BETWEEN_TRP_BONDS;
 
 		/**
-		* Creates a new Arrow.
+		* Creates a new `Arrow` object.
 		* @class
 		*/
-		function Arrow(type, direction, relativeEnd) {
+		function Arrow(type, relativeEnd) {
 			this.type = type;
 			this.selected = false;
-			this.direction = direction;
 			this.relativeEnd = relativeEnd;
 		}
 
@@ -938,9 +937,9 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DCStructureCluster", DCStructureCluster);
 
-	DCStructureCluster.$inject = [];
+	DCStructureCluster.$inject = ["DrawChemUtils", "DrawChemConst"];
 
-	function DCStructureCluster() {
+	function DCStructureCluster(Utils, Const) {
 
 		var service = {};
 
@@ -976,6 +975,20 @@
 
 		StructureCluster.prototype.getDefault = function () {
 			return this.defaultStructure;
+		};
+
+		StructureCluster.prototype.getStructure = function (mouseCoords1, mouseCoords2) {
+			var i, possibleVectors = [], vector, bond;
+			for (i = 0; i < Const.BONDS.length; i += 1) {
+				possibleVectors.push(Const.BONDS[i].bond);
+			}
+			vector = Utils.getClosestVector(mouseCoords1, mouseCoords2, possibleVectors);
+			for (i = 0; i < this.defs.length; i += 1) {
+				bond = Const.getBondByDirection(this.defs[i].getName()).bond;
+				if (Utils.compareVectors(bond, vector, 5)) {
+					return this.defs[i];
+				}
+			}
 		};
 
 		service.StructureCluster = StructureCluster;
@@ -1801,7 +1814,7 @@
 						// set origin of the Structure object (which may be different from current mouse position)
 						structure.setOrigin(mouseFlags.downMouseCoords);
 						// choose appropriate arrow from ArrowCluster object
-						arrow = angular.copy(scope.chosenArrow.getArrow(mouseCoords, mouseFlags.downMouseCoords));
+						arrow = scope.chosenArrow.getArrow(mouseFlags.downMouseCoords, mouseCoords);
 						// as a reminder: Structure object has origin with an absolute value,
 						// but each object in its structures array has origin in relation to this absolute value;
 						// first object in this array has therefore always coords [0, 0]
@@ -1822,7 +1835,7 @@
 					if (mouseFlags.movedOnEmpty) {
 						// if the mousemove event occurred before this mouseup event
 						// set origin of the Structure object (which may be different from current mouse position)
-						arrow = angular.copy(scope.chosenArrow.getArrow(mouseCoords, mouseFlags.downMouseCoords));
+						arrow = scope.chosenArrow.getArrow(mouseFlags.downMouseCoords, mouseCoords);
 					} else {
 						// otherwise get default arrow
 						arrow = angular.copy(scope.chosenArrow.getDefault());
@@ -1844,7 +1857,7 @@
 					if (mouseFlags.movedOnEmpty) {
 						// if the mousemove event occurred before this mouseup event
 						// choose an appropriate Structure object from the StructureCluster object
-						structure = angular.copy(scope.chosenStructure.getStructure(mouseCoords, mouseFlags.downMouseCoords));
+						structure = angular.copy(scope.chosenStructure.getStructure(mouseFlags.downMouseCoords, mouseCoords));
 						// and set its origin (which may be different from current mouse position)
 						structure.setOrigin(mouseFlags.downMouseCoords);
 						if (structure.isAromatic()) {
@@ -1881,7 +1894,7 @@
 					if (mouseFlags.movedOnEmpty) {
 						// if the mousemove event occurred before this mouseup event
 						// choose an appropriate Structure object from the StructureCluster object
-						structureAux = angular.copy(scope.chosenStructure.getStructure(mouseCoords, mouseFlags.downMouseCoords));
+						structureAux = angular.copy(scope.chosenStructure.getStructure(mouseFlags.downMouseCoords, mouseCoords));
 						if (structureAux.isAromatic()) {
 							// if the chosen Structure object is aromatic,
 							// then add appropriate flag to the original Structure object
@@ -1953,8 +1966,8 @@
 					structure = new Structure();
 					// set origin of the Structure object (which may be different from current mouse position)
 					structure.setOrigin(mouseFlags.downMouseCoords);
-					// choose appropriate arrow from ArrowCluster object
-					arrow = angular.copy(scope.chosenArrow.getArrow(mouseCoords, mouseFlags.downMouseCoords));
+					// choose appropriate `Arrow` based on mouse coords
+					arrow = scope.chosenArrow.getArrow(mouseFlags.downMouseCoords, mouseCoords);
 					// as a reminder: Structure object has origin with an absolute value,
 					// but each object in its structures array has origin in relation to this absolute value;
 					// first object in this array has therefore always coords [0, 0]
@@ -1964,7 +1977,7 @@
 					// so get Structure object from Cache
 					structure = angular.copy(Cache.getCurrentStructure());
 					// choose appropriate arrow from ArrowCluster object
-					arrow = angular.copy(scope.chosenArrow.getArrow(mouseCoords, mouseFlags.downMouseCoords));
+					arrow = scope.chosenArrow.getArrow(mouseFlags.downMouseCoords, mouseCoords);
 					newCoords = Utils.subtractVectors(mouseFlags.downMouseCoords, structure.getOrigin());
 					// calculate and set coords
 					arrow.setOrigin(newCoords);
@@ -1980,7 +1993,7 @@
 				var structure, structureAux, newCoords, bond;
 				if (Utils.isContentEmpty()) {
 					// if the content is empty
-					structure = angular.copy(scope.chosenStructure.getStructure(mouseCoords, mouseFlags.downMouseCoords));
+					structure = angular.copy(scope.chosenStructure.getStructure(mouseFlags.downMouseCoords, mouseCoords));
 					// set its origin (which may be different from current mouse position)
 					structure.setOrigin(mouseFlags.downMouseCoords);
 					if (structure.isAromatic()) {
@@ -1999,7 +2012,7 @@
 					// calaculate new coords
 					newCoords = Utils.subtractVectors(mouseFlags.downMouseCoords, structure.getOrigin());
 					// choose an appropriate Structure object from the StructureCluster object
-					structureAux = angular.copy(scope.chosenStructure.getStructure(mouseCoords, mouseFlags.downMouseCoords));
+					structureAux = angular.copy(scope.chosenStructure.getStructure(mouseFlags.downMouseCoords, mouseCoords));
 					if (structureAux.isAromatic()) {
 						// if the chosen Structure object is aromatic,
 						// then add appropriate flag to the original Structure object
@@ -2399,7 +2412,12 @@
 			service.CIRC_R = service.BOND_LENGTH * 0.12;
 
 			// default directions, clock-wise
-			service.DIRECTIONS = ["N", "NE1", "NE2", "E", "SE1", "SE2", "S", "SW1", "SW2", "W", "NW1", "NW2"];
+			service.DIRECTIONS = [
+				"N", "NE1", "NE2", "NE3", "NE4", "NE5",
+				"E", "SE1", "SE2", "SE3", "SE4", "SE5",
+				"S", "SW1", "SW2", "SW3", "SW4", "SW5",
+				"W", "NW1", "NW2", "NW3", "NW4", "NW5"
+			];
 
 			// bonds + their directions
 			service.BONDS = [];
@@ -2429,7 +2447,7 @@
 					var name = "BOND_" + direction;
 					service[name] = vector; // add vector to `service`
 					service.BONDS.push({ direction: direction, bond: vector }); // add bond to `BONDS` array
-					vector = Utils.rotVectCW(vector, 30); // rotate vector by 30 degrees
+					vector = Utils.rotVectCW(vector, service.FREQ); // rotate vector by default angle
 				});
 			}
 		}
@@ -2553,33 +2571,33 @@
 		* @param {number} freq - angle in degrees,
 		* @returns {Array}
 		*/
-		service.calcPossibleBonds = function (vector, freq) {
-			var possibleBonds = [], i;
+		service.calcPossibleVectors = function (vector, freq) {
+			var possibleVectors = [], i;
 			for (i = 0; i < 360 / freq; i += 1) {
 				vector = service.rotVectCW(vector, freq);
-				possibleBonds.push(vector);
+				possibleVectors.push(vector);
 			}
-			return possibleBonds;
+			return possibleVectors;
 		};
 
 		/**
-		* Calculates the closest bond (vector) in `possibleBonds` array to vector starting at `down` coords and ending at `mousePos` coords.
+		* Calculates the closest bond (vector) in `possibleVectors` array to vector starting at `down` coords and ending at `mousePos` coords.
 		* @param {number[]} down - first set of coordinates,
 		* @param {number[]} mousePos - second set of coordinates,
-		* @param {Array} possibleBonds - an array of bonds (vectors),
+		* @param {Array} possibleVectors - an array of bonds (vectors),
 		* @returns {number[]}
 		*/
-		service.getClosestBond = function (down, mousePos, possibleBonds) {
+		service.getClosestVector = function (down, mousePos, possibleVectors) {
 			var vector = [mousePos[0] - down[0], mousePos[1] - down[1]], angle, i, currVector, minAngle = Math.PI, minIndex = 0, structure;
-			for (i = 0; i < possibleBonds.length; i += 1) {
-				currVector = possibleBonds[i];
+			for (i = 0; i < possibleVectors.length; i += 1) {
+				currVector = possibleVectors[i];
 				angle = Math.acos(service.dotProduct(service.norm(currVector), service.norm(vector)));
 				if (Math.abs(angle) < minAngle) {
 					minAngle = Math.abs(angle);
 					minIndex = i;
 				}
 			}
-			return possibleBonds[minIndex];
+			return possibleVectors[minIndex];
 		};
 
 		/**
@@ -2977,9 +2995,9 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemArrows", DrawChemArrows);
 
-	DrawChemArrows.$inject = ["DrawChemDirectiveFlags", "DrawChemConst", "DCArrow", "DCArrowCluster"];
+	DrawChemArrows.$inject = ["DrawChemDirectiveFlags", "DrawChemUtils", "DrawChemConst", "DCArrow", "DCArrowCluster"];
 
-	function DrawChemArrows(Flags, Const, DCArrow, DCArrowCluster) {
+	function DrawChemArrows(Flags, Utils, Const, DCArrow, DCArrowCluster) {
 
 		var service = {},
 			BONDS = Const.BONDS,
@@ -3020,11 +3038,13 @@
 		}
 
 		function generateArrows(type) {
-			var i, direction, bond, result = [];
-			for (i = 0; i < BONDS.length; i += 1) {
-				direction = BONDS[i].direction;
-				bond = BONDS[i].bond;
-				result.push(new Arrow(type, direction, bond));
+			var startVector = Const.BOND_N, result = [], i,
+			  possibleVectors = Utils.calcPossibleVectors(startVector, Const.FREQ);
+
+			possibleVectors.push(startVector);
+
+			for (i = 0; i < possibleVectors.length; i += 1) {
+				result.push(new Arrow(type, possibleVectors[i]));
 			}
 			return result;
 		}
@@ -4219,10 +4239,10 @@
 					vect = Const.BOND_N;
 				}
 				// finds all possible bonds, starting with `vect` and rotating it every `Const.FREQ`
-				possibleBonds = Utils.calcPossibleBonds(vect, Const.FREQ);
+				possibleBonds = Utils.calcPossibleVectors(vect, Const.FREQ);
 				// returns that vector from `possibleBonds` array,
 				// that is closest to the vector made with `down` and `mousePos` coordinates
-				return Utils.getClosestBond(down, mousePos, possibleBonds);
+				return Utils.getClosestVector(down, mousePos, possibleBonds);
 			}
 
 			/**
@@ -4260,34 +4280,6 @@
 				// recursively checks if this bond is already attached,
 				// if so, rotates it by `Const.FREQ` clockwise
 				return Utils.checkAttachedBonds(vect, current, Const.FREQ, Const.MAX_BONDS);
-			}
-
-			/**
-			 * Chooses a suitable modification from mod object.
-			 * @param {Atom} current - currently active Atom object
-			 * @param {String|undefined} - outgoing direction (either manually or automatically set)
-			 * @returns {Atom[]}
-			 */
-			function chooseMod(current, output) {
-				var i, at, name, toCompare, next;
-				if (mod.defs.length === 1) {
-					return mod.getDefault().getStructure(0).getBonds();
-				} else {
-					for(i = 0; i < mod.defs.length; i += 1) {
-						at = mod.defs[i];
-						next = current.getNext() || "N";
-						if (next === "max") {
-							return null;
-						}
-						name = at.getName();
-						toCompare = output || next;
-						if (toCompare === name) {
-							current.attachBond({ direction: name, type: mod.getBondsMultiplicity() });
-							current.calculateNext();
-							return at;
-						}
-					}
-				}
 			}
 		}
 

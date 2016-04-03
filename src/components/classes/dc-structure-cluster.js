@@ -3,9 +3,9 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DCStructureCluster", DCStructureCluster);
 
-	DCStructureCluster.$inject = [];
+	DCStructureCluster.$inject = ["DrawChemUtils", "DrawChemConst"];
 
-	function DCStructureCluster() {
+	function DCStructureCluster(Utils, Const) {
 
 		var service = {};
 
@@ -41,6 +41,20 @@
 
 		StructureCluster.prototype.getDefault = function () {
 			return this.defaultStructure;
+		};
+
+		StructureCluster.prototype.getStructure = function (mouseCoords1, mouseCoords2) {
+			var i, possibleVectors = [], vector, bond;
+			for (i = 0; i < Const.BONDS.length; i += 1) {
+				possibleVectors.push(Const.BONDS[i].bond);
+			}
+			vector = Utils.getClosestVector(mouseCoords1, mouseCoords2, possibleVectors);
+			for (i = 0; i < this.defs.length; i += 1) {
+				bond = Const.getBondByDirection(this.defs[i].getName()).bond;
+				if (Utils.compareVectors(bond, vector, 5)) {
+					return this.defs[i];
+				}
+			}
 		};
 
 		service.StructureCluster = StructureCluster;

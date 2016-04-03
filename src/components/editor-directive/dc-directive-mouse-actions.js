@@ -148,7 +148,7 @@
 						// set origin of the Structure object (which may be different from current mouse position)
 						structure.setOrigin(mouseFlags.downMouseCoords);
 						// choose appropriate arrow from ArrowCluster object
-						arrow = angular.copy(scope.chosenArrow.getArrow(mouseCoords, mouseFlags.downMouseCoords));
+						arrow = scope.chosenArrow.getArrow(mouseFlags.downMouseCoords, mouseCoords);
 						// as a reminder: Structure object has origin with an absolute value,
 						// but each object in its structures array has origin in relation to this absolute value;
 						// first object in this array has therefore always coords [0, 0]
@@ -169,7 +169,7 @@
 					if (mouseFlags.movedOnEmpty) {
 						// if the mousemove event occurred before this mouseup event
 						// set origin of the Structure object (which may be different from current mouse position)
-						arrow = angular.copy(scope.chosenArrow.getArrow(mouseCoords, mouseFlags.downMouseCoords));
+						arrow = scope.chosenArrow.getArrow(mouseFlags.downMouseCoords, mouseCoords);
 					} else {
 						// otherwise get default arrow
 						arrow = angular.copy(scope.chosenArrow.getDefault());
@@ -191,7 +191,7 @@
 					if (mouseFlags.movedOnEmpty) {
 						// if the mousemove event occurred before this mouseup event
 						// choose an appropriate Structure object from the StructureCluster object
-						structure = angular.copy(scope.chosenStructure.getStructure(mouseCoords, mouseFlags.downMouseCoords));
+						structure = angular.copy(scope.chosenStructure.getStructure(mouseFlags.downMouseCoords, mouseCoords));
 						// and set its origin (which may be different from current mouse position)
 						structure.setOrigin(mouseFlags.downMouseCoords);
 						if (structure.isAromatic()) {
@@ -228,7 +228,7 @@
 					if (mouseFlags.movedOnEmpty) {
 						// if the mousemove event occurred before this mouseup event
 						// choose an appropriate Structure object from the StructureCluster object
-						structureAux = angular.copy(scope.chosenStructure.getStructure(mouseCoords, mouseFlags.downMouseCoords));
+						structureAux = angular.copy(scope.chosenStructure.getStructure(mouseFlags.downMouseCoords, mouseCoords));
 						if (structureAux.isAromatic()) {
 							// if the chosen Structure object is aromatic,
 							// then add appropriate flag to the original Structure object
@@ -300,8 +300,8 @@
 					structure = new Structure();
 					// set origin of the Structure object (which may be different from current mouse position)
 					structure.setOrigin(mouseFlags.downMouseCoords);
-					// choose appropriate arrow from ArrowCluster object
-					arrow = angular.copy(scope.chosenArrow.getArrow(mouseCoords, mouseFlags.downMouseCoords));
+					// choose appropriate `Arrow` based on mouse coords
+					arrow = scope.chosenArrow.getArrow(mouseFlags.downMouseCoords, mouseCoords);
 					// as a reminder: Structure object has origin with an absolute value,
 					// but each object in its structures array has origin in relation to this absolute value;
 					// first object in this array has therefore always coords [0, 0]
@@ -311,7 +311,7 @@
 					// so get Structure object from Cache
 					structure = angular.copy(Cache.getCurrentStructure());
 					// choose appropriate arrow from ArrowCluster object
-					arrow = angular.copy(scope.chosenArrow.getArrow(mouseCoords, mouseFlags.downMouseCoords));
+					arrow = scope.chosenArrow.getArrow(mouseFlags.downMouseCoords, mouseCoords);
 					newCoords = Utils.subtractVectors(mouseFlags.downMouseCoords, structure.getOrigin());
 					// calculate and set coords
 					arrow.setOrigin(newCoords);
@@ -327,7 +327,7 @@
 				var structure, structureAux, newCoords, bond;
 				if (Utils.isContentEmpty()) {
 					// if the content is empty
-					structure = angular.copy(scope.chosenStructure.getStructure(mouseCoords, mouseFlags.downMouseCoords));
+					structure = angular.copy(scope.chosenStructure.getStructure(mouseFlags.downMouseCoords, mouseCoords));
 					// set its origin (which may be different from current mouse position)
 					structure.setOrigin(mouseFlags.downMouseCoords);
 					if (structure.isAromatic()) {
@@ -346,7 +346,7 @@
 					// calaculate new coords
 					newCoords = Utils.subtractVectors(mouseFlags.downMouseCoords, structure.getOrigin());
 					// choose an appropriate Structure object from the StructureCluster object
-					structureAux = angular.copy(scope.chosenStructure.getStructure(mouseCoords, mouseFlags.downMouseCoords));
+					structureAux = angular.copy(scope.chosenStructure.getStructure(mouseFlags.downMouseCoords, mouseCoords));
 					if (structureAux.isAromatic()) {
 						// if the chosen Structure object is aromatic,
 						// then add appropriate flag to the original Structure object

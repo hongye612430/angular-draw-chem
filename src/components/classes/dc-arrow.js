@@ -14,13 +14,12 @@
 		  BETWEEN_TRP_BONDS = Const.BETWEEN_TRP_BONDS;
 
 		/**
-		* Creates a new Arrow.
+		* Creates a new `Arrow` object.
 		* @class
 		*/
-		function Arrow(type, direction, relativeEnd) {
+		function Arrow(type, relativeEnd) {
 			this.type = type;
 			this.selected = false;
-			this.direction = direction;
 			this.relativeEnd = relativeEnd;
 		}
 

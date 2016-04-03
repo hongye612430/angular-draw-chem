@@ -113,33 +113,33 @@
 		* @param {number} freq - angle in degrees,
 		* @returns {Array}
 		*/
-		service.calcPossibleBonds = function (vector, freq) {
-			var possibleBonds = [], i;
+		service.calcPossibleVectors = function (vector, freq) {
+			var possibleVectors = [], i;
 			for (i = 0; i < 360 / freq; i += 1) {
 				vector = service.rotVectCW(vector, freq);
-				possibleBonds.push(vector);
+				possibleVectors.push(vector);
 			}
-			return possibleBonds;
+			return possibleVectors;
 		};
 
 		/**
-		* Calculates the closest bond (vector) in `possibleBonds` array to vector starting at `down` coords and ending at `mousePos` coords.
+		* Calculates the closest bond (vector) in `possibleVectors` array to vector starting at `down` coords and ending at `mousePos` coords.
 		* @param {number[]} down - first set of coordinates,
 		* @param {number[]} mousePos - second set of coordinates,
-		* @param {Array} possibleBonds - an array of bonds (vectors),
+		* @param {Array} possibleVectors - an array of bonds (vectors),
 		* @returns {number[]}
 		*/
-		service.getClosestBond = function (down, mousePos, possibleBonds) {
+		service.getClosestVector = function (down, mousePos, possibleVectors) {
 			var vector = [mousePos[0] - down[0], mousePos[1] - down[1]], angle, i, currVector, minAngle = Math.PI, minIndex = 0, structure;
-			for (i = 0; i < possibleBonds.length; i += 1) {
-				currVector = possibleBonds[i];
+			for (i = 0; i < possibleVectors.length; i += 1) {
+				currVector = possibleVectors[i];
 				angle = Math.acos(service.dotProduct(service.norm(currVector), service.norm(vector)));
 				if (Math.abs(angle) < minAngle) {
 					minAngle = Math.abs(angle);
 					minIndex = i;
 				}
 			}
-			return possibleBonds[minIndex];
+			return possibleVectors[minIndex];
 		};
 
 		/**
