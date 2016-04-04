@@ -815,7 +815,7 @@
 
 	DCShape.$inject = ["DrawChemConst"];
 
-	function DCShape(DrawChemConst) {
+	function DCShape(Const) {
 
 		var service = {};
 
@@ -824,91 +824,54 @@
 		service.font = "Arial";
 
 		/**
-		 * Creates a new Shape. This helper class has methods
+		 * Creates a new `Shape` element. This helper class has methods
 		 * for wrapping an svg element (e.g. path) with other elements (e.g. g, defs).
 		 * @class
-		 * @param {String} elementFull - an svg element for editing
-		 * @param {String} elementMini - an svg element for displaying outside of the editor
-		 * @param {String} id - an id of the element
+		 * @param {string} elementFull - svg element for editor
+		 * @param {string} elementMini - svg element for displaying outside of the editor
+		 * @param {string} id - id of the g element
 		 */
 		function Shape(elementFull, elementMini, id) {
 			this.elementFull = elementFull;
 			this.elementMini = elementMini;
 			this.id = id;
-			this.scale = 1;
-			this.transformAttr = "";
-			this.style = {
-				expanded: {
-					"circle.atom:hover": {
-						"opacity": "0.3",
-						"stroke": "black",
-						"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
-					},
-					"circle.arom:hover": {
-						"opacity": "0.3",
-						"stroke": "black",
-						"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
-						"fill": "black"
-					},
-					"text:hover": {
-						"opacity": "0.3"
-					},
-					"circle.atom": {
-						"opacity": "0",
-					},
-					"circle.edit": {
-						"stroke": "black",
-						"fill": "none"
-					},
-					"rect.selection": {
-						"stroke": "black",
-						"stroke-dasharray": "10 5",
-						"fill": "none"
-					}
-				},
-				base: {
-					"path": {
-						"stroke": "black",
-						"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
-						"fill": "none"
-					},
-					"path.wedge": {
-						"fill": "black"
-					},
-					"path.arrow": {
-						"fill": "black"
-					},
-					"path.arrow-eq": {
-						"fill": "none"
-					},
-					"circle.arom": {
-						"stroke": "black",
-						"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
-						"fill": "none"
-					},
-					"circle.tr-arom": {
-						"stroke": "black",
-						"stroke-width": DrawChemConst.BOND_WIDTH * this.scale,
-						"fill": "none"
-					},
-					"text": {
-						"font-family": service.font,
-						"cursor": "default",
-						"font-size": service.fontSize + "px"
-					},
-					"tspan.sub": {
-						"font-size": service.subFontSize + "px"
-					},
-					"polygon.text": {
-						"fill": "white"
-					}
-				}
-			};
 		}
 
 		/**
+		 * Gets full element.
+		 * @returns {string}
+		 */
+		Shape.prototype.getElementFull = function () {
+			return this.elementFull;
+		};
+
+		/**
+		 * Sets full element.
+		 * @param {string} element - full element
+		 */
+		Shape.prototype.setElementFull = function (element) {
+			this.elementFull = element;
+		};
+
+		/**
+		 * Gets mini element.
+		 * @returns {string}
+		 */
+		Shape.prototype.getElementMini = function () {
+			return this.elementMini;
+		};
+
+		/**
+		 * Sets mini element.
+		 * @param {string} element - mini element
+		 */
+		Shape.prototype.setElementMini = function (element) {
+			this.elementMini = element;
+		};
+
+		/**
 		 * Sets an array of extreme coords (minX, maxX, minY, maxY).
-		 * @param {Number[]} minMax - array of coords
+		 * @param {number[]} minMax - array of coords
 		 */
 		Shape.prototype.setMinMax = function (minMax) {
 			this.minMax = minMax;
@@ -950,15 +913,82 @@
 
 		/**
 		 * Generates style tag with all info about the style enclosed.
-		 * @param {String} which - 'expanded' for the whole css, 'base' for css needed to render the molecule (without circles on hover, etc.)
+		 * @param {string} which - 'expanded' for the whole css, 'base' for css needed to render the molecule (without circles on hover, etc.)
 		 */
-		Shape.prototype.generateStyle = function (which) {
-			var attr = "<style type=\"text/css\">";
+		Shape.generateStyle = function (which) {
+			var style = {
+					expanded: {
+						"circle.atom:hover": {
+							"opacity": "0.3",
+							"stroke": "black",
+							"stroke-width": Const.BOND_WIDTH,
+						},
+						"circle.arom:hover": {
+							"opacity": "0.3",
+							"stroke": "black",
+							"stroke-width": Const.BOND_WIDTH,
+							"fill": "black"
+						},
+						"text:hover": {
+							"opacity": "0.3"
+						},
+						"circle.atom": {
+							"opacity": "0",
+						},
+						"circle.edit": {
+							"stroke": "black",
+							"fill": "none"
+						},
+						"rect.selection": {
+							"stroke": "black",
+							"stroke-dasharray": "10 5",
+							"fill": "none"
+						}
+					},
+					base: {
+						"path": {
+							"stroke": "black",
+							"stroke-width": Const.BOND_WIDTH,
+							"fill": "none"
+						},
+						"path.wedge": {
+							"fill": "black"
+						},
+						"path.arrow": {
+							"fill": "black"
+						},
+						"path.arrow-eq": {
+							"fill": "none"
+						},
+						"circle.arom": {
+							"stroke": "black",
+							"stroke-width": Const.BOND_WIDTH,
+							"fill": "none"
+						},
+						"circle.tr-arom": {
+							"stroke": "black",
+							"stroke-width": Const.BOND_WIDTH,
+							"fill": "none"
+						},
+						"text": {
+							"font-family": service.font,
+							"cursor": "default",
+							"font-size": service.fontSize + "px"
+						},
+						"tspan.sub": {
+							"font-size": service.subFontSize + "px"
+						},
+						"polygon.text": {
+							"fill": "white"
+						}
+					}
+				},
+			  attr = "<style type=\"text/css\">";
 
 			if (which === "expanded") {
-				which = { base: this.style.base, expanded: this.style.expanded };
+				which = { base: style.base, expanded: style.expanded };
 			} else if (which === "base") {
-				which = { base: this.style.base, expanded: {} };
+				which = { base: style.base, expanded: {} };
 			}
 
 			angular.forEach(which, function (value, key) {
@@ -971,7 +1001,7 @@
 				});
 			});
 			return attr + "</style>";
-		}
+		};
 
 		service.Shape = Shape;
 
@@ -4179,6 +4209,7 @@
 			Atom = DCAtom.Atom,
 			Arrow = DCArrow.Arrow,
 			Bond = DCBond.Bond,
+			Shape = DCShape.Shape,
 			Selection = DCSelection.Selection;
 
 		/**
@@ -4515,15 +4546,19 @@
 		 */
 		service.draw = function (input, id) {
 			var shape,
+			  styleBase = Shape.generateStyle("base"),
+				styleExpanded = Shape.generateStyle("expanded"),
 				output = parseInput(input),
 				paths = output.paths,
 				circles = output.circles,
 				labels = output.labels,
 				rects = output.rects,
 				minMax = output.minMax;
-			shape = new DCShape.Shape(genElements().full, genElements().mini, id);
-			shape.elementFull = shape.generateStyle("expanded") + shape.elementFull;
-			shape.elementMini = shape.generateStyle("base") + shape.elementMini;
+			shape = new Shape(
+				styleExpanded + genElements().full,
+				styleBase + genElements().mini,
+				id
+			);
 			shape.setMinMax(minMax);
 			return shape;
 

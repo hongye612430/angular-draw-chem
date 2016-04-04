@@ -23,6 +23,7 @@
 			Atom = DCAtom.Atom,
 			Arrow = DCArrow.Arrow,
 			Bond = DCBond.Bond,
+			Shape = DCShape.Shape,
 			Selection = DCSelection.Selection;
 
 		/**
@@ -359,15 +360,19 @@
 		 */
 		service.draw = function (input, id) {
 			var shape,
+			  styleBase = Shape.generateStyle("base"),
+				styleExpanded = Shape.generateStyle("expanded"),
 				output = parseInput(input),
 				paths = output.paths,
 				circles = output.circles,
 				labels = output.labels,
 				rects = output.rects,
 				minMax = output.minMax;
-			shape = new DCShape.Shape(genElements().full, genElements().mini, id);
-			shape.elementFull = shape.generateStyle("expanded") + shape.elementFull;
-			shape.elementMini = shape.generateStyle("base") + shape.elementMini;
+			shape = new Shape(
+				styleExpanded + genElements().full,
+				styleBase + genElements().mini,
+				id
+			);
 			shape.setMinMax(minMax);
 			return shape;
 

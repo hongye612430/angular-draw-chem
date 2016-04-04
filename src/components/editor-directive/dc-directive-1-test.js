@@ -1,12 +1,12 @@
 var styleExpanded = "circle.atom:hover{" +
 		"opacity:0.3;" +
 		"stroke:black;" +
-		"stroke-width:0.8;" +
+		"stroke-width:0.80;" +
 	"}" +
 	"circle.arom:hover{" +
 		"opacity:0.3;" +
 		"stroke:black;" +
-		"stroke-width:0.8;" +
+		"stroke-width:0.80;" +
 		"fill:black;" +
 	"}" +
 	"text:hover{" +
@@ -26,7 +26,7 @@ var styleExpanded = "circle.atom:hover{" +
 	"}",
 	styleBase = "path{" +
 		"stroke:black;" +
-		"stroke-width:0.8;" +
+		"stroke-width:0.80;" +
 		"fill:none;" +
 	"}" +
 	"path.wedge{" +
@@ -40,12 +40,12 @@ var styleExpanded = "circle.atom:hover{" +
 	"}" +
 	"circle.arom{" +
 		"stroke:black;" +
-		"stroke-width:0.8;" +
+		"stroke-width:0.80;" +
 		"fill:none;" +
 	"}" +
 	"circle.tr-arom{" +
 		"stroke:black;" +
-		"stroke-width:0.8;" +
+		"stroke-width:0.80;" +
 		"fill:none;" +
 	"}" +
 	"text{" +
@@ -272,7 +272,7 @@ describe("DrawChemEditor directive tests - part1", function () {
 			which: 1,
 			clientX: 101,
 			clientY: 99
-		});
+		});		
 		expect(temp.find(".dc-editor-dialog-content").html())
 			.toEqual(
 				"<svg>" +
