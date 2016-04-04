@@ -123,4 +123,14 @@ describe("DrawChemUtils service tests", function () {
 		v = Utils.rotVectCCW([1, 1], 90);
 		expect([v[0].toFixed(2), v[1].toFixed(2)]).toEqual(["1.00", "-1.00"]);
 	});
+
+	it("should normalize a vector", function () {
+		var v = Utils.norm([3, 4]);
+		expect([v[0].toFixed(2), v[1].toFixed(2)]).toEqual(["0.60", "0.80"]);
+	});
+
+	it("should calculate dot product of two vectors", function () {
+		var d = Utils.dotProduct([3, 3], [2, 2]);
+		expect(d).toEqual(12);
+	});
 });
