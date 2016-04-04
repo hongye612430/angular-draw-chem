@@ -6,11 +6,11 @@
 	DrawChemActions.$inject = [
 		"DrawChemCache",
 		"DrawChem",
-		"DrawChemShapes",
+		"DrawChemSvgRenderer",
 		"DrawChemDirectiveUtils"
 	];
 
-	function DrawChemActions(DrawChemCache, DrawChem, DrawChemShapes, DrawChemDirUtils) {
+	function DrawChemActions(DrawChemCache, DrawChem, SvgRenderer, DrawChemDirUtils) {
 
 		var service = {};
 
@@ -61,7 +61,7 @@
 				shape, attr, content = "";
 
 			if (structure !== null) {
-				shape = DrawChemShapes.draw(structure, "transfer");
+				shape = SvgRenderer.draw(structure, "transfer");
 				attr = {
 					"viewBox": (shape.minMax.minX - 20).toFixed(2) + " " +
 						(shape.minMax.minY - 20).toFixed(2) + " " +

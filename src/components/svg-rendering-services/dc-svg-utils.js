@@ -1,11 +1,11 @@
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
-		.factory("DrawChemGenElements", DrawChemGenElements);
+		.factory("DrawChemSvgUtils", DrawChemSvgUtils);
 
-	DrawChemGenElements.$inject = ["DrawChemConst", "DrawChemUtils", "DCSvg"];
+	DrawChemSvgUtils.$inject = ["DrawChemConst", "DrawChemUtils", "DCSvg"];
 
-	function DrawChemGenElements(Const, Utils, DCSvg) {
+	function DrawChemSvgUtils(Const, Utils, DCSvg) {
 
 		var service = {},
       BONDS_AUX = Const.BONDS_AUX,
@@ -109,6 +109,123 @@
       }
       return result;
     };
+
+		service.updateLabel = function(absPos, atom) {
+			var label = atom.getLabel(), labelObj;
+			if (typeof label !== "undefined") {
+				labelObj = genLabelInfo();
+				labels.push(labelObj);
+			}
+
+			function genLabelInfo() {
+				var bondsRemained = label.getMaxBonds() - calcBondsIn(atom.getAttachedBonds()) - calcBondsOut(atom.getBonds()),
+					labelNameObj = { name: label.getLabelName() };
+
+				addHydrogens();
+
+				return {
+					length: labelNameObj.name.length,
+					label: labelNameObj.name,
+					mode: label.getMode(),
+					atomX: absPos[0],
+					atomY: absPos[1],
+					labelX: absPos[0] + labelNameObj.correctX,
+					labelY: absPos[1] + 0.09 * BOND_LENGTH,
+					width: DCSvg.fontSize * labelNameObj.name.length,
+					height: DCSvg.fontSize
+				};
+
+				function calcBondsIn(bonds) {
+					var i, type, result = 0;
+					for (i = 0; i < bonds.length; i += 1) {
+						type = bonds[i].type;
+						switch (type) {
+							case "single": result += 1; break;
+							case "double": result += 2; break;
+							case "triple": result += 3; break;
+						}
+					}
+					return result;
+				}
+
+				function calcBondsOut(bonds) {
+					var i, type, result = 0;
+					for (i = 0; i < bonds.length; i += 1) {
+						type = bonds[i].getType();
+						switch (type) {
+							case "single": result += 1; break;
+							case "wedge": result += 1; break;
+							case "dash": result += 1; break;
+							case "double": result += 2; break;
+							case "triple": result += 3; break;
+						}
+					}
+					return result;
+				}
+
+				function addHydrogens() {
+					var i, mode = label.getMode(), hydrogens = 0;
+					for (i = 0; i < bondsRemained; i += 1) {
+						hydrogens += 1;
+					}
+
+					labelNameObj.hydrogens = hydrogens;
+
+					if (typeof mode === "undefined") {
+						// if mode is not known (if there was previously no label)
+						// try to guess which one should it be
+						mode = getTextDirection();
+						label.setMode(mode);
+					}
+
+					if (hydrogens > 0) {
+						// only happens for predefined labels
+						// custom labels can't have implicit hydrogens
+						hydrogensAboveZero();
+					} else {
+						hydrogensZeroOrLess();
+					}
+
+					labelNameObj.correctX = calcCorrect() * BOND_LENGTH;
+
+					function hydrogensAboveZero() {
+						if (mode === "rl") {
+							labelNameObj.name = hydrogens === 1 ?
+								 "H" + labelNameObj.name: "H" + hydrogens + labelNameObj.name;
+						} else if (mode === "lr") {
+							labelNameObj.name = hydrogens === 1 ?
+								labelNameObj.name + "H": labelNameObj.name + "H" + hydrogens;
+						}
+					}
+
+					function hydrogensZeroOrLess() {
+						if (mode === "rl") {
+							labelNameObj.name = Utils.invertGroup(labelNameObj.name);
+						}
+					}
+
+					function getTextDirection() {
+						var countE = 0;
+						atom.getAttachedBonds().forEach(function (direction) {
+							countE = direction.direction.indexOf("E") < 0 ? countE: countE + 1;
+						});
+						return countE > 0 ? "rl": "lr";
+					}
+
+					function calcCorrect() {
+						if (mode === "rl") {
+							return 0.175;
+						} else if (mode === "lr") {
+							return -0.175;
+						} else if (mode === "tb") {
+
+						} else if (mode === "bt") {
+
+						}
+					}
+				}
+			}
+		}
 
 		return service;
 

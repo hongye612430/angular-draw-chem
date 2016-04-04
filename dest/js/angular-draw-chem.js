@@ -67,15 +67,9 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DCArrow", DCArrow);
 
-	DCArrow.$inject = ["DrawChemUtils", "DrawChemConst"];
+	function DCArrow() {
 
-	function DCArrow(Utils, Const) {
-
-		var service = {},
-		  ARROW_START = Const.ARROW_START,
-		  ARROW_SIZE = Const.ARROW_SIZE,
-		  BETWEEN_DBL_BONDS = Const.BETWEEN_DBL_BONDS,
-		  BETWEEN_TRP_BONDS = Const.BETWEEN_TRP_BONDS;
+		var service = {};
 
 		/**
 		* Creates a new `Arrow` object.
@@ -183,54 +177,6 @@
 		};
 
 		service.Arrow = Arrow;
-
-		/**
-		* Calculates data for the svg instructions in `path` element.
-		* @param {number[]} start - start coordinates (absolute) of the arrow,
-		* @param {number[]} end - end coordinates (absolute) of the arrow,
-		* @param {string} type - arrow type (one-way, etc.),
-		* @returns {Array}
-		*/
-		service.calcArrow = function (start, end, type) {
-			var vectCoords = [end[0] - start[0], end[1] - start[1]],
-				perpVectCoordsCW = [-vectCoords[1], vectCoords[0]],
-				perpVectCoordsCCW = [vectCoords[1], -vectCoords[0]], endMarkerStart, startMarkerStart, M1, M2, L1, L2, L3, L4;
-			if (type === "one-way-arrow") {
-				endMarkerStart = [start[0] + vectCoords[0] * ARROW_START, start[1] + vectCoords[1] * ARROW_START];
-				L1 = Utils.addVectors(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
-				L2 = Utils.addVectors(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
-				return ["arrow", "M", start, "L", end, "M", endMarkerStart, "L", L1, "L", end, "L", L2, "Z"];
-			} else if (type === "two-way-arrow") {
-				endMarkerStart = [start[0] + vectCoords[0] * ARROW_START, start[1] + vectCoords[1] * ARROW_START];
-				startMarkerStart = [start[0] + vectCoords[0] * (1 - ARROW_START), start[1] + vectCoords[1] * (1 - ARROW_START)];
-				L1 = Utils.addVectors(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
-				L2 = Utils.addVectors(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
-				L3 = Utils.addVectors(startMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
-				L4 = Utils.addVectors(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
-				return [
-					"arrow",
-					"M", start, "L", end,
-					"M", endMarkerStart, "L", L1, "L", end, "L", L2, "Z",
-					"M", startMarkerStart, "L", L3, "L", start, "L", L4, "Z"
-				];
-			}
-			else if (type === "equilibrium-arrow") {
-				M1 = Utils.addVectors(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
-				L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
-				endMarkerStart = [parseFloat(M1[0]) + vectCoords[0] * ARROW_START, parseFloat(M1[1]) + vectCoords[1] * ARROW_START];
-				L2 = Utils.addVectors(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
-
-				M2 = Utils.addVectors(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
-				L3 = Utils.addVectors(start, perpVectCoordsCW, BETWEEN_DBL_BONDS);
-				startMarkerStart = [parseFloat(L3[0]) + vectCoords[0] * (1 - ARROW_START), parseFloat(L3[1]) + vectCoords[1] * (1 - ARROW_START)];
-				L4 = Utils.addVectors(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
-				return [
-					"arrow-eq",
-					"M", M1, "L", L1, "L", L2,
-					"M", M2, "L", L3, "L", L4
-				];
-			}
-		}
 
 		return service;
 	}
@@ -451,13 +397,9 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DCBond", DCBond);
 
-	DCBond.$inject = ["DrawChemUtils", "DrawChemConst"]
+	function DCBond() {
 
-	function DCBond(Utils, Const) {
-
-		var service = {},
-		  BETWEEN_DBL_BONDS = Const.BETWEEN_DBL_BONDS,
-		  BETWEEN_TRP_BONDS = Const.BETWEEN_TRP_BONDS;
+		var service = {};
 
 		/**
 		* Creates a new Bond.
@@ -503,53 +445,6 @@
 		}
 
 		service.Bond = Bond;
-
-		service.calcDoubleBondCoords = function (start, end) {
-			var vectCoords = [end[0] - start[0], end[1] - start[1]],
-				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
-				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
-				M1 = Utils.addVectors(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
-				L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
-				M2 = Utils.addVectors(start, perpVectCoordsCW, BETWEEN_DBL_BONDS),
-				L2 = Utils.addVectors(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
-			return ["M", M1, "L", L1, "M", M2, "L", L2];
-		};
-
-		service.calcTripleBondCoords = function (start, end) {
-			var vectCoords = [end[0] - start[0], end[1] - start[1]],
-				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
-				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
-				M1 = Utils.addVectors(start, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
-				L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
-				M2 = Utils.addVectors(start, perpVectCoordsCW, BETWEEN_TRP_BONDS),
-				L2 = Utils.addVectors(end, perpVectCoordsCW, BETWEEN_TRP_BONDS);
-			return ["M", M1, "L", L1, "M", start, "L", end, "M", M2, "L", L2];
-		};
-
-		service.calcWedgeBondCoords = function (start, end) {
-			var vectCoords = [end[0] - start[0], end[1] - start[1]],
-				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
-				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
-				L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
-				L2 = Utils.addVectors(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
-			return ["wedge", "M", start, "L", L1, "L", L2, "Z"];
-		};
-
-		service.calcDashBondCoords = function (start, end) {
-			var i, max = 7, factor = BETWEEN_DBL_BONDS / max, M, L, currentEnd = start, result = [],
-				vectCoords = [end[0] - start[0], end[1] - start[1]],
-				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
-				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]];
-
-			for (i = max; i > 0; i -= 1) {
-				factor = factor + BETWEEN_DBL_BONDS / max;
-				currentEnd = [currentEnd[0] + vectCoords[0] / max, currentEnd[1] + vectCoords[1] / max];
-				M = Utils.addVectors(currentEnd, perpVectCoordsCCW, factor);
-				L = Utils.addVectors(currentEnd, perpVectCoordsCW, factor);
-				result = result.concat(["M", M, "L", L]);
-			}
-			return result;
-		};
 
 		return service;
 	}
@@ -699,9 +594,7 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DCSelection", DCSelection);
 
-	DCSelection.$inject = ["DrawChemUtils"]
-
-	function DCSelection(Utils) {
+	function DCSelection() {
 
 		var service = {};
 
@@ -763,247 +656,6 @@
 		};
 
 		service.Selection = Selection;
-
-		/**
-		* Calculates rectangle attributes (x, y, width, and height).
-		* @param {number[]} absPosStart - absolute coordinates associated with onMouseDown event,
-		* @param {number[]} absPosEnd - absolute coordinates associated with onMouseUp event,
-		* @returns {Object}
-		*/
-		service.calcRect = function (absPosStart, absPosEnd) {
-			var startX, startY, width, height,
-			  quadrant = Utils.getQuadrant(absPosStart, absPosEnd);
-
-			if (quadrant === 1) {
-				startX = absPosStart[0];
-				startY = absPosEnd[1];
-				width = absPosEnd[0] - startX;
-				height = absPosStart[1] - startY;
-			} else if (quadrant === 2) {
-				startX = absPosEnd[0];
-				startY = absPosEnd[1];
-				width = absPosStart[0] - startX;
-				height = absPosStart[1] - startY;
-			} else if (quadrant === 3) {
-				startX = absPosEnd[0];
-				startY = absPosStart[1];
-				width = absPosStart[0] - startX;
-				height = absPosEnd[1] - startY;
-			} else if (quadrant === 4) {
-				startX = absPosStart[0];
-				startY = absPosStart[1];
-				width = absPosEnd[0] - startX;
-				height = absPosEnd[1] - startY;
-			}
-			if (width < 0) {
-				width = 0;
-			}
-			if (height < 0) {
-				height = 0;
-			}
-			return { class: "selection", rect: [startX, startY, width, height] };
-		};
-
-		return service;
-	}
-})();
-
-(function () {
-	"use strict";
-	angular.module("mmAngularDrawChem")
-		.factory("DCSvg", DCSvg);
-
-	DCSvg.$inject = ["DrawChemConst"];
-
-	function DCSvg(Const) {
-
-		var service = {};
-
-		service.fontSize = 18;
-		service.subFontSize = 14;
-		service.font = "Arial";
-
-		/**
-		 * Creates a new `Svg` element. This helper class has methods
-		 * for wrapping an svg element (e.g. path) with other elements (e.g. g, defs).
-		 * @class
-		 * @param {string} elementFull - svg element for editor
-		 * @param {string} elementMini - svg element for displaying outside of the editor
-		 * @param {string} id - id of the g element
-		 */
-		function Svg(elementFull, elementMini, id) {
-			this.elementFull = elementFull;
-			this.elementMini = elementMini;
-			this.id = id;
-		}
-
-		/**
-		 * Gets full element.
-		 * @returns {string}
-		 */
-		Svg.prototype.getElementFull = function () {
-			return this.elementFull;
-		};
-
-		/**
-		 * Sets full element.
-		 * @param {string} element - full element
-		 */
-		Svg.prototype.setElementFull = function (element) {
-			this.elementFull = element;
-		};
-
-		/**
-		 * Gets mini element.
-		 * @returns {string}
-		 */
-		Svg.prototype.getElementMini = function () {
-			return this.elementMini;
-		};
-
-		/**
-		 * Sets mini element.
-		 * @param {string} element - mini element
-		 */
-		Svg.prototype.setElementMini = function (element) {
-			this.elementMini = element;
-		};
-
-		/**
-		 * Sets an array of extreme coords (minX, maxX, minY, maxY).
-		 * @param {number[]} minMax - array of coords
-		 */
-		Svg.prototype.setMinMax = function (minMax) {
-			this.minMax = minMax;
-		}
-
-		/**
-		 * Wraps an instance of Svg with a custom tag.
-		 * @param {string} el - name of the tag, if this param equals 'g', then id attribute is automatically added
-		 * @param {Object} attr - attribute of the tag
-		 * @param {string} attr.key - name of the attribute
-		 * @param {string} attr.val - value of the attribute
-		 */
-		Svg.prototype.wrap = function (which, el, attr) {
-			var customAttr = {}, tagOpen;
-
-			if (el === "g" && !attr) {
-				attr = customAttr;
-				attr.id = this.id;
-			}
-			if (attr) {
-				tagOpen = "<" + el + " ";
-				angular.forEach(attr, function (val, key) {
-					tagOpen += key + "='" + val + "' ";
-				});
-				if (which === "full") {
-					this.elementFull = tagOpen + ">" + this.elementFull + "</" + el + ">";
-				} else if (which === "mini") {
-					this.elementMini = tagOpen + ">" + this.elementMini + "</" + el + ">";
-				}
-			} else {
-				if (which === "full") {
-					this.elementFull = "<" + el + ">" + this.elementFull + "</" + el + ">";
-				} else if (which === "mini") {
-					this.elementMini = "<" + el + ">" + this.elementMini + "</" + el + ">";
-				}
-			}
-			return this;
-		};
-
-		/**
-		 * Generates style tag with all info about the style enclosed.
-		 * @param {string} which - 'expanded' for the whole css, 'base' for css needed to render the molecule (without circles on hover, etc.)
-		 */
-		Svg.generateStyle = function (which) {
-			var style = {
-					expanded: {
-						"circle.atom:hover": {
-							"opacity": "0.3",
-							"stroke": "black",
-							"stroke-width": Const.BOND_WIDTH,
-						},
-						"circle.arom:hover": {
-							"opacity": "0.3",
-							"stroke": "black",
-							"stroke-width": Const.BOND_WIDTH,
-							"fill": "black"
-						},
-						"text:hover": {
-							"opacity": "0.3"
-						},
-						"circle.atom": {
-							"opacity": "0",
-						},
-						"circle.edit": {
-							"stroke": "black",
-							"fill": "none"
-						},
-						"rect.selection": {
-							"stroke": "black",
-							"stroke-dasharray": "10 5",
-							"fill": "none"
-						}
-					},
-					base: {
-						"path": {
-							"stroke": "black",
-							"stroke-width": Const.BOND_WIDTH,
-							"fill": "none"
-						},
-						"path.wedge": {
-							"fill": "black"
-						},
-						"path.arrow": {
-							"fill": "black"
-						},
-						"path.arrow-eq": {
-							"fill": "none"
-						},
-						"circle.arom": {
-							"stroke": "black",
-							"stroke-width": Const.BOND_WIDTH,
-							"fill": "none"
-						},
-						"circle.tr-arom": {
-							"stroke": "black",
-							"stroke-width": Const.BOND_WIDTH,
-							"fill": "none"
-						},
-						"text": {
-							"font-family": service.font,
-							"cursor": "default",
-							"font-size": service.fontSize + "px"
-						},
-						"tspan.sub": {
-							"font-size": service.subFontSize + "px"
-						},
-						"polygon.text": {
-							"fill": "white"
-						}
-					}
-				},
-			  attr = "<style type=\"text/css\">";
-
-			if (which === "expanded") {
-				which = { base: style.base, expanded: style.expanded };
-			} else if (which === "base") {
-				which = { base: style.base, expanded: {} };
-			}
-
-			angular.forEach(which, function (value, key) {
-				angular.forEach(value, function (value, key) {
-					attr += key + "{";
-					angular.forEach(value, function (value, key) {
-						attr += key + ":" + value + ";";
-					});
-					attr += "}"
-				});
-			});
-			return attr + "</style>";
-		};
-
-		service.Svg = Svg;
 
 		return service;
 	}
@@ -1751,6 +1403,207 @@
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
+		.factory("DCSvg", DCSvg);
+
+	DCSvg.$inject = ["DrawChemConst"];
+
+	function DCSvg(Const) {
+
+		var service = {};
+
+		service.fontSize = 18;
+		service.subFontSize = 14;
+		service.font = "Arial";
+
+		/**
+		 * Creates a new `Svg` element. This helper class has methods
+		 * for wrapping an svg element (e.g. path) with other elements (e.g. g, defs).
+		 * @class
+		 * @param {string} elementFull - svg element for editor
+		 * @param {string} elementMini - svg element for displaying outside of the editor
+		 * @param {string} id - id of the g element
+		 */
+		function Svg(elementFull, elementMini, id) {
+			this.elementFull = elementFull;
+			this.elementMini = elementMini;
+			this.id = id;
+		}
+
+		/**
+		 * Gets full element.
+		 * @returns {string}
+		 */
+		Svg.prototype.getElementFull = function () {
+			return this.elementFull;
+		};
+
+		/**
+		 * Sets full element.
+		 * @param {string} element - full element
+		 */
+		Svg.prototype.setElementFull = function (element) {
+			this.elementFull = element;
+		};
+
+		/**
+		 * Gets mini element.
+		 * @returns {string}
+		 */
+		Svg.prototype.getElementMini = function () {
+			return this.elementMini;
+		};
+
+		/**
+		 * Sets mini element.
+		 * @param {string} element - mini element
+		 */
+		Svg.prototype.setElementMini = function (element) {
+			this.elementMini = element;
+		};
+
+		/**
+		 * Sets an array of extreme coords (minX, maxX, minY, maxY).
+		 * @param {number[]} minMax - array of coords
+		 */
+		Svg.prototype.setMinMax = function (minMax) {
+			this.minMax = minMax;
+		}
+
+		/**
+		 * Wraps an instance of Svg with a custom tag.
+		 * @param {string} el - name of the tag, if this param equals 'g', then id attribute is automatically added
+		 * @param {Object} attr - attribute of the tag
+		 * @param {string} attr.key - name of the attribute
+		 * @param {string} attr.val - value of the attribute
+		 */
+		Svg.prototype.wrap = function (which, el, attr) {
+			var customAttr = {}, tagOpen;
+
+			if (el === "g" && !attr) {
+				attr = customAttr;
+				attr.id = this.id;
+			}
+			if (attr) {
+				tagOpen = "<" + el + " ";
+				angular.forEach(attr, function (val, key) {
+					tagOpen += key + "='" + val + "' ";
+				});
+				if (which === "full") {
+					this.elementFull = tagOpen + ">" + this.elementFull + "</" + el + ">";
+				} else if (which === "mini") {
+					this.elementMini = tagOpen + ">" + this.elementMini + "</" + el + ">";
+				}
+			} else {
+				if (which === "full") {
+					this.elementFull = "<" + el + ">" + this.elementFull + "</" + el + ">";
+				} else if (which === "mini") {
+					this.elementMini = "<" + el + ">" + this.elementMini + "</" + el + ">";
+				}
+			}
+			return this;
+		};
+
+		/**
+		 * Generates style tag with all info about the style enclosed.
+		 * @param {string} which - 'expanded' for the whole css, 'base' for css needed to render the molecule (without circles on hover, etc.)
+		 */
+		Svg.generateStyle = function (which) {
+			var style = {
+					expanded: {
+						"circle.atom:hover": {
+							"opacity": "0.3",
+							"stroke": "black",
+							"stroke-width": Const.BOND_WIDTH,
+						},
+						"circle.arom:hover": {
+							"opacity": "0.3",
+							"stroke": "black",
+							"stroke-width": Const.BOND_WIDTH,
+							"fill": "black"
+						},
+						"text:hover": {
+							"opacity": "0.3"
+						},
+						"circle.atom": {
+							"opacity": "0",
+						},
+						"circle.edit": {
+							"stroke": "black",
+							"fill": "none"
+						},
+						"rect.selection": {
+							"stroke": "black",
+							"stroke-dasharray": "10 5",
+							"fill": "none"
+						}
+					},
+					base: {
+						"path": {
+							"stroke": "black",
+							"stroke-width": Const.BOND_WIDTH,
+							"fill": "none"
+						},
+						"path.wedge": {
+							"fill": "black"
+						},
+						"path.arrow": {
+							"fill": "black"
+						},
+						"path.arrow-eq": {
+							"fill": "none"
+						},
+						"circle.arom": {
+							"stroke": "black",
+							"stroke-width": Const.BOND_WIDTH,
+							"fill": "none"
+						},
+						"circle.tr-arom": {
+							"stroke": "black",
+							"stroke-width": Const.BOND_WIDTH,
+							"fill": "none"
+						},
+						"text": {
+							"font-family": service.font,
+							"cursor": "default",
+							"font-size": service.fontSize + "px"
+						},
+						"tspan.sub": {
+							"font-size": service.subFontSize + "px"
+						},
+						"polygon.text": {
+							"fill": "white"
+						}
+					}
+				},
+			  attr = "<style type=\"text/css\">";
+
+			if (which === "expanded") {
+				which = { base: style.base, expanded: style.expanded };
+			} else if (which === "base") {
+				which = { base: style.base, expanded: {} };
+			}
+
+			angular.forEach(which, function (value, key) {
+				angular.forEach(value, function (value, key) {
+					attr += key + "{";
+					angular.forEach(value, function (value, key) {
+						attr += key + ":" + value + ";";
+					});
+					attr += "}"
+				});
+			});
+			return attr + "</style>";
+		};
+
+		service.Svg = Svg;
+
+		return service;
+	}
+})();
+
+(function () {
+	"use strict";
+	angular.module("mmAngularDrawChem")
 		.factory("DrawChemDirectiveFlags", DrawChemDirectiveFlags);
 
 	DrawChemDirectiveFlags.$inject = [];
@@ -1786,7 +1639,7 @@
 	DrawChemDirectiveMouseActions.$inject = [
     "DrawChemDirectiveFlags",
     "DrawChemDirectiveUtils",
-    "DrawChemShapes",
+    "DrawChemModStructure",
     "DrawChemCache",
     "DrawChemConst",
     "DCLabel",
@@ -1794,7 +1647,7 @@
 		"DCSelection"
   ];
 
-	function DrawChemDirectiveMouseActions(Flags, Utils, Shapes, Cache, Const, DCLabel, DCStructure, DCSelection) {
+	function DrawChemDirectiveMouseActions(Flags, Utils, ModStructure, Cache, Const, DCLabel, DCStructure, DCSelection) {
 
 		var service = {},
       Label = DCLabel.Label,
@@ -1830,7 +1683,7 @@
       }
 
       function checkIfDownOnAtom() {
-				var withinObject = Shapes.isWithin(Cache.getCurrentStructure(), mouseFlags.downMouseCoords);
+				var withinObject = ModStructure.isWithin(Cache.getCurrentStructure(), mouseFlags.downMouseCoords);
         mouseFlags.downAtomCoords = withinObject.absPos;
 				mouseFlags.downAtomObject = withinObject.foundAtom;
         if (typeof withinObject.foundAtom !== "undefined") {
@@ -1895,7 +1748,7 @@
 				// copy structure from Cache
         var structure = angular.copy(Cache.getCurrentStructure()),
 					// find the atom object in the new structure
-          atom = Shapes.isWithin(structure, mouseFlags.downMouseCoords).foundAtom,
+          atom = ModStructure.isWithin(structure, mouseFlags.downMouseCoords).foundAtom,
           currentLabel = atom.getLabel();
 				// set Label object
 				// either predefined or custom
@@ -2200,12 +2053,13 @@
 		.factory("DrawChemDirectiveUtils", DrawChemDirectiveUtils);
 
 	DrawChemDirectiveUtils.$inject = [
-		"DrawChemShapes",
+		"DrawChemModStructure",
+		"DrawChemSvgRenderer",
 		"DrawChemCache",
 		"DrawChemDirectiveFlags"
 	];
 
-	function DrawChemDirectiveUtils(Shapes, Cache, Flags) {
+	function DrawChemDirectiveUtils(ModStructure, SvgRenderer, Cache, Flags) {
 
 		var service = {};
 
@@ -2215,7 +2069,7 @@
 		 */
 		service.drawStructure = function (structure) {
 			var drawn = "";
-			drawn = Shapes.draw(structure, "cmpd1");
+			drawn = SvgRenderer.draw(structure, "cmpd1");
 			Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
 			return drawn;
 		};
@@ -2277,7 +2131,7 @@
 		 * @returns {Structure}
 		 */
 		service.modifyStructure = function (structure, chosenStructure, mouseCoords, downAtomCoords, mouseDownAndMove) {
-			return Shapes.modifyStructure(
+			return ModStructure.modifyStructure(
 				angular.copy(structure),
 				angular.copy(chosenStructure),
 				mouseCoords,
@@ -2293,7 +2147,7 @@
 		 * @returns {Structure}
 		 */
 		service.deleteFromStructure = function (structure, mouseCoords) {
-			return Shapes.deleteFromStructure(
+			return ModStructure.deleteFromStructure(
 				angular.copy(structure),
 				mouseCoords
 			);
@@ -3010,16 +2864,217 @@
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
+		.factory("DrawChem", DrawChem);
+	
+	function DrawChem() {
+		
+		var service = {},
+			// at the beginning, the modal is hidden
+			showModal = false,
+			// an array accumulating contents from different 'instances' (pseudo-'instances', actually) of the editor
+			instances = [],
+			// currently active 'instance'
+			currentInstance = {};
+		
+		/**
+		 * Returns 'true' if the modal should be shown, 'false' otherwise.
+		 * @public
+		 * @returns {boolean}
+		 */
+		service.showEditor = function () {
+			return showModal;
+		}
+		
+		/**
+		 * Runs the editor, i.e. shows the modal, fetches the editor 'instance', and assigns it to the currently active 'instance'.
+		 * If the 'instance' does not exist, a new one is created.
+		 * @public
+		 * @param {string} name - name of the 'instance' with which the editor is to be opened
+		 */
+		service.runEditor = function (name) {
+			var inst;
+			showModal = true;
+			if (!instanceExists(name)) {
+				instances.push({
+					name: name,
+					content: "",
+					structure: null
+				});
+			}
+			inst = getInstance(name);
+			currentInstance.name = inst.name;
+			currentInstance.content = inst.content;
+			currentInstance.structure = inst.structure;
+		}
+		
+		/**
+		 * Returns the content of the 'instance' with the specified name. If it does not exist, an empty string is returned.
+		 * If the argument is not supplied, the content of the currently active 'instance' is returned.
+		 * @public
+		 * @param {string} name - name of the 'instance' which content is to be returned
+		 * @returns {string}
+		 */
+		service.getContent = function (name) {
+			if (typeof name === "string") {
+				var inst = getInstance(name);
+				return typeof inst === "undefined" ? "": inst.content;
+			}
+			return currentInstance.content;
+		}
+		
+		service.getInstance = function (name) {			
+			if (typeof name === "undefined") {				
+				return currentInstance;
+			}
+			return getInstance(name);
+		}
+		
+		/**
+		 * Sets the content of the 'instance'. If the name of the 'instance' is not supplied,
+		 * the content of the currently active 'instance' is set and then the corresponding 'instance' in the 'instances' array is updated.
+		 * @public
+		 * @param {string} name - name of the instance
+		 * @param {string} content - content to be set
+		 */
+		service.setContent = function (content, name) {			 
+			if (typeof name === "undefined") {
+				currentInstance.content = content;
+			} else {
+				setContent(content, name);
+			}
+		}
+		
+		service.setStructure = function (structure, name) {			 
+			if (typeof name === "undefined") {
+				currentInstance.structure = structure;
+			} else {
+				setStructure(structure, name);
+			}
+		}
+		
+		/**
+		 * Transfers the currently active 'instance' to 'instances' array.
+		 * @public
+		 */
+		service.transferContent = function () {
+			setContent(currentInstance.content, currentInstance.name);
+			setStructure(currentInstance.structure, currentInstance.name);
+		}
+		
+		/**
+		 * Hides the editor and clears the currently active 'instance'.
+		 * @public
+		 */
+		service.closeEditor = function () {
+			showModal = false;
+			currentInstance = {};
+		}
+		
+		/**
+		 * Clears content associated with the specified 'instance'.
+		 * If the name is not supplied, the currently active 'instance' is cleared.
+		 * @public
+		 * @param {string} name - name of the 'instance'
+		 */
+		service.clearContent = function (name) {
+			if (typeof name === "string") {
+				setContent("", name);
+			} else {
+				currentInstance.content = "";	
+			}			
+		}
+		
+		service.beautifySvg = function (name) {
+			var svg = service.getContent(name), match,
+				output = "<!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>\n";
+			
+			match = svg.match(/<svg.*?>|<g.*?>|<style.*?<\/style>|<path.*?><\/path>|<circle.*?><\/circle>|<polygon.*?><\/polygon>|<text.*?<\/text>|<\/g>|<\/svg>|/g);
+			
+			match.forEach(function (row) {
+				output += row + "\n";
+			});
+			
+			return output;
+		}
+		
+		// exposes API
+		return service;
+		
+		/**
+		 * Checks if the 'instance' exists.
+		 * @private
+		 * @param {string} name - name of the 'instance' to look for
+		 * @returns {boolean}
+		 */
+		function instanceExists(name) {
+			for (var i = 0; i < instances.length; i++) {
+				if (instances[i].name === name) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		/**
+		 * Returns 'instance' with the specified name.
+		 * @private
+		 * @param {string} - name of the 'instance' to look for
+		 * @returns {Object}
+		 */
+		function getInstance(name) {
+			for (var i = 0; i < instances.length; i++) {
+				if (instances[i].name === name) {
+					return instances[i];
+				}
+			}
+		}
+		
+		/**
+		 * Sets content of the 'instance' with the specified name. If the 'instance' does not exist, a new one is created.
+		 * If the name is not specified, the content of the currently active 'instance' is saved in the 'instances' array.
+		 * @private
+		 * @param {string} - name of the 'instance' to look for
+		 */
+		function setContent(content, name) {
+			var i;
+			for (i = 0; i < instances.length; i++) {
+				if (instances[i].name === name) {
+					return instances[i].content = content;
+				}
+			}
+			instances.push({
+				name: name,
+				content: content
+			});
+		}
+		
+		function setStructure(structure, name) {
+			var i;
+			for (i = 0; i < instances.length; i++) {
+				if (instances[i].name === name) {
+					return instances[i].structure = structure;
+				}
+			}
+			instances.push({
+				name: name,
+				structure: structure
+			});
+		}
+	}
+})();
+(function () {
+	"use strict";
+	angular.module("mmAngularDrawChem")
 		.factory("DrawChemActions", DrawChemActions);
 
 	DrawChemActions.$inject = [
 		"DrawChemCache",
 		"DrawChem",
-		"DrawChemShapes",
+		"DrawChemSvgRenderer",
 		"DrawChemDirectiveUtils"
 	];
 
-	function DrawChemActions(DrawChemCache, DrawChem, DrawChemShapes, DrawChemDirUtils) {
+	function DrawChemActions(DrawChemCache, DrawChem, SvgRenderer, DrawChemDirUtils) {
 
 		var service = {};
 
@@ -3070,7 +3125,7 @@
 				shape, attr, content = "";
 
 			if (structure !== null) {
-				shape = DrawChemShapes.draw(structure, "transfer");
+				shape = SvgRenderer.draw(structure, "transfer");
 				attr = {
 					"viewBox": (shape.minMax.minX - 20).toFixed(2) + " " +
 						(shape.minMax.minY - 20).toFixed(2) + " " +
@@ -3392,11 +3447,11 @@
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
-		.factory("DrawChemGeomShapes", DrawChemGeomShapes);
+		.factory("DrawChemGeomModStructure", DrawChemGeomModStructure);
 
-	DrawChemGeomShapes.$inject = [];
+	DrawChemGeomModStructure.$inject = [];
 
-	function DrawChemGeomShapes() {
+	function DrawChemGeomModStructure() {
 
 		var service = {};
 
@@ -3494,11 +3549,11 @@
     "DrawChemActions",
 		"DrawChemEdits",
     "DrawChemArrows",
-    "DrawChemGeomShapes",
+    "DrawChemGeomModStructure",
     "DrawChemDirectiveFlags"
   ];
 
-	function DrawChemMenuButtons(Structures, Labels, Actions, Edits, Arrows, Shapes, Flags) {
+	function DrawChemMenuButtons(Structures, Labels, Actions, Edits, Arrows, ModStructure, Flags) {
 
 		var service = {};
 
@@ -3513,8 +3568,8 @@
 				"Arrows": {
 					actions: Arrows.arrows
 				},
-				"Shapes": {
-					actions: Shapes.shapes
+				"ModStructure": {
+					actions: ModStructure.shapes
 				},
 				"Structures": {
 					actions: Structures.structures
@@ -3526,7 +3581,7 @@
 
 			scope.menu = {};
 
-      // stores all actions related to Actions, Edit, Arrows, and Shapes menu items
+      // stores all actions related to Actions, Edit, Arrows, and ModStructure menu items
       angular.forEach(menu, function (item, name) {
 				scope.menu[name] = {
 					actions: item.actions,
@@ -3843,368 +3898,11 @@
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
-		.factory("DrawChemGenElements", DrawChemGenElements);
+		.factory("DrawChemModStructure", DrawChemModStructure);
 
-	DrawChemGenElements.$inject = ["DrawChemConst", "DrawChemUtils", "DCSvg"];
-
-	function DrawChemGenElements(Const, Utils, DCSvg) {
-
-		var service = {},
-      BONDS_AUX = Const.BONDS_AUX,
-      BOND_LENGTH = Const.BOND_LENGTH,
-      AROMATIC_R = Const.AROMATIC_R;
-
-    service.generateRects = function (rects, obj) {
-      rects.forEach(function (rect) {
-        var aux =
-          "<rect class='" + rect.class +
-            "' x='" + rect.rect[0].toFixed(2) +
-            "' y='" + rect.rect[1].toFixed(2) +
-            "' width='" + rect.rect[2].toFixed(2) +
-            "' height='" + rect.rect[3].toFixed(2) +
-          "'></rect>";
-        obj.full += aux;
-        obj.mini += aux;
-      });
-    };
-
-    service.generatePaths = function (paths, obj) {
-      paths.forEach(function (path) {
-        var aux;
-        if (typeof path.class !== "undefined") {
-          aux = "<path class='" + path.class + "' d='" + path.line + "'></path>";
-        } else {
-          aux = "<path d='" + path.line + "'></path>";
-        }
-        obj.full += aux;
-        obj.mini += aux;
-      });
-    };
-
-    service.generateCircles = function (circles, obj) {
-      circles.forEach(function (circle) {
-        var aux = circle.selected ? "edit": "atom";
-        obj.full +=
-          "<circle class='" + aux +
-            "' cx='" + circle.circle[0].toFixed(2) +
-            "' cy='" + circle.circle[1].toFixed(2) +
-            "' r='" + circle.circle[2].toFixed(2) +
-          "'></circle>";
-      });
-    };
-
-    service.generateLabels = function (labels, obj) {
-      labels.forEach(function (label) {
-        var aux =
-          drawDodecagon(label) +
-          "<text dy='0.2125em' " +
-            "x='" + label.labelX.toFixed(2) + "' " +
-            "y='" + label.labelY.toFixed(2) + "' " +
-            "atomx='" + label.atomX.toFixed(2) + "' " +
-            "atomy='" + label.atomY.toFixed(2) + "' " +
-            "text-anchor='" + genTextAnchor(label.mode) + "' " +
-          ">" + genLabel(label.label) + "</text>";
-        obj.full += aux;
-        obj.mini += aux;
-      });
-    };
-
-    service.generateAromatics = function (input, obj) {
-      var aromatics = input.getDecorate("aromatic");
-      aromatics.forEach(function (arom) {
-        obj.full += genArom(arom, "arom");
-        obj.mini += genArom(arom, "tr-arom");
-      });
-
-      function genArom(arom, clazz) {
-        return "<circle class='" + clazz + "' " +
-          "cx='" + arom.coords[0].toFixed(2) + "' " +
-          "cy='" + arom.coords[1].toFixed(2) + "' " +
-          "r='" + AROMATIC_R.toFixed(2) + "' " +
-          "></circle>";
-      }
-    }
-
-    /**
-    * Transforms output into an array of strings.
-    * Basically, it translates each array of coordinates into its string representation.
-    * @returns {String[]}
-    */
-    service.stringifyPaths = function (output) {
-      var result = [], i, j, line, point, lineStr;
-      for (i = 0; i < output.length; i += 1) {
-        line = output[i];
-        lineStr = { line: "" };
-        for (j = 0; j < line.length; j += 1) {
-          point = line[j];
-          if (typeof point === "string") {
-            if (point === "arrow" || point === "arrow-eq" || point === "wedge") {
-              lineStr.class = point;
-            } else {
-              lineStr.line += point + " ";
-            }
-          } else if (typeof point[0] === "number") {
-            lineStr.line += point[0].toFixed(2) + " " + point[1].toFixed(2) + " ";
-          }
-        }
-        result.push(lineStr);
-      }
-      return result;
-    };
-
-		return service;
-
-    function drawDodecagon(label) {
-      var i, x, y, aux, factor,result = [];
-
-      factor = 0.5 * label.height / BOND_LENGTH;
-      for (i = 0; i < BONDS_AUX.length; i += 1) {
-        x = BONDS_AUX[i].bond[0];
-        y = BONDS_AUX[i].bond[1];
-        result = result.concat(Utils.addVectors([label.atomX, label.atomY], [x, y], factor));
-      }
-      return "<polygon class='text' points='" + service.stringifyPaths([result])[0].line + "'></polygon>";
-    }
-
-    function genTextAnchor(mode) {
-      if (mode === "rl") {
-        return "end";
-      } else if (mode === "lr") {
-        return "start";
-      } else {
-        return "start";
-      }
-    }
-
-    function genLabel(labelName) {
-      var i, aux, isPreceded = false, output = "";
-      for (i = 0; i < labelName.length; i += 1) {
-        aux = labelName.substr(i, 1);
-        if (Utils.isNumeric(aux)) {
-          output += "<tspan class='sub' dy='" + DCSvg.fontSize * 0.25 + "' >" + aux + "</tspan>";
-          isPreceded = true;
-        } else if (isPreceded) {
-          output += "<tspan dy='-" + DCSvg.fontSize * 0.25 + "' >" + aux + "</tspan>";
-          isPreceded = false;
-        } else {
-          output += "<tspan>" + aux + "</tspan>";
-        }
-      }
-      return output;
-    }
-	}
-})();
-
-(function () {
-	"use strict";
-	angular.module("mmAngularDrawChem")
-		.factory("DrawChem", DrawChem);
-	
-	function DrawChem() {
-		
-		var service = {},
-			// at the beginning, the modal is hidden
-			showModal = false,
-			// an array accumulating contents from different 'instances' (pseudo-'instances', actually) of the editor
-			instances = [],
-			// currently active 'instance'
-			currentInstance = {};
-		
-		/**
-		 * Returns 'true' if the modal should be shown, 'false' otherwise.
-		 * @public
-		 * @returns {boolean}
-		 */
-		service.showEditor = function () {
-			return showModal;
-		}
-		
-		/**
-		 * Runs the editor, i.e. shows the modal, fetches the editor 'instance', and assigns it to the currently active 'instance'.
-		 * If the 'instance' does not exist, a new one is created.
-		 * @public
-		 * @param {string} name - name of the 'instance' with which the editor is to be opened
-		 */
-		service.runEditor = function (name) {
-			var inst;
-			showModal = true;
-			if (!instanceExists(name)) {
-				instances.push({
-					name: name,
-					content: "",
-					structure: null
-				});
-			}
-			inst = getInstance(name);
-			currentInstance.name = inst.name;
-			currentInstance.content = inst.content;
-			currentInstance.structure = inst.structure;
-		}
-		
-		/**
-		 * Returns the content of the 'instance' with the specified name. If it does not exist, an empty string is returned.
-		 * If the argument is not supplied, the content of the currently active 'instance' is returned.
-		 * @public
-		 * @param {string} name - name of the 'instance' which content is to be returned
-		 * @returns {string}
-		 */
-		service.getContent = function (name) {
-			if (typeof name === "string") {
-				var inst = getInstance(name);
-				return typeof inst === "undefined" ? "": inst.content;
-			}
-			return currentInstance.content;
-		}
-		
-		service.getInstance = function (name) {			
-			if (typeof name === "undefined") {				
-				return currentInstance;
-			}
-			return getInstance(name);
-		}
-		
-		/**
-		 * Sets the content of the 'instance'. If the name of the 'instance' is not supplied,
-		 * the content of the currently active 'instance' is set and then the corresponding 'instance' in the 'instances' array is updated.
-		 * @public
-		 * @param {string} name - name of the instance
-		 * @param {string} content - content to be set
-		 */
-		service.setContent = function (content, name) {			 
-			if (typeof name === "undefined") {
-				currentInstance.content = content;
-			} else {
-				setContent(content, name);
-			}
-		}
-		
-		service.setStructure = function (structure, name) {			 
-			if (typeof name === "undefined") {
-				currentInstance.structure = structure;
-			} else {
-				setStructure(structure, name);
-			}
-		}
-		
-		/**
-		 * Transfers the currently active 'instance' to 'instances' array.
-		 * @public
-		 */
-		service.transferContent = function () {
-			setContent(currentInstance.content, currentInstance.name);
-			setStructure(currentInstance.structure, currentInstance.name);
-		}
-		
-		/**
-		 * Hides the editor and clears the currently active 'instance'.
-		 * @public
-		 */
-		service.closeEditor = function () {
-			showModal = false;
-			currentInstance = {};
-		}
-		
-		/**
-		 * Clears content associated with the specified 'instance'.
-		 * If the name is not supplied, the currently active 'instance' is cleared.
-		 * @public
-		 * @param {string} name - name of the 'instance'
-		 */
-		service.clearContent = function (name) {
-			if (typeof name === "string") {
-				setContent("", name);
-			} else {
-				currentInstance.content = "";	
-			}			
-		}
-		
-		service.beautifySvg = function (name) {
-			var svg = service.getContent(name), match,
-				output = "<!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>\n";
-			
-			match = svg.match(/<svg.*?>|<g.*?>|<style.*?<\/style>|<path.*?><\/path>|<circle.*?><\/circle>|<polygon.*?><\/polygon>|<text.*?<\/text>|<\/g>|<\/svg>|/g);
-			
-			match.forEach(function (row) {
-				output += row + "\n";
-			});
-			
-			return output;
-		}
-		
-		// exposes API
-		return service;
-		
-		/**
-		 * Checks if the 'instance' exists.
-		 * @private
-		 * @param {string} name - name of the 'instance' to look for
-		 * @returns {boolean}
-		 */
-		function instanceExists(name) {
-			for (var i = 0; i < instances.length; i++) {
-				if (instances[i].name === name) {
-					return true;
-				}
-			}
-			return false;
-		}
-		
-		/**
-		 * Returns 'instance' with the specified name.
-		 * @private
-		 * @param {string} - name of the 'instance' to look for
-		 * @returns {Object}
-		 */
-		function getInstance(name) {
-			for (var i = 0; i < instances.length; i++) {
-				if (instances[i].name === name) {
-					return instances[i];
-				}
-			}
-		}
-		
-		/**
-		 * Sets content of the 'instance' with the specified name. If the 'instance' does not exist, a new one is created.
-		 * If the name is not specified, the content of the currently active 'instance' is saved in the 'instances' array.
-		 * @private
-		 * @param {string} - name of the 'instance' to look for
-		 */
-		function setContent(content, name) {
-			var i;
-			for (i = 0; i < instances.length; i++) {
-				if (instances[i].name === name) {
-					return instances[i].content = content;
-				}
-			}
-			instances.push({
-				name: name,
-				content: content
-			});
-		}
-		
-		function setStructure(structure, name) {
-			var i;
-			for (i = 0; i < instances.length; i++) {
-				if (instances[i].name === name) {
-					return instances[i].structure = structure;
-				}
-			}
-			instances.push({
-				name: name,
-				structure: structure
-			});
-		}
-	}
-})();
-(function () {
-	"use strict";
-	angular.module("mmAngularDrawChem")
-		.factory("DrawChemShapes", DrawChemShapes);
-
-	DrawChemShapes.$inject = [
+	DrawChemModStructure.$inject = [
 		"DrawChemConst",
 		"DrawChemUtils",
-		"DrawChemGenElements",
 		"DrawChemStructures",
 		"DCAtom",
 		"DCBond",
@@ -4213,7 +3911,7 @@
 		"DCSvg"
 	];
 
-	function DrawChemShapes(Const, Utils, GenElements, Structures, DCAtom, DCBond, DCArrow, DCSelection, DCSvg) {
+	function DrawChemModStructure(Const, Utils, Structures, DCAtom, DCBond, DCArrow, DCSelection, DCSvg) {
 
 		var service = {},
 			BOND_LENGTH = Const.BOND_LENGTH,
@@ -4551,57 +4249,86 @@
 			}
 		}
 
-		/**
-		 * Generates the desired output based on given input.
-		 * @param {Structure} input - a Structure object containing all information needed to render the shape
-		 * @param {String} id - id of the object to be created (will be used inside 'g' tag and in 'use' tag)
+		return service;
+	}
+})();
+
+(function () {
+	"use strict";
+	angular.module("mmAngularDrawChem")
+		.factory("DrawChemSvgRenderer", DrawChemSvgRenderer);
+
+  DrawChemSvgRenderer.$inject = [
+		"DCSvg",
+		"DCBond",
+		"DCAtom",
+		"DCArrow",
+		"DCSelection",
+		"DrawChemConst",
+		"DrawChemUtils",
+		"DrawChemSvgUtils"
+	];
+
+	function DrawChemSvgRenderer(DCSvg, DCBond, DCAtom, DCArrow, DCSelection, Const, Utils, SvgUtils) {
+
+		var service = {},
+		  Atom = DCAtom.Atom,
+			Arrow = DCArrow.Arrow,
+			Selection = DCSelection.Selection,
+      Svg = DCSvg.Svg;
+
+    /**
+		 * Generates the desired output based on given input (`Structure` object).
+		 * @param {Structure} input - a `Structure` object containing all information needed to render svg,
+		 * @param {string} id - id of the object to be created (will be used inside 'g' element),
+     * @returns {Svg}
 		 */
 		service.draw = function (input, id) {
-			var shape,
-			  styleBase = Svg.generateStyle("base"),
+			var styleBase = Svg.generateStyle("base"),
 				styleExpanded = Svg.generateStyle("expanded"),
 				output = parseInput(input),
 				paths = output.paths,
 				circles = output.circles,
 				labels = output.labels,
 				rects = output.rects,
-				minMax = output.minMax;
-			shape = new Svg(
-				styleExpanded + genElements().full,
-				styleBase + genElements().mini,
-				id
-			);
-			shape.setMinMax(minMax);
-			return shape;
+				minMax = output.minMax,
+			  svg = new Svg(
+  				styleExpanded + genElements().full,
+  				styleBase + genElements().mini,
+  				id
+			  );
+
+			svg.setMinMax(minMax);
+
+			return svg;
 
 			/**
-			 * Generates a string from the output array and wraps each line with 'path' tags, each circle with 'circle' tags,
-			 * and each decorate element with suitable tags.
+			 * Generates string from the output array and wraps each line with 'path' element, each circle with 'circle' element, etc.
 			 */
 			function genElements() {
 				var result = { full: "", mini: "" };
-
-				GenElements.generateRects(rects, result);
-				GenElements.generatePaths(paths, result);
-				GenElements.generateCircles(circles, result);
-				GenElements.generateLabels(labels, result);
-
+				SvgUtils.generateRects(rects, result);
+				SvgUtils.generatePaths(paths, result);
+				SvgUtils.generateCircles(circles, result);
+				SvgUtils.generateLabels(labels, result);
 				if (input.isAromatic()) {
-					GenElements.generateAromatics(input, result);
+					SvgUtils.generateAromatics(input, result);
 				}
-
 				return result;
 			}
 
 			/**
-			* Translates the input into an svg-suitable set of coordinates.
-			* @param {Structure} input - an input object
+			* Transforms `Structure` object into a set of svg-suitable set of coordinates and instructions.
+			* @param {Structure} input - an input (`Structure`) object,
 			* @returns {Object}
 			*/
 		  function parseInput(input) {
-				var output = [], circles = [], labels = [], rects = [], i, absPos, absPosStart, absPosEnd, len, selection, atom, arrow, obj,
-					origin = input.getOrigin(), minMax = { minX: origin[0], maxX: origin[0], minY: origin[1], maxY: origin[1] },
-					circR = Const.CIRC_R, width, height, quarter, startX, startY;
+				var output = [], circles = [], labels = [], rects = [],
+          i, absPos, absPosStart, absPosEnd, len,
+          selection, atom, arrow, obj,
+					origin = input.getOrigin(),
+          minMax = { minX: origin[0], maxX: origin[0], minY: origin[1], maxY: origin[1] },
+					circR = Const.CIRC_R;
 
 				for (i = 0; i < input.getStructure().length; i += 1) {
 					obj = input.getStructure(i);
@@ -4613,25 +4340,25 @@
 					} else if (obj instanceof Atom) {
 						atom = obj;
 						absPos = Utils.addVectors(origin, atom.getCoords());
-						updateLabel(absPos, atom);
+						SvgUtils.updateLabel(absPos, atom);
 						updateMinMax(absPos);
 						len = output.push(["M", absPos]);
 						circles.push({ selected: atom.selected, circle: [absPos[0], absPos[1], circR] });
-						connect(absPos, atom.getBonds(), output[len - 1], atom.selected);
+						connect(absPos, atom.getBonds(), output[len - 1], atom.isSelected());
 					} else if (obj instanceof Arrow) {
 						arrow = obj;
 						absPosStart = Utils.addVectors(origin, arrow.getOrigin());
 						absPosEnd = Utils.addVectors(origin, arrow.getEnd());
 						updateMinMax(absPosStart);
 						updateMinMax(absPosEnd);
-						circles.push({ selected: arrow.selected, circle: [ absPosStart[0], absPosStart[1], circR ] });
-						circles.push({ selected: arrow.selected, circle: [ absPosEnd[0], absPosEnd[1], circR ] });
-						output.push(DCArrow.calcArrow(absPosStart, absPosEnd, arrow.getType()));
+						circles.push({ selected: arrow.isSelected(), circle: [ absPosStart[0], absPosStart[1], circR ] });
+						circles.push({ selected: arrow.isSelected(), circle: [ absPosEnd[0], absPosEnd[1], circR ] });
+						output.push(calcArrow(absPosStart, absPosEnd, arrow.getType()));
 					}
 				}
 
 				return {
-					paths: GenElements.stringifyPaths(output),
+					paths: SvgUtils.stringifyPaths(output),
 					rects: rects,
 					circles: circles,
 					labels: labels,
@@ -4639,9 +4366,11 @@
 				};
 
 				/**
-				* Recursively translates the input, until it finds an element with an empty 'bonds' array.
-				* @param {Bond[]} bonds - an array of Bond objects
-				* @param {String|Number[]} - an array of coordinates with 'M' and 'L' commands
+				* Recursively transforms input (with `drawLine` fn), until it finds an object with an empty 'bonds' array.
+        * @param {number[]} prevAbsPos - previously used absolute coordinates,
+				* @param {Bond[]} bonds - an array of `Bond` objects,
+				* @param {string|number[]} currentLine - an array of coordinates with 'M' and 'L' commands,
+        * @param {boolean} selected - true if object is marked as selected
 				*/
 				function connect(prevAbsPos, bonds, currentLine, selected) {
 					var i, absPos, atom, bondType;
@@ -4653,7 +4382,7 @@
 							prevAbsPos[1] + atom.getCoords("y")
 						];
 						updateMinMax(absPos);
-						updateLabel(absPos, atom);
+						SvgUtils.updateLabel(absPos, atom);
 						circles.push({ selected: selected, circle: [absPos[0], absPos[1], circR] });
 						if (i === 0) {
 							drawLine(prevAbsPos, absPos, bondType, atom, "continue", selected);
@@ -4663,6 +4392,15 @@
 					}
 				}
 
+        /**
+				* Recursively transforms input (with `connect` fn), until it finds an object with an empty 'bonds' array.
+        * @param {number[]} prevAbsPos - previously used absolute coordinates,
+        * @param {number[]} absPos - currently used absolute coordinates,
+				* @param {string} bondType - type of current `Bond` object, e.g. 'single', 'double',
+				* @param {Atom} atom - `Atom` object at the end of current `Bond` object,
+        * @param {string} mode - indicates if this should continue this line ('continue') or begin a new one ('begin'),
+        * @param {boolean} selected - true if object is marked as selected
+				*/
 				function drawLine(prevAbsPos, absPos, bondType, atom, mode, selected) {
 					var newLen = output.length;
 					if (bondType === "single") {
@@ -4673,136 +4411,19 @@
 							newLen = output.push(["M", prevAbsPos, "L", absPos]);
 						}
 					} else if (bondType === "double") {
-						output.push(DCBond.calcDoubleBondCoords(prevAbsPos, absPos));
+						output.push(calcDoubleBondCoords(prevAbsPos, absPos));
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "triple") {
-						output.push(DCBond.calcTripleBondCoords(prevAbsPos, absPos));
+						output.push(calcTripleBondCoords(prevAbsPos, absPos));
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "wedge") {
-						output.push(DCBond.calcWedgeBondCoords(prevAbsPos, absPos));
+						output.push(calcWedgeBondCoords(prevAbsPos, absPos));
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "dash") {
-						output.push(DCBond.calcDashBondCoords(prevAbsPos, absPos));
+						output.push(calcDashBondCoords(prevAbsPos, absPos));
 						newLen = output.push(["M", absPos]);
 					}
 					connect(absPos, atom.getBonds(), output[newLen - 1], selected);
-				}
-
-				function updateLabel(absPos, atom) {
-					var label = atom.getLabel(), labelObj;
-					if (typeof label !== "undefined") {
-						labelObj = genLabelInfo();
-						labels.push(labelObj);
-					}
-
-					function genLabelInfo() {
-						var bondsRemained = label.getMaxBonds() - calcBondsIn(atom.getAttachedBonds()) - calcBondsOut(atom.getBonds()),
-							labelNameObj = { name: label.getLabelName() };
-
-						addHydrogens();
-
-						return {
-							length: labelNameObj.name.length,
-							label: labelNameObj.name,
-							mode: label.getMode(),
-							atomX: absPos[0],
-							atomY: absPos[1],
-							labelX: absPos[0] + labelNameObj.correctX,
-							labelY: absPos[1] + 0.09 * BOND_LENGTH,
-							width: DCSvg.fontSize * labelNameObj.name.length,
-							height: DCSvg.fontSize
-						};
-
-						function calcBondsIn(bonds) {
-							var i, type, result = 0;
-							for (i = 0; i < bonds.length; i += 1) {
-								type = bonds[i].type;
-								switch (type) {
-									case "single": result += 1; break;
-									case "double": result += 2; break;
-									case "triple": result += 3; break;
-								}
-							}
-							return result;
-						}
-
-						function calcBondsOut(bonds) {
-							var i, type, result = 0;
-							for (i = 0; i < bonds.length; i += 1) {
-								type = bonds[i].getType();
-								switch (type) {
-									case "single": result += 1; break;
-									case "wedge": result += 1; break;
-									case "dash": result += 1; break;
-									case "double": result += 2; break;
-									case "triple": result += 3; break;
-								}
-							}
-							return result;
-						}
-
-						function addHydrogens() {
-							var i, mode = label.getMode(), hydrogens = 0;
-							for (i = 0; i < bondsRemained; i += 1) {
-								hydrogens += 1;
-							}
-
-							labelNameObj.hydrogens = hydrogens;
-
-							if (typeof mode === "undefined") {
-								// if mode is not known (if there was previously no label)
-								// try to guess which one should it be
-								mode = getTextDirection();
-								label.setMode(mode);
-							}
-
-							if (hydrogens > 0) {
-								// only happens for predefined labels
-								// custom labels can't have implicit hydrogens
-								hydrogensAboveZero();
-							} else {
-								hydrogensZeroOrLess();
-							}
-
-							labelNameObj.correctX = calcCorrect() * BOND_LENGTH;
-
-							function hydrogensAboveZero() {
-								if (mode === "rl") {
-									labelNameObj.name = hydrogens === 1 ?
-										 "H" + labelNameObj.name: "H" + hydrogens + labelNameObj.name;
-								} else if (mode === "lr") {
-									labelNameObj.name = hydrogens === 1 ?
-										labelNameObj.name + "H": labelNameObj.name + "H" + hydrogens;
-								}
-							}
-
-							function hydrogensZeroOrLess() {
-								if (mode === "rl") {
-									labelNameObj.name = Utils.invertGroup(labelNameObj.name);
-								}
-							}
-
-							function getTextDirection() {
-								var countE = 0;
-								atom.getAttachedBonds().forEach(function (direction) {
-									countE = direction.direction.indexOf("E") < 0 ? countE: countE + 1;
-								});
-								return countE > 0 ? "rl": "lr";
-							}
-
-							function calcCorrect() {
-								if (mode === "rl") {
-									return 0.175;
-								} else if (mode === "lr") {
-									return -0.175;
-								} else if (mode === "tb") {
-
-								} else if (mode === "bt") {
-
-								}
-							}
-						}
-					}
 				}
 
 				function updateMinMax(absPos) {
@@ -4822,6 +4443,373 @@
 			}
 		}
 
+		/**
+		* Calculates data for the svg instructions in `path` element.
+		* @param {number[]} start - start coordinates (absolute) of the arrow,
+		* @param {number[]} end - end coordinates (absolute) of the arrow,
+		* @param {string} type - arrow type (one-way, etc.),
+		* @returns {Array}
+		*/
+		function calcArrow(start, end, type) {
+			var vectCoords = [end[0] - start[0], end[1] - start[1]],
+				perpVectCoordsCW = [-vectCoords[1], vectCoords[0]],
+				perpVectCoordsCCW = [vectCoords[1], -vectCoords[0]], endMarkerStart, startMarkerStart, M1, M2, L1, L2, L3, L4;
+			if (type === "one-way-arrow") {
+				endMarkerStart = [start[0] + vectCoords[0] * ARROW_START, start[1] + vectCoords[1] * ARROW_START];
+				L1 = Utils.addVectors(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+				L2 = Utils.addVectors(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+				return ["arrow", "M", start, "L", end, "M", endMarkerStart, "L", L1, "L", end, "L", L2, "Z"];
+			} else if (type === "two-way-arrow") {
+				endMarkerStart = [start[0] + vectCoords[0] * ARROW_START, start[1] + vectCoords[1] * ARROW_START];
+				startMarkerStart = [start[0] + vectCoords[0] * (1 - ARROW_START), start[1] + vectCoords[1] * (1 - ARROW_START)];
+				L1 = Utils.addVectors(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+				L2 = Utils.addVectors(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+				L3 = Utils.addVectors(startMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+				L4 = Utils.addVectors(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+				return [
+					"arrow",
+					"M", start, "L", end,
+					"M", endMarkerStart, "L", L1, "L", end, "L", L2, "Z",
+					"M", startMarkerStart, "L", L3, "L", start, "L", L4, "Z"
+				];
+			}
+			else if (type === "equilibrium-arrow") {
+				M1 = Utils.addVectors(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
+				L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
+				endMarkerStart = [parseFloat(M1[0]) + vectCoords[0] * ARROW_START, parseFloat(M1[1]) + vectCoords[1] * ARROW_START];
+				L2 = Utils.addVectors(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+
+				M2 = Utils.addVectors(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+				L3 = Utils.addVectors(start, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+				startMarkerStart = [parseFloat(L3[0]) + vectCoords[0] * (1 - ARROW_START), parseFloat(L3[1]) + vectCoords[1] * (1 - ARROW_START)];
+				L4 = Utils.addVectors(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+				return [
+					"arrow-eq",
+					"M", M1, "L", L1, "L", L2,
+					"M", M2, "L", L3, "L", L4
+				];
+			}
+		}
+
+		function calcDoubleBondCoords(start, end) {
+			var vectCoords = [end[0] - start[0], end[1] - start[1]],
+				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
+				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
+				M1 = Utils.addVectors(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
+				L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
+				M2 = Utils.addVectors(start, perpVectCoordsCW, BETWEEN_DBL_BONDS),
+				L2 = Utils.addVectors(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+			return ["M", M1, "L", L1, "M", M2, "L", L2];
+		}
+
+		function calcTripleBondCoords(start, end) {
+			var vectCoords = [end[0] - start[0], end[1] - start[1]],
+				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
+				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
+				M1 = Utils.addVectors(start, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
+				L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
+				M2 = Utils.addVectors(start, perpVectCoordsCW, BETWEEN_TRP_BONDS),
+				L2 = Utils.addVectors(end, perpVectCoordsCW, BETWEEN_TRP_BONDS);
+			return ["M", M1, "L", L1, "M", start, "L", end, "M", M2, "L", L2];
+		}
+
+		function calcWedgeBondCoords(start, end) {
+			var vectCoords = [end[0] - start[0], end[1] - start[1]],
+				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
+				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
+				L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
+				L2 = Utils.addVectors(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+			return ["wedge", "M", start, "L", L1, "L", L2, "Z"];
+		}
+
+		function calcDashBondCoords(start, end) {
+			var i, max = 7, factor = BETWEEN_DBL_BONDS / max, M, L, currentEnd = start, result = [],
+				vectCoords = [end[0] - start[0], end[1] - start[1]],
+				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
+				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]];
+
+			for (i = max; i > 0; i -= 1) {
+				factor = factor + BETWEEN_DBL_BONDS / max;
+				currentEnd = [currentEnd[0] + vectCoords[0] / max, currentEnd[1] + vectCoords[1] / max];
+				M = Utils.addVectors(currentEnd, perpVectCoordsCCW, factor);
+				L = Utils.addVectors(currentEnd, perpVectCoordsCW, factor);
+				result = result.concat(["M", M, "L", L]);
+			}
+			return result;
+		}
+
 		return service;
+	}
+})();
+
+(function () {
+	"use strict";
+	angular.module("mmAngularDrawChem")
+		.factory("DrawChemSvgUtils", DrawChemSvgUtils);
+
+	DrawChemSvgUtils.$inject = ["DrawChemConst", "DrawChemUtils", "DCSvg"];
+
+	function DrawChemSvgUtils(Const, Utils, DCSvg) {
+
+		var service = {},
+      BONDS_AUX = Const.BONDS_AUX,
+      BOND_LENGTH = Const.BOND_LENGTH,
+      AROMATIC_R = Const.AROMATIC_R;
+
+    service.generateRects = function (rects, obj) {
+      rects.forEach(function (rect) {
+        var aux =
+          "<rect class='" + rect.class +
+            "' x='" + rect.rect[0].toFixed(2) +
+            "' y='" + rect.rect[1].toFixed(2) +
+            "' width='" + rect.rect[2].toFixed(2) +
+            "' height='" + rect.rect[3].toFixed(2) +
+          "'></rect>";
+        obj.full += aux;
+        obj.mini += aux;
+      });
+    };
+
+    service.generatePaths = function (paths, obj) {
+      paths.forEach(function (path) {
+        var aux;
+        if (typeof path.class !== "undefined") {
+          aux = "<path class='" + path.class + "' d='" + path.line + "'></path>";
+        } else {
+          aux = "<path d='" + path.line + "'></path>";
+        }
+        obj.full += aux;
+        obj.mini += aux;
+      });
+    };
+
+    service.generateCircles = function (circles, obj) {
+      circles.forEach(function (circle) {
+        var aux = circle.selected ? "edit": "atom";
+        obj.full +=
+          "<circle class='" + aux +
+            "' cx='" + circle.circle[0].toFixed(2) +
+            "' cy='" + circle.circle[1].toFixed(2) +
+            "' r='" + circle.circle[2].toFixed(2) +
+          "'></circle>";
+      });
+    };
+
+    service.generateLabels = function (labels, obj) {
+      labels.forEach(function (label) {
+        var aux =
+          drawDodecagon(label) +
+          "<text dy='0.2125em' " +
+            "x='" + label.labelX.toFixed(2) + "' " +
+            "y='" + label.labelY.toFixed(2) + "' " +
+            "atomx='" + label.atomX.toFixed(2) + "' " +
+            "atomy='" + label.atomY.toFixed(2) + "' " +
+            "text-anchor='" + genTextAnchor(label.mode) + "' " +
+          ">" + genLabel(label.label) + "</text>";
+        obj.full += aux;
+        obj.mini += aux;
+      });
+    };
+
+    service.generateAromatics = function (input, obj) {
+      var aromatics = input.getDecorate("aromatic");
+      aromatics.forEach(function (arom) {
+        obj.full += genArom(arom, "arom");
+        obj.mini += genArom(arom, "tr-arom");
+      });
+
+      function genArom(arom, clazz) {
+        return "<circle class='" + clazz + "' " +
+          "cx='" + arom.coords[0].toFixed(2) + "' " +
+          "cy='" + arom.coords[1].toFixed(2) + "' " +
+          "r='" + AROMATIC_R.toFixed(2) + "' " +
+          "></circle>";
+      }
+    }
+
+    /**
+    * Transforms output into an array of strings.
+    * Basically, it translates each array of coordinates into its string representation.
+    * @returns {String[]}
+    */
+    service.stringifyPaths = function (output) {
+      var result = [], i, j, line, point, lineStr;
+      for (i = 0; i < output.length; i += 1) {
+        line = output[i];
+        lineStr = { line: "" };
+        for (j = 0; j < line.length; j += 1) {
+          point = line[j];
+          if (typeof point === "string") {
+            if (point === "arrow" || point === "arrow-eq" || point === "wedge") {
+              lineStr.class = point;
+            } else {
+              lineStr.line += point + " ";
+            }
+          } else if (typeof point[0] === "number") {
+            lineStr.line += point[0].toFixed(2) + " " + point[1].toFixed(2) + " ";
+          }
+        }
+        result.push(lineStr);
+      }
+      return result;
+    };
+
+		service.updateLabel = function(absPos, atom) {
+			var label = atom.getLabel(), labelObj;
+			if (typeof label !== "undefined") {
+				labelObj = genLabelInfo();
+				labels.push(labelObj);
+			}
+
+			function genLabelInfo() {
+				var bondsRemained = label.getMaxBonds() - calcBondsIn(atom.getAttachedBonds()) - calcBondsOut(atom.getBonds()),
+					labelNameObj = { name: label.getLabelName() };
+
+				addHydrogens();
+
+				return {
+					length: labelNameObj.name.length,
+					label: labelNameObj.name,
+					mode: label.getMode(),
+					atomX: absPos[0],
+					atomY: absPos[1],
+					labelX: absPos[0] + labelNameObj.correctX,
+					labelY: absPos[1] + 0.09 * BOND_LENGTH,
+					width: DCSvg.fontSize * labelNameObj.name.length,
+					height: DCSvg.fontSize
+				};
+
+				function calcBondsIn(bonds) {
+					var i, type, result = 0;
+					for (i = 0; i < bonds.length; i += 1) {
+						type = bonds[i].type;
+						switch (type) {
+							case "single": result += 1; break;
+							case "double": result += 2; break;
+							case "triple": result += 3; break;
+						}
+					}
+					return result;
+				}
+
+				function calcBondsOut(bonds) {
+					var i, type, result = 0;
+					for (i = 0; i < bonds.length; i += 1) {
+						type = bonds[i].getType();
+						switch (type) {
+							case "single": result += 1; break;
+							case "wedge": result += 1; break;
+							case "dash": result += 1; break;
+							case "double": result += 2; break;
+							case "triple": result += 3; break;
+						}
+					}
+					return result;
+				}
+
+				function addHydrogens() {
+					var i, mode = label.getMode(), hydrogens = 0;
+					for (i = 0; i < bondsRemained; i += 1) {
+						hydrogens += 1;
+					}
+
+					labelNameObj.hydrogens = hydrogens;
+
+					if (typeof mode === "undefined") {
+						// if mode is not known (if there was previously no label)
+						// try to guess which one should it be
+						mode = getTextDirection();
+						label.setMode(mode);
+					}
+
+					if (hydrogens > 0) {
+						// only happens for predefined labels
+						// custom labels can't have implicit hydrogens
+						hydrogensAboveZero();
+					} else {
+						hydrogensZeroOrLess();
+					}
+
+					labelNameObj.correctX = calcCorrect() * BOND_LENGTH;
+
+					function hydrogensAboveZero() {
+						if (mode === "rl") {
+							labelNameObj.name = hydrogens === 1 ?
+								 "H" + labelNameObj.name: "H" + hydrogens + labelNameObj.name;
+						} else if (mode === "lr") {
+							labelNameObj.name = hydrogens === 1 ?
+								labelNameObj.name + "H": labelNameObj.name + "H" + hydrogens;
+						}
+					}
+
+					function hydrogensZeroOrLess() {
+						if (mode === "rl") {
+							labelNameObj.name = Utils.invertGroup(labelNameObj.name);
+						}
+					}
+
+					function getTextDirection() {
+						var countE = 0;
+						atom.getAttachedBonds().forEach(function (direction) {
+							countE = direction.direction.indexOf("E") < 0 ? countE: countE + 1;
+						});
+						return countE > 0 ? "rl": "lr";
+					}
+
+					function calcCorrect() {
+						if (mode === "rl") {
+							return 0.175;
+						} else if (mode === "lr") {
+							return -0.175;
+						} else if (mode === "tb") {
+
+						} else if (mode === "bt") {
+
+						}
+					}
+				}
+			}
+		}
+
+		return service;
+
+    function drawDodecagon(label) {
+      var i, x, y, aux, factor,result = [];
+
+      factor = 0.5 * label.height / BOND_LENGTH;
+      for (i = 0; i < BONDS_AUX.length; i += 1) {
+        x = BONDS_AUX[i].bond[0];
+        y = BONDS_AUX[i].bond[1];
+        result = result.concat(Utils.addVectors([label.atomX, label.atomY], [x, y], factor));
+      }
+      return "<polygon class='text' points='" + service.stringifyPaths([result])[0].line + "'></polygon>";
+    }
+
+    function genTextAnchor(mode) {
+      if (mode === "rl") {
+        return "end";
+      } else if (mode === "lr") {
+        return "start";
+      } else {
+        return "start";
+      }
+    }
+
+    function genLabel(labelName) {
+      var i, aux, isPreceded = false, output = "";
+      for (i = 0; i < labelName.length; i += 1) {
+        aux = labelName.substr(i, 1);
+        if (Utils.isNumeric(aux)) {
+          output += "<tspan class='sub' dy='" + DCSvg.fontSize * 0.25 + "' >" + aux + "</tspan>";
+          isPreceded = true;
+        } else if (isPreceded) {
+          output += "<tspan dy='-" + DCSvg.fontSize * 0.25 + "' >" + aux + "</tspan>";
+          isPreceded = false;
+        } else {
+          output += "<tspan>" + aux + "</tspan>";
+        }
+      }
+      return output;
+    }
 	}
 })();

@@ -1,12 +1,12 @@
-describe("DrawChemShapes service tests", function () {
+describe("DrawChemModStructure service tests", function () {
 	beforeEach(module("mmAngularDrawChem"));
 
-	var DrawChemShapes, DrawChemStructures, DrawChemConst, Atom, Structure, styleFull;
+	var SvgRenderer, DrawChemStructures, DrawChemConst, Atom, Structure, styleFull;
 
-	beforeEach(inject(function (_DrawChemShapes_, _DrawChemStructures_, _DrawChemConst_, _DCAtom_, _DCStructure_, _DCBond_) {
+	beforeEach(inject(function (_DrawChemSvgRenderer_, _DrawChemStructures_, _DrawChemConst_, _DCAtom_, _DCStructure_, _DCBond_) {
 		Atom = _DCAtom_.Atom;
 		Bond = _DCBond_.Bond;
-		DrawChemShapes = _DrawChemShapes_;
+		SvgRenderer = _DrawChemSvgRenderer_;
 		DrawChemConst = _DrawChemConst_;
 		DrawChemStructures = _DrawChemStructures_;
 		Structure = _DCStructure_.Structure;
@@ -35,7 +35,7 @@ describe("DrawChemShapes service tests", function () {
 			])
 		]);
 		input.setOrigin([0, 0]);
-		expect(DrawChemShapes.draw(input, "cmpd1").wrap("full", "g").wrap("full", "svg").elementFull).toEqual(
+		expect(SvgRenderer.draw(input, "cmpd1").wrap("full", "g").wrap("full", "svg").elementFull).toEqual(
 			"<svg>" +
 				"<g id='cmpd1' >" +
 					"<style type=\"text/css\">" +

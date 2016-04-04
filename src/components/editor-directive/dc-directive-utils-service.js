@@ -4,12 +4,13 @@
 		.factory("DrawChemDirectiveUtils", DrawChemDirectiveUtils);
 
 	DrawChemDirectiveUtils.$inject = [
-		"DrawChemShapes",
+		"DrawChemModStructure",
+		"DrawChemSvgRenderer",
 		"DrawChemCache",
 		"DrawChemDirectiveFlags"
 	];
 
-	function DrawChemDirectiveUtils(Shapes, Cache, Flags) {
+	function DrawChemDirectiveUtils(ModStructure, SvgRenderer, Cache, Flags) {
 
 		var service = {};
 
@@ -19,7 +20,7 @@
 		 */
 		service.drawStructure = function (structure) {
 			var drawn = "";
-			drawn = Shapes.draw(structure, "cmpd1");
+			drawn = SvgRenderer.draw(structure, "cmpd1");
 			Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
 			return drawn;
 		};
@@ -81,7 +82,7 @@
 		 * @returns {Structure}
 		 */
 		service.modifyStructure = function (structure, chosenStructure, mouseCoords, downAtomCoords, mouseDownAndMove) {
-			return Shapes.modifyStructure(
+			return ModStructure.modifyStructure(
 				angular.copy(structure),
 				angular.copy(chosenStructure),
 				mouseCoords,
@@ -97,7 +98,7 @@
 		 * @returns {Structure}
 		 */
 		service.deleteFromStructure = function (structure, mouseCoords) {
-			return Shapes.deleteFromStructure(
+			return ModStructure.deleteFromStructure(
 				angular.copy(structure),
 				mouseCoords
 			);

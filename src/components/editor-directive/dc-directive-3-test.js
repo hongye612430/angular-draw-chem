@@ -1,16 +1,16 @@
 describe("DrawChemEditor directive tests - part3", function () {
 	beforeEach(module("mmAngularDrawChem"));
 
-	var $scope, element, $rootScope, DrawChem, DrawChemShapes, DrawChemStructures, template, styleFull;
+	var $scope, element, $rootScope, DrawChem, DrawChemModStructure, DrawChemStructures, template, styleFull;
 
-	beforeEach(inject(function ($httpBackend, $compile, _$rootScope_, _DrawChem_, _DrawChemShapes_, _DrawChemStructures_) {
+	beforeEach(inject(function ($httpBackend, $compile, _$rootScope_, _DrawChem_, _DrawChemModStructure_, _DrawChemStructures_) {
 		// configure path for static files
 		jasmine.getFixtures().fixturesPath = "base/assets/";
 		// load template of the editor
 		template = readFixtures("draw-chem-editor-modal.html");
 
 		DrawChem = _DrawChem_;
-		DrawChemShapes = _DrawChemShapes_;
+		DrawChemModStructure = _DrawChemModStructure_;
 		DrawChemStructures = _DrawChemStructures_;
 		$rootScope = _$rootScope_;
 

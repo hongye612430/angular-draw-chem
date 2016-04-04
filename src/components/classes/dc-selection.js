@@ -3,9 +3,7 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DCSelection", DCSelection);
 
-	DCSelection.$inject = ["DrawChemUtils"]
-
-	function DCSelection(Utils) {
+	function DCSelection() {
 
 		var service = {};
 
@@ -67,46 +65,6 @@
 		};
 
 		service.Selection = Selection;
-
-		/**
-		* Calculates rectangle attributes (x, y, width, and height).
-		* @param {number[]} absPosStart - absolute coordinates associated with onMouseDown event,
-		* @param {number[]} absPosEnd - absolute coordinates associated with onMouseUp event,
-		* @returns {Object}
-		*/
-		service.calcRect = function (absPosStart, absPosEnd) {
-			var startX, startY, width, height,
-			  quadrant = Utils.getQuadrant(absPosStart, absPosEnd);
-
-			if (quadrant === 1) {
-				startX = absPosStart[0];
-				startY = absPosEnd[1];
-				width = absPosEnd[0] - startX;
-				height = absPosStart[1] - startY;
-			} else if (quadrant === 2) {
-				startX = absPosEnd[0];
-				startY = absPosEnd[1];
-				width = absPosStart[0] - startX;
-				height = absPosStart[1] - startY;
-			} else if (quadrant === 3) {
-				startX = absPosEnd[0];
-				startY = absPosStart[1];
-				width = absPosStart[0] - startX;
-				height = absPosEnd[1] - startY;
-			} else if (quadrant === 4) {
-				startX = absPosStart[0];
-				startY = absPosStart[1];
-				width = absPosEnd[0] - startX;
-				height = absPosEnd[1] - startY;
-			}
-			if (width < 0) {
-				width = 0;
-			}
-			if (height < 0) {
-				height = 0;
-			}
-			return { class: "selection", rect: [startX, startY, width, height] };
-		};
 
 		return service;
 	}

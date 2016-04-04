@@ -3,13 +3,9 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DCBond", DCBond);
 
-	DCBond.$inject = ["DrawChemUtils", "DrawChemConst"]
+	function DCBond() {
 
-	function DCBond(Utils, Const) {
-
-		var service = {},
-		  BETWEEN_DBL_BONDS = Const.BETWEEN_DBL_BONDS,
-		  BETWEEN_TRP_BONDS = Const.BETWEEN_TRP_BONDS;
+		var service = {};
 
 		/**
 		* Creates a new Bond.
@@ -55,53 +51,6 @@
 		}
 
 		service.Bond = Bond;
-
-		service.calcDoubleBondCoords = function (start, end) {
-			var vectCoords = [end[0] - start[0], end[1] - start[1]],
-				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
-				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
-				M1 = Utils.addVectors(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
-				L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
-				M2 = Utils.addVectors(start, perpVectCoordsCW, BETWEEN_DBL_BONDS),
-				L2 = Utils.addVectors(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
-			return ["M", M1, "L", L1, "M", M2, "L", L2];
-		};
-
-		service.calcTripleBondCoords = function (start, end) {
-			var vectCoords = [end[0] - start[0], end[1] - start[1]],
-				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
-				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
-				M1 = Utils.addVectors(start, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
-				L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
-				M2 = Utils.addVectors(start, perpVectCoordsCW, BETWEEN_TRP_BONDS),
-				L2 = Utils.addVectors(end, perpVectCoordsCW, BETWEEN_TRP_BONDS);
-			return ["M", M1, "L", L1, "M", start, "L", end, "M", M2, "L", L2];
-		};
-
-		service.calcWedgeBondCoords = function (start, end) {
-			var vectCoords = [end[0] - start[0], end[1] - start[1]],
-				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
-				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
-				L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
-				L2 = Utils.addVectors(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
-			return ["wedge", "M", start, "L", L1, "L", L2, "Z"];
-		};
-
-		service.calcDashBondCoords = function (start, end) {
-			var i, max = 7, factor = BETWEEN_DBL_BONDS / max, M, L, currentEnd = start, result = [],
-				vectCoords = [end[0] - start[0], end[1] - start[1]],
-				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
-				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]];
-
-			for (i = max; i > 0; i -= 1) {
-				factor = factor + BETWEEN_DBL_BONDS / max;
-				currentEnd = [currentEnd[0] + vectCoords[0] / max, currentEnd[1] + vectCoords[1] / max];
-				M = Utils.addVectors(currentEnd, perpVectCoordsCCW, factor);
-				L = Utils.addVectors(currentEnd, perpVectCoordsCW, factor);
-				result = result.concat(["M", M, "L", L]);
-			}
-			return result;
-		};
 
 		return service;
 	}

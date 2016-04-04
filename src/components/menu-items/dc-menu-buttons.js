@@ -9,11 +9,11 @@
     "DrawChemActions",
 		"DrawChemEdits",
     "DrawChemArrows",
-    "DrawChemGeomShapes",
+    "DrawChemGeomModStructure",
     "DrawChemDirectiveFlags"
   ];
 
-	function DrawChemMenuButtons(Structures, Labels, Actions, Edits, Arrows, Shapes, Flags) {
+	function DrawChemMenuButtons(Structures, Labels, Actions, Edits, Arrows, ModStructure, Flags) {
 
 		var service = {};
 
@@ -28,8 +28,8 @@
 				"Arrows": {
 					actions: Arrows.arrows
 				},
-				"Shapes": {
-					actions: Shapes.shapes
+				"ModStructure": {
+					actions: ModStructure.shapes
 				},
 				"Structures": {
 					actions: Structures.structures
@@ -41,7 +41,7 @@
 
 			scope.menu = {};
 
-      // stores all actions related to Actions, Edit, Arrows, and Shapes menu items
+      // stores all actions related to Actions, Edit, Arrows, and ModStructure menu items
       angular.forEach(menu, function (item, name) {
 				scope.menu[name] = {
 					actions: item.actions,

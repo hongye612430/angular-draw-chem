@@ -63,9 +63,9 @@ var styleExpanded = "circle.atom:hover{" +
 describe("DrawChemEditor directive tests - part1", function () {
 	beforeEach(module("mmAngularDrawChem"));
 
-	var $scope, element, $rootScope, DrawChem, DrawChemShapes, DrawChemStructures, DrawChemCache, template;
+	var $scope, element, $rootScope, DrawChem, DrawChemModStructure, DrawChemStructures, DrawChemCache, template;
 
-	beforeEach(inject(function ($httpBackend, $compile, _$rootScope_, _DrawChem_, _DrawChemShapes_, _DrawChemStructures_, _DrawChemCache_) {
+	beforeEach(inject(function ($httpBackend, $compile, _$rootScope_, _DrawChem_, _DrawChemModStructure_, _DrawChemStructures_, _DrawChemCache_) {
 		// configure path for static files
 		jasmine.getFixtures().fixturesPath = "base/assets/";
 		// load template of the editor
@@ -73,7 +73,7 @@ describe("DrawChemEditor directive tests - part1", function () {
 
 		DrawChem = _DrawChem_;
 		DrawChemCache = _DrawChemCache_;
-		DrawChemShapes = _DrawChemShapes_;
+		DrawChemModStructure = _DrawChemModStructure_;
 		DrawChemStructures = _DrawChemStructures_;
 		$rootScope = _$rootScope_;
 

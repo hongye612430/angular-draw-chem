@@ -6,7 +6,7 @@
 	DrawChemDirectiveMouseActions.$inject = [
     "DrawChemDirectiveFlags",
     "DrawChemDirectiveUtils",
-    "DrawChemShapes",
+    "DrawChemModStructure",
     "DrawChemCache",
     "DrawChemConst",
     "DCLabel",
@@ -14,7 +14,7 @@
 		"DCSelection"
   ];
 
-	function DrawChemDirectiveMouseActions(Flags, Utils, Shapes, Cache, Const, DCLabel, DCStructure, DCSelection) {
+	function DrawChemDirectiveMouseActions(Flags, Utils, ModStructure, Cache, Const, DCLabel, DCStructure, DCSelection) {
 
 		var service = {},
       Label = DCLabel.Label,
@@ -50,7 +50,7 @@
       }
 
       function checkIfDownOnAtom() {
-				var withinObject = Shapes.isWithin(Cache.getCurrentStructure(), mouseFlags.downMouseCoords);
+				var withinObject = ModStructure.isWithin(Cache.getCurrentStructure(), mouseFlags.downMouseCoords);
         mouseFlags.downAtomCoords = withinObject.absPos;
 				mouseFlags.downAtomObject = withinObject.foundAtom;
         if (typeof withinObject.foundAtom !== "undefined") {
@@ -115,7 +115,7 @@
 				// copy structure from Cache
         var structure = angular.copy(Cache.getCurrentStructure()),
 					// find the atom object in the new structure
-          atom = Shapes.isWithin(structure, mouseFlags.downMouseCoords).foundAtom,
+          atom = ModStructure.isWithin(structure, mouseFlags.downMouseCoords).foundAtom,
           currentLabel = atom.getLabel();
 				// set Label object
 				// either predefined or custom
