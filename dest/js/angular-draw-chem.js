@@ -811,11 +811,11 @@
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
-		.factory("DCShape", DCShape);
+		.factory("DCSvg", DCSvg);
 
-	DCShape.$inject = ["DrawChemConst"];
+	DCSvg.$inject = ["DrawChemConst"];
 
-	function DCShape(Const) {
+	function DCSvg(Const) {
 
 		var service = {};
 
@@ -824,14 +824,14 @@
 		service.font = "Arial";
 
 		/**
-		 * Creates a new `Shape` element. This helper class has methods
+		 * Creates a new `Svg` element. This helper class has methods
 		 * for wrapping an svg element (e.g. path) with other elements (e.g. g, defs).
 		 * @class
 		 * @param {string} elementFull - svg element for editor
 		 * @param {string} elementMini - svg element for displaying outside of the editor
 		 * @param {string} id - id of the g element
 		 */
-		function Shape(elementFull, elementMini, id) {
+		function Svg(elementFull, elementMini, id) {
 			this.elementFull = elementFull;
 			this.elementMini = elementMini;
 			this.id = id;
@@ -841,7 +841,7 @@
 		 * Gets full element.
 		 * @returns {string}
 		 */
-		Shape.prototype.getElementFull = function () {
+		Svg.prototype.getElementFull = function () {
 			return this.elementFull;
 		};
 
@@ -849,7 +849,7 @@
 		 * Sets full element.
 		 * @param {string} element - full element
 		 */
-		Shape.prototype.setElementFull = function (element) {
+		Svg.prototype.setElementFull = function (element) {
 			this.elementFull = element;
 		};
 
@@ -857,7 +857,7 @@
 		 * Gets mini element.
 		 * @returns {string}
 		 */
-		Shape.prototype.getElementMini = function () {
+		Svg.prototype.getElementMini = function () {
 			return this.elementMini;
 		};
 
@@ -865,7 +865,7 @@
 		 * Sets mini element.
 		 * @param {string} element - mini element
 		 */
-		Shape.prototype.setElementMini = function (element) {
+		Svg.prototype.setElementMini = function (element) {
 			this.elementMini = element;
 		};
 
@@ -873,18 +873,18 @@
 		 * Sets an array of extreme coords (minX, maxX, minY, maxY).
 		 * @param {number[]} minMax - array of coords
 		 */
-		Shape.prototype.setMinMax = function (minMax) {
+		Svg.prototype.setMinMax = function (minMax) {
 			this.minMax = minMax;
 		}
 
 		/**
-		 * Wraps an instance of Shape with a custom tag.
+		 * Wraps an instance of Svg with a custom tag.
 		 * @param {string} el - name of the tag, if this param equals 'g', then id attribute is automatically added
 		 * @param {Object} attr - attribute of the tag
 		 * @param {string} attr.key - name of the attribute
 		 * @param {string} attr.val - value of the attribute
 		 */
-		Shape.prototype.wrap = function (which, el, attr) {
+		Svg.prototype.wrap = function (which, el, attr) {
 			var customAttr = {}, tagOpen;
 
 			if (el === "g" && !attr) {
@@ -915,7 +915,7 @@
 		 * Generates style tag with all info about the style enclosed.
 		 * @param {string} which - 'expanded' for the whole css, 'base' for css needed to render the molecule (without circles on hover, etc.)
 		 */
-		Shape.generateStyle = function (which) {
+		Svg.generateStyle = function (which) {
 			var style = {
 					expanded: {
 						"circle.atom:hover": {
@@ -1003,7 +1003,7 @@
 			return attr + "</style>";
 		};
 
-		service.Shape = Shape;
+		service.Svg = Svg;
 
 		return service;
 	}
@@ -3833,9 +3833,9 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemGenElements", DrawChemGenElements);
 
-	DrawChemGenElements.$inject = ["DrawChemConst", "DrawChemUtils", "DCShape"];
+	DrawChemGenElements.$inject = ["DrawChemConst", "DrawChemUtils", "DCSvg"];
 
-	function DrawChemGenElements(Const, Utils, DCShape) {
+	function DrawChemGenElements(Const, Utils, DCSvg) {
 
 		var service = {},
       BONDS_AUX = Const.BONDS_AUX,
@@ -3969,10 +3969,10 @@
       for (i = 0; i < labelName.length; i += 1) {
         aux = labelName.substr(i, 1);
         if (Utils.isNumeric(aux)) {
-          output += "<tspan class='sub' dy='" + DCShape.fontSize * 0.25 + "' >" + aux + "</tspan>";
+          output += "<tspan class='sub' dy='" + DCSvg.fontSize * 0.25 + "' >" + aux + "</tspan>";
           isPreceded = true;
         } else if (isPreceded) {
-          output += "<tspan dy='-" + DCShape.fontSize * 0.25 + "' >" + aux + "</tspan>";
+          output += "<tspan dy='-" + DCSvg.fontSize * 0.25 + "' >" + aux + "</tspan>";
           isPreceded = false;
         } else {
           output += "<tspan>" + aux + "</tspan>";
@@ -4190,7 +4190,6 @@
 		.factory("DrawChemShapes", DrawChemShapes);
 
 	DrawChemShapes.$inject = [
-		"DCShape",
 		"DrawChemConst",
 		"DrawChemUtils",
 		"DrawChemGenElements",
@@ -4198,10 +4197,11 @@
 		"DCAtom",
 		"DCBond",
 		"DCArrow",
-		"DCSelection"
+		"DCSelection",
+		"DCSvg"
 	];
 
-	function DrawChemShapes(DCShape, Const, Utils, GenElements, Structures, DCAtom, DCBond, DCArrow, DCSelection) {
+	function DrawChemShapes(Const, Utils, GenElements, Structures, DCAtom, DCBond, DCArrow, DCSelection, DCSvg) {
 
 		var service = {},
 			BOND_LENGTH = Const.BOND_LENGTH,
@@ -4209,7 +4209,7 @@
 			Atom = DCAtom.Atom,
 			Arrow = DCArrow.Arrow,
 			Bond = DCBond.Bond,
-			Shape = DCShape.Shape,
+			Svg = DCSvg.Svg,
 			Selection = DCSelection.Selection;
 
 		/**
@@ -4546,15 +4546,15 @@
 		 */
 		service.draw = function (input, id) {
 			var shape,
-			  styleBase = Shape.generateStyle("base"),
-				styleExpanded = Shape.generateStyle("expanded"),
+			  styleBase = Svg.generateStyle("base"),
+				styleExpanded = Svg.generateStyle("expanded"),
 				output = parseInput(input),
 				paths = output.paths,
 				circles = output.circles,
 				labels = output.labels,
 				rects = output.rects,
 				minMax = output.minMax;
-			shape = new Shape(
+			shape = new Svg(
 				styleExpanded + genElements().full,
 				styleBase + genElements().mini,
 				id
@@ -4697,8 +4697,8 @@
 							atomY: absPos[1],
 							labelX: absPos[0] + labelNameObj.correctX,
 							labelY: absPos[1] + 0.09 * BOND_LENGTH,
-							width: DCShape.fontSize * labelNameObj.name.length,
-							height: DCShape.fontSize
+							width: DCSvg.fontSize * labelNameObj.name.length,
+							height: DCSvg.fontSize
 						};
 
 						function calcBondsIn(bonds) {

@@ -3,9 +3,9 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemGenElements", DrawChemGenElements);
 
-	DrawChemGenElements.$inject = ["DrawChemConst", "DrawChemUtils", "DCShape"];
+	DrawChemGenElements.$inject = ["DrawChemConst", "DrawChemUtils", "DCSvg"];
 
-	function DrawChemGenElements(Const, Utils, DCShape) {
+	function DrawChemGenElements(Const, Utils, DCSvg) {
 
 		var service = {},
       BONDS_AUX = Const.BONDS_AUX,
@@ -139,10 +139,10 @@
       for (i = 0; i < labelName.length; i += 1) {
         aux = labelName.substr(i, 1);
         if (Utils.isNumeric(aux)) {
-          output += "<tspan class='sub' dy='" + DCShape.fontSize * 0.25 + "' >" + aux + "</tspan>";
+          output += "<tspan class='sub' dy='" + DCSvg.fontSize * 0.25 + "' >" + aux + "</tspan>";
           isPreceded = true;
         } else if (isPreceded) {
-          output += "<tspan dy='-" + DCShape.fontSize * 0.25 + "' >" + aux + "</tspan>";
+          output += "<tspan dy='-" + DCSvg.fontSize * 0.25 + "' >" + aux + "</tspan>";
           isPreceded = false;
         } else {
           output += "<tspan>" + aux + "</tspan>";

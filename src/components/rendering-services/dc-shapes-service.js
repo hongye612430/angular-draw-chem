@@ -4,7 +4,6 @@
 		.factory("DrawChemShapes", DrawChemShapes);
 
 	DrawChemShapes.$inject = [
-		"DCShape",
 		"DrawChemConst",
 		"DrawChemUtils",
 		"DrawChemGenElements",
@@ -12,10 +11,11 @@
 		"DCAtom",
 		"DCBond",
 		"DCArrow",
-		"DCSelection"
+		"DCSelection",
+		"DCSvg"
 	];
 
-	function DrawChemShapes(DCShape, Const, Utils, GenElements, Structures, DCAtom, DCBond, DCArrow, DCSelection) {
+	function DrawChemShapes(Const, Utils, GenElements, Structures, DCAtom, DCBond, DCArrow, DCSelection, DCSvg) {
 
 		var service = {},
 			BOND_LENGTH = Const.BOND_LENGTH,
@@ -23,7 +23,7 @@
 			Atom = DCAtom.Atom,
 			Arrow = DCArrow.Arrow,
 			Bond = DCBond.Bond,
-			Shape = DCShape.Shape,
+			Svg = DCSvg.Svg,
 			Selection = DCSelection.Selection;
 
 		/**
@@ -360,15 +360,15 @@
 		 */
 		service.draw = function (input, id) {
 			var shape,
-			  styleBase = Shape.generateStyle("base"),
-				styleExpanded = Shape.generateStyle("expanded"),
+			  styleBase = Svg.generateStyle("base"),
+				styleExpanded = Svg.generateStyle("expanded"),
 				output = parseInput(input),
 				paths = output.paths,
 				circles = output.circles,
 				labels = output.labels,
 				rects = output.rects,
 				minMax = output.minMax;
-			shape = new Shape(
+			shape = new Svg(
 				styleExpanded + genElements().full,
 				styleBase + genElements().mini,
 				id
@@ -511,8 +511,8 @@
 							atomY: absPos[1],
 							labelX: absPos[0] + labelNameObj.correctX,
 							labelY: absPos[1] + 0.09 * BOND_LENGTH,
-							width: DCShape.fontSize * labelNameObj.name.length,
-							height: DCShape.fontSize
+							width: DCSvg.fontSize * labelNameObj.name.length,
+							height: DCSvg.fontSize
 						};
 
 						function calcBondsIn(bonds) {
