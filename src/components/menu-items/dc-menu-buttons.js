@@ -9,11 +9,11 @@
     "DrawChemActions",
 		"DrawChemEdits",
     "DrawChemArrows",
-    "DrawChemGeomModStructure",
+    "DrawChemGeomShapes",
     "DrawChemDirectiveFlags"
   ];
 
-	function DrawChemMenuButtons(Structures, Labels, Actions, Edits, Arrows, ModStructure, Flags) {
+	function DrawChemMenuButtons(Structures, Labels, Actions, Edits, Arrows, Shapes, Flags) {
 
 		var service = {};
 
@@ -28,8 +28,8 @@
 				"Arrows": {
 					actions: Arrows.arrows
 				},
-				"ModStructure": {
-					actions: ModStructure.shapes
+				"Shapes": {
+					actions: Shapes.shapes
 				},
 				"Structures": {
 					actions: Structures.structures

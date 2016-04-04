@@ -1,11 +1,11 @@
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
-		.factory("DrawChemGeomModStructure", DrawChemGeomModStructure);
+		.factory("DrawChemGeomShapes", DrawChemGeomShapes);
 
-	DrawChemGeomModStructure.$inject = [];
+	DrawChemGeomShapes.$inject = [];
 
-	function DrawChemGeomModStructure() {
+	function DrawChemGeomShapes() {
 
 		var service = {};
 

@@ -3447,11 +3447,11 @@
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
-		.factory("DrawChemGeomModStructure", DrawChemGeomModStructure);
+		.factory("DrawChemGeomShapes", DrawChemGeomShapes);
 
-	DrawChemGeomModStructure.$inject = [];
+	DrawChemGeomShapes.$inject = [];
 
-	function DrawChemGeomModStructure() {
+	function DrawChemGeomShapes() {
 
 		var service = {};
 
@@ -3549,11 +3549,11 @@
     "DrawChemActions",
 		"DrawChemEdits",
     "DrawChemArrows",
-    "DrawChemGeomModStructure",
+    "DrawChemGeomShapes",
     "DrawChemDirectiveFlags"
   ];
 
-	function DrawChemMenuButtons(Structures, Labels, Actions, Edits, Arrows, ModStructure, Flags) {
+	function DrawChemMenuButtons(Structures, Labels, Actions, Edits, Arrows, Shapes, Flags) {
 
 		var service = {};
 
@@ -3568,8 +3568,8 @@
 				"Arrows": {
 					actions: Arrows.arrows
 				},
-				"ModStructure": {
-					actions: ModStructure.shapes
+				"Shapes": {
+					actions: Shapes.shapes
 				},
 				"Structures": {
 					actions: Structures.structures
@@ -4272,6 +4272,10 @@
 	function DrawChemSvgRenderer(DCSvg, DCBond, DCAtom, DCArrow, DCSelection, Const, Utils, SvgUtils) {
 
 		var service = {},
+		  BETWEEN_DBL_BONDS = Const.BETWEEN_DBL_BONDS,
+			BETWEEN_TRP_BONDS = Const.BETWEEN_TRP_BONDS,
+			ARROW_START = Const.ARROW_START,
+			ARROW_SIZE = Const.ARROW_SIZE,
 		  Atom = DCAtom.Atom,
 			Arrow = DCArrow.Arrow,
 			Selection = DCSelection.Selection,
@@ -4336,7 +4340,7 @@
 						selection = obj;
 						absPosStart = Utils.addVectors(origin, selection.getOrigin());
 						absPosEnd = selection.getCurrent();
-						rects.push(DCSelection.calcRect(absPosStart, absPosEnd));
+						rects.push(calcRect(absPosStart, absPosEnd));
 					} else if (obj instanceof Atom) {
 						atom = obj;
 						absPos = Utils.addVectors(origin, atom.getCoords());
@@ -4536,6 +4540,46 @@
 				result = result.concat(["M", M, "L", L]);
 			}
 			return result;
+		}
+
+		/**
+		* Calculates rectangle attributes (x, y, width, and height).
+		* @param {number[]} absPosStart - absolute coordinates associated with onMouseDown event,
+		* @param {number[]} absPosEnd - absolute coordinates associated with onMouseUp event,
+		* @returns {Object}
+		*/
+		function calcRect(absPosStart, absPosEnd) {
+			var startX, startY, width, height,
+			  quadrant = Utils.getQuadrant(absPosStart, absPosEnd);
+
+			if (quadrant === 1) {
+				startX = absPosStart[0];
+				startY = absPosEnd[1];
+				width = absPosEnd[0] - startX;
+				height = absPosStart[1] - startY;
+			} else if (quadrant === 2) {
+				startX = absPosEnd[0];
+				startY = absPosEnd[1];
+				width = absPosStart[0] - startX;
+				height = absPosStart[1] - startY;
+			} else if (quadrant === 3) {
+				startX = absPosEnd[0];
+				startY = absPosStart[1];
+				width = absPosStart[0] - startX;
+				height = absPosEnd[1] - startY;
+			} else if (quadrant === 4) {
+				startX = absPosStart[0];
+				startY = absPosStart[1];
+				width = absPosEnd[0] - startX;
+				height = absPosEnd[1] - startY;
+			}
+			if (width < 0) {
+				width = 0;
+			}
+			if (height < 0) {
+				height = 0;
+			}
+			return { class: "selection", rect: [startX, startY, width, height] };
 		}
 
 		return service;
