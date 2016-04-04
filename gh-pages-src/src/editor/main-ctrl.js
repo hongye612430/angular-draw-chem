@@ -13,7 +13,7 @@
     vm.runOutput = function () {
 			DrawChem.closeEditor();
       vm.showOutput = true;
-		}    
+		}
 		vm.input = function () {
 			return $sce.trustAsHtml(DrawChem.getContent("test"));
 		}
