@@ -1117,9 +1117,9 @@
 			Atom = DCAtom.Atom;
 
 		/**
-		* Creates a new Structure.
+		* Creates a new `Structure` object.
 		* @class
-		* @param {String} name - name of the structure
+		* @param {string} name - name of the structure
 		* @param {Atom[]} structure - an array of atoms
 		* @param {Object} decorate - an object with all decorate elements
 		*/
@@ -1137,19 +1137,20 @@
 		*/
 		Structure.prototype.setAromatic = function () {
 			this.aromatic = true;
-		}
+		};
 
 		/**
 		* Checks if structure is aromatic.
-		* @returns {Boolean}
+		* @returns {boolean}
 		*/
 		Structure.prototype.isAromatic = function () {
 			return this.aromatic;
 		}
 
 		/**
-		* Moves all structures marked as selected in a direction.
-		* @param {}
+		* Moves all structures marked as selected in a supplied `direction` by a `distance` vector.
+		* @param {string} direction - 'up', 'down', 'left', 'right' (for keyboard arrows), and 'mouse' for mouse,
+		* @param {number[]} distance - vector
 		*/
 		Structure.prototype.moveStructureTo = function (direction, distance) {
 			var origin, i, current;
@@ -1171,6 +1172,14 @@
 				}
 			}
 
+			/**
+			* Updates coordinates of an object marked as selected and its aromatics (if any exists).
+			* @param {number[]} origin - origin of the object,
+			* @param {number[]} distance - vector,
+			* @param {string} direction - 'up', 'down', etc. for keyboard arrows, and 'mouse' for mouse,
+			* @param {Object} bind - `this` context,
+			* @param {Arrow|Atom} current - currently active selected object
+			*/
 			function move(origin, distance, direction, bind, current) {
 				// by default moves by 5 (applies to keyboard moves)
 				var distance = distance || 5;
@@ -1205,7 +1214,7 @@
 					origin[1] += distance[1];
 				}
 			}
-		}
+		};
 
 		/**
 		* Sets all structures in structure array as selected.
@@ -1278,8 +1287,8 @@
 
 		/**
 		* Aligns all structures marked as selected to the uppermost point.
-		* @param {Number} minY - uppermost point
-		* @returns {Boolean} - if the position was changed
+		* @param {number} minY - uppermost point
+		* @returns {boolean} - if the position was changed
 		*/
 		Structure.prototype.alignUp = function (minY) {
 			return changeAlignment.call(this, "up", minY);
@@ -1287,8 +1296,8 @@
 
 		/**
 		* Aligns all structures marked as selected to the lowermost point.
-		* @param {Number} maxY - lowermost point
-		* @returns {Boolean} - if the position was changed
+		* @param {number} maxY - lowermost point
+		* @returns {boolean} - if the position was changed
 		*/
 		Structure.prototype.alignDown = function (maxY) {
 			return changeAlignment.call(this, "down", maxY);
@@ -1296,8 +1305,8 @@
 
 		/**
 		* Aligns all structures marked as selected to the rightmost point.
-		* @param {Number} maxX - uppermost point
-		* @returns {Boolean} - if the position was changed
+		* @param {number} maxX - uppermost point
+		* @returns {boolean} - if the position was changed
 		*/
 		Structure.prototype.alignRight = function (maxX) {
 			return changeAlignment.call(this, "right", maxX);
@@ -1305,24 +1314,24 @@
 
 		/**
 		* Aligns all structures marked as selected to the leftmost point.
-		* @param {Number} minX - leftmost point
-		* @returns {Boolean} - if the position was changed
+		* @param {number} minX - leftmost point
+		* @returns {boolean} - if the position was changed
 		*/
 		Structure.prototype.alignLeft = function (minX) {
 			return changeAlignment.call(this, "left", minX);
 		};
 
 		/**
-		 * Sets coordinates of the first atom.
-		 * @param {Number[]} origin - an array with coordinates
+		 * Sets coordinates of this `Structure` object.
+		 * @param {number[]} origin - an array with coordinates
 		 */
 		Structure.prototype.setOrigin = function (origin) {
 			this.origin = origin;
-		}
+		};
 
 		/**
-		 * Gets the coordinates of the first atom.
-		 * @returns {Number[]}
+		 * Gets coordinates of this `Structure` object.
+		 * @returns {number[]}
 		 */
 		Structure.prototype.getOrigin = function (coord) {
 			if (coord === "x") {
@@ -1332,7 +1341,7 @@
 			} else {
 				return this.origin;
 			}
-		}
+		};
 
 		/**
 		 * Sets the structure array.
@@ -1340,7 +1349,7 @@
 		 */
 		Structure.prototype.setStructure = function (structure) {
 			this.structure = structure;
-		}
+		};
 
 		/**
 		 * Adds a tree of atoms to the structure array.
@@ -1348,7 +1357,7 @@
 		 */
 		Structure.prototype.addToStructures = function (str) {
 			this.structure.push(str);
-		}
+		};
 
 		/**
 		 * Gets the structure array.
@@ -1360,15 +1369,15 @@
 			} else {
 				return this.structure[index];
 			}
-		}
+		};
 
 		/**
 		 * Gets the name of the structure.
-		 * @returns {String}
+		 * @returns {string}
 		 */
 		Structure.prototype.getName = function () {
 			return this.name;
-		}
+		};
 
 		/**
 		 * Gets a decorate element.
@@ -1376,7 +1385,7 @@
 		 */
 		Structure.prototype.getDecorate = function (decorate) {
 			return this.decorate[decorate];
-		}
+		};
 
 		/**
 		 * Sets a decorate element.
@@ -1384,7 +1393,7 @@
 		 */
 		Structure.prototype.setDecorate = function (decorate, array) {
 			this.decorate[decorate] = array;
-		}
+		};
 
 		/**
 		 * Calculates all extreme coordinates of structures in structure array that are marked as selected.
@@ -1442,7 +1451,7 @@
 				updateMaxY(absPos, minMax);
 				updateMaxX(absPos, minMax);
 			}
-		}
+		};
 
 		/**
 		 * Adds a decorate element (usually all aromatics).
@@ -1455,7 +1464,7 @@
 				this.decorate[decorate] = [];
 			}
 			this.decorate[decorate].push(obj);
-		}
+		};
 
 		service.Structure = Structure;
 
@@ -1465,7 +1474,7 @@
 		* Checks if Arrow object is inside the selection rectangle.
 		* @param {Arrow} arrow - Arrow object
 		* @param {Selection} selection - Selection object
-		* @returns {Boolean}
+		* @returns {boolean}
 		*/
 		function isArrowInsideRect(arrow, selection) {
 			var minMax = Structure.prototype.findMinMax.call(this, arrow);
@@ -1479,7 +1488,7 @@
 		* Checks if Atom object is inside the selection rectangle.
 		* @param {Atom} arrow - Atom object
 		* @param {Selection} selection - Selection object
-		* @returns {Boolean}
+		* @returns {boolean}
 		*/
 		function isAtomInsideRect(atom, selection) {
 			var minMax = Structure.prototype.findMinMax.call(this, atom);
@@ -1492,8 +1501,8 @@
 		/**
 		* Checks if coord is inside the selection rectangle.
 		* @param {Selection} selection - Selection object
-		* @param {Number} coord - a coordinate to be checked
-		* @returns {Boolean}
+		* @param {number} coord - a coordinate to be checked
+		* @returns {boolean}
 		*/
 		function isInsideRectY(selection, coord) {
 			var origin = Utils.addVectors(this.origin, selection.getOrigin()),
@@ -1510,8 +1519,8 @@
 		/**
 		* Checks if coord is inside the selection rectangle.
 		* @param {Selection} selection - Selection object
-		* @param {Number} coord - a coordinate to be checked
-		* @returns {Boolean}
+		* @param {number} coord - a coordinate to be checked
+		* @returns {boolean}
 		*/
 		function isInsideRectX(selection, coord) {
 			var origin = Utils.addVectors(this.origin, selection.getOrigin()),
@@ -1527,9 +1536,9 @@
 
 		/**
 		* Iterates over structure array and changes alignment of each selected structure.
-		* @param {String} alignment - associated with alignment direction ("up", "down", "left", "right")
-		* @param {Number} coord - the most extreme coordinate (e.g. uppermost, rightmost, etc.)
-		* @returns {Boolean} true if position of any structure was changed
+		* @param {string} alignment - associated with alignment direction ("up", "down", "left", "right")
+		* @param {number} coord - the most extreme coordinate (e.g. uppermost, rightmost, etc.)
+		* @returns {boolean} true if position of any structure was changed
 		*/
 		function changeAlignment(alignment, coord) {
 			var i, changed = false;
@@ -1549,7 +1558,7 @@
 
 		/**
 		* Compares absolute position and minY coord. If absPos[1] is lower than minY, it replaces minY.
-		* @param {Number[]} absPos - array of coords
+		* @param {number[]} absPos - array of coords
 		* @param {Object} minMax - object containing minY coord
 		*/
 		function updateMinY(absPos, minMax) {
@@ -1560,7 +1569,7 @@
 
 		/**
 		* Compares absolute position and maxY coord. If absPos[1] is bigger than maxY, it replaces maxY.
-		* @param {Number[]} absPos - array of coords
+		* @param {number[]} absPos - array of coords
 		* @param {Object} minMax - object containing maxY coord
 		*/
 		function updateMaxY(absPos, minMax) {
@@ -1571,7 +1580,7 @@
 
 		/**
 		* Compares absolute position and maxX coord. If absPos[0] is bigger than maxX, it replaces maxX.
-		* @param {Number[]} absPos - array of coords
+		* @param {number[]} absPos - array of coords
 		* @param {Object} minMax - object containing maxX coord
 		*/
 		function updateMaxX(absPos, minMax) {
@@ -1582,7 +1591,7 @@
 
 		/**
 		* Compares absolute position and minX coord. If absPos[0] is lower than minX, it replaces minX.
-		* @param {Number[]} absPos - array of coords
+		* @param {number[]} absPos - array of coords
 		* @param {Object} minMax - object containing minX coord
 		*/
 		function updateMinX(absPos, minMax) {
@@ -1594,8 +1603,8 @@
 		/**
 		* Changes alignment of an Arrow object.
 		* @param {Arrow} arrow - object to align
-		* @param {String} alignment - alignment direction
-		* @param {Number} coord - the most extreme coord
+		* @param {string} alignment - alignment direction
+		* @param {number} coord - the most extreme coord
 		*/
 		function setArrow(arrow, alignment, coord) {
 			var absPosStart = Utils.addVectors(this.origin, arrow.getOrigin()), // absolute coords of arrow start
@@ -1630,8 +1639,8 @@
 		/**
 		* Changes alignment of an Atom object.
 		* @param {Atom} atom - object to align
-		* @param {String} alignment - alignment direction
-		* @param {Number} coord - the most extreme coord
+		* @param {string} alignment - alignment direction
+		* @param {number} coord - the most extreme coord
 		*/
 		function setAtom(atom, alignment, coord) {
 			var currAtOrig = atom.getCoords(), // relative coords of the atom
@@ -1724,7 +1733,7 @@
 		/**
 		* Translates the structure using vector d.
 		* @param {Atom|Arrow} obj - object to translate
-		* @param {Number} d - array of coords representing a vector
+		* @param {number} d - array of coords representing a vector
 		*/
 		function align(obj, d) {
 			var coords;
