@@ -406,8 +406,7 @@
 						selection = obj;
 						absPosStart = Utils.addVectors(origin, selection.getOrigin());
 						absPosEnd = selection.getCurrent();
-						quarter = selection.getQuarter();
-						rects.push(DCSelection.calcRect(quarter, absPosStart, absPosEnd));
+						rects.push(DCSelection.calcRect(absPosStart, absPosEnd));
 					} else if (obj instanceof Atom) {
 						atom = obj;
 						absPos = Utils.addVectors(origin, atom.getCoords());

@@ -3,25 +3,27 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DCSelection", DCSelection);
 
-	function DCSelection() {
+	DCSelection.$inject = ["DrawChemUtils"]
+
+	function DCSelection(Utils) {
 
 		var service = {};
 
 		/**
-		* Creates a new Selection.
+		* Creates a new `Selection` object.
 		* @class
-		* @param {Number[]} origin - coords of the origin relative to the absolute position of the 'parent' Structure object
-		* @param {Number[]} current - current absolute position of the mouse
+		* @param {number[]} origin - coords of the origin (relative to the absolute position of the 'parent' `Structure` object)
+		* @param {number[]} current - current absolute position of the mouse
 		*/
 		function Selection(origin, current) {
 			this.origin = origin;
 			this.current = current;
-			this.quarter = 4;
 		}
 
 		/**
-		 * Gets origin.
-		 * @returns {Number[]}
+		 * Gets origin of this `Selection` object.
+		 * @param {string} coord - which coord to return ('x' or 'y')
+		 * @returns {number|number[]}
 		 */
 		Selection.prototype.getOrigin = function (coord) {
 			if (coord === "x") {
@@ -34,8 +36,8 @@
 		};
 
 		/**
-		 * Sets origin.
-		 * @param {Number[]} - origin of the element
+		 * Sets origin of this `Selection` object.
+		 * @param {number[]} origin - origin of this `Selection` object
 		 */
 		Selection.prototype.setOrigin = function (origin) {
 			this.origin = origin;
@@ -43,7 +45,8 @@
 
 		/**
 		 * Gets current mouse position.
-		 * @returns {Number[]}
+		 * @param {string} coord - which coord to return ('x' or 'y')
+		 * @returns {number[]}
 		 */
 		Selection.prototype.getCurrent = function (coord) {
 			if (coord === "x") {
@@ -57,48 +60,40 @@
 
     /**
 		 * Sets current mouse position.
-		 * @param {Number[]} - current mouse position.
+		 * @param {number[]} - current mouse position.
 		 */
 		Selection.prototype.setCurrent = function (current) {
 		  this.current = current;
 		};
 
-		/**
-		 * Returns in which quarter is the rect (mouseDown coords as the beginning of the coordinate system).
-		 * @returns {Number}
-		 */
-		Selection.prototype.getQuarter = function () {
-			return this.quarter;
-		};
-
-		/**
-		 * Sets in which quarter is the rect (mouseDown coords as the beginning of the coordinate system).
-		 * @returns {Boolean}
-		 */
-		Selection.prototype.setQuarter = function (quarter) {
-			this.quarter = quarter;
-		};
-
 		service.Selection = Selection;
 
-		service.calcRect = function (quarter, absPosStart, absPosEnd) {
-			var startX, startY, width, height;
-			if (quarter === 1) {
+		/**
+		* Calculates rectangle attributes (x, y, width, and height).
+		* @param {number[]} absPosStart - absolute coordinates associated with onMouseDown event,
+		* @param {number[]} absPosEnd - absolute coordinates associated with onMouseUp event,
+		* @returns {Object}
+		*/
+		service.calcRect = function (absPosStart, absPosEnd) {
+			var startX, startY, width, height,
+			  quadrant = Utils.getQuadrant(absPosStart, absPosEnd);
+
+			if (quadrant === 1) {
 				startX = absPosStart[0];
 				startY = absPosEnd[1];
 				width = absPosEnd[0] - startX;
 				height = absPosStart[1] - startY;
-			} else if (quarter === 2) {
+			} else if (quadrant === 2) {
 				startX = absPosEnd[0];
 				startY = absPosEnd[1];
 				width = absPosStart[0] - startX;
 				height = absPosStart[1] - startY;
-			} else if (quarter === 3) {
+			} else if (quadrant === 3) {
 				startX = absPosEnd[0];
 				startY = absPosStart[1];
 				width = absPosStart[0] - startX;
 				height = absPosEnd[1] - startY;
-			} else if (quarter === 4) {
+			} else if (quadrant === 4) {
 				startX = absPosStart[0];
 				startY = absPosStart[1];
 				width = absPosEnd[0] - startX;

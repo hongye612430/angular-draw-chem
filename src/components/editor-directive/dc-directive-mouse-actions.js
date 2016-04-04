@@ -405,12 +405,6 @@
 				newCoords = Utils.subtractVectors(mouseFlags.downMouseCoords, structure.getOrigin());
 				selection = new Selection(newCoords, mouseCoords);
 			}
-			// checks to which 'quarter' the selection rect belongs (downMouseCoords as the beginning of the coordinate system)
-			width = mouseCoords[0] - mouseFlags.downMouseCoords[0];
-			height = mouseCoords[1] - mouseFlags.downMouseCoords[1];
-			if (width > 0 && height < 0) { selection.setQuarter(1); }
-			if (width < 0 && height < 0) { selection.setQuarter(2); }
-			if (width < 0 && height > 0) { selection.setQuarter(3); }
 			structure.select(selection);
 			// add Arrow object to the structures array in the Structure object
 			structure.addToStructures(selection);

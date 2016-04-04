@@ -394,11 +394,11 @@
 		function isInsideRectY(selection, coord) {
 			var origin = Utils.addVectors(this.origin, selection.getOrigin()),
 				end = selection.getCurrent(),
-				quarter = selection.getQuarter();
+				quadrant = Utils.getQuadrant(origin, end);
 
-			if (quarter === 1 || quarter === 2) {
+			if (quadrant === 1 || quadrant === 2) {
 				return coord <= origin[1] && coord >= end[1];
-			} else if (quarter === 3 || quarter === 4) {
+			} else if (quadrant === 3 || quadrant === 4) {
 				return coord >= origin[1] && coord <= end[1];
 			}
 		}
@@ -412,11 +412,11 @@
 		function isInsideRectX(selection, coord) {
 			var origin = Utils.addVectors(this.origin, selection.getOrigin()),
 				end = selection.getCurrent(),
-				quarter = selection.getQuarter();
+				quadrant = Utils.getQuadrant(origin, end);
 
-			if (quarter === 1 || quarter === 4) {
+			if (quadrant === 1 || quadrant === 4) {
 				return coord >= origin[0] && coord <= end[0];
-			} else if (quarter === 2 || quarter === 3) {
+			} else if (quadrant === 2 || quadrant === 3) {
 				return coord <= origin[0] && coord >= end[0];
 			}
 		}

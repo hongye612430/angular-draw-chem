@@ -631,6 +631,7 @@
 		* @class
 		* @param {string} label - name of the group/atom symbol
 		* @param {number} bonds - maximum number of bonds associated `Atom` object can be connected with
+		* @param {string} mode - how the label should be anchored, i.e. left to right ('lr'), right to left ('rl'), etc.
 		*/
 		function Label(label, bonds, mode) {
 			this.labelName = label;
@@ -639,25 +640,24 @@
 		}
 
 		/**
-		 * Gets label name.
-		 * @returns {String}
+		 * Gets name of the group/atom symbol.
+		 * @returns {string}
 		 */
 		Label.prototype.getLabelName = function () {
 			return this.labelName;
 		};
 
 		/**
-		 * Sets label name.
-		 * @param {String} labelName - name of the label
+		 * Sets name of the group/atom symbol.
+		 * @param {string} labelName - name of the group/atom symbol
 		 */
 		Label.prototype.setLabelName = function (labelName) {
 			this.labelName = labelName;
 		};
 
-
 		/**
-		 * Get maximum number of bonds related to this label. E.g. label 'O', oxygen, has maximum two bonds.
-		 * @returns {Number}
+		 * Gets maximum number of bonds associated with `Atom` object (e.g. label 'O', oxygen, has maximum two bonds).
+		 * @returns {number}
 		 */
 		Label.prototype.getMaxBonds = function () {
 			return this.bonds;
@@ -665,15 +665,16 @@
 
 		/**
 		 * Sets maximum number of bonds.
-		 * @param {Number} bonds - maximum number of bonds
+		 * @param {number} bonds - maximum number of bonds
 		 */
 		Label.prototype.setMaxBonds = function (bonds) {
 			this.bonds = bonds;
 		};
 
 		/**
-		 * Gets mode of the label, i.e. 'rl' for 'right to left', 'lr' for 'left to right'. Useful for anchoring of the text tag.
-		 * @returns {String}
+		 * Gets mode of the label, i.e. 'rl' for 'right to left', 'lr' for 'left to right'.
+		 * Useful for anchoring of the text tag.
+		 * @returns {string}
 		 */
 		Label.prototype.getMode = function () {
 			return this.mode;
@@ -681,7 +682,7 @@
 
 		/**
 		 * Sets mode of the label.
-		 * @param (String) mode - mode to set
+		 * @param (string) mode - mode to set
 		 */
 		Label.prototype.setMode = function (mode) {
 			this.mode = mode;
@@ -698,25 +699,27 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DCSelection", DCSelection);
 
-	function DCSelection() {
+	DCSelection.$inject = ["DrawChemUtils"]
+
+	function DCSelection(Utils) {
 
 		var service = {};
 
 		/**
-		* Creates a new Selection.
+		* Creates a new `Selection` object.
 		* @class
-		* @param {Number[]} origin - coords of the origin relative to the absolute position of the 'parent' Structure object
-		* @param {Number[]} current - current absolute position of the mouse
+		* @param {number[]} origin - coords of the origin (relative to the absolute position of the 'parent' `Structure` object)
+		* @param {number[]} current - current absolute position of the mouse
 		*/
 		function Selection(origin, current) {
 			this.origin = origin;
 			this.current = current;
-			this.quarter = 4;
 		}
 
 		/**
-		 * Gets origin.
-		 * @returns {Number[]}
+		 * Gets origin of this `Selection` object.
+		 * @param {string} coord - which coord to return ('x' or 'y')
+		 * @returns {number|number[]}
 		 */
 		Selection.prototype.getOrigin = function (coord) {
 			if (coord === "x") {
@@ -729,8 +732,8 @@
 		};
 
 		/**
-		 * Sets origin.
-		 * @param {Number[]} - origin of the element
+		 * Sets origin of this `Selection` object.
+		 * @param {number[]} origin - origin of this `Selection` object
 		 */
 		Selection.prototype.setOrigin = function (origin) {
 			this.origin = origin;
@@ -738,7 +741,8 @@
 
 		/**
 		 * Gets current mouse position.
-		 * @returns {Number[]}
+		 * @param {string} coord - which coord to return ('x' or 'y')
+		 * @returns {number[]}
 		 */
 		Selection.prototype.getCurrent = function (coord) {
 			if (coord === "x") {
@@ -752,48 +756,40 @@
 
     /**
 		 * Sets current mouse position.
-		 * @param {Number[]} - current mouse position.
+		 * @param {number[]} - current mouse position.
 		 */
 		Selection.prototype.setCurrent = function (current) {
 		  this.current = current;
 		};
 
-		/**
-		 * Returns in which quarter is the rect (mouseDown coords as the beginning of the coordinate system).
-		 * @returns {Number}
-		 */
-		Selection.prototype.getQuarter = function () {
-			return this.quarter;
-		};
-
-		/**
-		 * Sets in which quarter is the rect (mouseDown coords as the beginning of the coordinate system).
-		 * @returns {Boolean}
-		 */
-		Selection.prototype.setQuarter = function (quarter) {
-			this.quarter = quarter;
-		};
-
 		service.Selection = Selection;
 
-		service.calcRect = function (quarter, absPosStart, absPosEnd) {
-			var startX, startY, width, height;
-			if (quarter === 1) {
+		/**
+		* Calculates rectangle attributes (x, y, width, and height).
+		* @param {number[]} absPosStart - absolute coordinates associated with onMouseDown event,
+		* @param {number[]} absPosEnd - absolute coordinates associated with onMouseUp event,
+		* @returns {Object}
+		*/
+		service.calcRect = function (absPosStart, absPosEnd) {
+			var startX, startY, width, height,
+			  quadrant = Utils.getQuadrant(absPosStart, absPosEnd);
+
+			if (quadrant === 1) {
 				startX = absPosStart[0];
 				startY = absPosEnd[1];
 				width = absPosEnd[0] - startX;
 				height = absPosStart[1] - startY;
-			} else if (quarter === 2) {
+			} else if (quadrant === 2) {
 				startX = absPosEnd[0];
 				startY = absPosEnd[1];
 				width = absPosStart[0] - startX;
 				height = absPosStart[1] - startY;
-			} else if (quarter === 3) {
+			} else if (quadrant === 3) {
 				startX = absPosEnd[0];
 				startY = absPosStart[1];
 				width = absPosStart[0] - startX;
 				height = absPosEnd[1] - startY;
-			} else if (quarter === 4) {
+			} else if (quadrant === 4) {
 				startX = absPosStart[0];
 				startY = absPosStart[1];
 				width = absPosEnd[0] - startX;
@@ -1472,11 +1468,11 @@
 		function isInsideRectY(selection, coord) {
 			var origin = Utils.addVectors(this.origin, selection.getOrigin()),
 				end = selection.getCurrent(),
-				quarter = selection.getQuarter();
+				quadrant = Utils.getQuadrant(origin, end);
 
-			if (quarter === 1 || quarter === 2) {
+			if (quadrant === 1 || quadrant === 2) {
 				return coord <= origin[1] && coord >= end[1];
-			} else if (quarter === 3 || quarter === 4) {
+			} else if (quadrant === 3 || quadrant === 4) {
 				return coord >= origin[1] && coord <= end[1];
 			}
 		}
@@ -1490,11 +1486,11 @@
 		function isInsideRectX(selection, coord) {
 			var origin = Utils.addVectors(this.origin, selection.getOrigin()),
 				end = selection.getCurrent(),
-				quarter = selection.getQuarter();
+				quadrant = Utils.getQuadrant(origin, end);
 
-			if (quarter === 1 || quarter === 4) {
+			if (quadrant === 1 || quadrant === 4) {
 				return coord >= origin[0] && coord <= end[0];
-			} else if (quarter === 2 || quarter === 3) {
+			} else if (quadrant === 2 || quadrant === 3) {
 				return coord <= origin[0] && coord >= end[0];
 			}
 		}
@@ -2150,12 +2146,6 @@
 				newCoords = Utils.subtractVectors(mouseFlags.downMouseCoords, structure.getOrigin());
 				selection = new Selection(newCoords, mouseCoords);
 			}
-			// checks to which 'quarter' the selection rect belongs (downMouseCoords as the beginning of the coordinate system)
-			width = mouseCoords[0] - mouseFlags.downMouseCoords[0];
-			height = mouseCoords[1] - mouseFlags.downMouseCoords[1];
-			if (width > 0 && height < 0) { selection.setQuarter(1); }
-			if (width < 0 && height < 0) { selection.setQuarter(2); }
-			if (width < 0 && height > 0) { selection.setQuarter(3); }
 			structure.select(selection);
 			// add Arrow object to the structures array in the Structure object
 			structure.addToStructures(selection);
@@ -2543,6 +2533,25 @@
 	function DrawChemUtils() {
 
 		var service = {};
+
+		/**
+		* Calculates which quadrant two sets of coordinates create.
+		* @param {number[]} origin - first set of coords ('beginning' of the coords system),
+		* @param {number[]} end - second set of coords,
+		* @returns {number}
+		*/
+		service.getQuadrant = function (origin, end) {
+			var x = end[0] - origin[0], y = end[1] - origin[1];
+			if (x > 0 && y < 0) {
+				return 1;
+			} else if (x < 0 && y < 0) {
+				return 2;
+			} else if (x < 0 && y > 0) {
+				return 3;
+			} else {
+				return 4;
+			}
+		};
 
 		/**
 		* Adds two vectors. Optionally multiplies the second vector by a factor. Returns a new array.
@@ -4553,8 +4562,7 @@
 						selection = obj;
 						absPosStart = Utils.addVectors(origin, selection.getOrigin());
 						absPosEnd = selection.getCurrent();
-						quarter = selection.getQuarter();
-						rects.push(DCSelection.calcRect(quarter, absPosStart, absPosEnd));
+						rects.push(DCSelection.calcRect(absPosStart, absPosEnd));
 					} else if (obj instanceof Atom) {
 						atom = obj;
 						absPos = Utils.addVectors(origin, atom.getCoords());

@@ -8,6 +8,25 @@
 		var service = {};
 
 		/**
+		* Calculates which quadrant two sets of coordinates create.
+		* @param {number[]} origin - first set of coords ('beginning' of the coords system),
+		* @param {number[]} end - second set of coords,
+		* @returns {number}
+		*/
+		service.getQuadrant = function (origin, end) {
+			var x = end[0] - origin[0], y = end[1] - origin[1];
+			if (x > 0 && y < 0) {
+				return 1;
+			} else if (x < 0 && y < 0) {
+				return 2;
+			} else if (x < 0 && y > 0) {
+				return 3;
+			} else {
+				return 4;
+			}
+		};
+
+		/**
 		* Adds two vectors. Optionally multiplies the second vector by a factor. Returns a new array.
 		* @param {number[]} v1 - first vector,
 		* @param {number[]} v2 - second vector,
