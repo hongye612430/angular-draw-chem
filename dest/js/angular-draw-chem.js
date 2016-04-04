@@ -2635,6 +2635,9 @@
 		* @returns {boolean}
 		*/
 		service.isSmallLetter = function(str) {
+			if (str.length > 1) {
+				return false;
+			}
 			return str >= "a" && str <= "z";
 		};
 
