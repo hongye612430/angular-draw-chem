@@ -258,10 +258,16 @@
 			this.coords = coords;
 			this.bonds = bonds;
 			this.attachedBonds = attachedBonds || {};
-			this.next = "";
-			this.selected = false;
 			this.label;
 		}
+
+		/**
+		* Checks if this `Atom` object is marked as selected.
+		* @returns {boolean}
+		*/
+		Atom.prototype.isSelected = function () {
+			return !!this.selected;
+		};
 
 		/**
 		* Marks `Atom` object as selected.
