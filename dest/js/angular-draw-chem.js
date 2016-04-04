@@ -85,9 +85,16 @@
 		*/
 		function Arrow(type, relativeEnd) {
 			this.type = type;
-			this.selected = false;
 			this.relativeEnd = relativeEnd;
 		}
+
+		/**
+		* Checks if this `Arrow` object is marked as selected.
+		* @returns {boolean}
+		*/
+		Arrow.prototype.isSelected = function () {
+			return !!this.selected;
+		};
 
 		/**
 		* Marks this `Arrow` object as selected.
