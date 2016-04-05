@@ -198,7 +198,7 @@
 		* @class
 		* @param {number[]} coords - an array with coordinates of the atom,
 		* @param {Bond[]} bonds - an array of bonds coming out of the atom,
-		* @param {object} attachedBonds - directions of all bonds coming out or coming in as object: { in: [{ vector: `number[]`, multiplicity: `number` }], out: [same] }
+		* @param {Object} attachedBonds - directions of all bonds coming out or coming in as object: { in: [{ vector: `number[]`, multiplicity: `number` }], out: [same] }
 		*/
 		function Atom(coords, bonds, attachedBonds) {
 			this.coords = coords;
@@ -4012,6 +4012,7 @@
 				function updateAtom(vector, atom) {
 					var name = mod.getName(), // gets name of the `StructureCluster `object
 					  size = mod.getRingSize(), // gets size of the ring (defaults to 0 for non-rings)
+						mult = mod.getMult(), // gets multiplicity of the bond (undefined for rings)
 						bond, angle, nextAtom, rotVect;
 					if (size > 1) {
 						/*
@@ -4032,11 +4033,11 @@
 						* if we are dealing with a bond
 						*/
 						// generate `Bond` object in the direction indicated by `vector`
-						bond = Structures.generateBond(vector, name, 1);
+						bond = Structures.generateBond(vector, name, mult);
 						// attach it to the starting `atom`
 						atom.addBond(bond);
 						// update `attachedBonds` array
-						atom.attachBond("out", { vector: angular.copy(vector), multiplicity: 1 });
+						atom.attachBond("out", { vector: angular.copy(vector), multiplicity: mult });
 					}
 				}
 
@@ -4131,7 +4132,7 @@
 		}
 
 		/**
-		 * Looks for an atom Object (or Objects if more than one has the specified coords) and deletes it.
+		 * Looks for an `Atom` object (or objects if more than one has the specified coords) and deletes it (them).
 		 * Attaches items in its 'bonds' array directly to 'structure' array in Structure object.
 		 * @params {Structure} structure - a Structure object to modify,
 		 * @params {Number[]} mouseCoords - coordinates of the mouse pointer (where 'mouseup occurred')
@@ -4234,10 +4235,10 @@
 		}
 
 		/**
-		 * Checks if the mouse pointer is within a circle of an atom.
-		 * @param {Structure} structure - a Structure object on which search is performed
-		 * @param {Number[]} position - set of coordinates against which the search is performed
-		 * @returns {Atom}
+		 * Checks if supplied coordinates are within a circle of an atom.
+		 * @param {Structure} structure - a `Structure` object on which search is performed,
+		 * @param {number[]} position - set of coordinates against which the search is performed,
+		 * @returns {Object}
 		 */
 		service.isWithin = function (structure, position) {
 			var found = false,
@@ -4265,7 +4266,7 @@
 					}
 				}
 			}
-		}
+		};
 
 		return service;
 	}
@@ -4364,7 +4365,7 @@
 					} else if (obj instanceof Atom) {
 						atom = obj;
 						absPos = Utils.addVectors(origin, atom.getCoords());
-						SvgUtils.updateLabel(absPos, atom);
+						SvgUtils.updateLabel(labels, absPos, atom);
 						updateMinMax(absPos);
 						len = output.push(["M", absPos]);
 						circles.push({ selected: atom.selected, circle: [absPos[0], absPos[1], circR] });
@@ -4406,7 +4407,7 @@
 							prevAbsPos[1] + atom.getCoords("y")
 						];
 						updateMinMax(absPos);
-						SvgUtils.updateLabel(absPos, atom);
+						SvgUtils.updateLabel(labels, absPos, atom);
 						circles.push({ selected: selected, circle: [absPos[0], absPos[1], circR] });
 						if (i === 0) {
 							drawLine(prevAbsPos, absPos, bondType, atom, "continue", selected);
@@ -4641,10 +4642,15 @@
 	function DrawChemSvgUtils(Const, Utils, DCSvg) {
 
 		var service = {},
-      BONDS_AUX = Const.BONDS_AUX,
+      BONDS = Const.BONDS,
       BOND_LENGTH = Const.BOND_LENGTH,
       AROMATIC_R = Const.AROMATIC_R;
 
+		/**
+		* Generates `rect` elements.
+		* @param {Object[]} rects - array of objects with data needed to construct a `rect` element,
+		* @param {Object} obj - object accumulating `rect` elements
+		*/
     service.generateRects = function (rects, obj) {
       rects.forEach(function (rect) {
         var aux =
@@ -4659,6 +4665,11 @@
       });
     };
 
+		/**
+		* Generates `path` elements.
+		* @param {Object[]} paths - array of objects with data needed to construct a `path` element,
+		* @param {Object} obj - object accumulating `path` elements
+		*/
     service.generatePaths = function (paths, obj) {
       paths.forEach(function (path) {
         var aux;
@@ -4672,6 +4683,11 @@
       });
     };
 
+		/**
+		* Generates `circle` elements (around atoms).
+		* @param {Object[]} circles - array of objects with data needed to construct a `circle` element,
+		* @param {Object} obj - object accumulating `circle` elements
+		*/
     service.generateCircles = function (circles, obj) {
       circles.forEach(function (circle) {
         var aux = circle.selected ? "edit": "atom";
@@ -4684,6 +4700,11 @@
       });
     };
 
+		/**
+		* Generates `text` elements.
+		* @param {Object[]} labels - array of objects with data needed to construct a `text` element,
+		* @param {Object} obj - object accumulating `text` elements
+		*/
     service.generateLabels = function (labels, obj) {
       labels.forEach(function (label) {
         var aux =
@@ -4698,8 +4719,58 @@
         obj.full += aux;
         obj.mini += aux;
       });
+
+			function drawDodecagon(label) {
+	      var i, factor,result = [];
+	      factor = 0.5 * label.height / BOND_LENGTH;
+	      for (i = 1; i < BONDS.length; i += 2) {
+	        result.push(Utils.addVectors([label.atomX, label.atomY], BONDS[i].bond, factor));
+	      }
+
+	      return "<polygon class='text' points='" + getPoints() + "'></polygon>";
+
+				function getPoints() {
+					var str = "";
+					result.forEach(function (arr) {
+						str += arr[0].toFixed(2) + " " + arr[1].toFixed(2) + " ";
+					});
+					return str;
+				}
+	    }
+
+	    function genTextAnchor(mode) {
+	      if (mode === "rl") {
+	        return "end";
+	      } else if (mode === "lr") {
+	        return "start";
+	      } else {
+	        return "start";
+	      }
+	    }
+
+	    function genLabel(labelName) {
+	      var i, aux, isPreceded = false, output = "";
+	      for (i = 0; i < labelName.length; i += 1) {
+	        aux = labelName.substr(i, 1);
+	        if (Utils.isNumeric(aux)) {
+	          output += "<tspan class='sub' dy='" + DCSvg.fontSize * 0.25 + "' >" + aux + "</tspan>";
+	          isPreceded = true;
+	        } else if (isPreceded) {
+	          output += "<tspan dy='-" + DCSvg.fontSize * 0.25 + "' >" + aux + "</tspan>";
+	          isPreceded = false;
+	        } else {
+	          output += "<tspan>" + aux + "</tspan>";
+	        }
+	      }
+	      return output;
+	    }
     };
 
+		/**
+		* Generates `circle` elements (aromatic rings).
+		* @param {Structure} input - `Structure` object containing info about aromatics,
+		* @param {Object} obj - object accumulating `circle` elements
+		*/
     service.generateAromatics = function (input, obj) {
       var aromatics = input.getDecorate("aromatic");
       aromatics.forEach(function (arom) {
@@ -4717,14 +4788,14 @@
     }
 
     /**
-    * Transforms output into an array of strings.
-    * Basically, it translates each array of coordinates into its string representation.
-    * @returns {String[]}
+    * Transforms input (array of `path` elements as array of coordinates and instructions ('M' and 'L')) into an array of strings.
+		* @param {Array} input - mixed array of arrays with coordinates and instructions,
+    * @returns {Object[]}
     */
-    service.stringifyPaths = function (output) {
+    service.stringifyPaths = function (input) {
       var result = [], i, j, line, point, lineStr;
-      for (i = 0; i < output.length; i += 1) {
-        line = output[i];
+      for (i = 0; i < input.length; i += 1) {
+        line = input[i];
         lineStr = { line: "" };
         for (j = 0; j < line.length; j += 1) {
           point = line[j];
@@ -4743,65 +4814,73 @@
       return result;
     };
 
-		service.updateLabel = function(absPos, atom) {
-			var label = atom.getLabel(), labelObj;
+		/**
+		* Adds new element to `labels` array based on supplied `Atom` object and its absolute position.
+		* @param {Object[]} labels - array of objects with all data necessary for generating `text` elements,
+		* @param {number[]} absPos - absolute coordinates of an `Atom` object,
+		* @param {Atom} atom - `Atom` object
+		*/
+		service.updateLabel = function(labels, absPos, atom) {
+			var label = atom.getLabel(),
+			  inBonds = atom.getAttachedBonds("in"),
+				outBonds = atom.getAttachedBonds("out"),
+			  labelObj;
 			if (typeof label !== "undefined") {
 				labelObj = genLabelInfo();
 				labels.push(labelObj);
 			}
 
 			function genLabelInfo() {
-				var bondsRemained = label.getMaxBonds() - calcBondsIn(atom.getAttachedBonds()) - calcBondsOut(atom.getBonds()),
+				var bondsRemained = label.getMaxBonds() - calcBonds(inBonds) - calcBonds(outBonds),
 					labelNameObj = { name: label.getLabelName() };
 
-				addHydrogens();
+				getInfo();
 
 				return {
 					length: labelNameObj.name.length,
 					label: labelNameObj.name,
-					mode: label.getMode(),
+					mode: labelNameObj.mode,
 					atomX: absPos[0],
 					atomY: absPos[1],
-					labelX: absPos[0] + labelNameObj.correctX,
-					labelY: absPos[1] + 0.09 * BOND_LENGTH,
+					labelX: absPos[0] + calcCorrectX(labelNameObj.mode) * BOND_LENGTH,
+					labelY: absPos[1] + calcCorrectY() * BOND_LENGTH,
 					width: DCSvg.fontSize * labelNameObj.name.length,
 					height: DCSvg.fontSize
 				};
 
-				function calcBondsIn(bonds) {
-					var i, type, result = 0;
+				// calculates number of incoming and outcoming bonds
+				function calcBonds(bonds) {
+					var i, result = 0;
+					if (typeof bonds === "undefined") {
+						return 0;
+					}
+
 					for (i = 0; i < bonds.length; i += 1) {
-						type = bonds[i].type;
-						switch (type) {
-							case "single": result += 1; break;
-							case "double": result += 2; break;
-							case "triple": result += 3; break;
-						}
+						result += bonds[i].multiplicity;
 					}
 					return result;
 				}
 
-				function calcBondsOut(bonds) {
-					var i, type, result = 0;
-					for (i = 0; i < bonds.length; i += 1) {
-						type = bonds[i].getType();
-						switch (type) {
-							case "single": result += 1; break;
-							case "wedge": result += 1; break;
-							case "dash": result += 1; break;
-							case "double": result += 2; break;
-							case "triple": result += 3; break;
-						}
+				function calcCorrectX(mode) {
+					if (mode === "rl") {
+						return 0.175;
+					} else if (mode === "lr") {
+						return -0.175;
 					}
-					return result;
 				}
 
-				function addHydrogens() {
+				function calcCorrectY() {
+					return 0.09;
+				}
+
+				function getInfo() {
 					var i, mode = label.getMode(), hydrogens = 0;
 					for (i = 0; i < bondsRemained; i += 1) {
+						// if there are any bonds remained, add hydrogens
 						hydrogens += 1;
 					}
 
+					// set number of hydrogens
 					labelNameObj.hydrogens = hydrogens;
 
 					if (typeof mode === "undefined") {
@@ -4811,15 +4890,15 @@
 						label.setMode(mode);
 					}
 
+					labelNameObj.mode = mode;
+
 					if (hydrogens > 0) {
-						// only happens for predefined labels
-						// custom labels can't have implicit hydrogens
+						// only happens for predefined labels,
+						// custom labels have number of hydrogens zero or less
 						hydrogensAboveZero();
 					} else {
 						hydrogensZeroOrLess();
 					}
-
-					labelNameObj.correctX = calcCorrect() * BOND_LENGTH;
 
 					function hydrogensAboveZero() {
 						if (mode === "rl") {
@@ -4838,67 +4917,31 @@
 					}
 
 					function getTextDirection() {
-						var countE = 0;
-						atom.getAttachedBonds().forEach(function (direction) {
-							countE = direction.direction.indexOf("E") < 0 ? countE: countE + 1;
-						});
-						return countE > 0 ? "rl": "lr";
-					}
-
-					function calcCorrect() {
-						if (mode === "rl") {
-							return 0.175;
-						} else if (mode === "lr") {
-							return -0.175;
-						} else if (mode === "tb") {
-
-						} else if (mode === "bt") {
-
+						var countE = 0, countW = 0;
+						if (typeof inBonds !== "undefined") {
+							inBonds.forEach(function (bond) {
+								if (bond.vector[0] > 0) {
+									countE += 1;
+								} else {
+									countW += 1;
+								}
+							});
 						}
+						if (typeof outBonds !== "undefined") {
+							outBonds.forEach(function (bond) {
+								if (bond.vector[0] < 0) {
+									countE += 1;
+								} else {
+									countW += 1;
+								}
+							});
+						}
+						return countE > countW ? "lr": "rl";
 					}
 				}
 			}
 		}
 
 		return service;
-
-    function drawDodecagon(label) {
-      var i, x, y, aux, factor,result = [];
-
-      factor = 0.5 * label.height / BOND_LENGTH;
-      for (i = 0; i < BONDS_AUX.length; i += 1) {
-        x = BONDS_AUX[i].bond[0];
-        y = BONDS_AUX[i].bond[1];
-        result = result.concat(Utils.addVectors([label.atomX, label.atomY], [x, y], factor));
-      }
-      return "<polygon class='text' points='" + service.stringifyPaths([result])[0].line + "'></polygon>";
-    }
-
-    function genTextAnchor(mode) {
-      if (mode === "rl") {
-        return "end";
-      } else if (mode === "lr") {
-        return "start";
-      } else {
-        return "start";
-      }
-    }
-
-    function genLabel(labelName) {
-      var i, aux, isPreceded = false, output = "";
-      for (i = 0; i < labelName.length; i += 1) {
-        aux = labelName.substr(i, 1);
-        if (Utils.isNumeric(aux)) {
-          output += "<tspan class='sub' dy='" + DCSvg.fontSize * 0.25 + "' >" + aux + "</tspan>";
-          isPreceded = true;
-        } else if (isPreceded) {
-          output += "<tspan dy='-" + DCSvg.fontSize * 0.25 + "' >" + aux + "</tspan>";
-          isPreceded = false;
-        } else {
-          output += "<tspan>" + aux + "</tspan>";
-        }
-      }
-      return output;
-    }
 	}
 })();

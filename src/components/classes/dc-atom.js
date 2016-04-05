@@ -14,7 +14,7 @@
 		* @class
 		* @param {number[]} coords - an array with coordinates of the atom,
 		* @param {Bond[]} bonds - an array of bonds coming out of the atom,
-		* @param {object} attachedBonds - directions of all bonds coming out or coming in as object: { in: [{ vector: `number[]`, multiplicity: `number` }], out: [same] }
+		* @param {Object} attachedBonds - directions of all bonds coming out or coming in as object: { in: [{ vector: `number[]`, multiplicity: `number` }], out: [same] }
 		*/
 		function Atom(coords, bonds, attachedBonds) {
 			this.coords = coords;

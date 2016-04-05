@@ -91,7 +91,7 @@
 					} else if (obj instanceof Atom) {
 						atom = obj;
 						absPos = Utils.addVectors(origin, atom.getCoords());
-						SvgUtils.updateLabel(absPos, atom);
+						SvgUtils.updateLabel(labels, absPos, atom);
 						updateMinMax(absPos);
 						len = output.push(["M", absPos]);
 						circles.push({ selected: atom.selected, circle: [absPos[0], absPos[1], circR] });
@@ -133,7 +133,7 @@
 							prevAbsPos[1] + atom.getCoords("y")
 						];
 						updateMinMax(absPos);
-						SvgUtils.updateLabel(absPos, atom);
+						SvgUtils.updateLabel(labels, absPos, atom);
 						circles.push({ selected: selected, circle: [absPos[0], absPos[1], circR] });
 						if (i === 0) {
 							drawLine(prevAbsPos, absPos, bondType, atom, "continue", selected);
