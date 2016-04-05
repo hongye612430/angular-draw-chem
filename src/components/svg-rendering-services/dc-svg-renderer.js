@@ -52,7 +52,9 @@
 			return svg;
 
 			/**
-			 * Generates string from the output array and wraps each line with 'path' element, each circle with 'circle' element, etc.
+			 * Generates string from the output array and wraps each line with 'path' element,
+			 * each circle with 'circle' element, etc.
+			 * @returns {Object}
 			 */
 			function genElements() {
 				var result = { full: "", mini: "" };
@@ -85,7 +87,7 @@
 						selection = obj;
 						absPosStart = Utils.addVectors(origin, selection.getOrigin());
 						absPosEnd = selection.getCurrent();
-						rects.push(calcRect(absPosStart, absPosEnd));
+						rects.push((absPosStart, absPosEnd));
 					} else if (obj instanceof Atom) {
 						atom = obj;
 						absPos = Utils.addVectors(origin, atom.getCoords());
@@ -193,7 +195,7 @@
 		}
 
 		/**
-		* Calculates data for the svg instructions in `path` element.
+		* Calculates data for the svg instructions in `path` element for arrow.
 		* @param {number[]} start - start coordinates (absolute) of the arrow,
 		* @param {number[]} end - end coordinates (absolute) of the arrow,
 		* @param {string} type - arrow type (one-way, etc.),
@@ -202,7 +204,8 @@
 		function calcArrow(start, end, type) {
 			var vectCoords = [end[0] - start[0], end[1] - start[1]],
 				perpVectCoordsCW = [-vectCoords[1], vectCoords[0]],
-				perpVectCoordsCCW = [vectCoords[1], -vectCoords[0]], endMarkerStart, startMarkerStart, M1, M2, L1, L2, L3, L4;
+				perpVectCoordsCCW = [vectCoords[1], -vectCoords[0]],
+				endMarkerStart, startMarkerStart, M1, M2, L1, L2, L3, L4;
 			if (type === "one-way-arrow") {
 				endMarkerStart = [start[0] + vectCoords[0] * ARROW_START, start[1] + vectCoords[1] * ARROW_START];
 				L1 = Utils.addVectors(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
@@ -240,6 +243,12 @@
 			}
 		}
 
+		/**
+		* Calculates data for the svg instructions in `path` element for double bond.
+		* @param {number[]} start - start coordinates (absolute) of the arrow,
+		* @param {number[]} end - end coordinates (absolute) of the arrow,
+		* @returns {Array}
+		*/
 		function calcDoubleBondCoords(start, end) {
 			var vectCoords = [end[0] - start[0], end[1] - start[1]],
 				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
@@ -251,6 +260,12 @@
 			return ["M", M1, "L", L1, "M", M2, "L", L2];
 		}
 
+		/**
+		* Calculates data for the svg instructions in `path` element for triple bond.
+		* @param {number[]} start - start coordinates (absolute) of the arrow,
+		* @param {number[]} end - end coordinates (absolute) of the arrow,
+		* @returns {Array}
+		*/
 		function calcTripleBondCoords(start, end) {
 			var vectCoords = [end[0] - start[0], end[1] - start[1]],
 				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
@@ -262,6 +277,12 @@
 			return ["M", M1, "L", L1, "M", start, "L", end, "M", M2, "L", L2];
 		}
 
+		/**
+		* Calculates data for the svg instructions in `path` element for wedge bond.
+		* @param {number[]} start - start coordinates (absolute) of the arrow,
+		* @param {number[]} end - end coordinates (absolute) of the arrow,
+		* @returns {Array}
+		*/
 		function calcWedgeBondCoords(start, end) {
 			var vectCoords = [end[0] - start[0], end[1] - start[1]],
 				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
@@ -271,6 +292,12 @@
 			return ["wedge", "M", start, "L", L1, "L", L2, "Z"];
 		}
 
+		/**
+		* Calculates data for the svg instructions in `path` element for dash bond.
+		* @param {number[]} start - start coordinates (absolute) of the arrow,
+		* @param {number[]} end - end coordinates (absolute) of the arrow,
+		* @returns {Array}
+		*/
 		function calcDashBondCoords(start, end) {
 			var i, max = 7, factor = BETWEEN_DBL_BONDS / max, M, L, currentEnd = start, result = [],
 				vectCoords = [end[0] - start[0], end[1] - start[1]],

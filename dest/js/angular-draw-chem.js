@@ -678,13 +678,15 @@
 		* @param {string} name - name of the cluster,
 		* @param {Structure[]} defs - array of Structure objects belonging to the cluster,
 		* @param {number} ringSize - size of the associated ring, defaults to 0 for acyclic structures,
-		* @param {number} angle - angle between bonds in cyclic structures
+		* @param {number} angle - angle between bonds in cyclic structures,
+		* @param {number} mult - multiplicity of the associated bond (undefined for cyclic structures)
 		*/
-		function StructureCluster(name, defs, ringSize, angle) {
+		function StructureCluster(name, defs, ringSize, angle, mult) {
 			this.name = name;
 			this.defs = defs;
-			this.ringSize = ringSize || 0;
+			this.ringSize = ringSize;
 			this.angle = angle;
+			this.multiplicity = mult;
 			this.defaultStructure = defs[0];
 		}
 
@@ -710,6 +712,14 @@
 		*/
 		StructureCluster.prototype.getRingSize = function () {
 			return this.ringSize;
+		};
+
+		/**
+		* Gets multiplicity of the associated bond. Undefined for cyclic structures.
+		* @returns {number}
+		*/
+		StructureCluster.prototype.getMult = function () {
+			return this.multiplicity;
 		};
 
 		/**
@@ -3840,7 +3850,7 @@
 					multiplicity = bondStr.getMultiplicity();
 				service[name + "Bond"] = function () {
 					var defs = service.generateBonds(name, multiplicity),
-					  cluster = new StructureCluster(name, defs);
+					  cluster = new StructureCluster(name, defs, 0, 0, multiplicity);
 					return cluster;
 				};
 			});
@@ -3923,16 +3933,16 @@
 			Selection = DCSelection.Selection;
 
 		/**
-		 * Modifies the structure.
-		 * @param {Structure} base - structure to be modified,
-		 * @param {StructureCluster} mod - StructureCluster containing appropriate Structure objects,
-		 * @param {Number[]} mousePos - position of the mouse when 'mouseup' event occurred
-		 * @param {Number[]|undefined} down - position of the mouse when 'mousedown' event occurred
-		 * @param {Boolean} mouseDownAndMove - true if 'mouseonmove' and 'mousedown' are true
+		 * Modifies the `Structure` object and returns it.
+		 * @param {Structure} base - `Structure` object to be modified,
+		 * @param {StructureCluster} mod - `StructureCluster` object containing appropriate `Structure` objects,
+		 * @param {number[]} mousePos - position of the mouse when 'onMouseUp' event occurred
+		 * @param {number[]|undefined} down - position of the mouse when 'onMouseDown' event occurred
+		 * @param {boolean} mouseDownAndMove - true if 'onMouseMove' and 'onMouseDown' are true
 		 * @returns {Structure}
 		 */
 		service.modifyStructure = function (base, mod, mousePos, down, mouseDownAndMove) {
-			var firstAtom, vector,
+			var vector, firstAtom,
 				found = false,
 				isInsideCircle,
 				origin = base.getOrigin();
@@ -3944,22 +3954,26 @@
 			/**
 			* Recursively looks for an atom to modify.
 			* @param {Atom[]|Bond[]} struct - array of atoms or array of bonds,
-			* @param {Number[]} pos - absolute coordinates of an atom
+			* @param {number[]} pos - absolute coordinates of an atom
 			*/
 			function modStructure(struct, pos) {
-				var i, absPos, aux;
+				var i, absPos, aux, obj;
 				for(i = 0; i < struct.length; i += 1) {
-					if (struct[i] instanceof Arrow) {
-						continue;
-					}
 
-					aux = struct[i] instanceof Atom ? struct[i]: struct[i].getAtom();
+					obj = struct[i];
 
-					if (struct[i] instanceof Atom) { firstAtom = struct[i]; } // remember first atom in each structure
-
-					absPos = [aux.getCoords("x") + pos[0], aux.getCoords("y") + pos[1]];
+					if (!(obj instanceof Atom || obj instanceof Bond)) { continue; }
 
 					if (found) { break; }
+
+					if (obj instanceof Atom) {
+						firstAtom = struct[i];
+						aux = obj;
+					} else {
+						aux = obj.getAtom();
+					}
+
+					absPos = [aux.getCoords("x") + pos[0], aux.getCoords("y") + pos[1]];
 
 					isInsideCircle = Utils.insideCircle(absPos, mousePos, Const.CIRC_R);
 
@@ -3991,33 +4005,37 @@
 				}
 
 				/**
-				* Updates atom.
+				* Updates `Atom` object.
 				* @param {number[]} vector - indicates direction, in which the change should be made,
-				* @param {Atom} atom - Atom object that is going to be modified
+				* @param {Atom} atom - `Atom` object that is going to be modified
 				*/
 				function updateAtom(vector, atom) {
 					var name = mod.getName(), // gets name of the `StructureCluster `object
 					  size = mod.getRingSize(), // gets size of the ring (defaults to 0 for non-rings)
 						bond, angle, nextAtom, rotVect;
 					if (size > 1) {
-						// if we are dealing with a ring
+						/*
+						* if we are dealing with a ring
+						*/
 						angle = mod.getAngle(); // gets angle between bonds inside the ring
 						rotVect = Utils.rotVectCCW(vector, angle / 2); // adjust to angle bisector
 						// define next `Atom` object
 						nextAtom = new Atom(rotVect, [], { in: [{ vector: angular.copy(rotVect), multiplicity: 1 }] });
-						// attach it to the starting `atom`
+						// attach it to the starting `Atom` object
 						atom.addBond(new Bond("single", nextAtom));
-						// update `attachedBonds` arrays
+						// update `attachedBonds` array
 						atom.attachBond("out", { vector: angular.copy(rotVect), multiplicity: 1 });
-						// recursively generate the rest
+						// recursively generate the rest of the ring
 						Structures.generateRing(nextAtom, size, angle, atom);
 					} else {
-						// if we are dealing with a bond,
+						/*
+						* if we are dealing with a bond
+						*/
 						// generate `Bond` object in the direction indicated by `vector`
 						bond = Structures.generateBond(vector, name, 1);
 						// attach it to the starting `atom`
 						atom.addBond(bond);
-						// update `attachedBonds` arrays
+						// update `attachedBonds` array
 						atom.attachBond("out", { vector: angular.copy(vector), multiplicity: 1 });
 					}
 				}
@@ -4307,7 +4325,9 @@
 			return svg;
 
 			/**
-			 * Generates string from the output array and wraps each line with 'path' element, each circle with 'circle' element, etc.
+			 * Generates string from the output array and wraps each line with 'path' element,
+			 * each circle with 'circle' element, etc.
+			 * @returns {Object}
 			 */
 			function genElements() {
 				var result = { full: "", mini: "" };
@@ -4340,7 +4360,7 @@
 						selection = obj;
 						absPosStart = Utils.addVectors(origin, selection.getOrigin());
 						absPosEnd = selection.getCurrent();
-						rects.push(calcRect(absPosStart, absPosEnd));
+						rects.push((absPosStart, absPosEnd));
 					} else if (obj instanceof Atom) {
 						atom = obj;
 						absPos = Utils.addVectors(origin, atom.getCoords());
@@ -4448,7 +4468,7 @@
 		}
 
 		/**
-		* Calculates data for the svg instructions in `path` element.
+		* Calculates data for the svg instructions in `path` element for arrow.
 		* @param {number[]} start - start coordinates (absolute) of the arrow,
 		* @param {number[]} end - end coordinates (absolute) of the arrow,
 		* @param {string} type - arrow type (one-way, etc.),
@@ -4457,7 +4477,8 @@
 		function calcArrow(start, end, type) {
 			var vectCoords = [end[0] - start[0], end[1] - start[1]],
 				perpVectCoordsCW = [-vectCoords[1], vectCoords[0]],
-				perpVectCoordsCCW = [vectCoords[1], -vectCoords[0]], endMarkerStart, startMarkerStart, M1, M2, L1, L2, L3, L4;
+				perpVectCoordsCCW = [vectCoords[1], -vectCoords[0]],
+				endMarkerStart, startMarkerStart, M1, M2, L1, L2, L3, L4;
 			if (type === "one-way-arrow") {
 				endMarkerStart = [start[0] + vectCoords[0] * ARROW_START, start[1] + vectCoords[1] * ARROW_START];
 				L1 = Utils.addVectors(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
@@ -4495,6 +4516,12 @@
 			}
 		}
 
+		/**
+		* Calculates data for the svg instructions in `path` element for double bond.
+		* @param {number[]} start - start coordinates (absolute) of the arrow,
+		* @param {number[]} end - end coordinates (absolute) of the arrow,
+		* @returns {Array}
+		*/
 		function calcDoubleBondCoords(start, end) {
 			var vectCoords = [end[0] - start[0], end[1] - start[1]],
 				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
@@ -4506,6 +4533,12 @@
 			return ["M", M1, "L", L1, "M", M2, "L", L2];
 		}
 
+		/**
+		* Calculates data for the svg instructions in `path` element for triple bond.
+		* @param {number[]} start - start coordinates (absolute) of the arrow,
+		* @param {number[]} end - end coordinates (absolute) of the arrow,
+		* @returns {Array}
+		*/
 		function calcTripleBondCoords(start, end) {
 			var vectCoords = [end[0] - start[0], end[1] - start[1]],
 				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
@@ -4517,6 +4550,12 @@
 			return ["M", M1, "L", L1, "M", start, "L", end, "M", M2, "L", L2];
 		}
 
+		/**
+		* Calculates data for the svg instructions in `path` element for wedge bond.
+		* @param {number[]} start - start coordinates (absolute) of the arrow,
+		* @param {number[]} end - end coordinates (absolute) of the arrow,
+		* @returns {Array}
+		*/
 		function calcWedgeBondCoords(start, end) {
 			var vectCoords = [end[0] - start[0], end[1] - start[1]],
 				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
@@ -4526,6 +4565,12 @@
 			return ["wedge", "M", start, "L", L1, "L", L2, "Z"];
 		}
 
+		/**
+		* Calculates data for the svg instructions in `path` element for dash bond.
+		* @param {number[]} start - start coordinates (absolute) of the arrow,
+		* @param {number[]} end - end coordinates (absolute) of the arrow,
+		* @returns {Array}
+		*/
 		function calcDashBondCoords(start, end) {
 			var i, max = 7, factor = BETWEEN_DBL_BONDS / max, M, L, currentEnd = start, result = [],
 				vectCoords = [end[0] - start[0], end[1] - start[1]],

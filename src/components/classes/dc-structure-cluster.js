@@ -15,13 +15,15 @@
 		* @param {string} name - name of the cluster,
 		* @param {Structure[]} defs - array of Structure objects belonging to the cluster,
 		* @param {number} ringSize - size of the associated ring, defaults to 0 for acyclic structures,
-		* @param {number} angle - angle between bonds in cyclic structures
+		* @param {number} angle - angle between bonds in cyclic structures,
+		* @param {number} mult - multiplicity of the associated bond (undefined for cyclic structures)
 		*/
-		function StructureCluster(name, defs, ringSize, angle) {
+		function StructureCluster(name, defs, ringSize, angle, mult) {
 			this.name = name;
 			this.defs = defs;
-			this.ringSize = ringSize || 0;
+			this.ringSize = ringSize;
 			this.angle = angle;
+			this.multiplicity = mult;
 			this.defaultStructure = defs[0];
 		}
 
@@ -47,6 +49,14 @@
 		*/
 		StructureCluster.prototype.getRingSize = function () {
 			return this.ringSize;
+		};
+
+		/**
+		* Gets multiplicity of the associated bond. Undefined for cyclic structures.
+		* @returns {number}
+		*/
+		StructureCluster.prototype.getMult = function () {
+			return this.multiplicity;
 		};
 
 		/**

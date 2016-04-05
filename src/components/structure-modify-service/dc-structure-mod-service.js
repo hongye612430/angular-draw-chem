@@ -26,16 +26,16 @@
 			Selection = DCSelection.Selection;
 
 		/**
-		 * Modifies the structure.
-		 * @param {Structure} base - structure to be modified,
-		 * @param {StructureCluster} mod - StructureCluster containing appropriate Structure objects,
-		 * @param {Number[]} mousePos - position of the mouse when 'mouseup' event occurred
-		 * @param {Number[]|undefined} down - position of the mouse when 'mousedown' event occurred
-		 * @param {Boolean} mouseDownAndMove - true if 'mouseonmove' and 'mousedown' are true
+		 * Modifies the `Structure` object and returns it.
+		 * @param {Structure} base - `Structure` object to be modified,
+		 * @param {StructureCluster} mod - `StructureCluster` object containing appropriate `Structure` objects,
+		 * @param {number[]} mousePos - position of the mouse when 'onMouseUp' event occurred
+		 * @param {number[]|undefined} down - position of the mouse when 'onMouseDown' event occurred
+		 * @param {boolean} mouseDownAndMove - true if 'onMouseMove' and 'onMouseDown' are true
 		 * @returns {Structure}
 		 */
 		service.modifyStructure = function (base, mod, mousePos, down, mouseDownAndMove) {
-			var firstAtom, vector,
+			var vector, firstAtom,
 				found = false,
 				isInsideCircle,
 				origin = base.getOrigin();
@@ -47,22 +47,26 @@
 			/**
 			* Recursively looks for an atom to modify.
 			* @param {Atom[]|Bond[]} struct - array of atoms or array of bonds,
-			* @param {Number[]} pos - absolute coordinates of an atom
+			* @param {number[]} pos - absolute coordinates of an atom
 			*/
 			function modStructure(struct, pos) {
-				var i, absPos, aux;
+				var i, absPos, aux, obj;
 				for(i = 0; i < struct.length; i += 1) {
-					if (struct[i] instanceof Arrow) {
-						continue;
-					}
 
-					aux = struct[i] instanceof Atom ? struct[i]: struct[i].getAtom();
+					obj = struct[i];
 
-					if (struct[i] instanceof Atom) { firstAtom = struct[i]; } // remember first atom in each structure
-
-					absPos = [aux.getCoords("x") + pos[0], aux.getCoords("y") + pos[1]];
+					if (!(obj instanceof Atom || obj instanceof Bond)) { continue; }
 
 					if (found) { break; }
+
+					if (obj instanceof Atom) {
+						firstAtom = struct[i];
+						aux = obj;
+					} else {
+						aux = obj.getAtom();
+					}
+
+					absPos = [aux.getCoords("x") + pos[0], aux.getCoords("y") + pos[1]];
 
 					isInsideCircle = Utils.insideCircle(absPos, mousePos, Const.CIRC_R);
 
@@ -94,34 +98,39 @@
 				}
 
 				/**
-				* Updates atom.
+				* Updates `Atom` object.
 				* @param {number[]} vector - indicates direction, in which the change should be made,
-				* @param {Atom} atom - Atom object that is going to be modified
+				* @param {Atom} atom - `Atom` object that is going to be modified
 				*/
 				function updateAtom(vector, atom) {
 					var name = mod.getName(), // gets name of the `StructureCluster `object
 					  size = mod.getRingSize(), // gets size of the ring (defaults to 0 for non-rings)
+						mult = mod.getMult(), // gets multiplicity of the bond (undefined for rings)
 						bond, angle, nextAtom, rotVect;
 					if (size > 1) {
-						// if we are dealing with a ring
+						/*
+						* if we are dealing with a ring
+						*/
 						angle = mod.getAngle(); // gets angle between bonds inside the ring
 						rotVect = Utils.rotVectCCW(vector, angle / 2); // adjust to angle bisector
 						// define next `Atom` object
 						nextAtom = new Atom(rotVect, [], { in: [{ vector: angular.copy(rotVect), multiplicity: 1 }] });
-						// attach it to the starting `atom`
+						// attach it to the starting `Atom` object
 						atom.addBond(new Bond("single", nextAtom));
-						// update `attachedBonds` arrays
+						// update `attachedBonds` array
 						atom.attachBond("out", { vector: angular.copy(rotVect), multiplicity: 1 });
-						// recursively generate the rest
+						// recursively generate the rest of the ring
 						Structures.generateRing(nextAtom, size, angle, atom);
 					} else {
-						// if we are dealing with a bond,
+						/*
+						* if we are dealing with a bond
+						*/
 						// generate `Bond` object in the direction indicated by `vector`
-						bond = Structures.generateBond(vector, name, 1);
+						bond = Structures.generateBond(vector, name, mult);
 						// attach it to the starting `atom`
 						atom.addBond(bond);
-						// update `attachedBonds` arrays
-						atom.attachBond("out", { vector: angular.copy(vector), multiplicity: 1 });
+						// update `attachedBonds` array
+						atom.attachBond("out", { vector: angular.copy(vector), multiplicity: mult });
 					}
 				}
 
@@ -216,7 +225,7 @@
 		}
 
 		/**
-		 * Looks for an atom Object (or Objects if more than one has the specified coords) and deletes it.
+		 * Looks for an `Atom` object (or objects if more than one has the specified coords) and deletes it (them).
 		 * Attaches items in its 'bonds' array directly to 'structure' array in Structure object.
 		 * @params {Structure} structure - a Structure object to modify,
 		 * @params {Number[]} mouseCoords - coordinates of the mouse pointer (where 'mouseup occurred')
@@ -319,10 +328,10 @@
 		}
 
 		/**
-		 * Checks if the mouse pointer is within a circle of an atom.
-		 * @param {Structure} structure - a Structure object on which search is performed
-		 * @param {Number[]} position - set of coordinates against which the search is performed
-		 * @returns {Atom}
+		 * Checks if supplied coordinates are within a circle of an atom.
+		 * @param {Structure} structure - a `Structure` object on which search is performed,
+		 * @param {number[]} position - set of coordinates against which the search is performed,
+		 * @returns {Object}
 		 */
 		service.isWithin = function (structure, position) {
 			var found = false,
@@ -350,7 +359,7 @@
 					}
 				}
 			}
-		}
+		};
 
 		return service;
 	}

@@ -239,7 +239,7 @@
 					multiplicity = bondStr.getMultiplicity();
 				service[name + "Bond"] = function () {
 					var defs = service.generateBonds(name, multiplicity),
-					  cluster = new StructureCluster(name, defs);
+					  cluster = new StructureCluster(name, defs, 0, 0, multiplicity);
 					return cluster;
 				};
 			});
