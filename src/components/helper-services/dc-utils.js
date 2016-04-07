@@ -40,7 +40,10 @@
 		};
 
 		/**
-		*
+		* Multiplies a vector by a scalar.
+		* @param {number[]} v - vector,
+		* @param {number} scalar - scalar,
+		* @returns {number[]}
 		*/
 		service.multVectByScalar = function (v, scalar) {
 			return [v[0] * scalar, v[1] * scalar];
@@ -97,7 +100,12 @@
 		* @returns {string}
 		*/
 		service.invertGroup = function(str) {
-			var i, match = str.match(/[A-Z][a-z\d]*/g), output = "";
+			var i, match, output = "";
+			if (typeof str === "undefined") {
+				match = "";
+			} else {
+				match = str.match(/[A-Z][a-z\d]*/g);
+			}
 			if (match === null) { return str; }
 			for (i = match.length - 1; i >= 0; i -= 1) {
 				output += match[i];

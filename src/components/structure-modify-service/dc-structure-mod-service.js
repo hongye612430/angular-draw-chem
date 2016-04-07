@@ -135,6 +135,7 @@
 						).foundAtom;
 						if (typeof foundAtom !== "undefined") {
 							bond.getAtom().setAsOrphan();
+							foundAtom.attachBond("in", { vector: vector, multiplicity: mult })
 						}
 						// attach it to the starting `atom`
 						atom.addBond(bond);

@@ -122,6 +122,7 @@
         if (Flags.selected === "label") {
           atom.setLabel(angular.copy(scope.chosenLabel));
         } else if (Flags.selected === "customLabel") {
+					Flags.customLabel = typeof Flags.customLabel === "undefined" ? "": Flags.customLabel;
           atom.setLabel(new Label(Flags.customLabel, 0));
         }
 

@@ -25,6 +25,11 @@ describe("DrawChemUtils service tests", function () {
 		expect(v).toEqual([105, 105]);
 	});
 
+	it("should multiply vector by a scalar", function () {
+		var v = Utils.multVectByScalar([5, 10], 5);
+		expect(v).toEqual([25, 50]);
+	});
+
 	it("should compare two vectors", function () {
 		var test = Utils.compareVectors([25.234, 25.543], [25.2349, 25.54321], 2);
 		expect(test).toEqual(true);
@@ -74,6 +79,10 @@ describe("DrawChemUtils service tests", function () {
 		expect(group).toEqual("BnO");
 		group = Utils.invertGroup("SCN");
 		expect(group).toEqual("NCS");
+		group = Utils.invertGroup(undefined);
+		expect(group).toEqual("");
+		group = Utils.invertGroup("");
+		expect(group).toEqual("");
 		group = Utils.invertGroup("Sm");
 		expect(group).toEqual("Sm");
 		//group = Utils.invertGroup("OTBS");
