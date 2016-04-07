@@ -237,7 +237,7 @@ describe("DrawChemEditor directive tests - part2", function () {
 							styleBase + styleExpanded +
 						"</style>" +
 						"<path d=\"M 98.00 98.00 L 115.32 108.00 L 115.32 128.00 L 98.00 138.00 L 80.68 128.00 L 80.68 108.00 L 98.00 98.00 \"></path>" +
-						"<path d=\"M 115.32 108.00 L 132.64 98.00 \"></path>" +
+						"<path d=\"M 115.32 108.00 L 128.31 100.50 \"></path>" +
 						"<path d=\"M 98.00 98.00 L 98.00 78.00 \"></path>" +
 						"<circle class=\"atom\" cx=\"98.00\" cy=\"98.00\" r=\"2.40\"></circle>" +
 						"<circle class=\"atom\" cx=\"115.32\" cy=\"108.00\" r=\"2.40\"></circle>" +
@@ -248,9 +248,9 @@ describe("DrawChemEditor directive tests - part2", function () {
 						"<circle class=\"atom\" cx=\"98.00\" cy=\"98.00\" r=\"2.40\"></circle>" +
 						"<circle class=\"atom\" cx=\"132.64\" cy=\"98.00\" r=\"2.40\"></circle>" +
 						"<circle class=\"atom\" cx=\"98.00\" cy=\"78.00\" r=\"2.40\"></circle>" +
-						"<polygon class=\"text\" points=\"134.97 89.31 139.00 91.64 141.33 95.67 141.33 100.33 139.00 104.36 134.97 106.69 130.31 106.69 126.28 104.36 123.95 100.33 123.95 95.67 126.28 91.64 130.31 89.31 \"></polygon>" +
-						"<text dy=\"0.2125em\" x=\"129.14\" y=\"99.8\" atomx=\"132.64\" atomy=\"98\" text-anchor=\"start\">" +
-							"<tspan>O</tspan><tspan>H</tspan></text>" +
+						"<text dy=\"0.2125em\" x=\"129.14\" y=\"99.80\" atomx=\"132.64\" atomy=\"98.00\" text-anchor=\"start\">" +
+						  "<tspan>O</tspan><tspan>H</tspan>" +
+						"</text>" +
 						"<circle class=\"arom\" cx=\"98.00\" cy=\"118.00\" r=\"9.00\"></circle>" +
 					"</g>" +
 				"</svg>"

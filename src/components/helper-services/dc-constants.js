@@ -40,6 +40,9 @@
 			// angle between possible bonds when adding a new bond (in degrees)
 			service.FREQ = 15;
 
+			//
+			service.PUSH = 0.25;
+
 			// default angle between two bonds (in degrees)
 			service.ANGLE = 120;
 

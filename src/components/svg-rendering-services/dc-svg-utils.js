@@ -74,7 +74,7 @@
     service.generateLabels = function (labels, obj) {
       labels.forEach(function (label) {
         var aux =
-          drawDodecagon(label) +
+          //drawDodecagon(label) +
           "<text dy='0.2125em' " +
             "x='" + label.labelX.toFixed(2) + "' " +
             "y='" + label.labelY.toFixed(2) + "' " +
@@ -86,7 +86,7 @@
         obj.mini += aux;
       });
 
-			function drawDodecagon(label) {
+			/*function drawDodecagon(label) {
 	      var i, factor,result = [];
 	      factor = 0.5 * label.height / BOND_LENGTH;
 	      for (i = 1; i < BONDS.length; i += 2) {
@@ -102,7 +102,7 @@
 					});
 					return str;
 				}
-	    }
+	    }*/
 
 	    function genTextAnchor(mode) {
 	      if (mode === "rl") {

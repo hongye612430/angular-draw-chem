@@ -208,6 +208,7 @@
 
 			atom.attachBond("out", { vector: angular.copy(rotVect), multiplicity: 1 });
 			if (depth === 1) {
+				atom.setAsOrphan();
 				firstAtom.attachBond("in", { vector: angular.copy(atom.getCoords()), multiplicity: 1 });
 				return;
 			}

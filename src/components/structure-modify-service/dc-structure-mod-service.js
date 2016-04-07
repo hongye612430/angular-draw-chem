@@ -64,6 +64,7 @@
 						aux = obj;
 					} else {
 						aux = obj.getAtom();
+						if (aux.isOrphan()) { continue; }
 					}
 
 					absPos = [aux.getCoords("x") + pos[0], aux.getCoords("y") + pos[1]];
@@ -75,7 +76,7 @@
 						// and if a valid atom has not already been found
 						vector = chooseDirectionAutomatically(aux);
 						if (vector !== "full atom") {
-						  updateAtom(vector, aux);
+						  updateAtom(vector, aux, absPos);
 						}
 						//updateDecorate(modStr, absPos);
 						found = true;
@@ -87,7 +88,7 @@
 						// but 'mouseup' was not
 						// and if a valid atom has not already been found
 						vector = chooseDirectionManually(aux);
-						updateAtom(vector, aux);
+						updateAtom(vector, aux, absPos);
 						//updateDecorate(modStr, absPos);
 						found = true;
 						return base;
@@ -102,12 +103,12 @@
 				* @param {number[]} vector - indicates direction, in which the change should be made,
 				* @param {Atom} atom - `Atom` object that is going to be modified
 				*/
-				function updateAtom(vector, atom) {
+				function updateAtom(vector, atom, absPos) {
 					var name = mod.getName(), // gets name of the `StructureCluster `object
 					  size = mod.getRingSize(), // gets size of the ring (defaults to 0 for non-rings)
 						mult = mod.getMult(), // gets multiplicity of the bond (undefined for rings)
-						bond, angle, nextAtom, rotVect;
-					if (size > 1) {
+						bond, angle, nextAtom, rotVect, foundAtom;
+					if (size > 0) {
 						/*
 						* if we are dealing with a ring
 						*/
@@ -127,6 +128,14 @@
 						*/
 						// generate `Bond` object in the direction indicated by `vector`
 						bond = Structures.generateBond(vector, name, mult);
+						// check if an `Atom` object laready exists at this coords
+						foundAtom = service.isWithin(
+							base,
+							Utils.addVectors(absPos, vector)
+						).foundAtom;
+						if (typeof foundAtom !== "undefined") {
+							bond.getAtom().setAsOrphan();
+						}
 						// attach it to the starting `atom`
 						atom.addBond(bond);
 						// update `attachedBonds` array
@@ -194,6 +203,7 @@
 			function chooseDirectionAutomatically(current) {
 				var inBonds = current.getAttachedBonds("in"), // attached incoming bonds
 				  outBonds = current.getAttachedBonds("out"), // attached outcoming bonds
+					size = mod.getRingSize(), // check if structure is cyclic
 					possibleBonds, firstInBond, firstOutBond, angle, vect, vectAux;
 
 				if (typeof inBonds !== "undefined" && typeof outBonds !== "undefined") {
@@ -211,7 +221,11 @@
 						vect = vectAux;
 					}
 				} else if (typeof inBonds !== "undefined") {
-					vect = Utils.rotVectCCW(inBonds[0].vector, Const.ANGLE / 2);
+					if (size > 0) {
+						vect = angular.copy(inBonds[0].vector);
+					} else {
+					  vect = Utils.rotVectCCW(inBonds[0].vector, Const.ANGLE / 2);
+					}
 				} else if (typeof outBonds !== "undefined") {
 					vect = Utils.rotVectCCW(outBonds[0].vector, Const.ANGLE);
 				} else {
@@ -343,12 +357,16 @@
 			return foundObj;
 
 			function check(struct, pos) {
-				var i, absPos, aux;
+				var i, absPos, aux, obj;
 				for(i = 0; i < struct.length; i += 1) {
-					if (struct[i] instanceof Arrow) {
-						continue;
+					obj = struct[i];
+					if (!(obj instanceof Atom || obj instanceof Bond)) { continue; }
+					if (obj instanceof Atom) {
+						aux = obj;
+					} else {
+						aux = obj.getAtom();
+						if (aux.isOrphan()) { continue; }
 					}
-					aux = struct[i] instanceof Atom ? struct[i]: struct[i].getAtom();
 					absPos = [aux.getCoords("x") + pos[0], aux.getCoords("y") + pos[1]];
 					if (!found && Utils.insideCircle(absPos, position, Const.CIRC_R)) {
 						found = true;

@@ -11,10 +11,11 @@
 		"DCSelection",
 		"DrawChemConst",
 		"DrawChemUtils",
-		"DrawChemSvgUtils"
+		"DrawChemSvgUtils",
+		"DrawChemModStructure"
 	];
 
-	function DrawChemSvgRenderer(DCSvg, DCBond, DCAtom, DCArrow, DCSelection, Const, Utils, SvgUtils) {
+	function DrawChemSvgRenderer(DCSvg, DCBond, DCAtom, DCArrow, DCSelection, Const, Utils, SvgUtils, ModStructure) {
 
 		var service = {},
 		  BETWEEN_DBL_BONDS = Const.BETWEEN_DBL_BONDS,
@@ -76,7 +77,7 @@
 		  function parseInput(input) {
 				var output = [], circles = [], labels = [], rects = [],
           i, absPos, absPosStart, absPosEnd, len,
-          selection, atom, arrow, obj,
+          selection, atom, arrow, obj, push,
 					origin = input.getOrigin(),
           minMax = { minX: origin[0], maxX: origin[0], minY: origin[1], maxY: origin[1] },
 					circR = Const.CIRC_R;
@@ -87,15 +88,16 @@
 						selection = obj;
 						absPosStart = Utils.addVectors(origin, selection.getOrigin());
 						absPosEnd = selection.getCurrent();
-						rects.push((absPosStart, absPosEnd));
+						rects.push(calcRect(absPosStart, absPosEnd));
 					} else if (obj instanceof Atom) {
 						atom = obj;
 						absPos = Utils.addVectors(origin, atom.getCoords());
 						SvgUtils.updateLabel(labels, absPos, atom);
 						updateMinMax(absPos);
+						push = typeof atom.getLabel() !== "undefined";
 						len = output.push(["M", absPos]);
 						circles.push({ selected: atom.selected, circle: [absPos[0], absPos[1], circR] });
-						connect(absPos, atom.getBonds(), output[len - 1], atom.isSelected());
+						connect(absPos, atom.getBonds(), output[len - 1], atom.isSelected(), push);
 					} else if (obj instanceof Arrow) {
 						arrow = obj;
 						absPosStart = Utils.addVectors(origin, arrow.getOrigin());
@@ -123,7 +125,7 @@
 				* @param {string|number[]} currentLine - an array of coordinates with 'M' and 'L' commands,
         * @param {boolean} selected - true if object is marked as selected
 				*/
-				function connect(prevAbsPos, bonds, currentLine, selected) {
+				function connect(prevAbsPos, bonds, currentLine, selected, push) {
 					var i, absPos, atom, bondType;
 					for (i = 0; i < bonds.length; i += 1) {
 						atom = bonds[i].getAtom();
@@ -136,9 +138,9 @@
 						SvgUtils.updateLabel(labels, absPos, atom);
 						circles.push({ selected: selected, circle: [absPos[0], absPos[1], circR] });
 						if (i === 0) {
-							drawLine(prevAbsPos, absPos, bondType, atom, "continue", selected);
+							drawLine(prevAbsPos, absPos, bondType, atom, "continue", selected, push);
 						} else {
-							drawLine(prevAbsPos, absPos, bondType, atom, "begin", selected);
+							drawLine(prevAbsPos, absPos, bondType, atom, "begin", selected, push);
 						}
 					}
 				}
@@ -152,29 +154,58 @@
         * @param {string} mode - indicates if this should continue this line ('continue') or begin a new one ('begin'),
         * @param {boolean} selected - true if object is marked as selected
 				*/
-				function drawLine(prevAbsPos, absPos, bondType, atom, mode, selected) {
-					var newLen = output.length;
+				function drawLine(prevAbsPos, absPos, bondType, atom, mode, selected, push) {
+					var newLen = output.length, foundAtom,
+					  pushVector = Utils.addVectors(
+							prevAbsPos,
+							Utils.multVectByScalar(atom.getCoords(), Const.PUSH)
+						),
+						newPush = typeof atom.getLabel() !== "undefined",
+						newPushVector = Utils.addVectors(
+							prevAbsPos,
+							Utils.multVectByScalar(atom.getCoords(), 1 - Const.PUSH)
+						);
+					if (atom.isOrphan()) {
+						foundAtom = ModStructure.isWithin(input, absPos).foundAtom;
+						newPush = typeof foundAtom.getLabel() !== "undefined";
+					}
 					if (bondType === "single") {
 						if (mode === "continue") {
+							if (push) {
+								output[newLen - 1].push("M");
+								output[newLen - 1].push(pushVector);
+							}
 							output[newLen - 1].push("L");
-							output[newLen - 1].push(absPos);
+							if (newPush) {
+								output[newLen - 1].push(newPushVector);
+							} else {
+								output[newLen - 1].push(absPos);
+							}
 						} else if (mode === "begin") {
-							newLen = output.push(["M", prevAbsPos, "L", absPos]);
+							if (push && newPush) {
+								newLen = output.push(["M", pushVector, "L", newPushVector]);
+							} else if (push) {
+								newLen = output.push(["M", pushVector, "L", absPos]);
+							} else if (newPush) {
+								newLen = output.push(["M", prevAbsPos, "L", newPushVector]);
+							} else {
+							  newLen = output.push(["M", prevAbsPos, "L", absPos]);
+							}
 						}
 					} else if (bondType === "double") {
-						output.push(calcDoubleBondCoords(prevAbsPos, absPos));
+						output.push(calcDoubleBondCoords(prevAbsPos, absPos, push, newPush));
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "triple") {
-						output.push(calcTripleBondCoords(prevAbsPos, absPos));
+						output.push(calcTripleBondCoords(prevAbsPos, absPos, push, newPush));
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "wedge") {
-						output.push(calcWedgeBondCoords(prevAbsPos, absPos));
+						output.push(calcWedgeBondCoords(prevAbsPos, absPos, push, newPush));
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "dash") {
-						output.push(calcDashBondCoords(prevAbsPos, absPos));
+						output.push(calcDashBondCoords(prevAbsPos, absPos, push, newPush));
 						newLen = output.push(["M", absPos]);
 					}
-					connect(absPos, atom.getBonds(), output[newLen - 1], selected);
+					connect(absPos, atom.getBonds(), output[newLen - 1], selected, newPush);
 				}
 
 				function updateMinMax(absPos) {
@@ -245,64 +276,104 @@
 
 		/**
 		* Calculates data for the svg instructions in `path` element for double bond.
-		* @param {number[]} start - start coordinates (absolute) of the arrow,
-		* @param {number[]} end - end coordinates (absolute) of the arrow,
+		* @param {number[]} start - start coordinates (absolute) of the atom,
+		* @param {number[]} end - end coordinates (absolute) of the atom,
 		* @returns {Array}
 		*/
-		function calcDoubleBondCoords(start, end) {
+		function calcDoubleBondCoords(start, end, push, newPush) {
 			var vectCoords = [end[0] - start[0], end[1] - start[1]],
+			  aux = Utils.multVectByScalar(vectCoords, Const.PUSH),
 				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
 				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
 				M1 = Utils.addVectors(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
 				L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
 				M2 = Utils.addVectors(start, perpVectCoordsCW, BETWEEN_DBL_BONDS),
 				L2 = Utils.addVectors(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+
+			if (push) {
+				doWithManyVectors("add", [M1, M2], aux);
+			}
+			if (newPush) {
+				doWithManyVectors("subtract", [L1, L2], aux);
+			}
+
 			return ["M", M1, "L", L1, "M", M2, "L", L2];
 		}
 
 		/**
 		* Calculates data for the svg instructions in `path` element for triple bond.
-		* @param {number[]} start - start coordinates (absolute) of the arrow,
-		* @param {number[]} end - end coordinates (absolute) of the arrow,
+		* @param {number[]} start - start coordinates (absolute) of the atom,
+		* @param {number[]} end - end coordinates (absolute) of the atom,
 		* @returns {Array}
 		*/
-		function calcTripleBondCoords(start, end) {
+		function calcTripleBondCoords(start, end, push, newPush) {
 			var vectCoords = [end[0] - start[0], end[1] - start[1]],
+			  aux = Utils.multVectByScalar(vectCoords, Const.PUSH),
 				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
 				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
 				M1 = Utils.addVectors(start, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
 				L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
 				M2 = Utils.addVectors(start, perpVectCoordsCW, BETWEEN_TRP_BONDS),
 				L2 = Utils.addVectors(end, perpVectCoordsCW, BETWEEN_TRP_BONDS);
+
+			if (push) {
+				doWithManyVectors("add", [M1, M2, start], aux);
+			}
+			if (newPush) {
+				doWithManyVectors("subtract", [L1, L2, end], aux);
+			}
+
 			return ["M", M1, "L", L1, "M", start, "L", end, "M", M2, "L", L2];
 		}
 
 		/**
 		* Calculates data for the svg instructions in `path` element for wedge bond.
-		* @param {number[]} start - start coordinates (absolute) of the arrow,
-		* @param {number[]} end - end coordinates (absolute) of the arrow,
+		* @param {number[]} start - start coordinates (absolute) of the atom,
+		* @param {number[]} end - end coordinates (absolute) of the atom,
 		* @returns {Array}
 		*/
-		function calcWedgeBondCoords(start, end) {
+		function calcWedgeBondCoords(start, end, push, newPush) {
 			var vectCoords = [end[0] - start[0], end[1] - start[1]],
+			  aux = Utils.multVectByScalar(vectCoords, Const.PUSH),
 				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
 				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
 				L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
 				L2 = Utils.addVectors(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+
+			if (push) { start = Utils.addVectors(start, aux); }
+
+			if (newPush) {
+				end = Utils.subtractVectors(end, aux);
+				L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
+				L2 = Utils.addVectors(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+			}
+
 			return ["wedge", "M", start, "L", L1, "L", L2, "Z"];
 		}
 
 		/**
 		* Calculates data for the svg instructions in `path` element for dash bond.
-		* @param {number[]} start - start coordinates (absolute) of the arrow,
-		* @param {number[]} end - end coordinates (absolute) of the arrow,
+		* @param {number[]} start - start coordinates (absolute) of the atom,
+		* @param {number[]} end - end coordinates (absolute) of the atom,
 		* @returns {Array}
 		*/
-		function calcDashBondCoords(start, end) {
-			var i, max = 7, factor = BETWEEN_DBL_BONDS / max, M, L, currentEnd = start, result = [],
-				vectCoords = [end[0] - start[0], end[1] - start[1]],
+		function calcDashBondCoords(start, end, push, newPush) {
+			var i, max = 10, factor = BETWEEN_DBL_BONDS / max, M, L, result = [],
+			  vectCoords = [end[0] - start[0], end[1] - start[1]],
+			  aux = Utils.multVectByScalar(vectCoords, Const.PUSH), currentEnd = start,
 				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
 				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]];
+
+			if (push) {
+				currentEnd = Utils.addVectors(start, aux);
+				vectCoords = Utils.subtractVectors(vectCoords, aux);
+				max -= 2;
+			}
+
+			if (newPush) {
+				vectCoords = Utils.subtractVectors(vectCoords, aux);
+				max -= 2;
+			}
 
 			for (i = max; i > 0; i -= 1) {
 				factor = factor + BETWEEN_DBL_BONDS / max;
@@ -352,6 +423,21 @@
 				height = 0;
 			}
 			return { class: "selection", rect: [startX, startY, width, height] };
+		}
+
+		function doWithManyVectors(what, vectors, u) {
+			var aux;
+			vectors.forEach(function (v) {
+				if (what === "add") {
+					aux = Utils.addVectors(v, u);
+					v[0] = aux[0];
+					v[1] = aux[1];
+				} else if (what === "subtract") {
+					aux = Utils.subtractVectors(v, u);
+					v[0] = aux[0];
+					v[1] = aux[1];
+				}
+			});
 		}
 
 		return service;

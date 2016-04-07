@@ -39,6 +39,20 @@
 		};
 
 		/**
+		* Marks `Atom` object as orphan.
+		*/
+		Atom.prototype.setAsOrphan = function () {
+			this.orphan = true;
+		};
+
+		/**
+		* Checks if this `Atom` object is marked as orphan.
+		*/
+		Atom.prototype.isOrphan = function () {
+			return !!this.orphan;
+		};
+
+		/**
 		* Unmarks selection.
 		*/
 		Atom.prototype.deselect = function () {

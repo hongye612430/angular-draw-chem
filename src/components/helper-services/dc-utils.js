@@ -40,6 +40,13 @@
 		};
 
 		/**
+		*
+		*/
+		service.multVectByScalar = function (v, scalar) {
+			return [v[0] * scalar, v[1] * scalar];
+		};
+
+		/**
 		 * Compares two vectors. Returns false if at least one of them is undefined or if any pair of the coordinates is not equal.
 		 * Returns true if they are equal.
 		 * @param {number[]} v1 - first vector,
