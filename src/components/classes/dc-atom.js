@@ -20,7 +20,6 @@
 			this.coords = coords;
 			this.bonds = bonds;
 			this.attachedBonds = attachedBonds || {};
-			this.label;
 		}
 
 		/**
@@ -133,6 +132,14 @@
 		 */
 		Atom.prototype.getLabel = function () {
 			return this.label;
+		};
+
+		/**
+		 * Sets` Label` to undefined.
+		 * @returns {Label}
+		 */
+		Atom.prototype.removeLabel = function () {
+			this.label = undefined;
 		};
 
 		/**

@@ -37,6 +37,7 @@
 			if (!Utils.isContentEmpty() &&
 						(
 							Flags.selected === "label"
+							|| Flags.selected === "removeLabel"
 							|| Flags.selected === "customLabel"
 							|| Flags.selected === "structure"
 						)
@@ -81,13 +82,13 @@
 				// if arrow was selected
 				// if content is empty or atom was not found
 				structure = addArrowOnEmptyContent();
-			} else if (mouseFlags.downOnAtom && (Flags.selected === "label" || Flags.selected === "customLabel")) {
+			} else if (mouseFlags.downOnAtom && (Flags.selected === "label" || Flags.selected === "customLabel" || Flags.selected === "removeLabel")) {
         // if atom has been found and label is selected
         structure = modifyLabel();
       } else if (mouseFlags.downOnAtom && Flags.selected === "structure") {
         // if atom has been found and structure has been selected
         structure = modifyOnNonEmptyContent(scope, mouseCoords, false);
-      } else {
+      } else if (Flags.selected === "structure") {
 				// if content is empty or atom was not found
         structure = addStructureOnEmptyContent();
       }
@@ -135,6 +136,11 @@
             atom.getLabel().setMode("lr");
           }
         }
+
+				if (Flags.selected === "removeLabel") {
+					atom.removeLabel();
+				}
+
         return structure;
       }
 

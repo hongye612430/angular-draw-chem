@@ -14,6 +14,10 @@
 		 * An array of Label objects containing all predefined labels.
 		 */
 		service.labels = {
+			"remove label": {
+				action: removeLabel(),
+				id: "remove-label"
+			},
 			"oxygen": {
 				action: createLabelAction("O", 2),
 				id: "oxygen"
@@ -57,6 +61,12 @@
 		};
 
 		return service;
+
+		function removeLabel() {
+			return function (scope) {
+				Flags.selected = "removeLabel";
+			}
+		}
 
 		function createLabelAction(label, hydrogens) {
 			return function (scope) {

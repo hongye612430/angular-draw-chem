@@ -60,6 +60,15 @@ describe("DCAtom service tests", function () {
 		expect(atom.getLabel()).toEqual(label);
 	});
 
+	it("should remove `Label` obj from `Atom` obj", function () {
+		var atom = new Atom([0, 0], []),
+		  label = new Label("OBn");
+		atom.setLabel(label);
+		expect(atom.getLabel()).toEqual(label);
+		atom.removeLabel();
+		expect(atom.getLabel()).toBeUndefined();
+	});
+
 	it("should add objects to `attachedBonds` object", function () {
 		var atom = new Atom([0, 0], []),
 		  bondIn = { vector: [10, 10], multiplicity: 1 },

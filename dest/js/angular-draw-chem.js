@@ -204,7 +204,6 @@
 			this.coords = coords;
 			this.bonds = bonds;
 			this.attachedBonds = attachedBonds || {};
-			this.label;
 		}
 
 		/**
@@ -317,6 +316,14 @@
 		 */
 		Atom.prototype.getLabel = function () {
 			return this.label;
+		};
+
+		/**
+		 * Sets` Label` to undefined.
+		 * @returns {Label}
+		 */
+		Atom.prototype.removeLabel = function () {
+			this.label = undefined;
 		};
 
 		/**
@@ -1694,6 +1701,7 @@
 			if (!Utils.isContentEmpty() &&
 						(
 							Flags.selected === "label"
+							|| Flags.selected === "removeLabel"
 							|| Flags.selected === "customLabel"
 							|| Flags.selected === "structure"
 						)
@@ -1738,13 +1746,13 @@
 				// if arrow was selected
 				// if content is empty or atom was not found
 				structure = addArrowOnEmptyContent();
-			} else if (mouseFlags.downOnAtom && (Flags.selected === "label" || Flags.selected === "customLabel")) {
+			} else if (mouseFlags.downOnAtom && (Flags.selected === "label" || Flags.selected === "customLabel" || Flags.selected === "removeLabel")) {
         // if atom has been found and label is selected
         structure = modifyLabel();
       } else if (mouseFlags.downOnAtom && Flags.selected === "structure") {
         // if atom has been found and structure has been selected
         structure = modifyOnNonEmptyContent(scope, mouseCoords, false);
-      } else {
+      } else if (Flags.selected === "structure") {
 				// if content is empty or atom was not found
         structure = addStructureOnEmptyContent();
       }
@@ -1792,6 +1800,11 @@
             atom.getLabel().setMode("lr");
           }
         }
+
+				if (Flags.selected === "removeLabel") {
+					atom.removeLabel();
+				}
+
         return structure;
       }
 
@@ -3528,6 +3541,10 @@
 		 * An array of Label objects containing all predefined labels.
 		 */
 		service.labels = {
+			"remove label": {
+				action: removeLabel(),
+				id: "remove-label"
+			},
 			"oxygen": {
 				action: createLabelAction("O", 2),
 				id: "oxygen"
@@ -3571,6 +3588,12 @@
 		};
 
 		return service;
+
+		function removeLabel() {
+			return function (scope) {
+				Flags.selected = "removeLabel";
+			}
+		}
 
 		function createLabelAction(label, hydrogens) {
 			return function (scope) {
