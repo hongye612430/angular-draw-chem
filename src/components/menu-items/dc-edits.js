@@ -169,7 +169,8 @@
 			"deselect all": {
 				action: service.deselectAll,
 				id: "deselect-all",
-				shortcut: "shift + d"
+				shortcut: "shift + d",
+				separate: true
 			},
 			"align up": {
 				action: service.alignUp,
@@ -189,6 +190,7 @@
 			"align left": {
 				action: service.alignLeft,
 				id: "align-left",
+				separate: true,
 				shortcut: "shift + e"
 			},
 			"delete selected": {
@@ -196,7 +198,7 @@
 				id: "delete-selected",
 				shortcut: "del"
 			},
-			"delete": {
+			"erase": {
 				action: service.deleteFromStructure,
 				id: "delete",
 			}

@@ -90,6 +90,7 @@
 			"cyclononane": {
 				action: createStructureAction(service.cyclononane),
 				id: "cyclononane",
+				separate: true,
 				thumbnail: true
 			},
 			"single bond": {

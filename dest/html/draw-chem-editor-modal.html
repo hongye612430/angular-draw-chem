@@ -11,13 +11,14 @@
 							<span ng-bind="name"></span> <span class="caret"></span>
 						</button>
 						<ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="btn-append-to-single-button">
-							<li class="dc-menuitem" role="menuitem" ng-repeat="(name, action) in menuItem.actions">
+							<li class="dc-menuitem" role="menuitem" ng-repeat-start="(name, action) in menuItem.actions" >
 								<a class="dc-menuitem-link" ng-click="action.action(menuItem.scope)" id="dc-{{action.id}}">
 									<span class="dc-menuitem-link-text" ng-bind="name"></span>
 									<small ng-if="action.shortcut" class="text-muted" ng-bind="action.shortcut"></small>
 									<img ng-if="action.thumbnail" class="dc-thumbnail" alt="{{action.id}}" ng-src="{{pathToSvg}}/{{action.id}}.svg">
 								</a>
 							</li>
+							<li role="separator" class="divider" ng-if="action.separate" ng-repeat-end ></li>
 						</ul>
 						<span ng-if="!$last">&nbsp;</span>
 					</div>

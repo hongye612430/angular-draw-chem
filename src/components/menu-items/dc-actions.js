@@ -98,6 +98,7 @@
 				"clear": {
 					shortcut: "ctrl + e",
 					id: "clear",
+					separate: true,
 					action: service.clear
 				},
 				"close": {

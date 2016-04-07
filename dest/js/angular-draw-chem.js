@@ -3218,6 +3218,7 @@
 				"clear": {
 					shortcut: "ctrl + e",
 					id: "clear",
+					separate: true,
 					action: service.clear
 				},
 				"close": {
@@ -3463,7 +3464,8 @@
 			"deselect all": {
 				action: service.deselectAll,
 				id: "deselect-all",
-				shortcut: "shift + d"
+				shortcut: "shift + d",
+				separate: true
 			},
 			"align up": {
 				action: service.alignUp,
@@ -3483,6 +3485,7 @@
 			"align left": {
 				action: service.alignLeft,
 				id: "align-left",
+				separate: true,
 				shortcut: "shift + e"
 			},
 			"delete selected": {
@@ -3490,7 +3493,7 @@
 				id: "delete-selected",
 				shortcut: "del"
 			},
-			"delete": {
+			"erase": {
 				action: service.deleteFromStructure,
 				id: "delete",
 			}
@@ -3541,10 +3544,6 @@
 		 * An array of Label objects containing all predefined labels.
 		 */
 		service.labels = {
-			"remove label": {
-				action: removeLabel(),
-				id: "remove-label"
-			},
 			"oxygen": {
 				action: createLabelAction("O", 2),
 				id: "oxygen"
@@ -3583,7 +3582,12 @@
 			},
 			"hydrogen": {
 				action: createLabelAction("H", 1),
-				id: "hydrogen"
+				id: "hydrogen",
+				separate: true
+			},
+			"remove label": {
+				action: removeLabel(),
+				id: "remove-label"
 			}
 		};
 
@@ -3757,6 +3761,7 @@
 			"cyclononane": {
 				action: createStructureAction(service.cyclononane),
 				id: "cyclononane",
+				separate: true,
 				thumbnail: true
 			},
 			"single bond": {
