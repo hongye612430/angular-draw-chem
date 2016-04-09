@@ -74,6 +74,8 @@ features
 
 &#8722; add possibility to select and change bonds,
 
+&#8722; add more scenario tests,
+
 &#8722; add user manual.
 
 components
