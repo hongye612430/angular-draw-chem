@@ -327,6 +327,14 @@
 		};
 
 		/**
+		 * Checks if ` Label` object is undefined.
+		 * @returns {Label}
+		 */
+		Atom.prototype.hasLabel = function () {
+			return !!this.label;
+		};
+
+		/**
 		 * Gets an array of all `Bonds` objects coming out of this `Atom` object.
 		 * @param {number} index - an index of desired `Bond` object
 		 * @returns {Bond[]|Bond} - returns an array of `Bonds` if index is not supplied, a `Bond` object at specifed index otherwise
@@ -810,9 +818,7 @@
 			this.name = name || "";
 			this.structure = structure || [];
 			this.origin = [];
-			this.selectedAll = false;
 			this.decorate = decorate || {};
-			this.aromatic = false;
 		}
 
 		/**
@@ -827,7 +833,7 @@
 		* @returns {boolean}
 		*/
 		Structure.prototype.isAromatic = function () {
-			return this.aromatic;
+			return !!this.aromatic;
 		}
 
 		/**
@@ -900,14 +906,41 @@
 		};
 
 		/**
+		* Performs an action on each `Atom` or `Arrow` object in the tree.
+		* @param {string} which - indicates object type on which the action will be performed ('atom' or 'arrow'),
+		* @param {Function} cb - function to invoke on each `Atom` or `Arrow` object,
+		* @param {Array} args - arguments to cb
+		*/
+		Structure.prototype.doOnEach = function (which, cb, args) {
+			var i, obj;
+			for (i = 0; i < this.structure.length; i += 1) {
+				obj = this.structure[i];
+				if (obj instanceof Atom && which === "atom") {
+					cb.apply(obj, args);
+					checkFurther(obj);
+				} else if (obj instanceof Arrow && which === "arrow") {
+					cb.apply(obj, args);
+				}
+			}
+
+			function checkFurther(atom) {
+				var i, bonds = atom.getBonds();
+				for (i = 0; i < bonds.length; i += 1) {
+					atom = bonds[i].getAtom();
+					cb.apply(atom, args);
+					checkFurther(atom);
+				}
+			}
+		};
+
+		/**
 		* Sets all structures in structure array as selected.
 		*/
 		Structure.prototype.selectAll = function () {
 			var i;
 			this.selectedAll = true;
-			for (i = 0; i < this.structure.length; i += 1) {
-				this.structure[i].select();
-			}
+			this.doOnEach("atom", Atom.prototype.select);
+			this.doOnEach("arrow", Arrow.prototype.select);
 		};
 
 		/**
@@ -963,9 +996,8 @@
 		Structure.prototype.deselectAll = function () {
 			var i;
 			this.selectedAll = false;
-			for (i = 0; i < this.structure.length; i += 1) {
-				this.structure[i].deselect();
-			}
+			this.doOnEach("atom", Atom.prototype.deselect);
+			this.doOnEach("arrow", Arrow.prototype.deselect);
 		};
 
 		/**
@@ -4451,8 +4483,13 @@
 						updateMinMax(absPos);
 						push = typeof atom.getLabel() !== "undefined";
 						len = output.push(["M", absPos]);
-						circles.push({ selected: atom.selected, circle: [absPos[0], absPos[1], circR] });
-						connect(absPos, atom.getBonds(), output[len - 1], atom.isSelected(), push);
+						circles.push({
+							isSelected: atom.isSelected(),
+							hasLabel: atom.hasLabel(),
+							isOrphan: atom.isOrphan(),
+							circle: [absPos[0], absPos[1], circR]
+						});
+						connect(absPos, atom.getBonds(), output[len - 1], push);
 					} else if (obj instanceof Arrow) {
 						arrow = obj;
 						absPosStart = Utils.addVectors(origin, arrow.getOrigin());
@@ -4480,7 +4517,7 @@
 				* @param {string|number[]} currentLine - an array of coordinates with 'M' and 'L' commands,
         * @param {boolean} selected - true if object is marked as selected
 				*/
-				function connect(prevAbsPos, bonds, currentLine, selected, push) {
+				function connect(prevAbsPos, bonds, currentLine, push) {
 					var i, absPos, atom, bondType;
 					for (i = 0; i < bonds.length; i += 1) {
 						atom = bonds[i].getAtom();
@@ -4491,11 +4528,16 @@
 						];
 						updateMinMax(absPos);
 						SvgUtils.updateLabel(labels, absPos, atom);
-						circles.push({ selected: selected, circle: [absPos[0], absPos[1], circR] });
+						circles.push({
+							isSelected: atom.isSelected(),
+							hasLabel: atom.hasLabel(),
+							isOrphan: atom.isOrphan(),
+							circle: [absPos[0], absPos[1], circR]
+						});
 						if (i === 0) {
-							drawLine(prevAbsPos, absPos, bondType, atom, "continue", selected, push);
+							drawLine(prevAbsPos, absPos, bondType, atom, "continue", push);
 						} else {
-							drawLine(prevAbsPos, absPos, bondType, atom, "begin", selected, push);
+							drawLine(prevAbsPos, absPos, bondType, atom, "begin", push);
 						}
 					}
 				}
@@ -4509,7 +4551,7 @@
         * @param {string} mode - indicates if this should continue this line ('continue') or begin a new one ('begin'),
         * @param {boolean} selected - true if object is marked as selected
 				*/
-				function drawLine(prevAbsPos, absPos, bondType, atom, mode, selected, push) {
+				function drawLine(prevAbsPos, absPos, bondType, atom, mode, push) {
 					var newLen = output.length, foundAtom,
 					  pushVector = Utils.addVectors(
 							prevAbsPos,
@@ -4560,7 +4602,7 @@
 						output.push(calcDashBondCoords(prevAbsPos, absPos, push, newPush));
 						newLen = output.push(["M", absPos]);
 					}
-					connect(absPos, atom.getBonds(), output[newLen - 1], selected, newPush);
+					connect(absPos, atom.getBonds(), output[newLen - 1], newPush);
 				}
 
 				function updateMinMax(absPos) {
@@ -4857,7 +4899,7 @@
 		*/
     service.generateCircles = function (circles, obj) {
       circles.forEach(function (circle) {
-        var aux = circle.selected ? "edit": "atom";
+        var aux = circle.isSelected && !circle.hasLabel && !circle.isOrphan ? "edit": "atom";
         obj.full +=
           "<circle class='" + aux +
             "' cx='" + circle.circle[0].toFixed(2) +

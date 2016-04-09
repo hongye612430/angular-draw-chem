@@ -96,8 +96,13 @@
 						updateMinMax(absPos);
 						push = typeof atom.getLabel() !== "undefined";
 						len = output.push(["M", absPos]);
-						circles.push({ selected: atom.selected, circle: [absPos[0], absPos[1], circR] });
-						connect(absPos, atom.getBonds(), output[len - 1], atom.isSelected(), push);
+						circles.push({
+							isSelected: atom.isSelected(),
+							hasLabel: atom.hasLabel(),
+							isOrphan: atom.isOrphan(),
+							circle: [absPos[0], absPos[1], circR]
+						});
+						connect(absPos, atom.getBonds(), output[len - 1], push);
 					} else if (obj instanceof Arrow) {
 						arrow = obj;
 						absPosStart = Utils.addVectors(origin, arrow.getOrigin());
@@ -125,7 +130,7 @@
 				* @param {string|number[]} currentLine - an array of coordinates with 'M' and 'L' commands,
         * @param {boolean} selected - true if object is marked as selected
 				*/
-				function connect(prevAbsPos, bonds, currentLine, selected, push) {
+				function connect(prevAbsPos, bonds, currentLine, push) {
 					var i, absPos, atom, bondType;
 					for (i = 0; i < bonds.length; i += 1) {
 						atom = bonds[i].getAtom();
@@ -136,11 +141,16 @@
 						];
 						updateMinMax(absPos);
 						SvgUtils.updateLabel(labels, absPos, atom);
-						circles.push({ selected: selected, circle: [absPos[0], absPos[1], circR] });
+						circles.push({
+							isSelected: atom.isSelected(),
+							hasLabel: atom.hasLabel(),
+							isOrphan: atom.isOrphan(),
+							circle: [absPos[0], absPos[1], circR]
+						});
 						if (i === 0) {
-							drawLine(prevAbsPos, absPos, bondType, atom, "continue", selected, push);
+							drawLine(prevAbsPos, absPos, bondType, atom, "continue", push);
 						} else {
-							drawLine(prevAbsPos, absPos, bondType, atom, "begin", selected, push);
+							drawLine(prevAbsPos, absPos, bondType, atom, "begin", push);
 						}
 					}
 				}
@@ -154,7 +164,7 @@
         * @param {string} mode - indicates if this should continue this line ('continue') or begin a new one ('begin'),
         * @param {boolean} selected - true if object is marked as selected
 				*/
-				function drawLine(prevAbsPos, absPos, bondType, atom, mode, selected, push) {
+				function drawLine(prevAbsPos, absPos, bondType, atom, mode, push) {
 					var newLen = output.length, foundAtom,
 					  pushVector = Utils.addVectors(
 							prevAbsPos,
@@ -205,7 +215,7 @@
 						output.push(calcDashBondCoords(prevAbsPos, absPos, push, newPush));
 						newLen = output.push(["M", absPos]);
 					}
-					connect(absPos, atom.getBonds(), output[newLen - 1], selected, newPush);
+					connect(absPos, atom.getBonds(), output[newLen - 1], newPush);
 				}
 
 				function updateMinMax(absPos) {

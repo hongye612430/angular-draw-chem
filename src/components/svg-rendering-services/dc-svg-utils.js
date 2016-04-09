@@ -56,7 +56,7 @@
 		*/
     service.generateCircles = function (circles, obj) {
       circles.forEach(function (circle) {
-        var aux = circle.selected ? "edit": "atom";
+        var aux = circle.isSelected && !circle.hasLabel && !circle.isOrphan ? "edit": "atom";
         obj.full +=
           "<circle class='" + aux +
             "' cx='" + circle.circle[0].toFixed(2) +

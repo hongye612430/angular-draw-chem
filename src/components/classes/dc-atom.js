@@ -143,6 +143,14 @@
 		};
 
 		/**
+		 * Checks if ` Label` object is undefined.
+		 * @returns {Label}
+		 */
+		Atom.prototype.hasLabel = function () {
+			return !!this.label;
+		};
+
+		/**
 		 * Gets an array of all `Bonds` objects coming out of this `Atom` object.
 		 * @param {number} index - an index of desired `Bond` object
 		 * @returns {Bond[]|Bond} - returns an array of `Bonds` if index is not supplied, a `Bond` object at specifed index otherwise

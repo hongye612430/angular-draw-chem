@@ -23,9 +23,7 @@
 			this.name = name || "";
 			this.structure = structure || [];
 			this.origin = [];
-			this.selectedAll = false;
 			this.decorate = decorate || {};
-			this.aromatic = false;
 		}
 
 		/**
@@ -40,7 +38,7 @@
 		* @returns {boolean}
 		*/
 		Structure.prototype.isAromatic = function () {
-			return this.aromatic;
+			return !!this.aromatic;
 		}
 
 		/**
@@ -113,14 +111,41 @@
 		};
 
 		/**
+		* Performs an action on each `Atom` or `Arrow` object in the tree.
+		* @param {string} which - indicates object type on which the action will be performed ('atom' or 'arrow'),
+		* @param {Function} cb - function to invoke on each `Atom` or `Arrow` object,
+		* @param {Array} args - arguments to cb
+		*/
+		Structure.prototype.doOnEach = function (which, cb, args) {
+			var i, obj;
+			for (i = 0; i < this.structure.length; i += 1) {
+				obj = this.structure[i];
+				if (obj instanceof Atom && which === "atom") {
+					cb.apply(obj, args);
+					checkFurther(obj);
+				} else if (obj instanceof Arrow && which === "arrow") {
+					cb.apply(obj, args);
+				}
+			}
+
+			function checkFurther(atom) {
+				var i, bonds = atom.getBonds();
+				for (i = 0; i < bonds.length; i += 1) {
+					atom = bonds[i].getAtom();
+					cb.apply(atom, args);
+					checkFurther(atom);
+				}
+			}
+		};
+
+		/**
 		* Sets all structures in structure array as selected.
 		*/
 		Structure.prototype.selectAll = function () {
 			var i;
 			this.selectedAll = true;
-			for (i = 0; i < this.structure.length; i += 1) {
-				this.structure[i].select();
-			}
+			this.doOnEach("atom", Atom.prototype.select);
+			this.doOnEach("arrow", Arrow.prototype.select);
 		};
 
 		/**
@@ -176,9 +201,8 @@
 		Structure.prototype.deselectAll = function () {
 			var i;
 			this.selectedAll = false;
-			for (i = 0; i < this.structure.length; i += 1) {
-				this.structure[i].deselect();
-			}
+			this.doOnEach("atom", Atom.prototype.deselect);
+			this.doOnEach("arrow", Arrow.prototype.deselect);
 		};
 
 		/**
