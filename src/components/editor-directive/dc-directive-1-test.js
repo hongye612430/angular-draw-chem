@@ -192,21 +192,21 @@ describe("DrawChemEditor directive tests - part1", function () {
 			clientX: 2,
 			clientY: 2
 		});
-		expect(temp.find(".dc-editor-dialog-content").html())
+		expect(normZeroes(temp.find(".dc-editor-dialog-content").html()))
 			.toEqual(
 				"<svg>" +
 						"<g id=\"cmpd1\">" +
 							"<style type=\"text/css\">" +
 								styleBase + styleExpanded +
 							"</style>" +
-							"<path d=\"M 0.00 0.00 L 17.32 10.00 L 17.32 30.00 L 0.00 40.00 L -17.32 30.00 L -17.32 10.00 L -0.00 0.00 \"></path>" +
+							"<path d=\"M 0.00 0.00 L 17.32 10.00 L 17.32 30.00 L 0.00 40.00 L -17.32 30.00 L -17.32 10.00 L 0.00 0.00 \"></path>" +
 							"<circle class=\"atom\" cx=\"0.00\" cy=\"0.00\" r=\"2.40\"></circle>" +
 							"<circle class=\"atom\" cx=\"17.32\" cy=\"10.00\" r=\"2.40\"></circle>" +
 							"<circle class=\"atom\" cx=\"17.32\" cy=\"30.00\" r=\"2.40\"></circle>" +
 							"<circle class=\"atom\" cx=\"0.00\" cy=\"40.00\" r=\"2.40\"></circle>" +
 							"<circle class=\"atom\" cx=\"-17.32\" cy=\"30.00\" r=\"2.40\"></circle>" +
 							"<circle class=\"atom\" cx=\"-17.32\" cy=\"10.00\" r=\"2.40\"></circle>" +
-							"<circle class=\"atom\" cx=\"-0.00\" cy=\"0.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"0.00\" cy=\"0.00\" r=\"2.40\"></circle>" +
 							"<circle class=\"arom\" cx=\"0.00\" cy=\"20.00\" r=\"9.00\"></circle>" +
 						"</g>" +
 				"</svg>"
@@ -272,7 +272,7 @@ describe("DrawChemEditor directive tests - part1", function () {
 			which: 1,
 			clientX: 101,
 			clientY: 99
-		});		
+		});
 		expect(temp.find(".dc-editor-dialog-content").html())
 			.toEqual(
 				"<svg>" +
@@ -598,4 +598,15 @@ function stringCompare(str1, str2) {
 			break;
 		}
 	}
+}
+
+function normZeroes(str) {
+	var arr = str.split(" "), i, index;
+	for (i = 0; i < arr.length; i += 1) {
+		index = arr[i].indexOf("-0.00");
+		if (index >= 0) {
+			arr[i] = arr[i].replace("-0.00", "0.00"); 
+		}
+	}
+	return arr.join(" ");
 }
