@@ -18,6 +18,8 @@
       downOnAtom: false
     };
 
+		service.copy;
+
 		service.customLabel = "";
 
 		service.focused = false;

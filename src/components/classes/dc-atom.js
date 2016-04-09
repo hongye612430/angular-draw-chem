@@ -18,7 +18,7 @@
 		*/
 		function Atom(coords, bonds, attachedBonds) {
 			this.coords = coords;
-			this.bonds = bonds;
+			this.bonds = bonds || [];
 			this.attachedBonds = attachedBonds || {};
 		}
 
@@ -89,6 +89,30 @@
 		 */
 		Atom.prototype.setCoords = function (coords) {
 			this.coords = coords;
+		};
+
+		/**
+		 * Adds a vector to the coords.
+		 * @param {number[]} v - vector
+		 */
+		Atom.prototype.addToCoords = function (v) {
+			this.coords[0] += v[0];
+			this.coords[1] += v[1];
+		};
+
+		/**
+		 * Performs an action on this `Atom` object and all `Atom` objects it is connected with.
+		 * @param {Function} cb - function to invoke on each `Atom` or `Arrow` object,
+ 		 * @param {Array} args - arguments to cb
+		 */
+		Atom.prototype.doOnEach = function (cb, args) {
+			var i, bonds = this.getBonds(), atom;
+			cb.apply(this, args)
+			for (i = 0; i < bonds.length; i += 1) {
+				atom = bonds[i].getAtom();
+				cb.apply(atom, args);
+				atom.doOnEach(cb, args);
+			}
 		};
 
 		/**

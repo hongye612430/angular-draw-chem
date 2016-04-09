@@ -86,6 +86,15 @@
 		};
 
 		/**
+		 * Adds a vector to the origin.
+		 * @param {number[]} v - vector
+		 */
+		Arrow.prototype.addToCoords = function (v) {
+			this.origin[0] += v[0];
+			this.origin[1] += v[1];
+		};
+
+		/**
 		* Gets start coordinates of this `Arrow` object.
 		* @param {string} coord - which coord to return ('x' or 'y'),
 		* @returns {number|number[]}

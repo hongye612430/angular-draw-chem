@@ -3,9 +3,9 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemEdits", DrawChemEdits);
 
-	DrawChemEdits.$inject = ["DrawChemCache", "DrawChemDirectiveUtils", "DrawChemDirectiveFlags"];
+	DrawChemEdits.$inject = ["DrawChem", "DrawChemCache", "DrawChemDirectiveUtils", "DrawChemDirectiveFlags"];
 
-	function DrawChemEdits(Cache, Utils, Flags) {
+	function DrawChemEdits(DrawChem, Cache, Utils, Flags) {
 
 		var service = {};
 
@@ -59,6 +59,55 @@
 				Utils.drawStructure(structure);
 			}
     };
+
+		/**
+		* Copies all selected structures.
+		*/
+		service.copy = function () {
+			var structure = angular.copy(Cache.getCurrentStructure()), selected;
+			if (structure !== null) {
+				selected = structure.getSelected();
+				structure.setStructure(selected);
+				Flags.copy = structure;
+			}
+		};
+
+		/**
+		* Copies all selected structures.
+		*/
+		service.cut = function () {
+			var structure = angular.copy(Cache.getCurrentStructure()),
+			  cut = angular.copy(Cache.getCurrentStructure()), selected;
+			if (structure !== null) {
+				selected = cut.getSelected();
+				cut.setStructure(selected);
+				Flags.copy = cut;
+				structure.deleteSelected();
+				Cache.addStructure(structure);
+				Utils.drawStructure(structure);
+			}
+		};
+
+		/**
+		* Pastes all copied structures.
+		*/
+		service.paste = function () {
+			var structure = angular.copy(Cache.getCurrentStructure()),
+			  copy = angular.copy(Flags.copy);
+			if (structure !== null && typeof copy !== "undefined") {
+				structure.deselectAll();
+				moveSelected(copy.getStructure());
+				structure.addToStructures(copy.getStructure());
+				Cache.addStructure(structure);
+				Utils.drawStructure(structure);
+			}
+
+			function moveSelected(selected) {
+				selected.forEach(function (s) {
+					s.addToCoords([50, 50]);
+				});
+			}
+		};
 
 		/**
 		* Aligns all structures to the uppermost point.
@@ -144,11 +193,43 @@
 			}
     };
 
+		/**
+		 * Undoes a change associated with the recent 'mouseup' event.
+		 */
+		service.undo = function () {
+			Cache.moveLeftInStructures();
+			if (Cache.getCurrentStructure() === null) {
+				DrawChem.clearContent();
+			} else {
+				Utils.drawStructure(Cache.getCurrentStructure());
+			}
+		};
+
+		/**
+		 * Reverses the recent 'undo' action.
+		 */
+		service.forward = function () {
+			Cache.moveRightInStructures();
+			if (Cache.getCurrentStructure() === null) {
+				DrawChem.clearContent();
+			} else {
+				Utils.drawStructure(Cache.getCurrentStructure());
+			}
+		};
+
+		/**
+		 * Clears the content.
+		 */
+		service.deleteAll = function () {
+			Cache.addStructure(null);
+			Cache.setCurrentSvg("");
+		};
+
 		service.edits = {
 			"move": {
 				action: service.moveStructure,
 				id: "move",
-				shortcut: "arrows",
+				shortcut: "arrows / ctrl + b",
 				shortcutBind: {
 					left: service.moveStructure().left,
 					up: service.moveStructure().up,
@@ -164,12 +245,38 @@
 			"select all": {
 				action: service.selectAll,
 				id: "select-all",
-				shortcut: "shift + a"
+				shortcut: "ctrl + a"
 			},
 			"deselect all": {
 				action: service.deselectAll,
 				id: "deselect-all",
-				shortcut: "shift + d",
+				shortcut: "ctrl + d",
+				separate: true
+			},
+			"copy": {
+				action: service.copy,
+				id: "copy",
+				shortcut: "ctrl + c"
+			},
+			"cut": {
+				action: service.cut,
+				id: "cut",
+				shortcut: "ctrl + x"
+			},
+			"undo": {
+				action: service.undo,
+				id: "undo",
+				shortcut: "ctrl + z"
+			},
+			"forward": {
+				action: service.forward,
+				id: "forward",
+				shortcut: "ctrl + f"
+			},
+			"paste": {
+				action: service.paste,
+				id: "paste",
+				shortcut: "ctrl + v",
 				separate: true
 			},
 			"align up": {
@@ -192,6 +299,11 @@
 				id: "align-left",
 				separate: true,
 				shortcut: "shift + e"
+			},
+			"delete all": {
+				shortcut: "ctrl + e",
+				id: "clear",
+				action: service.deleteAll
 			},
 			"delete selected": {
 				action: service.deleteSelected,

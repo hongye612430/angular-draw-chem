@@ -150,6 +150,15 @@
 		};
 
 		/**
+		 * Adds a vector to the origin.
+		 * @param {number[]} v - vector
+		 */
+		Arrow.prototype.addToCoords = function (v) {
+			this.origin[0] += v[0];
+			this.origin[1] += v[1];
+		};
+
+		/**
 		* Gets start coordinates of this `Arrow` object.
 		* @param {string} coord - which coord to return ('x' or 'y'),
 		* @returns {number|number[]}
@@ -202,7 +211,7 @@
 		*/
 		function Atom(coords, bonds, attachedBonds) {
 			this.coords = coords;
-			this.bonds = bonds;
+			this.bonds = bonds || [];
 			this.attachedBonds = attachedBonds || {};
 		}
 
@@ -273,6 +282,30 @@
 		 */
 		Atom.prototype.setCoords = function (coords) {
 			this.coords = coords;
+		};
+
+		/**
+		 * Adds a vector to the coords.
+		 * @param {number[]} v - vector
+		 */
+		Atom.prototype.addToCoords = function (v) {
+			this.coords[0] += v[0];
+			this.coords[1] += v[1];
+		};
+
+		/**
+		 * Performs an action on this `Atom` object and all `Atom` objects it is connected with.
+		 * @param {Function} cb - function to invoke on each `Atom` or `Arrow` object,
+ 		 * @param {Array} args - arguments to cb
+		 */
+		Atom.prototype.doOnEach = function (cb, args) {
+			var i, bonds = this.getBonds(), atom;
+			cb.apply(this, args)
+			for (i = 0; i < bonds.length; i += 1) {
+				atom = bonds[i].getAtom();
+				cb.apply(atom, args);
+				atom.doOnEach(cb, args);
+			}
 		};
 
 		/**
@@ -956,7 +989,7 @@
 					if (isInside) { struct.select(); }
 				} else if (struct instanceof Atom) {
 					isInside = isAtomInsideRect.call(this, struct, selection);
-					if (isInside) { struct.select(); }
+					if (isInside) { struct.doOnEach(Atom.prototype.select); }
 				}
 			}
 		};
@@ -1059,6 +1092,23 @@
 		};
 
 		/**
+		 * Gets objects from `structure` array that are marked as selected.
+		 * @param {Atom[]} content - an array of atoms and their connections,
+		 * @returns {Array}
+		 */
+		Structure.prototype.getSelected = function () {
+			var i, selected = [], current;
+			// iterates over all structures in 'structure' array (atoms, arrows, etc.)
+			for (i = 0; i < this.structure.length; i += 1) {
+				current = this.structure[i];
+				if (current.selected) {
+					selected.push(current);
+				}
+			}
+			return selected;
+		};
+
+		/**
 		 * Sets the structure array.
 		 * @param {Atom[]} content - an array of atoms and their connections
 		 */
@@ -1068,10 +1118,14 @@
 
 		/**
 		 * Adds a tree of atoms to the structure array.
-		 * @param {Atom} content - an array of atoms and their connections
+		 * @param {Atom|Arrow|Array} content - `Atom` or `Arrow` object, or mixed Array of `Atom`/`Arrow` object
 		 */
-		Structure.prototype.addToStructures = function (str) {
-			this.structure.push(str);
+		Structure.prototype.addToStructures = function (content) {
+			if (content instanceof Array) {
+				this.structure = this.structure.concat(content);
+			} else {
+				this.structure.push(content);
+			}
 		};
 
 		/**
@@ -1683,6 +1737,8 @@
       mouseDown: false,
       downOnAtom: false
     };
+
+		service.copy;
 
 		service.customLabel = "";
 
@@ -2861,20 +2917,14 @@
 				38: "uparrow",
 				39: "rightarrow",
 				40: "downarrow",
-				46: "del",
-				65: "a",
-        68: "d",
-        69: "e",
-        70: "f",
-        81: "q",
-				82: "r",
-				83: "s",
-        84: "t",
-				87: "w",
-        90: "z"
+				46: "del"
       },
       keyCombination = {},
       service = {};
+
+		for (var i = 65; i <= 90; i+= 1) {
+			keysPredefined[i] = String.fromCharCode(i).toLowerCase();
+		}
 
 		angular.forEach(Actions.actions, function (action) {
 			if (typeof action.shortcut !== "undefined") {
@@ -2884,11 +2934,12 @@
 
 		angular.forEach(Edits.edits, function (edit) {
 			if (typeof edit.shortcut !== "undefined") {
-				if (edit.shortcut === "arrows") {
+				if (edit.shortcut === "arrows / ctrl + b") {
 					registerShortcut("leftarrow", edit.shortcutBind.left);
 					registerShortcut("uparrow", edit.shortcutBind.up);
 					registerShortcut("rightarrow", edit.shortcutBind.right);
 					registerShortcut("downarrow", edit.shortcutBind.down);
+					registerShortcut("ctrl + b", edit.action);
 				} else {
 					registerShortcut(edit.shortcut, edit.action);
 				}
@@ -3166,21 +3217,9 @@
 		"DrawChemDirectiveUtils"
 	];
 
-	function DrawChemActions(DrawChemCache, DrawChem, SvgRenderer, DrawChemDirUtils) {
+	function DrawChemActions(Cache, DrawChem, SvgRenderer) {
 
 		var service = {};
-
-		/**
-		 * Reverses the recent 'undo' action.
-		 */
-		service.forward = function () {
-			DrawChemCache.moveRightInStructures();
-			if (DrawChemCache.getCurrentStructure() === null) {
-				DrawChem.clearContent();
-			} else {
-				DrawChemDirUtils.drawStructure(DrawChemCache.getCurrentStructure());
-			}
-		};
 
 		/**
 		 * Closes the editor.
@@ -3190,30 +3229,10 @@
 		};
 
 		/**
-		 * Clears the content.
-		 */
-		service.clear = function () {
-			DrawChemCache.addStructure(null);
-			DrawChemCache.setCurrentSvg("");
-		};
-
-		/**
-		 * Undoes a change associated with the recent 'mouseup' event.
-		 */
-		service.undo = function () {
-			DrawChemCache.moveLeftInStructures();
-			if (DrawChemCache.getCurrentStructure() === null) {
-				DrawChem.clearContent();
-			} else {
-				DrawChemDirUtils.drawStructure(DrawChemCache.getCurrentStructure());
-			}
-		};
-
-		/**
 		 * Transfers the content.
 		 */
 		service.transfer = function () {
-			var structure = DrawChemCache.getCurrentStructure(),
+			var structure = Cache.getCurrentStructure(),
 				shape, attr, content = "";
 
 			if (structure !== null) {
@@ -3236,26 +3255,10 @@
 		};
 
 		service.actions = {
-				"undo": {
-					shortcut: "ctrl + z",
-					id: "undo",
-					action: service.undo
-				},
-				"forward": {
-					shortcut: "ctrl + f",
-					id: "forward",
-					action: service.forward
-				},
 				"transfer": {
 					shortcut: "ctrl + t",
 					id: "transfer",
 					action: service.transfer
-				},
-				"clear": {
-					shortcut: "ctrl + e",
-					id: "clear",
-					separate: true,
-					action: service.clear
 				},
 				"close": {
 					shortcut: "ctrl + q",
@@ -3334,9 +3337,9 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DrawChemEdits", DrawChemEdits);
 
-	DrawChemEdits.$inject = ["DrawChemCache", "DrawChemDirectiveUtils", "DrawChemDirectiveFlags"];
+	DrawChemEdits.$inject = ["DrawChem", "DrawChemCache", "DrawChemDirectiveUtils", "DrawChemDirectiveFlags"];
 
-	function DrawChemEdits(Cache, Utils, Flags) {
+	function DrawChemEdits(DrawChem, Cache, Utils, Flags) {
 
 		var service = {};
 
@@ -3390,6 +3393,55 @@
 				Utils.drawStructure(structure);
 			}
     };
+
+		/**
+		* Copies all selected structures.
+		*/
+		service.copy = function () {
+			var structure = angular.copy(Cache.getCurrentStructure()), selected;
+			if (structure !== null) {
+				selected = structure.getSelected();
+				structure.setStructure(selected);
+				Flags.copy = structure;
+			}
+		};
+
+		/**
+		* Copies all selected structures.
+		*/
+		service.cut = function () {
+			var structure = angular.copy(Cache.getCurrentStructure()),
+			  cut = angular.copy(Cache.getCurrentStructure()), selected;
+			if (structure !== null) {
+				selected = cut.getSelected();
+				cut.setStructure(selected);
+				Flags.copy = cut;
+				structure.deleteSelected();
+				Cache.addStructure(structure);
+				Utils.drawStructure(structure);
+			}
+		};
+
+		/**
+		* Pastes all copied structures.
+		*/
+		service.paste = function () {
+			var structure = angular.copy(Cache.getCurrentStructure()),
+			  copy = angular.copy(Flags.copy);
+			if (structure !== null && typeof copy !== "undefined") {
+				structure.deselectAll();
+				moveSelected(copy.getStructure());
+				structure.addToStructures(copy.getStructure());
+				Cache.addStructure(structure);
+				Utils.drawStructure(structure);
+			}
+
+			function moveSelected(selected) {
+				selected.forEach(function (s) {
+					s.addToCoords([50, 50]);
+				});
+			}
+		};
 
 		/**
 		* Aligns all structures to the uppermost point.
@@ -3475,11 +3527,43 @@
 			}
     };
 
+		/**
+		 * Undoes a change associated with the recent 'mouseup' event.
+		 */
+		service.undo = function () {
+			Cache.moveLeftInStructures();
+			if (Cache.getCurrentStructure() === null) {
+				DrawChem.clearContent();
+			} else {
+				Utils.drawStructure(Cache.getCurrentStructure());
+			}
+		};
+
+		/**
+		 * Reverses the recent 'undo' action.
+		 */
+		service.forward = function () {
+			Cache.moveRightInStructures();
+			if (Cache.getCurrentStructure() === null) {
+				DrawChem.clearContent();
+			} else {
+				Utils.drawStructure(Cache.getCurrentStructure());
+			}
+		};
+
+		/**
+		 * Clears the content.
+		 */
+		service.deleteAll = function () {
+			Cache.addStructure(null);
+			Cache.setCurrentSvg("");
+		};
+
 		service.edits = {
 			"move": {
 				action: service.moveStructure,
 				id: "move",
-				shortcut: "arrows",
+				shortcut: "arrows / ctrl + b",
 				shortcutBind: {
 					left: service.moveStructure().left,
 					up: service.moveStructure().up,
@@ -3495,12 +3579,38 @@
 			"select all": {
 				action: service.selectAll,
 				id: "select-all",
-				shortcut: "shift + a"
+				shortcut: "ctrl + a"
 			},
 			"deselect all": {
 				action: service.deselectAll,
 				id: "deselect-all",
-				shortcut: "shift + d",
+				shortcut: "ctrl + d",
+				separate: true
+			},
+			"copy": {
+				action: service.copy,
+				id: "copy",
+				shortcut: "ctrl + c"
+			},
+			"cut": {
+				action: service.cut,
+				id: "cut",
+				shortcut: "ctrl + x"
+			},
+			"undo": {
+				action: service.undo,
+				id: "undo",
+				shortcut: "ctrl + z"
+			},
+			"forward": {
+				action: service.forward,
+				id: "forward",
+				shortcut: "ctrl + f"
+			},
+			"paste": {
+				action: service.paste,
+				id: "paste",
+				shortcut: "ctrl + v",
 				separate: true
 			},
 			"align up": {
@@ -3523,6 +3633,11 @@
 				id: "align-left",
 				separate: true,
 				shortcut: "shift + e"
+			},
+			"delete all": {
+				shortcut: "ctrl + e",
+				id: "clear",
+				action: service.deleteAll
 			},
 			"delete selected": {
 				action: service.deleteSelected,

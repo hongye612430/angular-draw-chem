@@ -14,20 +14,14 @@
 				38: "uparrow",
 				39: "rightarrow",
 				40: "downarrow",
-				46: "del",
-				65: "a",
-        68: "d",
-        69: "e",
-        70: "f",
-        81: "q",
-				82: "r",
-				83: "s",
-        84: "t",
-				87: "w",
-        90: "z"
+				46: "del"
       },
       keyCombination = {},
       service = {};
+
+		for (var i = 65; i <= 90; i+= 1) {
+			keysPredefined[i] = String.fromCharCode(i).toLowerCase();
+		}
 
 		angular.forEach(Actions.actions, function (action) {
 			if (typeof action.shortcut !== "undefined") {
@@ -37,11 +31,12 @@
 
 		angular.forEach(Edits.edits, function (edit) {
 			if (typeof edit.shortcut !== "undefined") {
-				if (edit.shortcut === "arrows") {
+				if (edit.shortcut === "arrows / ctrl + b") {
 					registerShortcut("leftarrow", edit.shortcutBind.left);
 					registerShortcut("uparrow", edit.shortcutBind.up);
 					registerShortcut("rightarrow", edit.shortcutBind.right);
 					registerShortcut("downarrow", edit.shortcutBind.down);
+					registerShortcut("ctrl + b", edit.action);
 				} else {
 					registerShortcut(edit.shortcut, edit.action);
 				}

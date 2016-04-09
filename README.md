@@ -34,6 +34,8 @@ features
 
 &#10004; go one structure forward/back,
 
+&#10004; copy/cut/paste selected structures,
+
 &#10004; select/deselect all structures,
 
 &#10004; move selected structure with arrows/mouse,
@@ -48,7 +50,7 @@ features
 
 &#10004; cyclic structures (from three- to nine-membered rings),
 
-&#10004; bonds (single, double, triple, dash, wedge),
+&#10004; bonds (single, double, triple, dash, wedge, undefined),
 
 &#10004; predefined labels,
 
@@ -62,15 +64,11 @@ features
 
 &#8722; make different cache 'instances',
 
-&#8722; add possibility to copy structures,
-
 &#8722; add 'align middle' tools (vertical and horizontal),
 
 &#8722; fix positioning of some labels,
 
 &#8722; enable adding text elements (e.g. for comments or adding reaction conditions over an arrow),
-
-&#8722; add a new bond type for showing undefined stereochemistry,
 
 &#8722; add possibility to select and change bonds,
 

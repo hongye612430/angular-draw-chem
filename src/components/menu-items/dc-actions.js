@@ -10,21 +10,9 @@
 		"DrawChemDirectiveUtils"
 	];
 
-	function DrawChemActions(DrawChemCache, DrawChem, SvgRenderer, DrawChemDirUtils) {
+	function DrawChemActions(Cache, DrawChem, SvgRenderer) {
 
 		var service = {};
-
-		/**
-		 * Reverses the recent 'undo' action.
-		 */
-		service.forward = function () {
-			DrawChemCache.moveRightInStructures();
-			if (DrawChemCache.getCurrentStructure() === null) {
-				DrawChem.clearContent();
-			} else {
-				DrawChemDirUtils.drawStructure(DrawChemCache.getCurrentStructure());
-			}
-		};
 
 		/**
 		 * Closes the editor.
@@ -34,30 +22,10 @@
 		};
 
 		/**
-		 * Clears the content.
-		 */
-		service.clear = function () {
-			DrawChemCache.addStructure(null);
-			DrawChemCache.setCurrentSvg("");
-		};
-
-		/**
-		 * Undoes a change associated with the recent 'mouseup' event.
-		 */
-		service.undo = function () {
-			DrawChemCache.moveLeftInStructures();
-			if (DrawChemCache.getCurrentStructure() === null) {
-				DrawChem.clearContent();
-			} else {
-				DrawChemDirUtils.drawStructure(DrawChemCache.getCurrentStructure());
-			}
-		};
-
-		/**
 		 * Transfers the content.
 		 */
 		service.transfer = function () {
-			var structure = DrawChemCache.getCurrentStructure(),
+			var structure = Cache.getCurrentStructure(),
 				shape, attr, content = "";
 
 			if (structure !== null) {
@@ -80,26 +48,10 @@
 		};
 
 		service.actions = {
-				"undo": {
-					shortcut: "ctrl + z",
-					id: "undo",
-					action: service.undo
-				},
-				"forward": {
-					shortcut: "ctrl + f",
-					id: "forward",
-					action: service.forward
-				},
 				"transfer": {
 					shortcut: "ctrl + t",
 					id: "transfer",
 					action: service.transfer
-				},
-				"clear": {
-					shortcut: "ctrl + e",
-					id: "clear",
-					separate: true,
-					action: service.clear
 				},
 				"close": {
 					shortcut: "ctrl + q",

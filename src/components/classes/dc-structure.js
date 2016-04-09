@@ -161,7 +161,7 @@
 					if (isInside) { struct.select(); }
 				} else if (struct instanceof Atom) {
 					isInside = isAtomInsideRect.call(this, struct, selection);
-					if (isInside) { struct.select(); }
+					if (isInside) { struct.doOnEach(Atom.prototype.select); }
 				}
 			}
 		};
@@ -264,6 +264,23 @@
 		};
 
 		/**
+		 * Gets objects from `structure` array that are marked as selected.
+		 * @param {Atom[]} content - an array of atoms and their connections,
+		 * @returns {Array}
+		 */
+		Structure.prototype.getSelected = function () {
+			var i, selected = [], current;
+			// iterates over all structures in 'structure' array (atoms, arrows, etc.)
+			for (i = 0; i < this.structure.length; i += 1) {
+				current = this.structure[i];
+				if (current.selected) {
+					selected.push(current);
+				}
+			}
+			return selected;
+		};
+
+		/**
 		 * Sets the structure array.
 		 * @param {Atom[]} content - an array of atoms and their connections
 		 */
@@ -273,10 +290,14 @@
 
 		/**
 		 * Adds a tree of atoms to the structure array.
-		 * @param {Atom} content - an array of atoms and their connections
+		 * @param {Atom|Arrow|Array} content - `Atom` or `Arrow` object, or mixed Array of `Atom`/`Arrow` object
 		 */
-		Structure.prototype.addToStructures = function (str) {
-			this.structure.push(str);
+		Structure.prototype.addToStructures = function (content) {
+			if (content instanceof Array) {
+				this.structure = this.structure.concat(content);
+			} else {
+				this.structure.push(content);
+			}
 		};
 
 		/**
