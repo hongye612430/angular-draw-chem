@@ -22,6 +22,7 @@
 			BETWEEN_TRP_BONDS = Const.BETWEEN_TRP_BONDS,
 			ARROW_START = Const.ARROW_START,
 			ARROW_SIZE = Const.ARROW_SIZE,
+			UNDEF_BOND = Const.UNDEF_BOND,
 		  Atom = DCAtom.Atom,
 			Arrow = DCArrow.Arrow,
 			Selection = DCSelection.Selection,
@@ -214,6 +215,9 @@
 					} else if (bondType === "dash") {
 						output.push(calcDashBondCoords(prevAbsPos, absPos, push, newPush));
 						newLen = output.push(["M", absPos]);
+					} else if (bondType === "undefined") {
+						output.push(calcUndefinedBondCoords(prevAbsPos, absPos, push, newPush));
+						newLen = output.push(["M", absPos]);
 					}
 					connect(absPos, atom.getBonds(), output[newLen - 1], newPush);
 				}
@@ -393,6 +397,44 @@
 				result = result.concat(["M", M, "L", L]);
 			}
 			return result;
+		}
+
+		/**
+		* Calculates data for the svg instructions in `path` element for undefined bond.
+		* @param {number[]} start - start coordinates (absolute) of the atom,
+		* @param {number[]} end - end coordinates (absolute) of the atom,
+		* @returns {Array}
+		*/
+		function calcUndefinedBondCoords(start, end, push, newPush) {
+			var i, M, L, max = 5, result,
+			  vectCoords = [end[0] - start[0], end[1] - start[1]],
+				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
+				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
+				subEnd = Utils.addVectors(start, vectCoords, 1 / max),
+				c1 = Utils.addVectors(start, perpVectCoordsCW, UNDEF_BOND),
+				c2 = Utils.addVectors(subEnd, perpVectCoordsCW, UNDEF_BOND);
+
+			if (push) {
+
+			}
+
+			if (newPush) {
+
+			}
+
+			result = ["M", start, "C", stringVect(c1), stringVect(c2), subEnd];
+
+			for (i = max - 1; i > 0; i -= 1) {
+				subEnd = Utils.addVectors(subEnd, vectCoords, 1 / max);
+				c2 = Utils.addVectors(subEnd, Utils.multVectByScalar(c2, -1));
+				result = result.concat(["S", stringVect(c2), subEnd]);
+			}
+
+			return result;
+
+			function stringVect(v) {
+				return v[0].toFixed(2) + " " + v[1].toFixed(2) + ",";
+			}
 		}
 
 		/**

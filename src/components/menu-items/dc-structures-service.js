@@ -41,6 +41,7 @@
 			new BondStructure("single", 1),
 			new BondStructure("wedge", 1),
 			new BondStructure("dash", 1),
+			new BondStructure("undefined", 1),
 			new BondStructure("double", 2),
 			new BondStructure("triple", 3)
 		];
@@ -106,6 +107,11 @@
 			"dash bond": {
 				action: createStructureAction(service.dashBond),
 				id: "dash-bond",
+				thumbnail: true
+			},
+			"undefined bond": {
+				action: createStructureAction(service.undefinedBond),
+				id: "undefined-bond",
 				thumbnail: true
 			},
 			"double bond": {

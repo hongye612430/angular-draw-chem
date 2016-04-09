@@ -2416,7 +2416,8 @@
 			// angle between possible bonds when adding a new bond (in degrees)
 			service.FREQ = 15;
 
-			//
+			// 'push' factor is related to bonds starting/ending on an atom with a label
+			// (it has to start/end outside of the label)
 			service.PUSH = 0.25;
 
 			// default angle between two bonds (in degrees)
@@ -2430,6 +2431,9 @@
 
 			// default distance between two parallel bonds in double bonds (as a percent of the bond length);
 			service.BETWEEN_DBL_BONDS = 0.065;
+
+			// factor for Bezier curve in 'undefined' bond
+			service.UNDEF_BOND = 3 * service.BETWEEN_DBL_BONDS;
 
 			// default distance between two furthest bonds in triple bonds (as a percent of the bond length);
 			service.BETWEEN_TRP_BONDS = 0.1;
@@ -2523,7 +2527,7 @@
 		* Adds two vectors. Optionally multiplies the second vector by a factor. Returns a new array.
 		* @param {number[]} v1 - first vector,
 		* @param {number[]} v2 - second vector,
-		* @param {number} factor - multiplies second vector by a factor (optional)
+		* @param {number} factor - multiplies second vector by a factor (optional),
 		* @returns {number[]}
 		*/
 		service.addVectors = function(v1, v2, factor) {
@@ -3744,6 +3748,7 @@
 			new BondStructure("single", 1),
 			new BondStructure("wedge", 1),
 			new BondStructure("dash", 1),
+			new BondStructure("undefined", 1),
 			new BondStructure("double", 2),
 			new BondStructure("triple", 3)
 		];
@@ -3809,6 +3814,11 @@
 			"dash bond": {
 				action: createStructureAction(service.dashBond),
 				id: "dash-bond",
+				thumbnail: true
+			},
+			"undefined bond": {
+				action: createStructureAction(service.undefinedBond),
+				id: "undefined-bond",
 				thumbnail: true
 			},
 			"double bond": {
@@ -4409,6 +4419,7 @@
 			BETWEEN_TRP_BONDS = Const.BETWEEN_TRP_BONDS,
 			ARROW_START = Const.ARROW_START,
 			ARROW_SIZE = Const.ARROW_SIZE,
+			UNDEF_BOND = Const.UNDEF_BOND,
 		  Atom = DCAtom.Atom,
 			Arrow = DCArrow.Arrow,
 			Selection = DCSelection.Selection,
@@ -4601,6 +4612,9 @@
 					} else if (bondType === "dash") {
 						output.push(calcDashBondCoords(prevAbsPos, absPos, push, newPush));
 						newLen = output.push(["M", absPos]);
+					} else if (bondType === "undefined") {
+						output.push(calcUndefinedBondCoords(prevAbsPos, absPos, push, newPush));
+						newLen = output.push(["M", absPos]);
 					}
 					connect(absPos, atom.getBonds(), output[newLen - 1], newPush);
 				}
@@ -4780,6 +4794,44 @@
 				result = result.concat(["M", M, "L", L]);
 			}
 			return result;
+		}
+
+		/**
+		* Calculates data for the svg instructions in `path` element for undefined bond.
+		* @param {number[]} start - start coordinates (absolute) of the atom,
+		* @param {number[]} end - end coordinates (absolute) of the atom,
+		* @returns {Array}
+		*/
+		function calcUndefinedBondCoords(start, end, push, newPush) {
+			var i, M, L, max = 5, result,
+			  vectCoords = [end[0] - start[0], end[1] - start[1]],
+				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
+				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
+				subEnd = Utils.addVectors(start, vectCoords, 1 / max),
+				c1 = Utils.addVectors(start, perpVectCoordsCW, UNDEF_BOND),
+				c2 = Utils.addVectors(subEnd, perpVectCoordsCW, UNDEF_BOND);
+
+			if (push) {
+
+			}
+
+			if (newPush) {
+
+			}
+
+			result = ["M", start, "C", stringVect(c1), stringVect(c2), subEnd];
+
+			for (i = max - 1; i > 0; i -= 1) {
+				subEnd = Utils.addVectors(subEnd, vectCoords, 1 / max);
+				c2 = Utils.addVectors(subEnd, Utils.multVectByScalar(c2, -1));
+				result = result.concat(["S", stringVect(c2), subEnd]);
+			}
+
+			return result;
+
+			function stringVect(v) {
+				return v[0].toFixed(2) + " " + v[1].toFixed(2) + ",";
+			}
 		}
 
 		/**

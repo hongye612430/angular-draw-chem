@@ -30,7 +30,7 @@
 		* Adds two vectors. Optionally multiplies the second vector by a factor. Returns a new array.
 		* @param {number[]} v1 - first vector,
 		* @param {number[]} v2 - second vector,
-		* @param {number} factor - multiplies second vector by a factor (optional)
+		* @param {number} factor - multiplies second vector by a factor (optional),
 		* @returns {number[]}
 		*/
 		service.addVectors = function(v1, v2, factor) {

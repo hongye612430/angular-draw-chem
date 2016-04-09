@@ -40,7 +40,8 @@
 			// angle between possible bonds when adding a new bond (in degrees)
 			service.FREQ = 15;
 
-			//
+			// 'push' factor is related to bonds starting/ending on an atom with a label
+			// (it has to start/end outside of the label)
 			service.PUSH = 0.25;
 
 			// default angle between two bonds (in degrees)
@@ -54,6 +55,9 @@
 
 			// default distance between two parallel bonds in double bonds (as a percent of the bond length);
 			service.BETWEEN_DBL_BONDS = 0.065;
+
+			// factor for Bezier curve in 'undefined' bond
+			service.UNDEF_BOND = 3 * service.BETWEEN_DBL_BONDS;
 
 			// default distance between two furthest bonds in triple bonds (as a percent of the bond length);
 			service.BETWEEN_TRP_BONDS = 0.1;
