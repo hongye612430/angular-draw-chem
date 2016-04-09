@@ -73,7 +73,6 @@ describe("DrawChemEditor directive tests - part4", function () {
           "<circle class=\"edit\" cx=\"98.00\" cy=\"138.00\" r=\"2.40\"></circle>" +
           "<circle class=\"edit\" cx=\"80.68\" cy=\"128.00\" r=\"2.40\"></circle>" +
           "<circle class=\"edit\" cx=\"80.68\" cy=\"108.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"98.00\" cy=\"98.00\" r=\"2.40\"></circle>" +
           "<circle class=\"edit\" cx=\"198.00\" cy=\"118.00\" r=\"2.40\"></circle>" +
           "<circle class=\"edit\" cx=\"218.00\" cy=\"118.00\" r=\"2.40\"></circle>" +
         "</g>" +
@@ -125,7 +124,6 @@ describe("DrawChemEditor directive tests - part4", function () {
           "<circle class=\"atom\" cx=\"98.00\" cy=\"138.00\" r=\"2.40\"></circle>" +
           "<circle class=\"atom\" cx=\"80.68\" cy=\"128.00\" r=\"2.40\"></circle>" +
           "<circle class=\"atom\" cx=\"80.68\" cy=\"108.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"atom\" cx=\"98.00\" cy=\"98.00\" r=\"2.40\"></circle>" +
 					"<circle class=\"atom\" cx=\"198.00\" cy=\"118.00\" r=\"2.40\"></circle>" +
 					"<circle class=\"atom\" cx=\"218.00\" cy=\"118.00\" r=\"2.40\"></circle>" +
         "</g>" +
@@ -189,7 +187,6 @@ describe("DrawChemEditor directive tests - part4", function () {
           "<circle class=\"atom\" cx=\"398.00\" cy=\"438.00\" r=\"2.40\"></circle>" +
           "<circle class=\"atom\" cx=\"380.68\" cy=\"428.00\" r=\"2.40\"></circle>" +
           "<circle class=\"atom\" cx=\"380.68\" cy=\"408.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"atom\" cx=\"398.00\" cy=\"398.00\" r=\"2.40\"></circle>" +
         "</g>" +
     "</svg>");
 	});

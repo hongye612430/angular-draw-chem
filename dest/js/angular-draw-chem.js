@@ -4496,8 +4496,8 @@
 						absPosEnd = Utils.addVectors(origin, arrow.getEnd());
 						updateMinMax(absPosStart);
 						updateMinMax(absPosEnd);
-						circles.push({ selected: arrow.isSelected(), circle: [ absPosStart[0], absPosStart[1], circR ] });
-						circles.push({ selected: arrow.isSelected(), circle: [ absPosEnd[0], absPosEnd[1], circR ] });
+						circles.push({ isSelected: arrow.isSelected(), circle: [ absPosStart[0], absPosStart[1], circR ] });
+						circles.push({ isSelected: arrow.isSelected(), circle: [ absPosEnd[0], absPosEnd[1], circR ] });
 						output.push(calcArrow(absPosStart, absPosEnd, arrow.getType()));
 					}
 				}
@@ -4899,13 +4899,15 @@
 		*/
     service.generateCircles = function (circles, obj) {
       circles.forEach(function (circle) {
-        var aux = circle.isSelected && !circle.hasLabel && !circle.isOrphan ? "edit": "atom";
-        obj.full +=
-          "<circle class='" + aux +
-            "' cx='" + circle.circle[0].toFixed(2) +
-            "' cy='" + circle.circle[1].toFixed(2) +
-            "' r='" + circle.circle[2].toFixed(2) +
-          "'></circle>";
+        var aux = circle.isSelected && !circle.hasLabel ? "edit": "atom";
+				if (!circle.isOrphan) {
+					obj.full +=
+	          "<circle class='" + aux +
+	            "' cx='" + circle.circle[0].toFixed(2) +
+	            "' cy='" + circle.circle[1].toFixed(2) +
+	            "' r='" + circle.circle[2].toFixed(2) +
+	          "'></circle>";
+				}
       });
     };
 

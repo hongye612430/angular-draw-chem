@@ -66,7 +66,6 @@ describe("DrawChemEditor directive tests - part7", function () {
           "<circle class=\"atom\" cx=\"198.00\" cy=\"238.00\" r=\"2.40\"></circle>" +
           "<circle class=\"atom\" cx=\"180.68\" cy=\"228.00\" r=\"2.40\"></circle>" +
           "<circle class=\"atom\" cx=\"180.68\" cy=\"208.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"atom\" cx=\"198.00\" cy=\"198.00\" r=\"2.40\"></circle>" +
         "</g>" +
       "</svg>"
     );
@@ -111,7 +110,6 @@ describe("DrawChemEditor directive tests - part7", function () {
 					"<circle class=\"atom\" cx=\"198.00\" cy=\"238.00\" r=\"2.40\"></circle>" +
 					"<circle class=\"atom\" cx=\"180.68\" cy=\"228.00\" r=\"2.40\"></circle>" +
 					"<circle class=\"atom\" cx=\"180.68\" cy=\"208.00\" r=\"2.40\"></circle>" +
-					"<circle class=\"atom\" cx=\"198.00\" cy=\"198.00\" r=\"2.40\"></circle>" +
 					"<circle class=\"arom\" cx=\"198.00\" cy=\"218.00\" r=\"9.00\"></circle>" +
         "</g>" +
       "</svg>"

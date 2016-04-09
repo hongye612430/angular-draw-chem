@@ -56,13 +56,15 @@
 		*/
     service.generateCircles = function (circles, obj) {
       circles.forEach(function (circle) {
-        var aux = circle.isSelected && !circle.hasLabel && !circle.isOrphan ? "edit": "atom";
-        obj.full +=
-          "<circle class='" + aux +
-            "' cx='" + circle.circle[0].toFixed(2) +
-            "' cy='" + circle.circle[1].toFixed(2) +
-            "' r='" + circle.circle[2].toFixed(2) +
-          "'></circle>";
+        var aux = circle.isSelected && !circle.hasLabel ? "edit": "atom";
+				if (!circle.isOrphan) {
+					obj.full +=
+	          "<circle class='" + aux +
+	            "' cx='" + circle.circle[0].toFixed(2) +
+	            "' cy='" + circle.circle[1].toFixed(2) +
+	            "' r='" + circle.circle[2].toFixed(2) +
+	          "'></circle>";
+				}
       });
     };
 

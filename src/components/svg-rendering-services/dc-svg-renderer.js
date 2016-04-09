@@ -109,8 +109,8 @@
 						absPosEnd = Utils.addVectors(origin, arrow.getEnd());
 						updateMinMax(absPosStart);
 						updateMinMax(absPosEnd);
-						circles.push({ selected: arrow.isSelected(), circle: [ absPosStart[0], absPosStart[1], circR ] });
-						circles.push({ selected: arrow.isSelected(), circle: [ absPosEnd[0], absPosEnd[1], circR ] });
+						circles.push({ isSelected: arrow.isSelected(), circle: [ absPosStart[0], absPosStart[1], circR ] });
+						circles.push({ isSelected: arrow.isSelected(), circle: [ absPosEnd[0], absPosEnd[1], circR ] });
 						output.push(calcArrow(absPosStart, absPosEnd, arrow.getType()));
 					}
 				}
