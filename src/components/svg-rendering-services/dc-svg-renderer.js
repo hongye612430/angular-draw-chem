@@ -23,6 +23,7 @@
 			ARROW_START = Const.ARROW_START,
 			ARROW_SIZE = Const.ARROW_SIZE,
 			UNDEF_BOND = Const.UNDEF_BOND,
+			PUSH = Const.PUSH,
 		  Atom = DCAtom.Atom,
 			Arrow = DCArrow.Arrow,
 			Selection = DCSelection.Selection,
@@ -169,12 +170,12 @@
 					var newLen = output.length, foundAtom,
 					  pushVector = Utils.addVectors(
 							prevAbsPos,
-							Utils.multVectByScalar(atom.getCoords(), Const.PUSH)
+							Utils.multVectByScalar(atom.getCoords(), PUSH)
 						),
 						newPush = typeof atom.getLabel() !== "undefined",
 						newPushVector = Utils.addVectors(
 							prevAbsPos,
-							Utils.multVectByScalar(atom.getCoords(), 1 - Const.PUSH)
+							Utils.multVectByScalar(atom.getCoords(), 1 - PUSH)
 						);
 					if (atom.isOrphan()) {
 						foundAtom = ModStructure.isWithin(input, absPos).foundAtom;
@@ -296,7 +297,7 @@
 		*/
 		function calcDoubleBondCoords(start, end, push, newPush) {
 			var vectCoords = [end[0] - start[0], end[1] - start[1]],
-			  aux = Utils.multVectByScalar(vectCoords, Const.PUSH),
+			  aux = Utils.multVectByScalar(vectCoords, PUSH),
 				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
 				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
 				M1 = Utils.addVectors(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
@@ -322,7 +323,7 @@
 		*/
 		function calcTripleBondCoords(start, end, push, newPush) {
 			var vectCoords = [end[0] - start[0], end[1] - start[1]],
-			  aux = Utils.multVectByScalar(vectCoords, Const.PUSH),
+			  aux = Utils.multVectByScalar(vectCoords, PUSH),
 				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
 				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
 				M1 = Utils.addVectors(start, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
@@ -348,7 +349,7 @@
 		*/
 		function calcWedgeBondCoords(start, end, push, newPush) {
 			var vectCoords = [end[0] - start[0], end[1] - start[1]],
-			  aux = Utils.multVectByScalar(vectCoords, Const.PUSH),
+			  aux = Utils.multVectByScalar(vectCoords, PUSH),
 				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
 				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
 				L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
@@ -374,7 +375,7 @@
 		function calcDashBondCoords(start, end, push, newPush) {
 			var i, max = 10, factor = BETWEEN_DBL_BONDS / max, M, L, result = [],
 			  vectCoords = [end[0] - start[0], end[1] - start[1]],
-			  aux = Utils.multVectByScalar(vectCoords, Const.PUSH), currentEnd = start,
+			  aux = Utils.multVectByScalar(vectCoords, PUSH), currentEnd = start,
 				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
 				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]];
 
@@ -406,27 +407,41 @@
 		* @returns {Array}
 		*/
 		function calcUndefinedBondCoords(start, end, push, newPush) {
-			var i, M, L, max = 5, result,
+			var i, M, L, max = 10, result,
 			  vectCoords = [end[0] - start[0], end[1] - start[1]],
 				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
 				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
+				aux = Utils.multVectByScalar(vectCoords, PUSH),
 				subEnd = Utils.addVectors(start, vectCoords, 1 / max),
 				c1 = Utils.addVectors(start, perpVectCoordsCW, UNDEF_BOND),
 				c2 = Utils.addVectors(subEnd, perpVectCoordsCW, UNDEF_BOND);
 
 			if (push) {
-
+				start = Utils.addVectors(start, aux);
+				vectCoords = Utils.subtractVectors(vectCoords, aux);
+				max -= 2;
+				subEnd = Utils.addVectors(start, vectCoords, 1 / max);
+				c1 = Utils.addVectors(start, perpVectCoordsCW, UNDEF_BOND),
+				c2 = Utils.addVectors(subEnd, perpVectCoordsCW, UNDEF_BOND);
 			}
 
 			if (newPush) {
-
+				vectCoords = Utils.subtractVectors(vectCoords, aux);
+				max -= 2;
+				subEnd = Utils.addVectors(start, vectCoords, 1 / max);
+				c1 = Utils.addVectors(start, perpVectCoordsCW, UNDEF_BOND),
+				c2 = Utils.addVectors(subEnd, perpVectCoordsCW, UNDEF_BOND);
 			}
 
 			result = ["M", start, "C", stringVect(c1), stringVect(c2), subEnd];
 
 			for (i = max - 1; i > 0; i -= 1) {
 				subEnd = Utils.addVectors(subEnd, vectCoords, 1 / max);
-				c2 = Utils.addVectors(subEnd, Utils.rotVectCW(c2, 180));
+				if (i % 2 === 0) {
+					c2 = Utils.addVectors(subEnd, perpVectCoordsCW, UNDEF_BOND);
+				} else {
+					c2 = Utils.addVectors(subEnd, perpVectCoordsCCW, UNDEF_BOND);
+				}
 				result = result.concat(["S", stringVect(c2), subEnd]);
 			}
 

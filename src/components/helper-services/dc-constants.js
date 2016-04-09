@@ -57,7 +57,7 @@
 			service.BETWEEN_DBL_BONDS = 0.065;
 
 			// factor for Bezier curve in 'undefined' bond
-			service.UNDEF_BOND = 3 * service.BETWEEN_DBL_BONDS;
+			service.UNDEF_BOND = 1.5 * service.BETWEEN_DBL_BONDS;
 
 			// default distance between two furthest bonds in triple bonds (as a percent of the bond length);
 			service.BETWEEN_TRP_BONDS = 0.1;
