@@ -4823,7 +4823,7 @@
 
 			for (i = max - 1; i > 0; i -= 1) {
 				subEnd = Utils.addVectors(subEnd, vectCoords, 1 / max);
-				c2 = Utils.addVectors(subEnd, Utils.multVectByScalar(c2, -1));
+				c2 = Utils.addVectors(subEnd, Utils.rotVectCW(c2, 180));
 				result = result.concat(["S", stringVect(c2), subEnd]);
 			}
 
