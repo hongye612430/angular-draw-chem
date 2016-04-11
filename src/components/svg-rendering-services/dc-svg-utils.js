@@ -210,7 +210,7 @@
 					mode: labelNameObj.mode,
 					atomX: absPos[0],
 					atomY: absPos[1],
-					labelX: absPos[0] + calcCorrectX(labelNameObj.mode) * BOND_LENGTH,
+					labelX: absPos[0] + calcCorrectX(labelNameObj.mode, labelNameObj.name) * BOND_LENGTH,
 					labelY: absPos[1] + calcCorrectY() * BOND_LENGTH,
 					width: DCSvg.fontSize * labelNameObj.name.length,
 					height: DCSvg.fontSize
@@ -229,11 +229,11 @@
 					return result;
 				}
 
-				function calcCorrectX(mode) {
+				function calcCorrectX(mode, name) {
 					if (mode === "rl") {
-						return 0.175;
+						return name === "I" ? 0.07: 0.2;
 					} else if (mode === "lr") {
-						return -0.175;
+						return name === "I" ? -0.07: -0.2;
 					}
 				}
 

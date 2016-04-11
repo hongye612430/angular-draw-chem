@@ -31,10 +31,10 @@
 			if (structure !== null) {
 				shape = SvgRenderer.draw(structure, "transfer");
 				attr = {
-					"viewBox": (shape.minMax.minX - 20).toFixed(2) + " " +
-						(shape.minMax.minY - 20).toFixed(2) + " " +
-						(shape.minMax.maxX - shape.minMax.minX + 40).toFixed(2) + " " +
-						(shape.minMax.maxY - shape.minMax.minY + 40).toFixed(2),
+					"viewBox": (shape.minMax.minX - 30).toFixed(2) + " " +
+						(shape.minMax.minY - 30).toFixed(2) + " " +
+						(shape.minMax.maxX - shape.minMax.minX + 60).toFixed(2) + " " +
+						(shape.minMax.maxY - shape.minMax.minY + 60).toFixed(2),
 					"height": "100%",
 					"width": "100%",
 					"xmlns": "http://www.w3.org/2000/svg",

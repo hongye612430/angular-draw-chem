@@ -2474,7 +2474,7 @@
 
 			// 'push' factor is related to bonds starting/ending on an atom with a label
 			// (it has to start/end outside of the label)
-			service.PUSH = 0.25;
+			service.PUSH = 0.3;
 
 			// default angle between two bonds (in degrees)
 			service.ANGLE = 120;
@@ -3238,10 +3238,10 @@
 			if (structure !== null) {
 				shape = SvgRenderer.draw(structure, "transfer");
 				attr = {
-					"viewBox": (shape.minMax.minX - 20).toFixed(2) + " " +
-						(shape.minMax.minY - 20).toFixed(2) + " " +
-						(shape.minMax.maxX - shape.minMax.minX + 40).toFixed(2) + " " +
-						(shape.minMax.maxY - shape.minMax.minY + 40).toFixed(2),
+					"viewBox": (shape.minMax.minX - 30).toFixed(2) + " " +
+						(shape.minMax.minY - 30).toFixed(2) + " " +
+						(shape.minMax.maxX - shape.minMax.minX + 60).toFixed(2) + " " +
+						(shape.minMax.maxY - shape.minMax.minY + 60).toFixed(2),
 					"height": "100%",
 					"width": "100%",
 					"xmlns": "http://www.w3.org/2000/svg",
@@ -5235,7 +5235,7 @@
 					mode: labelNameObj.mode,
 					atomX: absPos[0],
 					atomY: absPos[1],
-					labelX: absPos[0] + calcCorrectX(labelNameObj.mode) * BOND_LENGTH,
+					labelX: absPos[0] + calcCorrectX(labelNameObj.mode, labelNameObj.name) * BOND_LENGTH,
 					labelY: absPos[1] + calcCorrectY() * BOND_LENGTH,
 					width: DCSvg.fontSize * labelNameObj.name.length,
 					height: DCSvg.fontSize
@@ -5254,11 +5254,11 @@
 					return result;
 				}
 
-				function calcCorrectX(mode) {
+				function calcCorrectX(mode, name) {
 					if (mode === "rl") {
-						return 0.175;
+						return name === "I" ? 0.07: 0.2;
 					} else if (mode === "lr") {
-						return -0.175;
+						return name === "I" ? -0.07: -0.2;
 					}
 				}
 

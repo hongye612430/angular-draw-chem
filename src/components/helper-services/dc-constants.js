@@ -42,7 +42,7 @@
 
 			// 'push' factor is related to bonds starting/ending on an atom with a label
 			// (it has to start/end outside of the label)
-			service.PUSH = 0.25;
+			service.PUSH = 0.3;
 
 			// default angle between two bonds (in degrees)
 			service.ANGLE = 120;
