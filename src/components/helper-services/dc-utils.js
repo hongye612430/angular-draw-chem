@@ -281,11 +281,18 @@
 		 * Checks if a point is inside an area delimited by a circle.
 		 * @param {number[]} center - coordinates of the center of a circle,
 		 * @param {number[]} point - coordinates of a point to be validated,
-		 * @param {number} tolerance - r of the circle,
+		 * @param {number} r - r of the circle,
 		 * @returns {boolean}
 		 */
-		service.insideCircle = function (center, point, tolerance) {
-			return Math.abs(center[0] - point[0]) < tolerance && Math.abs(center[1] - point[1]) < tolerance;
+		service.insideCircle = function (center, point, r) {
+			var dist = Math.sqrt(Math.pow(point[0] - center[0], 2) + Math.pow(point[1] - center[1], 2));
+			return dist <= r;
+		};
+
+		service.insideFocus = function (startAbsPos, bond, mousePos, tolerance) {
+			var endAtom = bond.getAtom(),
+			  endAbsPos = Utils.addVectors(startAbsPos, endAtom.getCoords());
+
 		};
 
 		/**

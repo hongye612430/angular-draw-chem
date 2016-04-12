@@ -380,6 +380,45 @@
 			}
 		};
 
+		/**
+		 * Checks if supplied coordinates are within bond 'focus'.
+		 * @param {Structure} structure - a `Structure` object on which search is performed,
+		 * @param {number[]} position - set of coordinates against which the search is performed,
+		 * @returns {Object}
+		 */
+		service.isWithinBond = function (structure, position) {
+			var found = false,
+				foundObj = {},
+				origin = structure.getOrigin();
+
+			check(structure.getStructure(), origin);
+
+			return foundObj;
+
+			function check(struct, pos) {
+				var i, absPos, aux, obj;
+				for(i = 0; i < struct.length; i += 1) {
+					obj = struct[i];
+					if (!(obj instanceof Atom || obj instanceof Bond)) { continue; }
+					if (obj instanceof Atom) {
+						aux = obj;
+					} else {
+						aux = obj.getAtom();
+						if (aux.isOrphan()) { continue; }
+					}
+					absPos = [aux.getCoords("x") + pos[0], aux.getCoords("y") + pos[1]];
+					if (!found && (obj instanceof Bond) && Utils.insideFocus(absPos, obj, position, Const.BOND_FOCUS)) {
+						found = true;
+						foundObj.startingAtom = aux;
+						foundObj.startingAbsPos = absPos;
+						foundObj.foundBond = obj;
+					} else {
+					  check(aux.getBonds(), absPos);
+					}
+				}
+			}
+		};
+
 		return service;
 	}
 })();

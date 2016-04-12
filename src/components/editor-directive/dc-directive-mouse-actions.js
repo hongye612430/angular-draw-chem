@@ -48,6 +48,9 @@
           mouseFlags.downMouseCoords = [elem.attr("atomx"), elem.attr("atomy")];
         }
         checkIfDownOnAtom();
+				if (!mouseFlags.downOnAtom) {
+					checkIfDownOnBond();
+				}
       }
 
       function checkIfDownOnAtom() {
@@ -58,6 +61,16 @@
           // set flag if atom was found
           mouseFlags.downOnAtom = true;
         }
+      }
+
+			function checkIfDownOnBond() {
+				var withinObject = ModStructure.isWithinBond(Cache.getCurrentStructure(), mouseFlags.downMouseCoords);
+        //mouseFlags.downBondCoords = withinObject.absPos;
+				//mouseFlags.downBondObject = withinObject.foundAtom;
+        //if (typeof withinObject.foundAtom !== "undefined") {
+        //  // set flag if atom was found
+        //  mouseFlags.downOnAtom = true;
+        //}
       }
     }
 

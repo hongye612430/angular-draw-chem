@@ -195,6 +195,7 @@
 								output[newLen - 1].push(absPos);
 							}
 						} else if (mode === "begin") {
+							output.push(["focus", "M", prevAbsPos, "L", absPos]);
 							if (push && newPush) {
 								newLen = output.push(["M", pushVector, "L", newPushVector]);
 							} else if (push) {
@@ -207,27 +208,37 @@
 						}
 					} else if (bondType === "double") {
 						output.push(calcDoubleBondCoords("middle", prevAbsPos, absPos, push, newPush));
+						output.push(["focus", "M", prevAbsPos, "L", absPos]);
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "double-right") {
 						output.push(calcDoubleBondCoords("right", prevAbsPos, absPos, push, newPush));
+						output.push(["focus", "M", prevAbsPos, "L", absPos]);
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "double-left") {
 						output.push(calcDoubleBondCoords("left", prevAbsPos, absPos, push, newPush));
+						output.push(["focus", "M", prevAbsPos, "L", absPos]);
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "triple") {
 						output.push(calcTripleBondCoords(prevAbsPos, absPos, push, newPush));
+						output.push(["focus", "M", prevAbsPos, "L", absPos]);
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "wedge") {
 						output.push(calcWedgeBondCoords(prevAbsPos, absPos, push, newPush));
+						output.push(["focus", "M", prevAbsPos, "L", absPos]);
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "dash") {
 						output.push(calcDashBondCoords(prevAbsPos, absPos, push, newPush));
+						output.push(["focus", "M", prevAbsPos, "L", absPos]);
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "undefined") {
 						output.push(calcUndefinedBondCoords(prevAbsPos, absPos, push, newPush));
+						output.push(["focus", "M", prevAbsPos, "L", absPos]);
 						newLen = output.push(["M", absPos]);
 					}
 					connect(absPos, atom.getBonds(), output[newLen - 1], newPush);
+					if (mode === "continue") {
+						output.push(["focus", "M", prevAbsPos, "L", absPos]);
+					}
 				}
 
 				function updateMinMax(absPos) {
@@ -432,6 +443,7 @@
 				L = Utils.addVectors(currentEnd, perpVectCoordsCW, factor);
 				result = result.concat(["M", M, "L", L]);
 			}
+
 			return result;
 		}
 
@@ -468,7 +480,7 @@
 				c2 = Utils.addVectors(subEnd, perpVectCoordsCW, UNDEF_BOND);
 			}
 
-			result = ["M", start, "C", stringVect(c1), stringVect(c2), subEnd];
+			result = ["M", start, "C", c1, ",", c2, ",", subEnd];
 
 			for (i = max - 1; i > 0; i -= 1) {
 				subEnd = Utils.addVectors(subEnd, vectCoords, 1 / max);
@@ -477,14 +489,10 @@
 				} else {
 					c2 = Utils.addVectors(subEnd, perpVectCoordsCCW, UNDEF_BOND);
 				}
-				result = result.concat(["S", stringVect(c2), subEnd]);
+				result = result.concat(["S", c2, ",", subEnd]);
 			}
 
 			return result;
-
-			function stringVect(v) {
-				return v[0].toFixed(2) + " " + v[1].toFixed(2) + ",";
-			}
 		}
 
 		/**

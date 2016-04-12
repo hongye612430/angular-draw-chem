@@ -158,7 +158,7 @@
         for (j = 0; j < line.length; j += 1) {
           point = line[j];
           if (typeof point === "string") {
-            if (point === "arrow" || point === "arrow-eq" || point === "wedge") {
+            if (isClass(point)) {
               lineStr.class = point;
             } else {
               lineStr.line += point + " ";
@@ -170,6 +170,10 @@
         result.push(lineStr);
       }
       return result;
+
+			function isClass(str) {
+				return str !== "M" && str !== "L" && str !== "C" && str !== "S" && str !== "Z" && str !== ",";
+			}
     };
 
 		/**

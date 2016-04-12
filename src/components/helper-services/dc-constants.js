@@ -56,6 +56,9 @@
 			// default distance between two parallel bonds in double bonds (as a percent of the bond length);
 			service.BETWEEN_DBL_BONDS = 0.065;
 
+			// bond focus
+			service.BOND_FOCUS = service.BOND_LENGTH * 0.15;
+
 			// correction for 'left' and 'right' double bonds
 			service.DBL_BOND_CORR = service.BOND_LENGTH * 3 / 800;
 
@@ -75,7 +78,7 @@
 			service.BOND_WIDTH = (service.BOND_LENGTH * service.WIDTH_TO_LENGTH).toFixed(2);
 
 			// default r of a circle around an atom
-			service.CIRC_R = service.BOND_LENGTH * 0.12;
+			service.CIRC_R = service.BOND_LENGTH * 0.15;
 
 			// default directions, clock-wise
 			service.DIRECTIONS = [

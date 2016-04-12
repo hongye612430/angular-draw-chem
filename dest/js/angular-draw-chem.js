@@ -1648,9 +1648,16 @@
 			var style = {
 					expanded: {
 						"circle.atom:hover": {
-							"opacity": "0.3",
+							"opacity": "0.3"
+						},
+						"path.focus": {
+							"opacity": "0",
 							"stroke": "black",
-							"stroke-width": Const.BOND_WIDTH,
+							"stroke-linecap": "round",
+							"stroke-width": 8 * Const.BOND_WIDTH
+						},
+						"path.focus:hover": {
+							"opacity": "0.3"
 						},
 						"circle.arom:hover": {
 							"opacity": "0.3",
@@ -1663,6 +1670,8 @@
 						},
 						"circle.atom": {
 							"opacity": "0",
+							"stroke": "black",
+							"stroke-width": Const.BOND_WIDTH
 						},
 						"circle.edit": {
 							"stroke": "black",
@@ -1823,6 +1832,9 @@
           mouseFlags.downMouseCoords = [elem.attr("atomx"), elem.attr("atomy")];
         }
         checkIfDownOnAtom();
+				if (!mouseFlags.downOnAtom) {
+					checkIfDownOnBond();
+				}
       }
 
       function checkIfDownOnAtom() {
@@ -1833,6 +1845,16 @@
           // set flag if atom was found
           mouseFlags.downOnAtom = true;
         }
+      }
+
+			function checkIfDownOnBond() {
+				var withinObject = ModStructure.isWithinBond(Cache.getCurrentStructure(), mouseFlags.downMouseCoords);
+        //mouseFlags.downBondCoords = withinObject.absPos;
+				//mouseFlags.downBondObject = withinObject.foundAtom;
+        //if (typeof withinObject.foundAtom !== "undefined") {
+        //  // set flag if atom was found
+        //  mouseFlags.downOnAtom = true;
+        //}
       }
     }
 
@@ -2514,6 +2536,9 @@
 			// default distance between two parallel bonds in double bonds (as a percent of the bond length);
 			service.BETWEEN_DBL_BONDS = 0.065;
 
+			// bond focus
+			service.BOND_FOCUS = service.BOND_LENGTH * 0.15;
+
 			// correction for 'left' and 'right' double bonds
 			service.DBL_BOND_CORR = service.BOND_LENGTH * 3 / 800;
 
@@ -2533,7 +2558,7 @@
 			service.BOND_WIDTH = (service.BOND_LENGTH * service.WIDTH_TO_LENGTH).toFixed(2);
 
 			// default r of a circle around an atom
-			service.CIRC_R = service.BOND_LENGTH * 0.12;
+			service.CIRC_R = service.BOND_LENGTH * 0.15;
 
 			// default directions, clock-wise
 			service.DIRECTIONS = [
@@ -2863,11 +2888,18 @@
 		 * Checks if a point is inside an area delimited by a circle.
 		 * @param {number[]} center - coordinates of the center of a circle,
 		 * @param {number[]} point - coordinates of a point to be validated,
-		 * @param {number} tolerance - r of the circle,
+		 * @param {number} r - r of the circle,
 		 * @returns {boolean}
 		 */
-		service.insideCircle = function (center, point, tolerance) {
-			return Math.abs(center[0] - point[0]) < tolerance && Math.abs(center[1] - point[1]) < tolerance;
+		service.insideCircle = function (center, point, r) {
+			var dist = Math.sqrt(Math.pow(point[0] - center[0], 2) + Math.pow(point[1] - center[1], 2));
+			return dist <= r;
+		};
+
+		service.insideFocus = function (startAbsPos, bond, mousePos, tolerance) {
+			var endAtom = bond.getAtom(),
+			  endAbsPos = Utils.addVectors(startAbsPos, endAtom.getCoords());
+
 		};
 
 		/**
@@ -4556,6 +4588,45 @@
 			}
 		};
 
+		/**
+		 * Checks if supplied coordinates are within bond 'focus'.
+		 * @param {Structure} structure - a `Structure` object on which search is performed,
+		 * @param {number[]} position - set of coordinates against which the search is performed,
+		 * @returns {Object}
+		 */
+		service.isWithinBond = function (structure, position) {
+			var found = false,
+				foundObj = {},
+				origin = structure.getOrigin();
+
+			check(structure.getStructure(), origin);
+
+			return foundObj;
+
+			function check(struct, pos) {
+				var i, absPos, aux, obj;
+				for(i = 0; i < struct.length; i += 1) {
+					obj = struct[i];
+					if (!(obj instanceof Atom || obj instanceof Bond)) { continue; }
+					if (obj instanceof Atom) {
+						aux = obj;
+					} else {
+						aux = obj.getAtom();
+						if (aux.isOrphan()) { continue; }
+					}
+					absPos = [aux.getCoords("x") + pos[0], aux.getCoords("y") + pos[1]];
+					if (!found && (obj instanceof Bond) && Utils.insideFocus(absPos, obj, position, Const.BOND_FOCUS)) {
+						found = true;
+						foundObj.startingAtom = aux;
+						foundObj.startingAbsPos = absPos;
+						foundObj.foundBond = obj;
+					} else {
+					  check(aux.getBonds(), absPos);
+					}
+				}
+			}
+		};
+
 		return service;
 	}
 })();
@@ -4757,6 +4828,7 @@
 								output[newLen - 1].push(absPos);
 							}
 						} else if (mode === "begin") {
+							output.push(["focus", "M", prevAbsPos, "L", absPos]);
 							if (push && newPush) {
 								newLen = output.push(["M", pushVector, "L", newPushVector]);
 							} else if (push) {
@@ -4769,27 +4841,37 @@
 						}
 					} else if (bondType === "double") {
 						output.push(calcDoubleBondCoords("middle", prevAbsPos, absPos, push, newPush));
+						output.push(["focus", "M", prevAbsPos, "L", absPos]);
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "double-right") {
 						output.push(calcDoubleBondCoords("right", prevAbsPos, absPos, push, newPush));
+						output.push(["focus", "M", prevAbsPos, "L", absPos]);
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "double-left") {
 						output.push(calcDoubleBondCoords("left", prevAbsPos, absPos, push, newPush));
+						output.push(["focus", "M", prevAbsPos, "L", absPos]);
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "triple") {
 						output.push(calcTripleBondCoords(prevAbsPos, absPos, push, newPush));
+						output.push(["focus", "M", prevAbsPos, "L", absPos]);
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "wedge") {
 						output.push(calcWedgeBondCoords(prevAbsPos, absPos, push, newPush));
+						output.push(["focus", "M", prevAbsPos, "L", absPos]);
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "dash") {
 						output.push(calcDashBondCoords(prevAbsPos, absPos, push, newPush));
+						output.push(["focus", "M", prevAbsPos, "L", absPos]);
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "undefined") {
 						output.push(calcUndefinedBondCoords(prevAbsPos, absPos, push, newPush));
+						output.push(["focus", "M", prevAbsPos, "L", absPos]);
 						newLen = output.push(["M", absPos]);
 					}
 					connect(absPos, atom.getBonds(), output[newLen - 1], newPush);
+					if (mode === "continue") {
+						output.push(["focus", "M", prevAbsPos, "L", absPos]);
+					}
 				}
 
 				function updateMinMax(absPos) {
@@ -4994,6 +5076,7 @@
 				L = Utils.addVectors(currentEnd, perpVectCoordsCW, factor);
 				result = result.concat(["M", M, "L", L]);
 			}
+
 			return result;
 		}
 
@@ -5030,7 +5113,7 @@
 				c2 = Utils.addVectors(subEnd, perpVectCoordsCW, UNDEF_BOND);
 			}
 
-			result = ["M", start, "C", stringVect(c1), stringVect(c2), subEnd];
+			result = ["M", start, "C", c1, ",", c2, ",", subEnd];
 
 			for (i = max - 1; i > 0; i -= 1) {
 				subEnd = Utils.addVectors(subEnd, vectCoords, 1 / max);
@@ -5039,14 +5122,10 @@
 				} else {
 					c2 = Utils.addVectors(subEnd, perpVectCoordsCCW, UNDEF_BOND);
 				}
-				result = result.concat(["S", stringVect(c2), subEnd]);
+				result = result.concat(["S", c2, ",", subEnd]);
 			}
 
 			return result;
-
-			function stringVect(v) {
-				return v[0].toFixed(2) + " " + v[1].toFixed(2) + ",";
-			}
 		}
 
 		/**
@@ -5268,7 +5347,7 @@
         for (j = 0; j < line.length; j += 1) {
           point = line[j];
           if (typeof point === "string") {
-            if (point === "arrow" || point === "arrow-eq" || point === "wedge") {
+            if (isClass(point)) {
               lineStr.class = point;
             } else {
               lineStr.line += point + " ";
@@ -5280,6 +5359,10 @@
         result.push(lineStr);
       }
       return result;
+
+			function isClass(str) {
+				return str !== "M" && str !== "L" && str !== "C" && str !== "S" && str !== "Z" && str !== ",";
+			}
     };
 
 		/**
