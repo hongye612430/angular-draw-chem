@@ -1,4 +1,4 @@
-newest stable release: v1.0.0
+latest stable release: v1.0.0
 
 current:
 
