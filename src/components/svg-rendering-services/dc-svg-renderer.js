@@ -24,6 +24,7 @@
 			ARROW_SIZE = Const.ARROW_SIZE,
 			UNDEF_BOND = Const.UNDEF_BOND,
 			PUSH = Const.PUSH,
+			DBL_BOND_CORR = Const.DBL_BOND_CORR,
 		  Atom = DCAtom.Atom,
 			Arrow = DCArrow.Arrow,
 			Selection = DCSelection.Selection,
@@ -205,7 +206,13 @@
 							}
 						}
 					} else if (bondType === "double") {
-						output.push(calcDoubleBondCoords(prevAbsPos, absPos, push, newPush));
+						output.push(calcDoubleBondCoords("middle", prevAbsPos, absPos, push, newPush));
+						newLen = output.push(["M", absPos]);
+					} else if (bondType === "double-right") {
+						output.push(calcDoubleBondCoords("right", prevAbsPos, absPos, push, newPush));
+						newLen = output.push(["M", absPos]);
+					} else if (bondType === "double-left") {
+						output.push(calcDoubleBondCoords("left", prevAbsPos, absPos, push, newPush));
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "triple") {
 						output.push(calcTripleBondCoords(prevAbsPos, absPos, push, newPush));
@@ -291,13 +298,14 @@
 
 		/**
 		* Calculates data for the svg instructions in `path` element for double bond.
+		* @param {string} type - type of the bond ('middle', 'left', 'right'),
 		* @param {number[]} start - start coordinates (absolute) of the atom,
 		* @param {number[]} end - end coordinates (absolute) of the atom,
 		* @returns {Array}
 		*/
-		function calcDoubleBondCoords(start, end, push, newPush) {
+		function calcDoubleBondCoords(type, start, end, push, newPush) {
 			var vectCoords = [end[0] - start[0], end[1] - start[1]],
-			  aux = Utils.multVectByScalar(vectCoords, PUSH),
+			  aux = Utils.multVectByScalar(vectCoords, PUSH), corr,
 				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
 				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
 				M1 = Utils.addVectors(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
@@ -305,11 +313,38 @@
 				M2 = Utils.addVectors(start, perpVectCoordsCW, BETWEEN_DBL_BONDS),
 				L2 = Utils.addVectors(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
 
+			if (type === "right") {
+				M2 = Utils.addVectors(start, perpVectCoordsCW, 2 * BETWEEN_DBL_BONDS);
+				L2 = Utils.addVectors(end, perpVectCoordsCW, 2 * BETWEEN_DBL_BONDS);
+			} else if (type === "left") {
+				M2 = Utils.addVectors(start, perpVectCoordsCCW, 2 * BETWEEN_DBL_BONDS);
+				L2 = Utils.addVectors(end, perpVectCoordsCCW, 2 * BETWEEN_DBL_BONDS);
+			}
+
+			if (type !== "middle") {
+				M1 = angular.copy(start);
+				L1 = angular.copy(end);
+				vectCoords = [L2[0] - M2[0], L2[1] - M2[1]];
+				corr = Utils.multVectByScalar(vectCoords, DBL_BOND_CORR);
+				M2 = Utils.addVectors(M2, corr);
+				L2 = Utils.subtractVectors(L2, corr);
+			}
+
 			if (push) {
-				doWithManyVectors("add", [M1, M2], aux);
+				if (type !== "middle") {
+					M1 = Utils.addVectors(M1, aux);
+					M2 = Utils.addVectors(M2, Utils.multVectByScalar(corr, 1.5));
+				} else {
+				  doWithManyVectors("add", [M1, M2], aux);
+				}
 			}
 			if (newPush) {
-				doWithManyVectors("subtract", [L1, L2], aux);
+				if (type !== "middle") {
+					L1 = Utils.subtractVectors(L1, aux);
+					L2 = Utils.subtractVectors(L2, Utils.multVectByScalar(corr, 1.5));
+				} else {
+				  doWithManyVectors("subtract", [L1, L2], aux);
+				}
 			}
 
 			return ["M", M1, "L", L1, "M", M2, "L", L2];

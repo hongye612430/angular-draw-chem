@@ -232,7 +232,7 @@ describe("DrawChemEditor directive tests - part2", function () {
 							styleBase + styleExpanded +
 						"</style>" +
 						"<path d=\"M 98.00 98.00 L 115.32 108.00 L 115.32 128.00 L 98.00 138.00 L 80.68 128.00 L 80.68 108.00 L 98.00 98.00 \"></path>" +
-						"<path d=\"M 115.32 108.00 L 128.31 100.50 \"></path>" +
+						"<path d=\"M 115.32 108.00 L 129.67 99.71 \"></path>" +
 						"<path d=\"M 98.00 98.00 L 98.00 78.00 \"></path>" +
 						"<circle class=\"atom\" cx=\"98.00\" cy=\"98.00\" r=\"2.40\"></circle>" +
 						"<circle class=\"atom\" cx=\"115.32\" cy=\"108.00\" r=\"2.40\"></circle>" +
@@ -240,9 +240,9 @@ describe("DrawChemEditor directive tests - part2", function () {
 						"<circle class=\"atom\" cx=\"98.00\" cy=\"138.00\" r=\"2.40\"></circle>" +
 						"<circle class=\"atom\" cx=\"80.68\" cy=\"128.00\" r=\"2.40\"></circle>" +
 						"<circle class=\"atom\" cx=\"80.68\" cy=\"108.00\" r=\"2.40\"></circle>" +
-						"<circle class=\"atom\" cx=\"132.64\" cy=\"98.00\" r=\"2.40\"></circle>" +
+						"<circle class=\"label\" cx=\"132.64\" cy=\"98.00\" r=\"2.40\"></circle>" +
 						"<circle class=\"atom\" cx=\"98.00\" cy=\"78.00\" r=\"2.40\"></circle>" +
-						"<text dy=\"0.2125em\" x=\"129.14\" y=\"99.80\" atomx=\"132.64\" atomy=\"98.00\" text-anchor=\"start\">" +
+						"<text class=\"edit\" dy=\"0.2125em\" x=\"128.64\" y=\"99.80\" atomx=\"132.64\" atomy=\"98.00\" text-anchor=\"start\">" +
 						  "<tspan>O</tspan><tspan>H</tspan>" +
 						"</text>" +
 						"<circle class=\"arom\" cx=\"98.00\" cy=\"118.00\" r=\"9.00\"></circle>" +
@@ -311,7 +311,7 @@ describe("DrawChemEditor directive tests - part2", function () {
 							styleBase + styleExpanded +
 						"</style>" +
 						"<path d=\"M 98.00 98.00 L 115.32 108.00 L 115.32 128.00 L 98.00 138.00 L 80.68 128.00 L 80.68 108.00 L 98.00 98.00 \"></path>" +
-						"<path d=\"M 115.32 108.00 L 128.31 100.50 \"></path>" +
+						"<path d=\"M 115.32 108.00 L 129.67 99.71 \"></path>" +
 						"<path d=\"M 98.00 98.00 L 98.00 78.00 \"></path>" +
 						"<circle class=\"atom\" cx=\"98.00\" cy=\"98.00\" r=\"2.40\"></circle>" +
 						"<circle class=\"atom\" cx=\"115.32\" cy=\"108.00\" r=\"2.40\"></circle>" +
@@ -319,9 +319,9 @@ describe("DrawChemEditor directive tests - part2", function () {
 						"<circle class=\"atom\" cx=\"98.00\" cy=\"138.00\" r=\"2.40\"></circle>" +
 						"<circle class=\"atom\" cx=\"80.68\" cy=\"128.00\" r=\"2.40\"></circle>" +
 						"<circle class=\"atom\" cx=\"80.68\" cy=\"108.00\" r=\"2.40\"></circle>" +
-						"<circle class=\"atom\" cx=\"132.64\" cy=\"98.00\" r=\"2.40\"></circle>" +
+						"<circle class=\"label\" cx=\"132.64\" cy=\"98.00\" r=\"2.40\"></circle>" +
 						"<circle class=\"atom\" cx=\"98.00\" cy=\"78.00\" r=\"2.40\"></circle>" +
-						"<text dy=\"0.2125em\" x=\"129.14\" y=\"99.80\" atomx=\"132.64\" atomy=\"98.00\" text-anchor=\"start\">" +
+						"<text class=\"edit\" dy=\"0.2125em\" x=\"128.64\" y=\"99.80\" atomx=\"132.64\" atomy=\"98.00\" text-anchor=\"start\">" +
 						  "<tspan>O</tspan><tspan>H</tspan>" +
 						"</text>" +
 						"<circle class=\"arom\" cx=\"98.00\" cy=\"118.00\" r=\"9.00\"></circle>" +

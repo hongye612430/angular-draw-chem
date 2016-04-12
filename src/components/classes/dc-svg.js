@@ -119,7 +119,7 @@
 							"stroke-width": Const.BOND_WIDTH,
 							"fill": "black"
 						},
-						"text:hover": {
+						"text.edit:hover": {
 							"opacity": "0.3"
 						},
 						"circle.atom": {
@@ -128,6 +128,9 @@
 						"circle.edit": {
 							"stroke": "black",
 							"fill": "none"
+						},
+						"circle.label": {
+							"opacity": "0"
 						},
 						"rect.selection": {
 							"stroke": "black",

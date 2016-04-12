@@ -42,7 +42,7 @@
 
 			// 'push' factor is related to bonds starting/ending on an atom with a label
 			// (it has to start/end outside of the label)
-			service.PUSH = 0.3;
+			service.PUSH = service.BOND_LENGTH * 3 / 350;
 
 			// default angle between two bonds (in degrees)
 			service.ANGLE = 120;
@@ -55,6 +55,9 @@
 
 			// default distance between two parallel bonds in double bonds (as a percent of the bond length);
 			service.BETWEEN_DBL_BONDS = 0.065;
+
+			// correction for 'left' and 'right' double bonds
+			service.DBL_BOND_CORR = service.BOND_LENGTH * 3 / 800;
 
 			// factor for Bezier curve in 'undefined' bond
 			service.UNDEF_BOND = 1.5 * service.BETWEEN_DBL_BONDS;

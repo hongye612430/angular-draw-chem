@@ -1,0 +1,13 @@
+<!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>
+<svg viewBox='332.89 66.60 110.62 120.00' height='100%' width='100%' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' >
+<g id='transfer' >
+<style type="text/css">path{stroke:black;stroke-width:1.40;fill:none;}path.wedge{fill:black;}path.arrow{fill:black;}path.arrow-eq{fill:none;}circle.arom{stroke:black;stroke-width:1.40;fill:none;}circle.tr-arom{stroke:black;stroke-width:1.40;fill:none;}text{font-family:Arial;cursor:default;font-size:18px;}tspan.sub{font-size:14px;}polygon.text{fill:white;}</style>
+<path d='M 403.20 106.60 L 433.51 124.10 '></path>
+<path d='M 433.51 124.10 L 433.51 159.10 M 428.96 128.69 L 428.96 154.51 '></path>
+<path d='M 433.51 159.10 L 403.20 176.60 '></path>
+<path d='M 403.20 176.60 L 372.89 159.10 M 401.50 170.36 L 379.14 157.46 '></path>
+<path d='M 372.89 159.10 L 372.89 124.10 '></path>
+<path d='M 372.89 124.10 L 403.20 106.60 M 379.14 125.74 L 401.50 112.84 '></path>
+<path d='M 403.20 106.60 '></path>
+</g>
+</svg>

@@ -13,12 +13,14 @@
     * @param {string} name - name of the cyclic structure,
     * @param {number} ringSize - size of the ring,
     * @param {number} angle - angle in degrees between two bonds (vectors) in the ring,
+		* @param {number} mult - associated multiplicity of the bond (1 for saturated, 2 for aromatic),
     * @param {boolean} aromatic - true if structure is aromatic
 		*/
-    function CyclicStructure(name, ringSize, angle, aromatic) {
+    function CyclicStructure(name, ringSize, angle, mult, aromatic) {
       this.name = name;
       this.ringSize = ringSize;
       this.angle = angle;
+			this.mult = mult;
       this.aromatic = aromatic;
     }
 
@@ -36,6 +38,14 @@
     */
     CyclicStructure.prototype.getRingSize = function () {
       return this.ringSize;
+    };
+
+		/**
+    * Gets multiplicity of cyclic structure.
+    * @returns {number}
+    */
+    CyclicStructure.prototype.getMult = function () {
+      return this.mult;
     };
 
     /**

@@ -527,12 +527,14 @@
     * @param {string} name - name of the cyclic structure,
     * @param {number} ringSize - size of the ring,
     * @param {number} angle - angle in degrees between two bonds (vectors) in the ring,
+		* @param {number} mult - associated multiplicity of the bond (1 for saturated, 2 for aromatic),
     * @param {boolean} aromatic - true if structure is aromatic
 		*/
-    function CyclicStructure(name, ringSize, angle, aromatic) {
+    function CyclicStructure(name, ringSize, angle, mult, aromatic) {
       this.name = name;
       this.ringSize = ringSize;
       this.angle = angle;
+			this.mult = mult;
       this.aromatic = aromatic;
     }
 
@@ -550,6 +552,14 @@
     */
     CyclicStructure.prototype.getRingSize = function () {
       return this.ringSize;
+    };
+
+		/**
+    * Gets multiplicity of cyclic structure.
+    * @returns {number}
+    */
+    CyclicStructure.prototype.getMult = function () {
+      return this.mult;
     };
 
     /**
@@ -741,13 +751,15 @@
 		* @param {Structure[]} defs - array of Structure objects belonging to the cluster,
 		* @param {number} ringSize - size of the associated ring, defaults to 0 for acyclic structures,
 		* @param {number} angle - angle between bonds in cyclic structures,
-		* @param {number} mult - multiplicity of the associated bond (undefined for cyclic structures)
+		* @param {number} mult - multiplicity of the associated bond (undefined for cyclic structures),
+		* @param {boolean} aromatic - true if is aromatic
 		*/
-		function StructureCluster(name, defs, ringSize, angle, mult) {
+		function StructureCluster(name, defs, ringSize, angle, mult, aromatic) {
 			this.name = name;
 			this.defs = defs;
 			this.ringSize = ringSize;
 			this.angle = angle;
+			this.aromatic = aromatic;
 			this.multiplicity = mult;
 			this.defaultStructure = defs[0];
 		}
@@ -782,6 +794,14 @@
 		*/
 		StructureCluster.prototype.getMult = function () {
 			return this.multiplicity;
+		};
+
+		/**
+		* Checks if structures associated with this object are aromatic.
+		* @returns {boolean}
+		*/
+		StructureCluster.prototype.isAromatic = function () {
+			return !!this.aromatic;
 		};
 
 		/**
@@ -1638,7 +1658,7 @@
 							"stroke-width": Const.BOND_WIDTH,
 							"fill": "black"
 						},
-						"text:hover": {
+						"text.edit:hover": {
 							"opacity": "0.3"
 						},
 						"circle.atom": {
@@ -1647,6 +1667,9 @@
 						"circle.edit": {
 							"stroke": "black",
 							"fill": "none"
+						},
+						"circle.label": {
+							"opacity": "0"
 						},
 						"rect.selection": {
 							"stroke": "black",
@@ -1991,6 +2014,7 @@
 						if (structureAux.isAromatic()) {
 							// if the chosen Structure object is aromatic,
 							// then add appropriate flag to the original Structure object
+							structure.setAromatic();
 							bond = Const.getBondByDirection(structureAux.getName()).bond;
 							structure.addDecorate("aromatic", {
 								fromWhich: angular.copy(newCoords),
@@ -2003,6 +2027,7 @@
 						if (structureAux.isAromatic()) {
 							// if the chosen Structure object is aromatic,
 							// then add appropriate flag to the original Structure object
+							structure.setAromatic();
 							bond = Const.getBondByDirection(structureAux.getName()).bond;
 							structure.addDecorate("aromatic", {
 								fromWhich: angular.copy(newCoords),
@@ -2109,6 +2134,7 @@
 					if (structureAux.isAromatic()) {
 						// if the chosen Structure object is aromatic,
 						// then add appropriate flag to the original Structure object
+						structure.setAromatic();
 						bond = Const.getBondByDirection(structureAux.getName()).bond;
 						structure.addDecorate("aromatic", {
 							fromWhich: angular.copy(newCoords),
@@ -2474,7 +2500,7 @@
 
 			// 'push' factor is related to bonds starting/ending on an atom with a label
 			// (it has to start/end outside of the label)
-			service.PUSH = 0.3;
+			service.PUSH = service.BOND_LENGTH * 3 / 350;
 
 			// default angle between two bonds (in degrees)
 			service.ANGLE = 120;
@@ -2487,6 +2513,9 @@
 
 			// default distance between two parallel bonds in double bonds (as a percent of the bond length);
 			service.BETWEEN_DBL_BONDS = 0.065;
+
+			// correction for 'left' and 'right' double bonds
+			service.DBL_BOND_CORR = service.BOND_LENGTH * 3 / 800;
 
 			// factor for Bezier curve in 'undefined' bond
 			service.UNDEF_BOND = 1.5 * service.BETWEEN_DBL_BONDS;
@@ -3852,8 +3881,10 @@
 			new CyclicStructure("cyclopropane", 3, 60),
 			new CyclicStructure("cyclobutane", 4, 90),
 			new CyclicStructure("cyclopentane", 5, 108),
+			new CyclicStructure("cyclopentadiene", 5, 108, { every: 2 }),
 			new CyclicStructure("cyclohexane", 6, 120),
-			new CyclicStructure("benzene", 6, 120, true),
+			new CyclicStructure("benzene", 6, 120, { every: 2 }, true), // with aromatic circle
+			new CyclicStructure("benzeneAlt", 6, 120, { every: 2 }), // with double bonds
 			new CyclicStructure("cycloheptane", 7, 128.57),
 			new CyclicStructure("cyclooctane", 8, 135),
 			new CyclicStructure("cyclononane", 9, 140)
@@ -3890,6 +3921,11 @@
 				id: "benzene",
 				thumbnail: true
 			},
+			"benzene alt": {
+				action: createStructureAction(service.benzeneAlt),
+				id: "benzene-alt",
+				thumbnail: true
+			},
 			"cyclohexane": {
 				action: createStructureAction(service.cyclohexane),
 				id: "cyclohexane",
@@ -3898,6 +3934,11 @@
 			"cyclopentane": {
 				action: createStructureAction(service.cyclopentane),
 				id: "cyclopentane",
+				thumbnail: true
+			},
+			"cyclopentadiene": {
+				action: createStructureAction(service.cyclopentadiene),
+				id: "cyclopentadiene",
 				thumbnail: true
 			},
 			"cycloheptane": {
@@ -3989,11 +4030,11 @@
 		 * @param {string} decorate - indicates decorate element (e.g. aromatic ring),
 		 * @returns {Structure[]}
 		 */
-		service.generateRings = function (deg, size, aromatic) {
+		service.generateRings = function (deg, size, aromatic, mult) {
 			var i, direction, result = [];
 			for (i = 0; i < BONDS.length; i += 1) {
 				direction = BONDS[i].direction;
-				result.push(genRing(direction, deg, size, aromatic));
+				result.push(genRing(direction, deg, size));
 			}
 
 			return result;
@@ -4014,7 +4055,7 @@
 				firstAtom = new Atom([0, 0], [], { out: [{ vector: angular.copy(rotVect), multiplicity: 1 }] });
 				nextAtom = new Atom(rotVect, [], { in: [{ vector: angular.copy(rotVect), multiplicity: 1 }] });
 				firstAtom.addBond(new Bond("single", nextAtom));
-				service.generateRing(nextAtom, size, deg, firstAtom);
+				service.generateRing(nextAtom, size, deg, firstAtom, mult, 2, aromatic);
 				structure = new Structure(opposite, [firstAtom]);
 				if (aromatic) {
 					structure.setAromatic();
@@ -4029,21 +4070,29 @@
 		 * @param {Atom} atom - `Atom` object, to which new atom will be added,
 		 * @param {number} depth - starting/current depth of the structure tree,
 		 * @param {number} deg - angle between bonds (vectors),
-		 * @param {Atom} firstAtom - first `Atom` object in this cyclic structure
+		 * @param {Atom} firstAtom - first `Atom` object in this cyclic structure,
+		 * @param {Object} mult - multiplicity object (which bonds should be double),
+		 * @param {number} index - current atom index,
+		 * @param {boolean} aromatic - if the ring is has an aromatic circle
 		 */
-		service.generateRing = function(atom, depth, deg, firstAtom) {
-			var rotVect = Utils.rotVectCW(atom.getCoords(), 180 - deg),
+		service.generateRing = function(atom, depth, deg, firstAtom, mult, index, aromatic) {
+			var rotVect = Utils.rotVectCW(atom.getCoords(), 180 - deg), currMult = 1, bondType = "single",
 				newAtom = new Atom(rotVect, []);
 
-			atom.attachBond("out", { vector: angular.copy(rotVect), multiplicity: 1 });
+			if (typeof mult !== "undefined" && (index % mult.every === 0 || depth === 1)) {
+				currMult = 2;
+				bondType = aromatic ? "single": "double-left";
+			}
+
+			atom.attachBond("out", { vector: angular.copy(rotVect), multiplicity: currMult });
 			if (depth === 1) {
 				atom.setAsOrphan();
-				firstAtom.attachBond("in", { vector: angular.copy(atom.getCoords()), multiplicity: 1 });
+				firstAtom.attachBond("in", { vector: angular.copy(atom.getCoords()), multiplicity: currMult });
 				return;
 			}
-			newAtom.attachBond("in", { vector: angular.copy(rotVect), multiplicity: 1 });
-			atom.addBond(new Bond("single", newAtom));
-			service.generateRing(newAtom, depth - 1, deg, firstAtom);
+			newAtom.attachBond("in", { vector: angular.copy(rotVect), multiplicity: currMult });
+			atom.addBond(new Bond(bondType, newAtom));
+			service.generateRing(newAtom, depth - 1, deg, firstAtom, mult, index + 1, aromatic);
 		};
 
 		return service;
@@ -4083,10 +4132,11 @@
 				var name = cyclic.getName(),
 				  ringSize = cyclic.getRingSize(),
 					angle = cyclic.getAngle(),
-					aromatic = cyclic.isAromatic();
+					aromatic = cyclic.isAromatic(),
+					mult = cyclic.getMult();
 				service[name] = function () {
-					var defs = service.generateRings(angle, ringSize, aromatic),
-						cluster = new StructureCluster(name, defs, ringSize, angle);
+					var defs = service.generateRings(angle, ringSize, aromatic, mult),
+						cluster = new StructureCluster(name, defs, ringSize, angle, mult, aromatic);
 					return cluster;
 				};
 			});
@@ -4203,8 +4253,8 @@
 						vector = chooseDirectionAutomatically(aux);
 						if (vector !== "full atom") {
 						  updateAtom(vector, aux, absPos);
+							updateDecorate(vector, absPos);
 						}
-						//updateDecorate(modStr, absPos);
 						found = true;
 						return base;
 					}
@@ -4215,7 +4265,7 @@
 						// and if a valid atom has not already been found
 						vector = chooseDirectionManually(aux);
 						updateAtom(vector, aux, absPos);
-						//updateDecorate(modStr, absPos);
+						updateDecorate(vector, absPos);
 						found = true;
 						return base;
 					}
@@ -4227,12 +4277,13 @@
 				/**
 				* Updates `Atom` object.
 				* @param {number[]} vector - indicates direction, in which the change should be made,
-				* @param {Atom} atom - `Atom` object that is going to be modified
+				* @param {Atom} atom - `Atom` object that is going to be modified,
+				* @param {number[]} absPos - absolute coordinates of this 'Atom' object
 				*/
 				function updateAtom(vector, atom, absPos) {
 					var name = mod.getName(), // gets name of the `StructureCluster `object
 					  size = mod.getRingSize(), // gets size of the ring (defaults to 0 for non-rings)
-						mult = mod.getMult(), // gets multiplicity of the bond (undefined for rings)
+						mult = mod.getMult(), // gets multiplicity of the bond
 						bond, angle, nextAtom, rotVect, foundAtom;
 					if (size > 0) {
 						/*
@@ -4247,7 +4298,7 @@
 						// update `attachedBonds` array
 						atom.attachBond("out", { vector: angular.copy(rotVect), multiplicity: 1 });
 						// recursively generate the rest of the ring
-						Structures.generateRing(nextAtom, size, angle, atom);
+						Structures.generateRing(nextAtom, size, angle, atom, mod.getMult(), 2, mod.isAromatic());
 					} else {
 						/*
 						* if we are dealing with a bond
@@ -4272,16 +4323,15 @@
 
 				/**
 				 * Updates decorate elements (e.g. aromatic rings) in the structure.
-				 * @param {Structure} modStr - Structure object which may contain decorate elements
-				 * @param {Number[]} abs - absolute coordinates
+				 * @param {number[]} vector - indicates direction, in which the change should be made,
+				 * @param {number[]} absPos - absolute coordinates of currently active 'Atom' object
 				 */
-				function updateDecorate(modStr, abs) {
-					var coords;
-					if (modStr !== null && modStr.isAromatic() && typeof firstAtom !== "undefined") {
-						coords = Const.getBondByDirection(modStr.getName()).bond;
-						return base.addDecorate("aromatic", {
+				function updateDecorate(vector, absPos) {
+					if (mod.isAromatic() && typeof firstAtom !== "undefined") {
+						base.setAromatic();
+						base.addDecorate("aromatic", {
 							fromWhich: firstAtom.getCoords(),
-							coords: [coords[0] + abs[0], coords[1] + abs[1]]
+							coords: [vector[0] + absPos[0], vector[1] + absPos[1]]
 						});
 					}
 				}
@@ -4536,6 +4586,7 @@
 			ARROW_SIZE = Const.ARROW_SIZE,
 			UNDEF_BOND = Const.UNDEF_BOND,
 			PUSH = Const.PUSH,
+			DBL_BOND_CORR = Const.DBL_BOND_CORR,
 		  Atom = DCAtom.Atom,
 			Arrow = DCArrow.Arrow,
 			Selection = DCSelection.Selection,
@@ -4717,7 +4768,13 @@
 							}
 						}
 					} else if (bondType === "double") {
-						output.push(calcDoubleBondCoords(prevAbsPos, absPos, push, newPush));
+						output.push(calcDoubleBondCoords("middle", prevAbsPos, absPos, push, newPush));
+						newLen = output.push(["M", absPos]);
+					} else if (bondType === "double-right") {
+						output.push(calcDoubleBondCoords("right", prevAbsPos, absPos, push, newPush));
+						newLen = output.push(["M", absPos]);
+					} else if (bondType === "double-left") {
+						output.push(calcDoubleBondCoords("left", prevAbsPos, absPos, push, newPush));
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "triple") {
 						output.push(calcTripleBondCoords(prevAbsPos, absPos, push, newPush));
@@ -4803,13 +4860,14 @@
 
 		/**
 		* Calculates data for the svg instructions in `path` element for double bond.
+		* @param {string} type - type of the bond ('middle', 'left', 'right'),
 		* @param {number[]} start - start coordinates (absolute) of the atom,
 		* @param {number[]} end - end coordinates (absolute) of the atom,
 		* @returns {Array}
 		*/
-		function calcDoubleBondCoords(start, end, push, newPush) {
+		function calcDoubleBondCoords(type, start, end, push, newPush) {
 			var vectCoords = [end[0] - start[0], end[1] - start[1]],
-			  aux = Utils.multVectByScalar(vectCoords, PUSH),
+			  aux = Utils.multVectByScalar(vectCoords, PUSH), corr,
 				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
 				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
 				M1 = Utils.addVectors(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
@@ -4817,11 +4875,38 @@
 				M2 = Utils.addVectors(start, perpVectCoordsCW, BETWEEN_DBL_BONDS),
 				L2 = Utils.addVectors(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
 
+			if (type === "right") {
+				M2 = Utils.addVectors(start, perpVectCoordsCW, 2 * BETWEEN_DBL_BONDS);
+				L2 = Utils.addVectors(end, perpVectCoordsCW, 2 * BETWEEN_DBL_BONDS);
+			} else if (type === "left") {
+				M2 = Utils.addVectors(start, perpVectCoordsCCW, 2 * BETWEEN_DBL_BONDS);
+				L2 = Utils.addVectors(end, perpVectCoordsCCW, 2 * BETWEEN_DBL_BONDS);
+			}
+
+			if (type !== "middle") {
+				M1 = angular.copy(start);
+				L1 = angular.copy(end);
+				vectCoords = [L2[0] - M2[0], L2[1] - M2[1]];
+				corr = Utils.multVectByScalar(vectCoords, DBL_BOND_CORR);
+				M2 = Utils.addVectors(M2, corr);
+				L2 = Utils.subtractVectors(L2, corr);
+			}
+
 			if (push) {
-				doWithManyVectors("add", [M1, M2], aux);
+				if (type !== "middle") {
+					M1 = Utils.addVectors(M1, aux);
+					M2 = Utils.addVectors(M2, Utils.multVectByScalar(corr, 1.5));
+				} else {
+				  doWithManyVectors("add", [M1, M2], aux);
+				}
 			}
 			if (newPush) {
-				doWithManyVectors("subtract", [L1, L2], aux);
+				if (type !== "middle") {
+					L1 = Utils.subtractVectors(L1, aux);
+					L2 = Utils.subtractVectors(L2, Utils.multVectByScalar(corr, 1.5));
+				} else {
+				  doWithManyVectors("subtract", [L1, L2], aux);
+				}
 			}
 
 			return ["M", M1, "L", L1, "M", M2, "L", L2];
@@ -5081,10 +5166,17 @@
 		*/
     service.generateCircles = function (circles, obj) {
       circles.forEach(function (circle) {
-        var aux = circle.isSelected && !circle.hasLabel ? "edit": "atom";
+        var clazz;
+				if (circle.hasLabel) {
+					clazz = "label";
+				} else if (circle.isSelected) {
+					clazz = "edit";
+				} else {
+					clazz = "atom";
+				}
 				if (!circle.isOrphan) {
 					obj.full +=
-	          "<circle class='" + aux +
+	          "<circle class='" + clazz +
 	            "' cx='" + circle.circle[0].toFixed(2) +
 	            "' cy='" + circle.circle[1].toFixed(2) +
 	            "' r='" + circle.circle[2].toFixed(2) +
@@ -5100,36 +5192,19 @@
 		*/
     service.generateLabels = function (labels, obj) {
       labels.forEach(function (label) {
-        var aux =
-          //drawDodecagon(label) +
-          "<text dy='0.2125em' " +
-            "x='" + label.labelX.toFixed(2) + "' " +
-            "y='" + label.labelY.toFixed(2) + "' " +
-            "atomx='" + label.atomX.toFixed(2) + "' " +
-            "atomy='" + label.atomY.toFixed(2) + "' " +
-            "text-anchor='" + genTextAnchor(label.mode) + "' " +
-          ">" + genLabel(label.label) + "</text>";
-        obj.full += aux;
-        obj.mini += aux;
+        obj.full += genText("edit", label);
+        obj.mini += genText("tr", label);
       });
 
-			/*function drawDodecagon(label) {
-	      var i, factor,result = [];
-	      factor = 0.5 * label.height / BOND_LENGTH;
-	      for (i = 1; i < BONDS.length; i += 2) {
-	        result.push(Utils.addVectors([label.atomX, label.atomY], BONDS[i].bond, factor));
-	      }
-
-	      return "<polygon class='text' points='" + getPoints() + "'></polygon>";
-
-				function getPoints() {
-					var str = "";
-					result.forEach(function (arr) {
-						str += arr[0].toFixed(2) + " " + arr[1].toFixed(2) + " ";
-					});
-					return str;
-				}
-	    }*/
+			function genText(clazz, label) {
+				return "<text class='" + clazz + "' dy='0.2125em' " +
+					"x='" + label.labelX.toFixed(2) + "' " +
+					"y='" + label.labelY.toFixed(2) + "' " +
+					"atomx='" + label.atomX.toFixed(2) + "' " +
+					"atomy='" + label.atomY.toFixed(2) + "' " +
+					"text-anchor='" + genTextAnchor(label.mode) + "' " +
+				">" + genLabel(label.label) + "</text>";
+			}
 
 	    function genTextAnchor(mode) {
 	      if (mode === "rl") {

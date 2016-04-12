@@ -140,7 +140,7 @@ describe("dcShortcuts directive tests", function () {
     triggerKeyUp(temp, 84, true);
 		expect(parallelScope.input())
 			.toEqual(
-				"<svg viewBox='60.68 78.00 74.64 80.00' height='100%' width='100%' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' >" +
+				"<svg viewBox='50.68 68.00 94.64 100.00' height='100%' width='100%' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' >" +
 					"<g id='transfer' >" +
 						"<style type=\"text/css\">" +
 							styleBase +

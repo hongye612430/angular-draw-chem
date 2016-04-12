@@ -239,6 +239,7 @@
 						if (structureAux.isAromatic()) {
 							// if the chosen Structure object is aromatic,
 							// then add appropriate flag to the original Structure object
+							structure.setAromatic();
 							bond = Const.getBondByDirection(structureAux.getName()).bond;
 							structure.addDecorate("aromatic", {
 								fromWhich: angular.copy(newCoords),
@@ -251,6 +252,7 @@
 						if (structureAux.isAromatic()) {
 							// if the chosen Structure object is aromatic,
 							// then add appropriate flag to the original Structure object
+							structure.setAromatic();
 							bond = Const.getBondByDirection(structureAux.getName()).bond;
 							structure.addDecorate("aromatic", {
 								fromWhich: angular.copy(newCoords),
@@ -357,6 +359,7 @@
 					if (structureAux.isAromatic()) {
 						// if the chosen Structure object is aromatic,
 						// then add appropriate flag to the original Structure object
+						structure.setAromatic();
 						bond = Const.getBondByDirection(structureAux.getName()).bond;
 						structure.addDecorate("aromatic", {
 							fromWhich: angular.copy(newCoords),

@@ -56,10 +56,17 @@
 		*/
     service.generateCircles = function (circles, obj) {
       circles.forEach(function (circle) {
-        var aux = circle.isSelected && !circle.hasLabel ? "edit": "atom";
+        var clazz;
+				if (circle.hasLabel) {
+					clazz = "label";
+				} else if (circle.isSelected) {
+					clazz = "edit";
+				} else {
+					clazz = "atom";
+				}
 				if (!circle.isOrphan) {
 					obj.full +=
-	          "<circle class='" + aux +
+	          "<circle class='" + clazz +
 	            "' cx='" + circle.circle[0].toFixed(2) +
 	            "' cy='" + circle.circle[1].toFixed(2) +
 	            "' r='" + circle.circle[2].toFixed(2) +
@@ -75,36 +82,19 @@
 		*/
     service.generateLabels = function (labels, obj) {
       labels.forEach(function (label) {
-        var aux =
-          //drawDodecagon(label) +
-          "<text dy='0.2125em' " +
-            "x='" + label.labelX.toFixed(2) + "' " +
-            "y='" + label.labelY.toFixed(2) + "' " +
-            "atomx='" + label.atomX.toFixed(2) + "' " +
-            "atomy='" + label.atomY.toFixed(2) + "' " +
-            "text-anchor='" + genTextAnchor(label.mode) + "' " +
-          ">" + genLabel(label.label) + "</text>";
-        obj.full += aux;
-        obj.mini += aux;
+        obj.full += genText("edit", label);
+        obj.mini += genText("tr", label);
       });
 
-			/*function drawDodecagon(label) {
-	      var i, factor,result = [];
-	      factor = 0.5 * label.height / BOND_LENGTH;
-	      for (i = 1; i < BONDS.length; i += 2) {
-	        result.push(Utils.addVectors([label.atomX, label.atomY], BONDS[i].bond, factor));
-	      }
-
-	      return "<polygon class='text' points='" + getPoints() + "'></polygon>";
-
-				function getPoints() {
-					var str = "";
-					result.forEach(function (arr) {
-						str += arr[0].toFixed(2) + " " + arr[1].toFixed(2) + " ";
-					});
-					return str;
-				}
-	    }*/
+			function genText(clazz, label) {
+				return "<text class='" + clazz + "' dy='0.2125em' " +
+					"x='" + label.labelX.toFixed(2) + "' " +
+					"y='" + label.labelY.toFixed(2) + "' " +
+					"atomx='" + label.atomX.toFixed(2) + "' " +
+					"atomy='" + label.atomY.toFixed(2) + "' " +
+					"text-anchor='" + genTextAnchor(label.mode) + "' " +
+				">" + genLabel(label.label) + "</text>";
+			}
 
 	    function genTextAnchor(mode) {
 	      if (mode === "rl") {

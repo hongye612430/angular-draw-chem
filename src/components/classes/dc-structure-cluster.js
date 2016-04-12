@@ -16,13 +16,15 @@
 		* @param {Structure[]} defs - array of Structure objects belonging to the cluster,
 		* @param {number} ringSize - size of the associated ring, defaults to 0 for acyclic structures,
 		* @param {number} angle - angle between bonds in cyclic structures,
-		* @param {number} mult - multiplicity of the associated bond (undefined for cyclic structures)
+		* @param {number} mult - multiplicity of the associated bond (undefined for cyclic structures),
+		* @param {boolean} aromatic - true if is aromatic
 		*/
-		function StructureCluster(name, defs, ringSize, angle, mult) {
+		function StructureCluster(name, defs, ringSize, angle, mult, aromatic) {
 			this.name = name;
 			this.defs = defs;
 			this.ringSize = ringSize;
 			this.angle = angle;
+			this.aromatic = aromatic;
 			this.multiplicity = mult;
 			this.defaultStructure = defs[0];
 		}
@@ -57,6 +59,14 @@
 		*/
 		StructureCluster.prototype.getMult = function () {
 			return this.multiplicity;
+		};
+
+		/**
+		* Checks if structures associated with this object are aromatic.
+		* @returns {boolean}
+		*/
+		StructureCluster.prototype.isAromatic = function () {
+			return !!this.aromatic;
 		};
 
 		/**

@@ -30,8 +30,10 @@
 			new CyclicStructure("cyclopropane", 3, 60),
 			new CyclicStructure("cyclobutane", 4, 90),
 			new CyclicStructure("cyclopentane", 5, 108),
+			new CyclicStructure("cyclopentadiene", 5, 108, { every: 2 }),
 			new CyclicStructure("cyclohexane", 6, 120),
-			new CyclicStructure("benzene", 6, 120, true),
+			new CyclicStructure("benzene", 6, 120, { every: 2 }, true), // with aromatic circle
+			new CyclicStructure("benzeneAlt", 6, 120, { every: 2 }), // with double bonds
 			new CyclicStructure("cycloheptane", 7, 128.57),
 			new CyclicStructure("cyclooctane", 8, 135),
 			new CyclicStructure("cyclononane", 9, 140)
@@ -68,6 +70,11 @@
 				id: "benzene",
 				thumbnail: true
 			},
+			"benzene alt": {
+				action: createStructureAction(service.benzeneAlt),
+				id: "benzene-alt",
+				thumbnail: true
+			},
 			"cyclohexane": {
 				action: createStructureAction(service.cyclohexane),
 				id: "cyclohexane",
@@ -76,6 +83,11 @@
 			"cyclopentane": {
 				action: createStructureAction(service.cyclopentane),
 				id: "cyclopentane",
+				thumbnail: true
+			},
+			"cyclopentadiene": {
+				action: createStructureAction(service.cyclopentadiene),
+				id: "cyclopentadiene",
 				thumbnail: true
 			},
 			"cycloheptane": {
@@ -167,11 +179,11 @@
 		 * @param {string} decorate - indicates decorate element (e.g. aromatic ring),
 		 * @returns {Structure[]}
 		 */
-		service.generateRings = function (deg, size, aromatic) {
+		service.generateRings = function (deg, size, aromatic, mult) {
 			var i, direction, result = [];
 			for (i = 0; i < BONDS.length; i += 1) {
 				direction = BONDS[i].direction;
-				result.push(genRing(direction, deg, size, aromatic));
+				result.push(genRing(direction, deg, size));
 			}
 
 			return result;
@@ -192,7 +204,7 @@
 				firstAtom = new Atom([0, 0], [], { out: [{ vector: angular.copy(rotVect), multiplicity: 1 }] });
 				nextAtom = new Atom(rotVect, [], { in: [{ vector: angular.copy(rotVect), multiplicity: 1 }] });
 				firstAtom.addBond(new Bond("single", nextAtom));
-				service.generateRing(nextAtom, size, deg, firstAtom);
+				service.generateRing(nextAtom, size, deg, firstAtom, mult, 2, aromatic);
 				structure = new Structure(opposite, [firstAtom]);
 				if (aromatic) {
 					structure.setAromatic();
@@ -207,21 +219,29 @@
 		 * @param {Atom} atom - `Atom` object, to which new atom will be added,
 		 * @param {number} depth - starting/current depth of the structure tree,
 		 * @param {number} deg - angle between bonds (vectors),
-		 * @param {Atom} firstAtom - first `Atom` object in this cyclic structure
+		 * @param {Atom} firstAtom - first `Atom` object in this cyclic structure,
+		 * @param {Object} mult - multiplicity object (which bonds should be double),
+		 * @param {number} index - current atom index,
+		 * @param {boolean} aromatic - if the ring is has an aromatic circle
 		 */
-		service.generateRing = function(atom, depth, deg, firstAtom) {
-			var rotVect = Utils.rotVectCW(atom.getCoords(), 180 - deg),
+		service.generateRing = function(atom, depth, deg, firstAtom, mult, index, aromatic) {
+			var rotVect = Utils.rotVectCW(atom.getCoords(), 180 - deg), currMult = 1, bondType = "single",
 				newAtom = new Atom(rotVect, []);
 
-			atom.attachBond("out", { vector: angular.copy(rotVect), multiplicity: 1 });
+			if (typeof mult !== "undefined" && (index % mult.every === 0 || depth === 1)) {
+				currMult = 2;
+				bondType = aromatic ? "single": "double-left";
+			}
+
+			atom.attachBond("out", { vector: angular.copy(rotVect), multiplicity: currMult });
 			if (depth === 1) {
 				atom.setAsOrphan();
-				firstAtom.attachBond("in", { vector: angular.copy(atom.getCoords()), multiplicity: 1 });
+				firstAtom.attachBond("in", { vector: angular.copy(atom.getCoords()), multiplicity: currMult });
 				return;
 			}
-			newAtom.attachBond("in", { vector: angular.copy(rotVect), multiplicity: 1 });
-			atom.addBond(new Bond("single", newAtom));
-			service.generateRing(newAtom, depth - 1, deg, firstAtom);
+			newAtom.attachBond("in", { vector: angular.copy(rotVect), multiplicity: currMult });
+			atom.addBond(new Bond(bondType, newAtom));
+			service.generateRing(newAtom, depth - 1, deg, firstAtom, mult, index + 1, aromatic);
 		};
 
 		return service;
@@ -261,10 +281,11 @@
 				var name = cyclic.getName(),
 				  ringSize = cyclic.getRingSize(),
 					angle = cyclic.getAngle(),
-					aromatic = cyclic.isAromatic();
+					aromatic = cyclic.isAromatic(),
+					mult = cyclic.getMult();
 				service[name] = function () {
-					var defs = service.generateRings(angle, ringSize, aromatic),
-						cluster = new StructureCluster(name, defs, ringSize, angle);
+					var defs = service.generateRings(angle, ringSize, aromatic, mult),
+						cluster = new StructureCluster(name, defs, ringSize, angle, mult, aromatic);
 					return cluster;
 				};
 			});

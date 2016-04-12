@@ -77,8 +77,8 @@
 						vector = chooseDirectionAutomatically(aux);
 						if (vector !== "full atom") {
 						  updateAtom(vector, aux, absPos);
+							updateDecorate(vector, absPos);
 						}
-						//updateDecorate(modStr, absPos);
 						found = true;
 						return base;
 					}
@@ -89,7 +89,7 @@
 						// and if a valid atom has not already been found
 						vector = chooseDirectionManually(aux);
 						updateAtom(vector, aux, absPos);
-						//updateDecorate(modStr, absPos);
+						updateDecorate(vector, absPos);
 						found = true;
 						return base;
 					}
@@ -101,12 +101,13 @@
 				/**
 				* Updates `Atom` object.
 				* @param {number[]} vector - indicates direction, in which the change should be made,
-				* @param {Atom} atom - `Atom` object that is going to be modified
+				* @param {Atom} atom - `Atom` object that is going to be modified,
+				* @param {number[]} absPos - absolute coordinates of this 'Atom' object
 				*/
 				function updateAtom(vector, atom, absPos) {
 					var name = mod.getName(), // gets name of the `StructureCluster `object
 					  size = mod.getRingSize(), // gets size of the ring (defaults to 0 for non-rings)
-						mult = mod.getMult(), // gets multiplicity of the bond (undefined for rings)
+						mult = mod.getMult(), // gets multiplicity of the bond
 						bond, angle, nextAtom, rotVect, foundAtom;
 					if (size > 0) {
 						/*
@@ -121,7 +122,7 @@
 						// update `attachedBonds` array
 						atom.attachBond("out", { vector: angular.copy(rotVect), multiplicity: 1 });
 						// recursively generate the rest of the ring
-						Structures.generateRing(nextAtom, size, angle, atom);
+						Structures.generateRing(nextAtom, size, angle, atom, mod.getMult(), 2, mod.isAromatic());
 					} else {
 						/*
 						* if we are dealing with a bond
@@ -146,16 +147,15 @@
 
 				/**
 				 * Updates decorate elements (e.g. aromatic rings) in the structure.
-				 * @param {Structure} modStr - Structure object which may contain decorate elements
-				 * @param {Number[]} abs - absolute coordinates
+				 * @param {number[]} vector - indicates direction, in which the change should be made,
+				 * @param {number[]} absPos - absolute coordinates of currently active 'Atom' object
 				 */
-				function updateDecorate(modStr, abs) {
-					var coords;
-					if (modStr !== null && modStr.isAromatic() && typeof firstAtom !== "undefined") {
-						coords = Const.getBondByDirection(modStr.getName()).bond;
-						return base.addDecorate("aromatic", {
+				function updateDecorate(vector, absPos) {
+					if (mod.isAromatic() && typeof firstAtom !== "undefined") {
+						base.setAromatic();
+						base.addDecorate("aromatic", {
 							fromWhich: firstAtom.getCoords(),
-							coords: [coords[0] + abs[0], coords[1] + abs[1]]
+							coords: [vector[0] + absPos[0], vector[1] + absPos[1]]
 						});
 					}
 				}

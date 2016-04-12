@@ -9,7 +9,7 @@ var styleExpanded = "circle.atom:hover{" +
 		"stroke-width:0.80;" +
 		"fill:black;" +
 	"}" +
-	"text:hover{" +
+	"text.edit:hover{" +
 		"opacity:0.3;" +
 	"}" +
 	"circle.atom{" +
@@ -18,6 +18,9 @@ var styleExpanded = "circle.atom:hover{" +
 	"circle.edit{" +
 		"stroke:black;" +
 		"fill:none;" +
+	"}" +
+	"circle.label{" +
+		"opacity:0;" +
 	"}" +
 	"rect.selection{" +
 		"stroke:black;" +
@@ -150,7 +153,7 @@ describe("DrawChemEditor directive tests - part1", function () {
 		temp.find("#dc-transfer").click();
 		expect(parallelScope.input())
 			.toEqual(
-				"<svg viewBox='60.68 78.00 74.64 80.00' height='100%' width='100%' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' >" +
+				"<svg viewBox='50.68 68.00 94.64 100.00' height='100%' width='100%' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' >" +
 					"<g id='transfer' >" +
 						"<style type=\"text/css\">" +
 							styleBase +
