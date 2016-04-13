@@ -65,12 +65,11 @@
 
 			function checkIfDownOnBond() {
 				var withinObject = ModStructure.isWithinBond(Cache.getCurrentStructure(), mouseFlags.downMouseCoords);
-        //mouseFlags.downBondCoords = withinObject.absPos;
-				//mouseFlags.downBondObject = withinObject.foundAtom;
-        //if (typeof withinObject.foundAtom !== "undefined") {
-        //  // set flag if atom was found
-        //  mouseFlags.downOnAtom = true;
-        //}
+				mouseFlags.downBondObject = withinObject.foundBond;
+        if (typeof withinObject.foundBond !== "undefined") {
+					// set flag if atom was found
+          mouseFlags.downOnBond = true;
+        }
       }
     }
 
@@ -101,6 +100,9 @@
       } else if (mouseFlags.downOnAtom && Flags.selected === "structure") {
         // if atom has been found and structure has been selected
         structure = modifyOnNonEmptyContent(scope, mouseCoords, false);
+      } else if (mouseFlags.downOnBond && Flags.selected === "structure") {
+        // if atom has been found and structure has been selected
+        structure = modifyOnBond(scope, mouseFlags.downMouseCoords);
       } else if (Flags.selected === "structure") {
 				// if content is empty or atom was not found
         structure = addStructureOnEmptyContent();
@@ -398,6 +400,14 @@
 				mouseCoords,
 				mouseFlags.downAtomCoords,
 				move
+			);
+		}
+
+		function modifyOnBond(scope, position) {
+			return Utils.modifyBond(
+				Cache.getCurrentStructure(),
+				scope.chosenStructure,
+				position
 			);
 		}
 

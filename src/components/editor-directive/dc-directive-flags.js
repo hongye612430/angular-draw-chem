@@ -15,7 +15,9 @@
       downMouseCoords: undefined,
       movedOnEmpty: false,
       mouseDown: false,
-      downOnAtom: false
+      downOnAtom: false,
+			downOnBond: false,
+			downBondObject: undefined
     };
 
 		service.copy;

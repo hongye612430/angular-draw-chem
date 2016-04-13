@@ -91,6 +91,14 @@
 			);
 		};
 
+		service.modifyBond = function (structure, chosenStructure, position) {
+			return ModStructure.modifyBond(
+				angular.copy(structure),
+				angular.copy(chosenStructure),
+				position
+			);
+		};
+
 		/**
 		 * Looks for an atom and deletes it.
 		 * @params {Structure} structure - a Structure object to modify,

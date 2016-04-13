@@ -289,20 +289,89 @@
 			return dist <= r;
 		};
 
-		service.insideFocus = function (startAbsPos, bond, mousePos, tolerance) {
-			var endAtom = bond.getAtom(),
-			  endAbsPos = Utils.addVectors(startAbsPos, endAtom.getCoords());
+		/**
+		 * Checks if a point is inside an area delimited by a rectangle.
+		 * @param {number[]} startAbsPos - absolute position of a starting point,
+		 * @param {Bond} bond - bond object,
+		 * @param {number[]} point - coordinates of a point to be validated,
+		 * @param {number} factor - factor,
+		 * @returns {boolean}
+		 */
+		service.insideFocus = function (startAbsPos, bond, point, factor) {
+			var bondVect = bond.getAtom().getCoords(), i, j, area = 0,
+			  endAbsPos = service.addVectors(startAbsPos, bondVect),
+			  perpVectCoordsCCW = [-bondVect[1], bondVect[0]],
+			  perpVectCoordsCW = [bondVect[1], -bondVect[0]],
+			  rectPoints = [
+					service.addVectors(startAbsPos, perpVectCoordsCCW, factor),
+				  service.addVectors(startAbsPos, perpVectCoordsCW, factor),
+					service.addVectors(endAbsPos, perpVectCoordsCW, factor),
+				  service.addVectors(endAbsPos, perpVectCoordsCCW, factor)
+				];
 
+			for (i = 0; i < rectPoints.length; i += 1) {
+				j = service.moveToRight(rectPoints, i, 1);
+				area += service.getTriangleArea(
+					point,
+					rectPoints[i],
+					rectPoints[j]
+				);
+			}
+			return area.toFixed(2) === service.getRectArea(rectPoints).toFixed(2);
 		};
 
 		/**
-		 * Subtracts second vector from first vectors.
+		 * Subtracts second vector from first vector.
 		 * @param {number[]} v1 - first vector,
 		 * @param {number[]} v2 - second vector
-		 * @returns {Number[]}
+		 * @returns {number[]}
 		 */
 		service.subtractVectors = function (v1, v2) {
 			return [v1[0] - v2[0], v1[1] - v2[1]];
+		};
+
+		/**
+		 * Calculates vector based on two sets of absolute coordinates.
+		 * @param {number[]} end - end point,
+		 * @param {number[]} start - start point
+		 * @returns {number[]}
+		 */
+		service.getVector = function (end, start) {
+			return [end[0] - start[0], end[1] - start[1]];
+		};
+
+		/**
+		 * Calculates area of a triangle based on three sets of absolute coordinates.
+		 * @param {number[]} p1 - point,
+		 * @param {number[]} p2 - point,
+		 * @param {number[]} p3 - point,
+		 * @returns {number}
+		 */
+		service.getTriangleArea = function (p1, p2, p3) {
+			var x = p1[0] * (p2[1] - p3[1]),
+			  y = p2[0] * (p3[1] - p1[1]),
+			  z = p3[0] * (p1[1] - p2[1]);
+			return Math.abs((x + y + z) / 2);
+		};
+
+		/**
+		 * Calculates area of a rectangle based on four sets of absolute coordinates.
+		 * @param {Array} points - array of points,
+		 * @returns {number}
+		 */
+		service.getRectArea = function (points) {
+			var v1 = service.getVector(points[1], points[0]),
+			  v2 = service.getVector(points[2], points[1]);
+			return service.getLength(v1) * service.getLength(v2);
+		};
+
+		/**
+		 * Calculates length of a vector.
+		 * @param {number[]} v - vector,
+		 * @returns {number}
+		 */
+		service.getLength = function (v) {
+			return Math.sqrt(v[0] * v[0] + v[1] * v[1]);
 		};
 
 		return service;

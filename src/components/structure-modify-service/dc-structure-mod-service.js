@@ -391,32 +391,44 @@
 				foundObj = {},
 				origin = structure.getOrigin();
 
-			check(structure.getStructure(), origin);
+			checkAtom(structure.getStructure(), origin);
 
 			return foundObj;
 
-			function check(struct, pos) {
-				var i, absPos, aux, obj;
+			function checkAtom(struct, pos) {
+				var i, obj, absPos;
 				for(i = 0; i < struct.length; i += 1) {
 					obj = struct[i];
-					if (!(obj instanceof Atom || obj instanceof Bond)) { continue; }
-					if (obj instanceof Atom) {
-						aux = obj;
-					} else {
-						aux = obj.getAtom();
-						if (aux.isOrphan()) { continue; }
-					}
-					absPos = [aux.getCoords("x") + pos[0], aux.getCoords("y") + pos[1]];
-					if (!found && (obj instanceof Bond) && Utils.insideFocus(absPos, obj, position, Const.BOND_FOCUS)) {
-						found = true;
-						foundObj.startingAtom = aux;
-						foundObj.startingAbsPos = absPos;
-						foundObj.foundBond = obj;
-					} else {
-					  check(aux.getBonds(), absPos);
-					}
+					if (!(obj instanceof Atom)) { continue; }
+					absPos = Utils.addVectors(obj.getCoords(), pos);
+					checkBonds(obj, absPos);
 				}
 			}
+
+			function checkBonds(atom, pos) {
+				var i, bonds, absPos;
+				bonds = atom.getBonds();
+				for (i = 0; i < bonds.length; i += 1) {
+					if (!found && Utils.insideFocus(pos, bonds[i], position, Const.BOND_FOCUS)) {
+						found = true;
+						foundObj.foundBond = bonds[i];
+					}
+					absPos = Utils.addVectors(bonds[i].getAtom().getCoords(), pos);
+					checkBonds(bonds[i].getAtom(), absPos);
+				}
+			}
+		};
+
+		service.modifyBond = function (structure, chosenStructure, position) {
+			var ringSize = chosenStructure.getRingSize(), bondType,
+			  bondToModify = service.isWithinBond(structure, position).foundBond;
+			if (ringSize > 0) {
+				// todo
+			} else {
+				bondType = chosenStructure.getDefault().getStructure(0).getBonds(0).getType();
+				bondToModify.setType(bondType);
+			}
+			return structure;
 		};
 
 		return service;

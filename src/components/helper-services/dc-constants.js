@@ -57,7 +57,7 @@
 			service.BETWEEN_DBL_BONDS = 0.065;
 
 			// bond focus
-			service.BOND_FOCUS = service.BOND_LENGTH * 0.15;
+			service.BOND_FOCUS = 0.2;
 
 			// correction for 'left' and 'right' double bonds
 			service.DBL_BOND_CORR = service.BOND_LENGTH * 3 / 800;

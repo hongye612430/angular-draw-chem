@@ -1,10 +1,12 @@
 describe("DrawChemUtils service tests", function () {
 	beforeEach(module("mmAngularDrawChem"));
 
-	var Utils;
+	var Utils, Bond, Const;
 
-	beforeEach(inject(function (_DrawChemUtils_) {
+	beforeEach(inject(function (_DrawChemUtils_, _DCBond_, _DCAtom_) {
 		Utils = _DrawChemUtils_;
+		Bond = _DCBond_.Bond;
+		Atom = _DCAtom_.Atom;
 	}));
 
 	it("should calculate quadrant", function () {
@@ -141,5 +143,18 @@ describe("DrawChemUtils service tests", function () {
 	it("should calculate dot product of two vectors", function () {
 		var d = Utils.dotProduct([3, 3], [2, 2]);
 		expect(d).toEqual(12);
+	});
+
+	it("should calculate area of a rectangle", function () {
+		var points = [[0, 2], [0, -2], [10, -2], [10, 2]];
+		expect(Utils.getRectArea(points)).toEqual(40);
+	});
+
+	it("should check if a point is inside a rectangle", function () {
+		var bond = new Bond("single", new Atom([10, 0])),
+		  inside = Utils.insideFocus([0, 0], bond, [1, 1], 0.2);
+		expect(inside).toEqual(true);
+		inside = Utils.insideFocus([0, 0], bond, [1, 3], 0.2);
+		expect(inside).toEqual(false);
 	});
 });
