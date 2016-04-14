@@ -26,6 +26,7 @@
 		function ArrowCluster(name, defs) {
 			this.name = name;
 			this.defs = defs;
+			this.defaultStructure = this.getDefault();
 		}
 
 		/**
@@ -49,6 +50,11 @@
 		*/
     ArrowCluster.prototype.getArrow = function (mouseCoords1, mouseCoords2) {
 			var possibleVectors = [], vector, i;
+
+			if (Utils.insideCircle(mouseCoords1, mouseCoords2, Const.CIRC_R)) {
+				return this.defaultStructure;
+			}
+
 			for (i = 0; i < this.defs.length; i += 1) {
 				possibleVectors.push(this.defs[i].getRelativeEnd());
 			}
@@ -828,6 +834,11 @@
 		*/
 		StructureCluster.prototype.getStructure = function (mouseCoords1, mouseCoords2) {
 			var i, possibleVectors = [], vector, bond;
+
+			if (Utils.insideCircle(mouseCoords1, mouseCoords2, Const.CIRC_R)) {
+				return this.defaultStructure;
+			}
+			
 			for (i = 0; i < Const.BONDS.length; i += 1) {
 				possibleVectors.push(Const.BONDS[i].bond);
 			}
@@ -1762,17 +1773,12 @@
 		var service = {};
 
     service.mouseFlags = {
-      downAtomCoords: undefined,
-			downAtomObject: undefined,
-      downMouseCoords: undefined,
       movedOnEmpty: false,
       mouseDown: false,
       downOnAtom: false,
 			downOnBond: false,
-			downBondObject: undefined
+			downOnNothing: false
     };
-
-		service.copy;
 
 		service.customLabel = "";
 
@@ -1800,436 +1806,195 @@
 		"DCSelection"
   ];
 
-	function DrawChemDirectiveMouseActions(Flags, Utils, ModStructure, Cache, Const, DCLabel, DCStructure, DCSelection) {
+	function DrawChemDirectiveMouseActions(Flags, DirUtils, ModStructure, Cache, Const, DCLabel, DCStructure, DCSelection) {
 
 		var service = {},
       Label = DCLabel.Label,
 			Selection = DCSelection.Selection,
 			Structure = DCStructure.Structure,
-      mouseFlags = Flags.mouseFlags;
+      mouseFlags = Flags.mouseFlags,
+			currWorkingStructure = null;
 
     service.doOnMouseDown = function ($event, scope, element) {
-      var elem;
+      var elem, structure;
 			// if button other than left was used
-      if ($event.which !== 1) { return undefined; }
+      if ($event.which !== 1) { return; }
 			// set mouse coords
-      mouseFlags.downMouseCoords = Utils.innerCoords(element, $event);
+      mouseFlags.downMouseCoords = DirUtils.innerCoords(element, $event);
 			// set flag
       mouseFlags.mouseDown = true;
+			// get current working structure (copy it from Cache)
+			currWorkingStructure = angular.copy(Cache.getCurrentStructure());
 
 			// check if the event occurred on an atom
 			// if content is not empty and (label is selected or structure is selected or delete is selected)
 			// otherwise there is no necessity for checking this
-			if (!Utils.isContentEmpty() &&
-						(
-							Flags.selected === "label"
-							|| Flags.selected === "removeLabel"
-							|| Flags.selected === "customLabel"
-							|| Flags.selected === "structure"
-						)
-					) {
+			if (currWorkingStructure !== null && DirUtils.performSearch(["label", "removeLabel", "customLabel", "structure"])) {
         // if content is not empty
+				// check if label was clicked
+				// if so, replace mouseCoords with coords of an underlying atom
         if ($event.target.nodeName === "tspan") {
           elem = angular.element($event.target).parent();
           mouseFlags.downMouseCoords = [elem.attr("atomx"), elem.attr("atomy")];
         }
-        checkIfDownOnAtom();
+        checkIfDownOnAtom(); // checks if mouseCoords are within an atom
 				if (!mouseFlags.downOnAtom) {
+					// if mouseCoords are not within an atom,
+					// then check if they are within a bond
 					checkIfDownOnBond();
+				}
+				if (!mouseFlags.downOnAtom && !mouseFlags.downOnBond) {
+					mouseFlags.downOnNothing = true;
 				}
       }
 
       function checkIfDownOnAtom() {
-				var withinObject = ModStructure.isWithin(Cache.getCurrentStructure(), mouseFlags.downMouseCoords);
-        mouseFlags.downAtomCoords = withinObject.absPos;
-				mouseFlags.downAtomObject = withinObject.foundAtom;
+				var withinObject = ModStructure.isWithin(currWorkingStructure, mouseFlags.downMouseCoords);
         if (typeof withinObject.foundAtom !== "undefined") {
-          // set flag if atom was found
+          // set flags if atom was found
           mouseFlags.downOnAtom = true;
+					mouseFlags.downAtomObject = withinObject.foundAtom;
+					mouseFlags.downAtomCoords = withinObject.absPos;
+					mouseFlags.downAtomFirst = withinObject.firstAtom;
         }
       }
 
 			function checkIfDownOnBond() {
 				var withinObject = ModStructure.isWithinBond(Cache.getCurrentStructure(), mouseFlags.downMouseCoords);
-				mouseFlags.downBondObject = withinObject.foundBond;
         if (typeof withinObject.foundBond !== "undefined") {
-					// set flag if atom was found
+					// set flags if bond was found
           mouseFlags.downOnBond = true;
+					mouseFlags.downBondObject = withinObject.foundBond;
         }
       }
     }
 
     service.doOnMouseUp = function ($event, scope, element) {
-      var structure, mouseCoords = Utils.innerCoords(element, $event), i;
+      var mouseCoords = DirUtils.innerCoords(element, $event), drawn;
 
 			// if button other than left was released do nothing
-			// if selected flag is empty do nothing
+			// or if selected flag is empty do nothing
       if ($event.which !== 1 || Flags.selected === "") {
-				Utils.resetMouseFlags();
-				return undefined;
+				DirUtils.resetMouseFlags();
+				return;
 			}
 
 			if (Flags.selected === "delete") {
-				structure = deleteFromStructure();
+				// if delete was selected
+				ModStructure.deleteFromStructure(currWorkingStructure, mouseCoords);
 			} else if (Flags.selected === "select") {
-				structure = makeSelection(mouseCoords);
-				structure.getStructure().pop();
+				// if selection tool was selected
+				ModStructure.makeSelection(currWorkingStructure, mouseCoords, mouseFlags.downMouseCoords);
+				// remove `Selection` object afterwards
+				currWorkingStructure.getStructure().pop();
 			} else if (Flags.selected === "moveStructure") {
-				structure = moveStructure(mouseCoords);
+				// if `move` tool was selected
+				ModStructure.moveStructure(currWorkingStructure, mouseCoords, mouseFlags.downMouseCoords);
 			} else if (Flags.selected === "arrow") {
-				// if arrow was selected
-				// if content is empty or atom was not found
-				structure = addArrowOnEmptyContent();
-			} else if (mouseFlags.downOnAtom && (Flags.selected === "label" || Flags.selected === "customLabel" || Flags.selected === "removeLabel")) {
+				// if arrow was selected,
+				// and click was done on empty space
+				currWorkingStructure = ModStructure.addArrowOnEmptySpace(
+					currWorkingStructure,
+					mouseCoords,
+					mouseFlags.downMouseCoords,
+					scope.chosenArrow
+				);
+			} else if (mouseFlags.downOnAtom && DirUtils.performSearch(["label", "removeLabel", "customLabel"])) {
         // if atom has been found and label is selected
-        structure = modifyLabel();
+        ModStructure.modifyLabel(
+					currWorkingStructure,
+					mouseFlags.downAtomObject,
+					scope.chosenLabel,
+					Flags.selected,
+					Flags.customLabel
+				);
       } else if (mouseFlags.downOnAtom && Flags.selected === "structure") {
         // if atom has been found and structure has been selected
-        structure = modifyOnNonEmptyContent(scope, mouseCoords, false);
+        ModStructure.modifyAtom(
+					currWorkingStructure,
+					mouseFlags.downAtomObject,
+					mouseFlags.downAtomFirst,
+					mouseFlags.downAtomCoords,
+					mouseCoords,
+					scope.chosenStructure
+				);
       } else if (mouseFlags.downOnBond && Flags.selected === "structure") {
         // if atom has been found and structure has been selected
-        structure = modifyOnBond(scope, mouseFlags.downMouseCoords);
+        ModStructure.modifyBond(mouseFlags.downBondObject, scope.chosenStructure);
       } else if (Flags.selected === "structure") {
 				// if content is empty or atom was not found
-        structure = addStructureOnEmptyContent();
+        currWorkingStructure = ModStructure.addStructureOnEmptySpace(
+					currWorkingStructure,
+					scope.chosenStructure,
+					mouseCoords,
+					mouseFlags.downMouseCoords
+				);
       }
 
-      if (typeof structure !== "undefined") {
+      if (currWorkingStructure !== null) {
         // if the structure has been successfully set to something
 				// then add it to Cache and draw it
-        Cache.addStructure(structure);
-        Utils.drawStructure(structure);
+        Cache.addStructure(angular.copy(currWorkingStructure));
+				drawn = DirUtils.drawStructure(currWorkingStructure);
+				Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
       }
-			// reset mouse flags at the end
-      Utils.resetMouseFlags();
-
-			// checks if mouseup occurred on an atom and modifies the structure accordingly
-			function deleteFromStructure() {
-				if (!Utils.isContentEmpty()) {
-					return Utils.deleteFromStructure(
-						Cache.getCurrentStructure(),
-						mouseCoords
-					);
-				}
-			}
-
-      function modifyLabel() {
-				// copy structure from Cache
-        var structure = angular.copy(Cache.getCurrentStructure()),
-					// find the atom object in the new structure
-          atom = ModStructure.isWithin(structure, mouseFlags.downMouseCoords).foundAtom,
-          currentLabel = atom.getLabel();
-				// set Label object
-				// either predefined or custom
-        if (Flags.selected === "label") {
-          atom.setLabel(angular.copy(scope.chosenLabel));
-        } else if (Flags.selected === "customLabel") {
-					Flags.customLabel = typeof Flags.customLabel === "undefined" ? "": Flags.customLabel;
-          atom.setLabel(new Label(Flags.customLabel, 0));
-        }
-
-				// if atom object already has a label on it
-				// then change its direction on mouseup event
-        if (typeof currentLabel !== "undefined") {
-          if (currentLabel.getMode() === "lr") {
-            atom.getLabel().setMode("rl");
-          } else if (currentLabel.getMode() === "rl") {
-            atom.getLabel().setMode("lr");
-          }
-        }
-
-				if (Flags.selected === "removeLabel") {
-					atom.removeLabel();
-				}
-
-        return structure;
-      }
-
-			function addArrowOnEmptyContent() {
-				var structure, arrow, newCoords;
-				if (Utils.isContentEmpty()) {
-					// if the content is empty
-					// new Structure object has to be created
-					structure = new Structure();
-					if (mouseFlags.movedOnEmpty) {
-						// if the mousemove event occurred before this mouseup event
-						// set origin of the Structure object (which may be different from current mouse position)
-						structure.setOrigin(mouseFlags.downMouseCoords);
-						// choose appropriate arrow from ArrowCluster object
-						arrow = scope.chosenArrow.getArrow(mouseFlags.downMouseCoords, mouseCoords);
-						// as a reminder: Structure object has origin with an absolute value,
-						// but each object in its structures array has origin in relation to this absolute value;
-						// first object in this array has therefore always coords [0, 0]
-						arrow.setOrigin([0, 0]);
-					} else {
-						// if mousemove event didn't occur, assume mouse coords from this (mouseup) event
-						structure.setOrigin(mouseCoords);
-						// get default arrow
-						arrow = angular.copy(scope.chosenArrow.getDefault());
-						// calculate and set coords
-						newCoords = Utils.subtractVectors(mouseCoords, structure.getOrigin());
-						arrow.setOrigin(newCoords);
-					}
-				} else {
-					// if the content is not empty, a Structure object already exists
-					// so get Structure object from Cache
-					structure = angular.copy(Cache.getCurrentStructure());
-					if (mouseFlags.movedOnEmpty) {
-						// if the mousemove event occurred before this mouseup event
-						// set origin of the Structure object (which may be different from current mouse position)
-						arrow = scope.chosenArrow.getArrow(mouseFlags.downMouseCoords, mouseCoords);
-					} else {
-						// otherwise get default arrow
-						arrow = angular.copy(scope.chosenArrow.getDefault());
-					}
-					newCoords = Utils.subtractVectors(mouseFlags.downMouseCoords, structure.getOrigin());
-					// calculate and set coords
-					arrow.setOrigin(newCoords);
-				}
-				// add Arrow object to the structures array in the Structure object
-				structure.addToStructures(arrow);
-				// return Structure object
-				return structure;
-			}
-
-			function addStructureOnEmptyContent() {
-				var structure, structureAux, newCoords, bond;
-				if (Utils.isContentEmpty()) {
-					// if the content is empty
-					if (mouseFlags.movedOnEmpty) {
-						// if the mousemove event occurred before this mouseup event
-						// choose an appropriate Structure object from the StructureCluster object
-						structure = angular.copy(scope.chosenStructure.getStructure(mouseFlags.downMouseCoords, mouseCoords));
-						// and set its origin (which may be different from current mouse position)
-						structure.setOrigin(mouseFlags.downMouseCoords);
-						if (structure.isAromatic()) {
-							// if the chosen Structure object is aromatic,
-							// then add appropriate flag to the original Structure object
-							bond = Const.getBondByDirection(structure.getName()).bond;
-							structure.addDecorate("aromatic", {
-								fromWhich: [0, 0],
-								coords: [mouseFlags.downMouseCoords[0] + bond[0], mouseFlags.downMouseCoords[1] + bond[1]]
-							});
-						}
-					} else {
-						// otherwise get default Structure object
-						structure = angular.copy(scope.chosenStructure.getDefault());
-						// and set its origin
-						structure.setOrigin(mouseCoords);
-						if (structure.isAromatic()) {
-							// if the chosen Structure object is aromatic,
-							// then add appropriate flag to the original Structure object
-							bond = Const.getBondByDirection(structure.getName()).bond;
-							structure.addDecorate("aromatic", {
-								fromWhich: [0, 0],
-								coords: [mouseCoords[0] + bond[0], mouseCoords[1] + bond[1]]
-							});
-						}
-					}
-				} else {
-					// when the content is not empty
-					// Structure object already exists,
-					// so get it from Cache
-					structure = angular.copy(Cache.getCurrentStructure());
-					// calaculate new coords
-					newCoords = Utils.subtractVectors(mouseFlags.downMouseCoords, structure.getOrigin());
-					if (mouseFlags.movedOnEmpty) {
-						// if the mousemove event occurred before this mouseup event
-						// choose an appropriate Structure object from the StructureCluster object
-						structureAux = angular.copy(scope.chosenStructure.getStructure(mouseFlags.downMouseCoords, mouseCoords));
-						if (structureAux.isAromatic()) {
-							// if the chosen Structure object is aromatic,
-							// then add appropriate flag to the original Structure object
-							structure.setAromatic();
-							bond = Const.getBondByDirection(structureAux.getName()).bond;
-							structure.addDecorate("aromatic", {
-								fromWhich: angular.copy(newCoords),
-								coords: [mouseFlags.downMouseCoords[0] + bond[0], mouseFlags.downMouseCoords[1] + bond[1]]
-							});
-						}
-					} else {
-						// otherwise get default
-						structureAux = angular.copy(scope.chosenStructure.getDefault());
-						if (structureAux.isAromatic()) {
-							// if the chosen Structure object is aromatic,
-							// then add appropriate flag to the original Structure object
-							structure.setAromatic();
-							bond = Const.getBondByDirection(structureAux.getName()).bond;
-							structure.addDecorate("aromatic", {
-								fromWhich: angular.copy(newCoords),
-								coords: [mouseCoords[0] + bond[0], mouseCoords[1] + bond[1]]
-							});
-						}
-					}
-					// extract the first object from structures array and set its origin
-					structureAux.getStructure(0).setCoords(newCoords);
-					// add to the original Structure object
-					structure.addToStructures(structureAux.getStructure(0));
-				}
-				return structure;
-			}
-    }
+			// reset mouse flags afterwards
+      DirUtils.resetMouseFlags();
+    };
 
     service.doOnMouseMove = function ($event, scope, element) {
-      var mouseCoords = Utils.innerCoords(element, $event), structure;
+      var mouseCoords = DirUtils.innerCoords(element, $event), drawn, frozenStructure;
 
-      if (!mouseFlags.mouseDown || Flags.selected === "label" || Flags.selected === "labelCustom" || Flags.selected === "") {
+      if (!mouseFlags.mouseDown || DirUtils.performSearch(["label", "labelCustom", ""])) {
 				// if mousedown event did not occur, then do nothing
         // if label is selected or nothing is selected, then also do nothing
-        return undefined;
+        return;
       }
+
+			frozenStructure = angular.copy(currWorkingStructure);
 
 			if (Flags.selected === "select") {
-				structure = makeSelection(mouseCoords);
+				// if selection tool was selected
+				ModStructure.makeSelection(frozenStructure, mouseCoords, mouseFlags.downMouseCoords);
 			} else if (Flags.selected === "moveStructure") {
-				structure = moveStructure(mouseCoords);
+				// if `move` tool was selected
+				ModStructure.moveStructure(frozenStructure, mouseCoords, mouseFlags.downMouseCoords);
 			} else if (Flags.selected === "arrow") {
-        // if an atom has not been found but the mouse is still down
-				// the content is either empty or the mousedown event occurred somewhere outside of the current Structure object
-        structure = addArrowOnEmptyContent();
+				// the content is either empty or the mousedown event occurred somewhere outside of the current `Structure` object
+				frozenStructure = ModStructure.addArrowOnEmptySpace(
+					frozenStructure,
+					mouseCoords,
+					mouseFlags.downMouseCoords,
+					scope.chosenArrow
+				);
       } else if (mouseFlags.downOnAtom) {
-        // if an atom has been found
-        structure = modifyOnNonEmptyContent(scope, mouseCoords, true);
+				// if atom has been found and structure has been selected
+        ModStructure.modifyAtom(
+					frozenStructure,
+					mouseFlags.downAtomObject,
+					mouseFlags.downAtomFirst,
+					mouseFlags.downAtomCoords,
+					mouseCoords,
+					scope.chosenStructure
+				);
       } else if (Flags.selected === "structure") {
-        // if an atom has not been found but the mouse is still down
-				// the content is either empty or the mousedown event occurred somewhere outside of the current Structure object
-        structure = addStructureOnEmptyContent();
+				// if content is empty or atom was not found
+        frozenStructure = ModStructure.addStructureOnEmptySpace(
+					frozenStructure,
+					scope.chosenStructure,
+					mouseCoords,
+					mouseFlags.downMouseCoords,
+					mouseFlags.movedOnEmpty
+				);
       }
 
-			if (typeof structure !== "undefined") {
-				// if the structure has been successfully set to something
-				// then draw it
-				Utils.drawStructure(structure);
-			}
-
-			function addArrowOnEmptyContent() {
-				var structure, arrow, newCoords;
-				if (Utils.isContentEmpty()) {
-					// if the content is empty
-					// new Structure object has to be created
-					structure = new Structure();
-					// set origin of the Structure object (which may be different from current mouse position)
-					structure.setOrigin(mouseFlags.downMouseCoords);
-					// choose appropriate `Arrow` based on mouse coords
-					arrow = scope.chosenArrow.getArrow(mouseFlags.downMouseCoords, mouseCoords);
-					// as a reminder: Structure object has origin with an absolute value,
-					// but each object in its structures array has origin in relation to this absolute value;
-					// first object in this array has therefore always coords [0, 0]
-					arrow.setOrigin([0, 0]);
-				} else {
-					// if the content is not empty, a Structure object already exists
-					// so get Structure object from Cache
-					structure = angular.copy(Cache.getCurrentStructure());
-					// choose appropriate arrow from ArrowCluster object
-					arrow = scope.chosenArrow.getArrow(mouseFlags.downMouseCoords, mouseCoords);
-					newCoords = Utils.subtractVectors(mouseFlags.downMouseCoords, structure.getOrigin());
-					// calculate and set coords
-					arrow.setOrigin(newCoords);
-				}
-				// add Arrow object to the structures array in the Structure object
-				structure.addToStructures(arrow);
-				mouseFlags.movedOnEmpty = true;
-				// return Structure object
-				return structure;
-			}
-
-			function addStructureOnEmptyContent() {
-				var structure, structureAux, newCoords, bond;
-				if (Utils.isContentEmpty()) {
-					// if the content is empty
-					structure = angular.copy(scope.chosenStructure.getStructure(mouseFlags.downMouseCoords, mouseCoords));
-					// set its origin (which may be different from current mouse position)
-					structure.setOrigin(mouseFlags.downMouseCoords);
-					if (structure.isAromatic()) {
-						// if the chosen Structure object is aromatic,
-						// then add appropriate flag to the original Structure object
-						bond = Const.getBondByDirection(structure.getName()).bond;
-						structure.addDecorate("aromatic", {
-							fromWhich: angular.copy(newCoords),
-							coords: [mouseFlags.downMouseCoords[0] + bond[0], mouseFlags.downMouseCoords[1] + bond[1]]
-						});
-					}
-				} else {
-					// when the content is not empty, a Structure object already exists,
-					// so get it from Cache
-					structure = angular.copy(Cache.getCurrentStructure());
-					// calaculate new coords
-					newCoords = Utils.subtractVectors(mouseFlags.downMouseCoords, structure.getOrigin());
-					// choose an appropriate Structure object from the StructureCluster object
-					structureAux = angular.copy(scope.chosenStructure.getStructure(mouseFlags.downMouseCoords, mouseCoords));
-					if (structureAux.isAromatic()) {
-						// if the chosen Structure object is aromatic,
-						// then add appropriate flag to the original Structure object
-						structure.setAromatic();
-						bond = Const.getBondByDirection(structureAux.getName()).bond;
-						structure.addDecorate("aromatic", {
-							fromWhich: angular.copy(newCoords),
-							coords: [mouseFlags.downMouseCoords[0] + bond[0], mouseFlags.downMouseCoords[1] + bond[1]]
-						});
-					}
-					// extract the first object from structures array and set its origin
-					structureAux.getStructure(0).setCoords(newCoords);
-					// add to the original Structure object
-					structure.addToStructures(structureAux.getStructure(0));
-				}
-				mouseFlags.movedOnEmpty = true;
-				return structure;
+			if (frozenStructure !== null) {
+				drawn = DirUtils.drawStructure(angular.copy(frozenStructure));
+				Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
 			}
     }
 
 		return service;
-
-		function modifyOnNonEmptyContent(scope, mouseCoords, move) {
-			return Utils.modifyStructure(
-				Cache.getCurrentStructure(),
-				scope.chosenStructure,
-				mouseCoords,
-				mouseFlags.downAtomCoords,
-				move
-			);
-		}
-
-		function modifyOnBond(scope, position) {
-			return Utils.modifyBond(
-				Cache.getCurrentStructure(),
-				scope.chosenStructure,
-				position
-			);
-		}
-
-		function moveStructure(mouseCoords) {
-			var structure, moveDistance;
-			if (!Utils.isContentEmpty()) {
-				// if the content is non-empty
-				structure = angular.copy(Cache.getCurrentStructure());
-				moveDistance = Utils.subtractVectors(mouseCoords, mouseFlags.downMouseCoords);
-				structure.moveStructureTo("mouse", moveDistance);
-			}
-			return structure;
-		}
-
-		function makeSelection(mouseCoords) {
-			var structure, selection, newCoords, width, height;
-			if (Utils.isContentEmpty()) {
-				// if the content is empty
-				// new Structure object has to be created
-				structure = new Structure();
-				// set origin of the Structure object (which may be different from current mouse position)
-				structure.setOrigin(mouseFlags.downMouseCoords);
-				selection = new Selection([0, 0], mouseCoords);
-			} else {
-				// if the content is not empty, a Structure object already exists
-				// so get Structure object from Cache
-				structure = angular.copy(Cache.getCurrentStructure());
-				newCoords = Utils.subtractVectors(mouseFlags.downMouseCoords, structure.getOrigin());
-				selection = new Selection(newCoords, mouseCoords);
-			}
-			structure.select(selection);
-			// add Arrow object to the structures array in the Structure object
-			structure.addToStructures(selection);
-			// return Structure object
-			return structure;
-		}
 	}
 })();
 
@@ -2251,18 +2016,15 @@
 
 		/**
 		 * Draws the specified structure.
-		 * @params {Structure} structure - a Structure object to draw.
+		 * @param {Structure} structure - a Structure object to draw.
 		 */
 		service.drawStructure = function (structure) {
-			var drawn = "";
-			drawn = SvgRenderer.draw(structure, "cmpd1");
-			Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
-			return drawn;
+			return SvgRenderer.draw(structure, "cmpd1");			
 		};
 
 		/**
 		 * Sets all boolean values to false and non-boolean to undefined.
-		 * @params {Object} flags - an object containing flags (as mix of boolean and non-boolean values)
+		 * @param {Object} flags - an object containing flags (as mix of boolean and non-boolean values)
 		 */
 		service.resetMouseFlags = function () {
 			angular.forEach(Flags.mouseFlags, function (value, key) {
@@ -2307,44 +2069,12 @@
 			return coords;
 		};
 
-		/**
-		 * Modifies the specified structure by adding a new structure to it.
-		 * @params {Structure} structure - a Structure object to modify,
-		 * @params {Structure} chosenStructure - a Structure object to add,
-		 * @params {Number[]} clickCoords - coordinates of the mouse pointer,
-		 * @params {Number[]} downAtomCoords - coordinates of an atom on which 'mousedown' occurred,
-		 * @params {Boolean} mouseDownAndMove - true if 'mouseonmove' and 'mousedown' are true
-		 * @returns {Structure}
-		 */
-		service.modifyStructure = function (structure, chosenStructure, mouseCoords, downAtomCoords, mouseDownAndMove) {
-			return ModStructure.modifyStructure(
-				angular.copy(structure),
-				angular.copy(chosenStructure),
-				mouseCoords,
-				downAtomCoords,
-				mouseDownAndMove
-			);
-		};
-
-		service.modifyBond = function (structure, chosenStructure, position) {
-			return ModStructure.modifyBond(
-				angular.copy(structure),
-				angular.copy(chosenStructure),
-				position
-			);
-		};
-
-		/**
-		 * Looks for an atom and deletes it.
-		 * @params {Structure} structure - a Structure object to modify,
-		 * @params {Number[]} mouseCoords - coordinates of the mouse pointer (where 'mouseup occurred')
-		 * @returns {Structure}
-		 */
-		service.deleteFromStructure = function (structure, mouseCoords) {
-			return ModStructure.deleteFromStructure(
-				angular.copy(structure),
-				mouseCoords
-			);
+		service.performSearch = function (validSelected) {
+			var result = false;
+			validSelected.forEach(function (selected) {
+				if (selected === Flags.selected) { result = true; }
+			});
+			return result;
 		};
 
 		return service;
@@ -2958,16 +2688,6 @@
 		};
 
 		/**
-		 * Calculates vector based on two sets of absolute coordinates.
-		 * @param {number[]} end - end point,
-		 * @param {number[]} start - start point
-		 * @returns {number[]}
-		 */
-		service.getVector = function (end, start) {
-			return [end[0] - start[0], end[1] - start[1]];
-		};
-
-		/**
 		 * Calculates area of a triangle based on three sets of absolute coordinates.
 		 * @param {number[]} p1 - point,
 		 * @param {number[]} p2 - point,
@@ -2987,8 +2707,8 @@
 		 * @returns {number}
 		 */
 		service.getRectArea = function (points) {
-			var v1 = service.getVector(points[1], points[0]),
-			  v2 = service.getVector(points[2], points[1]);
+			var v1 = service.subtractVectors(points[1], points[0]),
+			  v2 = service.subtractVectors(points[2], points[1]);
 			return service.getLength(v1) * service.getLength(v2);
 		};
 
@@ -4308,10 +4028,11 @@
 		"DCBond",
 		"DCArrow",
 		"DCSelection",
-		"DCSvg"
+		"DCSvg",
+		"DCStructure"
 	];
 
-	function DrawChemModStructure(Const, Utils, Structures, DCAtom, DCBond, DCArrow, DCSelection, DCSvg) {
+	function DrawChemModStructure(Const, Utils, Structures, DCAtom, DCBond, DCArrow, DCSelection, DCSvg, DCStructure) {
 
 		var service = {},
 			BOND_LENGTH = Const.BOND_LENGTH,
@@ -4320,221 +4041,8 @@
 			Arrow = DCArrow.Arrow,
 			Bond = DCBond.Bond,
 			Svg = DCSvg.Svg,
+			Structure = DCStructure.Structure,
 			Selection = DCSelection.Selection;
-
-		/**
-		 * Modifies the `Structure` object and returns it.
-		 * @param {Structure} base - `Structure` object to be modified,
-		 * @param {StructureCluster} mod - `StructureCluster` object containing appropriate `Structure` objects,
-		 * @param {number[]} mousePos - position of the mouse when 'onMouseUp' event occurred
-		 * @param {number[]|undefined} down - position of the mouse when 'onMouseDown' event occurred
-		 * @param {boolean} mouseDownAndMove - true if 'onMouseMove' and 'onMouseDown' are true
-		 * @returns {Structure}
-		 */
-		service.modifyStructure = function (base, mod, mousePos, down, mouseDownAndMove) {
-			var vector, firstAtom,
-				found = false,
-				isInsideCircle,
-				origin = base.getOrigin();
-
-			modStructure(base.getStructure(), origin);
-
-			return base;
-
-			/**
-			* Recursively looks for an atom to modify.
-			* @param {Atom[]|Bond[]} struct - array of atoms or array of bonds,
-			* @param {number[]} pos - absolute coordinates of an atom
-			*/
-			function modStructure(struct, pos) {
-				var i, absPos, aux, obj;
-				for(i = 0; i < struct.length; i += 1) {
-
-					obj = struct[i];
-
-					if (!(obj instanceof Atom || obj instanceof Bond)) { continue; }
-
-					if (found) { break; }
-
-					if (obj instanceof Atom) {
-						firstAtom = struct[i];
-						aux = obj;
-					} else {
-						aux = obj.getAtom();
-						if (aux.isOrphan()) { continue; }
-					}
-
-					absPos = [aux.getCoords("x") + pos[0], aux.getCoords("y") + pos[1]];
-
-					isInsideCircle = Utils.insideCircle(absPos, mousePos, Const.CIRC_R);
-
-					if (isInsideCircle && !mouseDownAndMove) {
-						// if 'mouseup' was within a circle around an atom
-						// and if a valid atom has not already been found
-						vector = chooseDirectionAutomatically(aux);
-						if (vector !== "full atom") {
-						  updateAtom(vector, aux, absPos);
-							updateDecorate(vector, absPos);
-						}
-						found = true;
-						return base;
-					}
-
-					if (!isInsideCircle && Utils.compareVectors(down, absPos, 5)) {
-						// if 'mousedown' was within a circle around an atom
-						// but 'mouseup' was not
-						// and if a valid atom has not already been found
-						vector = chooseDirectionManually(aux);
-						updateAtom(vector, aux, absPos);
-						updateDecorate(vector, absPos);
-						found = true;
-						return base;
-					}
-
-					// if none of the above was true, then continue looking down the structure tree
-					modStructure(aux.getBonds(), absPos);
-				}
-
-				/**
-				* Updates `Atom` object.
-				* @param {number[]} vector - indicates direction, in which the change should be made,
-				* @param {Atom} atom - `Atom` object that is going to be modified,
-				* @param {number[]} absPos - absolute coordinates of this 'Atom' object
-				*/
-				function updateAtom(vector, atom, absPos) {
-					var name = mod.getName(), // gets name of the `StructureCluster `object
-					  size = mod.getRingSize(), // gets size of the ring (defaults to 0 for non-rings)
-						mult = mod.getMult(), // gets multiplicity of the bond
-						bond, angle, nextAtom, rotVect, foundAtom;
-					if (size > 0) {
-						/*
-						* if we are dealing with a ring
-						*/
-						angle = mod.getAngle(); // gets angle between bonds inside the ring
-						rotVect = Utils.rotVectCCW(vector, angle / 2); // adjust to angle bisector
-						// define next `Atom` object
-						nextAtom = new Atom(rotVect, [], { in: [{ vector: angular.copy(rotVect), multiplicity: 1 }] });
-						// attach it to the starting `Atom` object
-						atom.addBond(new Bond("single", nextAtom));
-						// update `attachedBonds` array
-						atom.attachBond("out", { vector: angular.copy(rotVect), multiplicity: 1 });
-						// recursively generate the rest of the ring
-						Structures.generateRing(nextAtom, size, angle, atom, mod.getMult(), 2, mod.isAromatic());
-					} else {
-						/*
-						* if we are dealing with a bond
-						*/
-						// generate `Bond` object in the direction indicated by `vector`
-						bond = Structures.generateBond(vector, name, mult);
-						// check if an `Atom` object laready exists at this coords
-						foundAtom = service.isWithin(
-							base,
-							Utils.addVectors(absPos, vector)
-						).foundAtom;
-						if (typeof foundAtom !== "undefined") {
-							bond.getAtom().setAsOrphan();
-							foundAtom.attachBond("in", { vector: vector, multiplicity: mult })
-						}
-						// attach it to the starting `atom`
-						atom.addBond(bond);
-						// update `attachedBonds` array
-						atom.attachBond("out", { vector: angular.copy(vector), multiplicity: mult });
-					}
-				}
-
-				/**
-				 * Updates decorate elements (e.g. aromatic rings) in the structure.
-				 * @param {number[]} vector - indicates direction, in which the change should be made,
-				 * @param {number[]} absPos - absolute coordinates of currently active 'Atom' object
-				 */
-				function updateDecorate(vector, absPos) {
-					if (mod.isAromatic() && typeof firstAtom !== "undefined") {
-						base.setAromatic();
-						base.addDecorate("aromatic", {
-							fromWhich: firstAtom.getCoords(),
-							coords: [vector[0] + absPos[0], vector[1] + absPos[1]]
-						});
-					}
-				}
-			}
-
-			/**
-			 * Lets the user decide in which direction the next bond is going to be.
-			 * Enables rotating the bond around an atom (by a degree defined in Constants).
-			 * @param {Atom} current - currently active Atom object
-			 * @returns {number[]}
-			 */
-			function chooseDirectionManually(current) {
-				var inBonds = current.getAttachedBonds("in"), // attached incoming bonds
-				  outBonds = current.getAttachedBonds("out"), // attached outcoming bonds
-					possibleBonds, firstInBond, firstOutBond, angle, vect;
-
-				if (typeof inBonds !== "undefined" && typeof outBonds !== "undefined") {
-					// if both in- and outcoming bonds are defined,
-					// get first in- and first outcoming bond,
-					firstInBond = inBonds[0].vector;
-					firstOutBond = outBonds[0].vector;
-					// find angle between them
-					angle = Math.acos(Utils.dotProduct(Utils.norm(firstInBond), Utils.norm(firstOutBond))) * 180 / Math.PI;
-					// construct angle bisector
-					vect = Utils.rotVectCCW(firstInBond, (180 - angle) / 2);
-				} else if (typeof inBonds !== "undefined") {
-					vect = inBonds[0].vector;
-				} else if (typeof outBonds !== "undefined") {
-					vect = outBonds[0].vector;
-				} else {
-					// defaults to bond in north direction
-					vect = Const.BOND_N;
-				}
-				// finds all possible bonds, starting with `vect` and rotating it every `Const.FREQ`
-				possibleBonds = Utils.calcPossibleVectors(vect, Const.FREQ);
-				// returns that vector from `possibleBonds` array,
-				// that is closest to the vector made with `down` and `mousePos` coordinates
-				return Utils.getClosestVector(down, mousePos, possibleBonds);
-			}
-
-			/**
-			 * Automatically decides in which direction the next bond is going to be.
-			 * @param {Atom} current - currently active Atom object
-			 * @returns {number[]}
-			 */
-			function chooseDirectionAutomatically(current) {
-				var inBonds = current.getAttachedBonds("in"), // attached incoming bonds
-				  outBonds = current.getAttachedBonds("out"), // attached outcoming bonds
-					size = mod.getRingSize(), // check if structure is cyclic
-					possibleBonds, firstInBond, firstOutBond, angle, vect, vectAux;
-
-				if (typeof inBonds !== "undefined" && typeof outBonds !== "undefined") {
-					// if both in- and outcoming bonds are defined,
-					// get first in- and first outcoming bond,
-					firstInBond = inBonds[0].vector;
-					firstOutBond = outBonds[0].vector;
-					// find angle between them
-					angle = Math.acos(Utils.dotProduct(Utils.norm(firstInBond), Utils.norm(firstOutBond))) * 180 / Math.PI;
-					// construct angle bisector
-					vectAux = Utils.rotVectCCW(firstInBond, (180 - angle) / 2);
-					if (Utils.compareVectors(vectAux, firstOutBond, 5)) {
-						vect = Utils.rotVectCW(firstInBond, (180 - angle) / 2);
-					} else {
-						vect = vectAux;
-					}
-				} else if (typeof inBonds !== "undefined") {
-					if (size > 0) {
-						vect = angular.copy(inBonds[0].vector);
-					} else {
-					  vect = Utils.rotVectCCW(inBonds[0].vector, Const.ANGLE / 2);
-					}
-				} else if (typeof outBonds !== "undefined") {
-					vect = Utils.rotVectCCW(outBonds[0].vector, Const.ANGLE);
-				} else {
-					// defaults to bond in north direction
-					vect = Const.BOND_N;
-				}
-				// recursively checks if this bond is already attached,
-				// if so, rotates it by `Const.FREQ` clockwise
-				return Utils.checkAttachedBonds(vect, current, Const.FREQ, Const.MAX_BONDS);
-			}
-		}
 
 		/**
 		 * Looks for an `Atom` object (or objects if more than one has the specified coords) and deletes it (them).
@@ -4573,8 +4081,6 @@
 			}
 
 			structure.setStructure(aux);
-
-			return structure;
 
 			/**
 			* Recursively looks for atom Objects to delete.
@@ -4647,7 +4153,7 @@
 		 */
 		service.isWithin = function (structure, position) {
 			var found = false,
-				foundObj = {},
+				foundObj = {}, firstAtom,
 				origin = structure.getOrigin();
 
 			check(structure.getStructure(), origin);
@@ -4661,6 +4167,7 @@
 					if (!(obj instanceof Atom || obj instanceof Bond)) { continue; }
 					if (obj instanceof Atom) {
 						aux = obj;
+						firstAtom = obj;
 					} else {
 						aux = obj.getAtom();
 						if (aux.isOrphan()) { continue; }
@@ -4670,6 +4177,7 @@
 						found = true;
 						foundObj.foundAtom = aux;
 						foundObj.absPos = absPos;
+						foundObj.firstAtom = firstAtom;
 					} else {
 					  check(aux.getBonds(), absPos);
 					}
@@ -4716,14 +4224,278 @@
 			}
 		};
 
-		service.modifyBond = function (structure, chosenStructure, position) {
-			var ringSize = chosenStructure.getRingSize(), bondType,
-			  bondToModify = service.isWithinBond(structure, position).foundBond;
+		service.moveStructure = function (structure, mouseCoords, downMouseCoords) {
+			var moveDistance;
+			if (structure !== null) {
+				// if the content is non-empty
+				moveDistance = Utils.subtractVectors(mouseCoords, downMouseCoords);
+				structure.moveStructureTo("mouse", moveDistance);
+			}
+		};
+
+		service.modifyLabel = function (structure, atom, selected, chosenLabel, customLabel) {
+			var currentLabel = atom.getLabel();
+			// set `Label` object
+			// either predefined or custom
+			if (selected === "label") {
+				atom.setLabel(angular.copy(chosenLabel));
+			} else if (selected === "customLabel") {
+				customLabel = typeof customLabel === "undefined" ? "": customLabel;
+				atom.setLabel(new Label(customLabel, 0));
+			}
+			// if `Atom` object already has a label on it
+			// then change its direction on mouseup event
+			if (typeof currentLabel !== "undefined") {
+				if (currentLabel.getMode() === "lr") {
+					atom.getLabel().setMode("rl");
+				} else if (currentLabel.getMode() === "rl") {
+					atom.getLabel().setMode("lr");
+				}
+			}
+			if (selected === "removeLabel") {
+				atom.removeLabel();
+			}
+		};
+
+		service.modifyAtom = function (structure, atom, firstAtom, absPos, mouseCoords, chosenStructure) {
+			var vector;
+
+			if (Utils.insideCircle(absPos, mouseCoords, Const.CIRC_R)) {
+				vector = chooseDirectionAutomatically();
+			} else {
+				vector = chooseDirectionManually();
+			}
+
+			updateAtom(vector);
+			updateArom(vector);
+
+			/**
+			* Updates `Atom` object.
+			* @param {number[]} vector - indicates direction, in which the change should be made
+			*/
+			function updateAtom(vector) {
+				var name = chosenStructure.getName(), // gets name of the `StructureCluster `object
+					size = chosenStructure.getRingSize(), // gets size of the ring (defaults to 0 for non-rings)
+					mult = chosenStructure.getMult(), // gets multiplicity of the bond
+					bond, angle, nextAtom, rotVect, foundAtom;
+				if (size > 0) {
+					/*
+					* if we are dealing with a ring
+					*/
+					angle = chosenStructure.getAngle(); // gets angle between bonds inside the ring
+					rotVect = Utils.rotVectCCW(vector, angle / 2); // adjust to angle bisector
+					// define next `Atom` object
+					nextAtom = new Atom(rotVect, [], { in: [{ vector: angular.copy(rotVect), multiplicity: 1 }] });
+					// attach it to the starting `Atom` object
+					atom.addBond(new Bond("single", nextAtom));
+					// update `attachedBonds` array
+					atom.attachBond("out", { vector: angular.copy(rotVect), multiplicity: 1 });
+					// recursively generate the rest of the ring
+					Structures.generateRing(nextAtom, size, angle, atom, chosenStructure.getMult(), 2, chosenStructure.isAromatic());
+				} else {
+					/*
+					* if we are dealing with a bond
+					*/
+					// generate `Bond` object in the direction indicated by `vector`
+					bond = Structures.generateBond(vector, name, mult);
+					// check if an `Atom` object laready exists at this coords
+					foundAtom = service.isWithin(
+						structure,
+						Utils.addVectors(absPos, vector)
+					).foundAtom;
+					if (typeof foundAtom !== "undefined") {
+						bond.getAtom().setAsOrphan();
+						foundAtom.attachBond("in", { vector: vector, multiplicity: mult })
+					}
+					// attach it to the starting `atom`
+					atom.addBond(bond);
+					// update `attachedBonds` array
+					atom.attachBond("out", { vector: angular.copy(vector), multiplicity: mult });
+				}
+			}
+
+			/**
+			 * Updates decorate elements (e.g. aromatic rings) in the structure.
+			 * @param {number[]} vector - indicates direction, in which the change should be made
+			 */
+			function updateArom(vector) {
+				if (chosenStructure.isAromatic() && typeof firstAtom !== "undefined") {
+					structure.setAromatic();
+					structure.addDecorate("aromatic", {
+						fromWhich: firstAtom.getCoords(),
+						coords: [vector[0] + absPos[0], vector[1] + absPos[1]]
+					});
+				}
+		  }
+
+			/**
+			 * Automatically decides in which direction the next bond is going to be.
+			 * @returns {number[]}
+			 */
+			function chooseDirectionAutomatically() {
+				var inBonds = atom.getAttachedBonds("in"), // attached incoming bonds
+				  outBonds = atom.getAttachedBonds("out"), // attached outcoming bonds
+					size = chosenStructure.getRingSize(), // check if structure is cyclic
+					possibleBonds, firstInBond, firstOutBond, angle, vect, vectAux;
+
+				if (typeof inBonds !== "undefined" && typeof outBonds !== "undefined") {
+					// if both in- and outcoming bonds are defined,
+					// get first in- and first outcoming bond,
+					firstInBond = inBonds[0].vector;
+					firstOutBond = outBonds[0].vector;
+					// find angle between them
+					angle = Math.acos(Utils.dotProduct(Utils.norm(firstInBond), Utils.norm(firstOutBond))) * 180 / Math.PI;
+					// construct angle bisector
+					vectAux = Utils.rotVectCCW(firstInBond, (180 - angle) / 2);
+					if (Utils.compareVectors(vectAux, firstOutBond, 5)) {
+						vect = Utils.rotVectCW(firstInBond, (180 - angle) / 2);
+					} else {
+						vect = vectAux;
+					}
+				} else if (typeof inBonds !== "undefined") {
+					if (size > 0) {
+						vect = angular.copy(inBonds[0].vector);
+					} else {
+					  vect = Utils.rotVectCCW(inBonds[0].vector, Const.ANGLE / 2);
+					}
+				} else if (typeof outBonds !== "undefined") {
+					vect = Utils.rotVectCCW(outBonds[0].vector, Const.ANGLE);
+				} else {
+					// defaults to bond in north direction
+					vect = Const.BOND_N;
+				}
+				// recursively checks if this bond is already attached,
+				// if so, rotates it by `Const.FREQ` clockwise
+				return Utils.checkAttachedBonds(vect, atom, Const.FREQ, Const.MAX_BONDS);
+			}
+
+			/**
+			 * Lets the user decide in which direction the next bond is going to be.
+			 * Enables rotating the bond around an atom (by a degree defined in Constants).
+			 * @returns {number[]}
+			 */
+			function chooseDirectionManually() {
+				var inBonds = atom.getAttachedBonds("in"), // attached incoming bonds
+				  outBonds = atom.getAttachedBonds("out"), // attached outcoming bonds
+					possibleBonds, firstInBond, firstOutBond, angle, vect;
+
+				if (typeof inBonds !== "undefined" && typeof outBonds !== "undefined") {
+					// if both in- and outcoming bonds are defined,
+					// get first in- and first outcoming bond,
+					firstInBond = inBonds[0].vector;
+					firstOutBond = outBonds[0].vector;
+					// find angle between them
+					angle = Math.acos(Utils.dotProduct(Utils.norm(firstInBond), Utils.norm(firstOutBond))) * 180 / Math.PI;
+					// construct angle bisector
+					vect = Utils.rotVectCCW(firstInBond, (180 - angle) / 2);
+				} else if (typeof inBonds !== "undefined") {
+					vect = inBonds[0].vector;
+				} else if (typeof outBonds !== "undefined") {
+					vect = outBonds[0].vector;
+				} else {
+					// defaults to bond in north direction
+					vect = Const.BOND_N;
+				}
+				// finds all possible bonds, starting with `vect` and rotating it every `Const.FREQ`
+				possibleBonds = Utils.calcPossibleVectors(vect, Const.FREQ);
+				// returns that vector from `possibleBonds` array,
+				// that is closest to the vector made with `down` and `mousePos` coordinates
+				return Utils.getClosestVector(absPos, mouseCoords, possibleBonds);
+			}
+		};
+
+		service.addArrowOnEmptySpace = function (structure, mouseCoords, downMouseCoords, chosenArrow) {
+			var arrow, coords;
+			if (structure === null) {
+				// if the content is empty
+				// new `Structure` object has to be created
+				structure = new Structure();
+				// if mousemove event didn't occur, assume mouse coords from (mouseup) event
+				structure.setOrigin(mouseCoords);
+				// get default arrow
+				arrow = angular.copy(chosenArrow.getDefault());
+				// calculate and set coords
+				coords = Utils.subtractVectors(mouseCoords, structure.getOrigin());
+				arrow.setOrigin(coords);
+			} else {
+				// if the content is not empty, a `Structure` object already exists
+				arrow = angular.copy(chosenArrow.getArrow(downMouseCoords, mouseCoords));
+				coords = Utils.subtractVectors(mouseCoords, structure.getOrigin());
+				// calculate and set coords
+				arrow.setOrigin(coords);
+			}
+			// add Arrow object to the structures array in the Structure object
+			structure.addToStructures(arrow);
+			return structure;
+		};
+
+		service.makeSelection = function(structure, mouseCoords, downMouseCoords) {
+			var selection, coords;
+			if (structure === null) {
+				// if the content is empty
+				// new Structure object has to be created
+				structure = new Structure();
+				// set origin of the `Structure` object
+				structure.setOrigin(downMouseCoords);
+				selection = new Selection([0, 0], mouseCoords);
+			} else {
+				// if the content is not empty, a `Structure` object already exists
+				coords = Utils.subtractVectors(downMouseCoords, structure.getOrigin());
+				selection = new Selection(newCoords, mouseCoords);
+			}
+			// change selection of already existing `Atom` and `Arrow` objects
+			structure.select(selection);
+			// add `Selection` object
+			structure.addToStructures(selection);
+		};
+
+		service.modifyBond = function (bond, chosenStructure) {
+			var ringSize = chosenStructure.getRingSize(), bondType;
 			if (ringSize > 0) {
 				// todo
 			} else {
 				bondType = chosenStructure.getDefault().getStructure(0).getBonds(0).getType();
-				bondToModify.setType(bondType);
+				bond.setType(bondType);
+			}
+		};
+
+		service.addStructureOnEmptySpace = function (structure, chosenStructure, mouseCoords, downMouseCoords) {
+			var structureAux, coords, bond;
+			if (structure === null) {
+				// if the content is empty
+				structure = angular.copy(chosenStructure.getStructure(downMouseCoords, mouseCoords));
+				// and set its origin
+				structure.setOrigin(mouseCoords);
+				if (structure.isAromatic()) {
+					// if the chosen Structure object is aromatic,
+					// then add appropriate flag to the original Structure object
+					bond = Const.getBondByDirection(structure.getName()).bond;
+					structure.addDecorate("aromatic", {
+						fromWhich: [0, 0],
+						coords: [mouseCoords[0] + bond[0], mouseCoords[1] + bond[1]]
+					});
+				}
+			} else {
+				// when the content is not empty
+				// `Structure` object already exists
+				// calaculate new coords
+				coords = Utils.subtractVectors(downMouseCoords, structure.getOrigin());
+				// otherwise get default
+				structureAux = angular.copy(chosenStructure.getStructure(downMouseCoords, mouseCoords));
+				if (structureAux.isAromatic()) {
+					// if the chosen Structure object is aromatic,
+					// then add appropriate flag to the original Structure object
+					structure.setAromatic();
+					bond = Const.getBondByDirection(structureAux.getName()).bond;
+					structure.addDecorate("aromatic", {
+						fromWhich: angular.copy(coords),
+						coords: [mouseCoords[0] + bond[0], mouseCoords[1] + bond[1]]
+					});
+				}
+				// extract the first object from structures array and set its origin
+				structureAux.getStructure(0).setCoords(coords);
+				// add to the original `Structure` object
+				structure.addToStructures(structureAux.getStructure(0));
 			}
 			return structure;
 		};

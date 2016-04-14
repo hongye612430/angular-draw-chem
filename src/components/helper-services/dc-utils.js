@@ -331,16 +331,6 @@
 		};
 
 		/**
-		 * Calculates vector based on two sets of absolute coordinates.
-		 * @param {number[]} end - end point,
-		 * @param {number[]} start - start point
-		 * @returns {number[]}
-		 */
-		service.getVector = function (end, start) {
-			return [end[0] - start[0], end[1] - start[1]];
-		};
-
-		/**
 		 * Calculates area of a triangle based on three sets of absolute coordinates.
 		 * @param {number[]} p1 - point,
 		 * @param {number[]} p2 - point,
@@ -360,8 +350,8 @@
 		 * @returns {number}
 		 */
 		service.getRectArea = function (points) {
-			var v1 = service.getVector(points[1], points[0]),
-			  v2 = service.getVector(points[2], points[1]);
+			var v1 = service.subtractVectors(points[1], points[0]),
+			  v2 = service.subtractVectors(points[2], points[1]);
 			return service.getLength(v1) * service.getLength(v2);
 		};
 

@@ -14,435 +14,194 @@
 		"DCSelection"
   ];
 
-	function DrawChemDirectiveMouseActions(Flags, Utils, ModStructure, Cache, Const, DCLabel, DCStructure, DCSelection) {
+	function DrawChemDirectiveMouseActions(Flags, DirUtils, ModStructure, Cache, Const, DCLabel, DCStructure, DCSelection) {
 
 		var service = {},
       Label = DCLabel.Label,
 			Selection = DCSelection.Selection,
 			Structure = DCStructure.Structure,
-      mouseFlags = Flags.mouseFlags;
+      mouseFlags = Flags.mouseFlags,
+			currWorkingStructure = null;
 
     service.doOnMouseDown = function ($event, scope, element) {
-      var elem;
+      var elem, structure;
 			// if button other than left was used
-      if ($event.which !== 1) { return undefined; }
+      if ($event.which !== 1) { return; }
 			// set mouse coords
-      mouseFlags.downMouseCoords = Utils.innerCoords(element, $event);
+      mouseFlags.downMouseCoords = DirUtils.innerCoords(element, $event);
 			// set flag
       mouseFlags.mouseDown = true;
+			// get current working structure (copy it from Cache)
+			currWorkingStructure = angular.copy(Cache.getCurrentStructure());
 
 			// check if the event occurred on an atom
 			// if content is not empty and (label is selected or structure is selected or delete is selected)
 			// otherwise there is no necessity for checking this
-			if (!Utils.isContentEmpty() &&
-						(
-							Flags.selected === "label"
-							|| Flags.selected === "removeLabel"
-							|| Flags.selected === "customLabel"
-							|| Flags.selected === "structure"
-						)
-					) {
+			if (currWorkingStructure !== null && DirUtils.performSearch(["label", "removeLabel", "customLabel", "structure"])) {
         // if content is not empty
+				// check if label was clicked
+				// if so, replace mouseCoords with coords of an underlying atom
         if ($event.target.nodeName === "tspan") {
           elem = angular.element($event.target).parent();
           mouseFlags.downMouseCoords = [elem.attr("atomx"), elem.attr("atomy")];
         }
-        checkIfDownOnAtom();
+        checkIfDownOnAtom(); // checks if mouseCoords are within an atom
 				if (!mouseFlags.downOnAtom) {
+					// if mouseCoords are not within an atom,
+					// then check if they are within a bond
 					checkIfDownOnBond();
+				}
+				if (!mouseFlags.downOnAtom && !mouseFlags.downOnBond) {
+					mouseFlags.downOnNothing = true;
 				}
       }
 
       function checkIfDownOnAtom() {
-				var withinObject = ModStructure.isWithin(Cache.getCurrentStructure(), mouseFlags.downMouseCoords);
-        mouseFlags.downAtomCoords = withinObject.absPos;
-				mouseFlags.downAtomObject = withinObject.foundAtom;
+				var withinObject = ModStructure.isWithin(currWorkingStructure, mouseFlags.downMouseCoords);
         if (typeof withinObject.foundAtom !== "undefined") {
-          // set flag if atom was found
+          // set flags if atom was found
           mouseFlags.downOnAtom = true;
+					mouseFlags.downAtomObject = withinObject.foundAtom;
+					mouseFlags.downAtomCoords = withinObject.absPos;
+					mouseFlags.downAtomFirst = withinObject.firstAtom;
         }
       }
 
 			function checkIfDownOnBond() {
 				var withinObject = ModStructure.isWithinBond(Cache.getCurrentStructure(), mouseFlags.downMouseCoords);
-				mouseFlags.downBondObject = withinObject.foundBond;
         if (typeof withinObject.foundBond !== "undefined") {
-					// set flag if atom was found
+					// set flags if bond was found
           mouseFlags.downOnBond = true;
+					mouseFlags.downBondObject = withinObject.foundBond;
         }
       }
     }
 
     service.doOnMouseUp = function ($event, scope, element) {
-      var structure, mouseCoords = Utils.innerCoords(element, $event), i;
+      var mouseCoords = DirUtils.innerCoords(element, $event), drawn;
 
 			// if button other than left was released do nothing
-			// if selected flag is empty do nothing
+			// or if selected flag is empty do nothing
       if ($event.which !== 1 || Flags.selected === "") {
-				Utils.resetMouseFlags();
-				return undefined;
+				DirUtils.resetMouseFlags();
+				return;
 			}
 
 			if (Flags.selected === "delete") {
-				structure = deleteFromStructure();
+				// if delete was selected
+				ModStructure.deleteFromStructure(currWorkingStructure, mouseCoords);
 			} else if (Flags.selected === "select") {
-				structure = makeSelection(mouseCoords);
-				structure.getStructure().pop();
+				// if selection tool was selected
+				ModStructure.makeSelection(currWorkingStructure, mouseCoords, mouseFlags.downMouseCoords);
+				// remove `Selection` object afterwards
+				currWorkingStructure.getStructure().pop();
 			} else if (Flags.selected === "moveStructure") {
-				structure = moveStructure(mouseCoords);
+				// if `move` tool was selected
+				ModStructure.moveStructure(currWorkingStructure, mouseCoords, mouseFlags.downMouseCoords);
 			} else if (Flags.selected === "arrow") {
-				// if arrow was selected
-				// if content is empty or atom was not found
-				structure = addArrowOnEmptyContent();
-			} else if (mouseFlags.downOnAtom && (Flags.selected === "label" || Flags.selected === "customLabel" || Flags.selected === "removeLabel")) {
+				// if arrow was selected,
+				// and click was done on empty space
+				currWorkingStructure = ModStructure.addArrowOnEmptySpace(
+					currWorkingStructure,
+					mouseCoords,
+					mouseFlags.downMouseCoords,
+					scope.chosenArrow
+				);
+			} else if (mouseFlags.downOnAtom && DirUtils.performSearch(["label", "removeLabel", "customLabel"])) {
         // if atom has been found and label is selected
-        structure = modifyLabel();
+        ModStructure.modifyLabel(
+					currWorkingStructure,
+					mouseFlags.downAtomObject,
+					scope.chosenLabel,
+					Flags.selected,
+					Flags.customLabel
+				);
       } else if (mouseFlags.downOnAtom && Flags.selected === "structure") {
         // if atom has been found and structure has been selected
-        structure = modifyOnNonEmptyContent(scope, mouseCoords, false);
+        ModStructure.modifyAtom(
+					currWorkingStructure,
+					mouseFlags.downAtomObject,
+					mouseFlags.downAtomFirst,
+					mouseFlags.downAtomCoords,
+					mouseCoords,
+					scope.chosenStructure
+				);
       } else if (mouseFlags.downOnBond && Flags.selected === "structure") {
         // if atom has been found and structure has been selected
-        structure = modifyOnBond(scope, mouseFlags.downMouseCoords);
+        ModStructure.modifyBond(mouseFlags.downBondObject, scope.chosenStructure);
       } else if (Flags.selected === "structure") {
 				// if content is empty or atom was not found
-        structure = addStructureOnEmptyContent();
+        currWorkingStructure = ModStructure.addStructureOnEmptySpace(
+					currWorkingStructure,
+					scope.chosenStructure,
+					mouseCoords,
+					mouseFlags.downMouseCoords
+				);
       }
 
-      if (typeof structure !== "undefined") {
+      if (currWorkingStructure !== null) {
         // if the structure has been successfully set to something
 				// then add it to Cache and draw it
-        Cache.addStructure(structure);
-        Utils.drawStructure(structure);
+        Cache.addStructure(angular.copy(currWorkingStructure));
+				drawn = DirUtils.drawStructure(currWorkingStructure);
+				Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
       }
-			// reset mouse flags at the end
-      Utils.resetMouseFlags();
-
-			// checks if mouseup occurred on an atom and modifies the structure accordingly
-			function deleteFromStructure() {
-				if (!Utils.isContentEmpty()) {
-					return Utils.deleteFromStructure(
-						Cache.getCurrentStructure(),
-						mouseCoords
-					);
-				}
-			}
-
-      function modifyLabel() {
-				// copy structure from Cache
-        var structure = angular.copy(Cache.getCurrentStructure()),
-					// find the atom object in the new structure
-          atom = ModStructure.isWithin(structure, mouseFlags.downMouseCoords).foundAtom,
-          currentLabel = atom.getLabel();
-				// set Label object
-				// either predefined or custom
-        if (Flags.selected === "label") {
-          atom.setLabel(angular.copy(scope.chosenLabel));
-        } else if (Flags.selected === "customLabel") {
-					Flags.customLabel = typeof Flags.customLabel === "undefined" ? "": Flags.customLabel;
-          atom.setLabel(new Label(Flags.customLabel, 0));
-        }
-
-				// if atom object already has a label on it
-				// then change its direction on mouseup event
-        if (typeof currentLabel !== "undefined") {
-          if (currentLabel.getMode() === "lr") {
-            atom.getLabel().setMode("rl");
-          } else if (currentLabel.getMode() === "rl") {
-            atom.getLabel().setMode("lr");
-          }
-        }
-
-				if (Flags.selected === "removeLabel") {
-					atom.removeLabel();
-				}
-
-        return structure;
-      }
-
-			function addArrowOnEmptyContent() {
-				var structure, arrow, newCoords;
-				if (Utils.isContentEmpty()) {
-					// if the content is empty
-					// new Structure object has to be created
-					structure = new Structure();
-					if (mouseFlags.movedOnEmpty) {
-						// if the mousemove event occurred before this mouseup event
-						// set origin of the Structure object (which may be different from current mouse position)
-						structure.setOrigin(mouseFlags.downMouseCoords);
-						// choose appropriate arrow from ArrowCluster object
-						arrow = scope.chosenArrow.getArrow(mouseFlags.downMouseCoords, mouseCoords);
-						// as a reminder: Structure object has origin with an absolute value,
-						// but each object in its structures array has origin in relation to this absolute value;
-						// first object in this array has therefore always coords [0, 0]
-						arrow.setOrigin([0, 0]);
-					} else {
-						// if mousemove event didn't occur, assume mouse coords from this (mouseup) event
-						structure.setOrigin(mouseCoords);
-						// get default arrow
-						arrow = angular.copy(scope.chosenArrow.getDefault());
-						// calculate and set coords
-						newCoords = Utils.subtractVectors(mouseCoords, structure.getOrigin());
-						arrow.setOrigin(newCoords);
-					}
-				} else {
-					// if the content is not empty, a Structure object already exists
-					// so get Structure object from Cache
-					structure = angular.copy(Cache.getCurrentStructure());
-					if (mouseFlags.movedOnEmpty) {
-						// if the mousemove event occurred before this mouseup event
-						// set origin of the Structure object (which may be different from current mouse position)
-						arrow = scope.chosenArrow.getArrow(mouseFlags.downMouseCoords, mouseCoords);
-					} else {
-						// otherwise get default arrow
-						arrow = angular.copy(scope.chosenArrow.getDefault());
-					}
-					newCoords = Utils.subtractVectors(mouseFlags.downMouseCoords, structure.getOrigin());
-					// calculate and set coords
-					arrow.setOrigin(newCoords);
-				}
-				// add Arrow object to the structures array in the Structure object
-				structure.addToStructures(arrow);
-				// return Structure object
-				return structure;
-			}
-
-			function addStructureOnEmptyContent() {
-				var structure, structureAux, newCoords, bond;
-				if (Utils.isContentEmpty()) {
-					// if the content is empty
-					if (mouseFlags.movedOnEmpty) {
-						// if the mousemove event occurred before this mouseup event
-						// choose an appropriate Structure object from the StructureCluster object
-						structure = angular.copy(scope.chosenStructure.getStructure(mouseFlags.downMouseCoords, mouseCoords));
-						// and set its origin (which may be different from current mouse position)
-						structure.setOrigin(mouseFlags.downMouseCoords);
-						if (structure.isAromatic()) {
-							// if the chosen Structure object is aromatic,
-							// then add appropriate flag to the original Structure object
-							bond = Const.getBondByDirection(structure.getName()).bond;
-							structure.addDecorate("aromatic", {
-								fromWhich: [0, 0],
-								coords: [mouseFlags.downMouseCoords[0] + bond[0], mouseFlags.downMouseCoords[1] + bond[1]]
-							});
-						}
-					} else {
-						// otherwise get default Structure object
-						structure = angular.copy(scope.chosenStructure.getDefault());
-						// and set its origin
-						structure.setOrigin(mouseCoords);
-						if (structure.isAromatic()) {
-							// if the chosen Structure object is aromatic,
-							// then add appropriate flag to the original Structure object
-							bond = Const.getBondByDirection(structure.getName()).bond;
-							structure.addDecorate("aromatic", {
-								fromWhich: [0, 0],
-								coords: [mouseCoords[0] + bond[0], mouseCoords[1] + bond[1]]
-							});
-						}
-					}
-				} else {
-					// when the content is not empty
-					// Structure object already exists,
-					// so get it from Cache
-					structure = angular.copy(Cache.getCurrentStructure());
-					// calaculate new coords
-					newCoords = Utils.subtractVectors(mouseFlags.downMouseCoords, structure.getOrigin());
-					if (mouseFlags.movedOnEmpty) {
-						// if the mousemove event occurred before this mouseup event
-						// choose an appropriate Structure object from the StructureCluster object
-						structureAux = angular.copy(scope.chosenStructure.getStructure(mouseFlags.downMouseCoords, mouseCoords));
-						if (structureAux.isAromatic()) {
-							// if the chosen Structure object is aromatic,
-							// then add appropriate flag to the original Structure object
-							structure.setAromatic();
-							bond = Const.getBondByDirection(structureAux.getName()).bond;
-							structure.addDecorate("aromatic", {
-								fromWhich: angular.copy(newCoords),
-								coords: [mouseFlags.downMouseCoords[0] + bond[0], mouseFlags.downMouseCoords[1] + bond[1]]
-							});
-						}
-					} else {
-						// otherwise get default
-						structureAux = angular.copy(scope.chosenStructure.getDefault());
-						if (structureAux.isAromatic()) {
-							// if the chosen Structure object is aromatic,
-							// then add appropriate flag to the original Structure object
-							structure.setAromatic();
-							bond = Const.getBondByDirection(structureAux.getName()).bond;
-							structure.addDecorate("aromatic", {
-								fromWhich: angular.copy(newCoords),
-								coords: [mouseCoords[0] + bond[0], mouseCoords[1] + bond[1]]
-							});
-						}
-					}
-					// extract the first object from structures array and set its origin
-					structureAux.getStructure(0).setCoords(newCoords);
-					// add to the original Structure object
-					structure.addToStructures(structureAux.getStructure(0));
-				}
-				return structure;
-			}
-    }
+			// reset mouse flags afterwards
+      DirUtils.resetMouseFlags();
+    };
 
     service.doOnMouseMove = function ($event, scope, element) {
-      var mouseCoords = Utils.innerCoords(element, $event), structure;
+      var mouseCoords = DirUtils.innerCoords(element, $event), drawn, frozenStructure;
 
-      if (!mouseFlags.mouseDown || Flags.selected === "label" || Flags.selected === "labelCustom" || Flags.selected === "") {
+      if (!mouseFlags.mouseDown || DirUtils.performSearch(["label", "labelCustom", ""])) {
 				// if mousedown event did not occur, then do nothing
         // if label is selected or nothing is selected, then also do nothing
-        return undefined;
+        return;
       }
+
+			frozenStructure = angular.copy(currWorkingStructure);
 
 			if (Flags.selected === "select") {
-				structure = makeSelection(mouseCoords);
+				// if selection tool was selected
+				ModStructure.makeSelection(frozenStructure, mouseCoords, mouseFlags.downMouseCoords);
 			} else if (Flags.selected === "moveStructure") {
-				structure = moveStructure(mouseCoords);
+				// if `move` tool was selected
+				ModStructure.moveStructure(frozenStructure, mouseCoords, mouseFlags.downMouseCoords);
 			} else if (Flags.selected === "arrow") {
-        // if an atom has not been found but the mouse is still down
-				// the content is either empty or the mousedown event occurred somewhere outside of the current Structure object
-        structure = addArrowOnEmptyContent();
+				// the content is either empty or the mousedown event occurred somewhere outside of the current `Structure` object
+				frozenStructure = ModStructure.addArrowOnEmptySpace(
+					frozenStructure,
+					mouseCoords,
+					mouseFlags.downMouseCoords,
+					scope.chosenArrow
+				);
       } else if (mouseFlags.downOnAtom) {
-        // if an atom has been found
-        structure = modifyOnNonEmptyContent(scope, mouseCoords, true);
+				// if atom has been found and structure has been selected
+        ModStructure.modifyAtom(
+					frozenStructure,
+					mouseFlags.downAtomObject,
+					mouseFlags.downAtomFirst,
+					mouseFlags.downAtomCoords,
+					mouseCoords,
+					scope.chosenStructure
+				);
       } else if (Flags.selected === "structure") {
-        // if an atom has not been found but the mouse is still down
-				// the content is either empty or the mousedown event occurred somewhere outside of the current Structure object
-        structure = addStructureOnEmptyContent();
+				// if content is empty or atom was not found
+        frozenStructure = ModStructure.addStructureOnEmptySpace(
+					frozenStructure,
+					scope.chosenStructure,
+					mouseCoords,
+					mouseFlags.downMouseCoords,
+					mouseFlags.movedOnEmpty
+				);
       }
 
-			if (typeof structure !== "undefined") {
-				// if the structure has been successfully set to something
-				// then draw it
-				Utils.drawStructure(structure);
-			}
-
-			function addArrowOnEmptyContent() {
-				var structure, arrow, newCoords;
-				if (Utils.isContentEmpty()) {
-					// if the content is empty
-					// new Structure object has to be created
-					structure = new Structure();
-					// set origin of the Structure object (which may be different from current mouse position)
-					structure.setOrigin(mouseFlags.downMouseCoords);
-					// choose appropriate `Arrow` based on mouse coords
-					arrow = scope.chosenArrow.getArrow(mouseFlags.downMouseCoords, mouseCoords);
-					// as a reminder: Structure object has origin with an absolute value,
-					// but each object in its structures array has origin in relation to this absolute value;
-					// first object in this array has therefore always coords [0, 0]
-					arrow.setOrigin([0, 0]);
-				} else {
-					// if the content is not empty, a Structure object already exists
-					// so get Structure object from Cache
-					structure = angular.copy(Cache.getCurrentStructure());
-					// choose appropriate arrow from ArrowCluster object
-					arrow = scope.chosenArrow.getArrow(mouseFlags.downMouseCoords, mouseCoords);
-					newCoords = Utils.subtractVectors(mouseFlags.downMouseCoords, structure.getOrigin());
-					// calculate and set coords
-					arrow.setOrigin(newCoords);
-				}
-				// add Arrow object to the structures array in the Structure object
-				structure.addToStructures(arrow);
-				mouseFlags.movedOnEmpty = true;
-				// return Structure object
-				return structure;
-			}
-
-			function addStructureOnEmptyContent() {
-				var structure, structureAux, newCoords, bond;
-				if (Utils.isContentEmpty()) {
-					// if the content is empty
-					structure = angular.copy(scope.chosenStructure.getStructure(mouseFlags.downMouseCoords, mouseCoords));
-					// set its origin (which may be different from current mouse position)
-					structure.setOrigin(mouseFlags.downMouseCoords);
-					if (structure.isAromatic()) {
-						// if the chosen Structure object is aromatic,
-						// then add appropriate flag to the original Structure object
-						bond = Const.getBondByDirection(structure.getName()).bond;
-						structure.addDecorate("aromatic", {
-							fromWhich: angular.copy(newCoords),
-							coords: [mouseFlags.downMouseCoords[0] + bond[0], mouseFlags.downMouseCoords[1] + bond[1]]
-						});
-					}
-				} else {
-					// when the content is not empty, a Structure object already exists,
-					// so get it from Cache
-					structure = angular.copy(Cache.getCurrentStructure());
-					// calaculate new coords
-					newCoords = Utils.subtractVectors(mouseFlags.downMouseCoords, structure.getOrigin());
-					// choose an appropriate Structure object from the StructureCluster object
-					structureAux = angular.copy(scope.chosenStructure.getStructure(mouseFlags.downMouseCoords, mouseCoords));
-					if (structureAux.isAromatic()) {
-						// if the chosen Structure object is aromatic,
-						// then add appropriate flag to the original Structure object
-						structure.setAromatic();
-						bond = Const.getBondByDirection(structureAux.getName()).bond;
-						structure.addDecorate("aromatic", {
-							fromWhich: angular.copy(newCoords),
-							coords: [mouseFlags.downMouseCoords[0] + bond[0], mouseFlags.downMouseCoords[1] + bond[1]]
-						});
-					}
-					// extract the first object from structures array and set its origin
-					structureAux.getStructure(0).setCoords(newCoords);
-					// add to the original Structure object
-					structure.addToStructures(structureAux.getStructure(0));
-				}
-				mouseFlags.movedOnEmpty = true;
-				return structure;
+			if (frozenStructure !== null) {
+				drawn = DirUtils.drawStructure(angular.copy(frozenStructure));
+				Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
 			}
     }
 
 		return service;
-
-		function modifyOnNonEmptyContent(scope, mouseCoords, move) {
-			return Utils.modifyStructure(
-				Cache.getCurrentStructure(),
-				scope.chosenStructure,
-				mouseCoords,
-				mouseFlags.downAtomCoords,
-				move
-			);
-		}
-
-		function modifyOnBond(scope, position) {
-			return Utils.modifyBond(
-				Cache.getCurrentStructure(),
-				scope.chosenStructure,
-				position
-			);
-		}
-
-		function moveStructure(mouseCoords) {
-			var structure, moveDistance;
-			if (!Utils.isContentEmpty()) {
-				// if the content is non-empty
-				structure = angular.copy(Cache.getCurrentStructure());
-				moveDistance = Utils.subtractVectors(mouseCoords, mouseFlags.downMouseCoords);
-				structure.moveStructureTo("mouse", moveDistance);
-			}
-			return structure;
-		}
-
-		function makeSelection(mouseCoords) {
-			var structure, selection, newCoords, width, height;
-			if (Utils.isContentEmpty()) {
-				// if the content is empty
-				// new Structure object has to be created
-				structure = new Structure();
-				// set origin of the Structure object (which may be different from current mouse position)
-				structure.setOrigin(mouseFlags.downMouseCoords);
-				selection = new Selection([0, 0], mouseCoords);
-			} else {
-				// if the content is not empty, a Structure object already exists
-				// so get Structure object from Cache
-				structure = angular.copy(Cache.getCurrentStructure());
-				newCoords = Utils.subtractVectors(mouseFlags.downMouseCoords, structure.getOrigin());
-				selection = new Selection(newCoords, mouseCoords);
-			}
-			structure.select(selection);
-			// add Arrow object to the structures array in the Structure object
-			structure.addToStructures(selection);
-			// return Structure object
-			return structure;
-		}
 	}
 })();

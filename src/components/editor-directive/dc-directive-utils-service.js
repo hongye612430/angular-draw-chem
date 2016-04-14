@@ -16,18 +16,15 @@
 
 		/**
 		 * Draws the specified structure.
-		 * @params {Structure} structure - a Structure object to draw.
+		 * @param {Structure} structure - a Structure object to draw.
 		 */
 		service.drawStructure = function (structure) {
-			var drawn = "";
-			drawn = SvgRenderer.draw(structure, "cmpd1");
-			Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
-			return drawn;
+			return SvgRenderer.draw(structure, "cmpd1");			
 		};
 
 		/**
 		 * Sets all boolean values to false and non-boolean to undefined.
-		 * @params {Object} flags - an object containing flags (as mix of boolean and non-boolean values)
+		 * @param {Object} flags - an object containing flags (as mix of boolean and non-boolean values)
 		 */
 		service.resetMouseFlags = function () {
 			angular.forEach(Flags.mouseFlags, function (value, key) {
@@ -72,44 +69,12 @@
 			return coords;
 		};
 
-		/**
-		 * Modifies the specified structure by adding a new structure to it.
-		 * @params {Structure} structure - a Structure object to modify,
-		 * @params {Structure} chosenStructure - a Structure object to add,
-		 * @params {Number[]} clickCoords - coordinates of the mouse pointer,
-		 * @params {Number[]} downAtomCoords - coordinates of an atom on which 'mousedown' occurred,
-		 * @params {Boolean} mouseDownAndMove - true if 'mouseonmove' and 'mousedown' are true
-		 * @returns {Structure}
-		 */
-		service.modifyStructure = function (structure, chosenStructure, mouseCoords, downAtomCoords, mouseDownAndMove) {
-			return ModStructure.modifyStructure(
-				angular.copy(structure),
-				angular.copy(chosenStructure),
-				mouseCoords,
-				downAtomCoords,
-				mouseDownAndMove
-			);
-		};
-
-		service.modifyBond = function (structure, chosenStructure, position) {
-			return ModStructure.modifyBond(
-				angular.copy(structure),
-				angular.copy(chosenStructure),
-				position
-			);
-		};
-
-		/**
-		 * Looks for an atom and deletes it.
-		 * @params {Structure} structure - a Structure object to modify,
-		 * @params {Number[]} mouseCoords - coordinates of the mouse pointer (where 'mouseup occurred')
-		 * @returns {Structure}
-		 */
-		service.deleteFromStructure = function (structure, mouseCoords) {
-			return ModStructure.deleteFromStructure(
-				angular.copy(structure),
-				mouseCoords
-			);
+		service.performSearch = function (validSelected) {
+			var result = false;
+			validSelected.forEach(function (selected) {
+				if (selected === Flags.selected) { result = true; }
+			});
+			return result;
 		};
 
 		return service;

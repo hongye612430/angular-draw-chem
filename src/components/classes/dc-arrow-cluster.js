@@ -19,6 +19,7 @@
 		function ArrowCluster(name, defs) {
 			this.name = name;
 			this.defs = defs;
+			this.defaultStructure = this.getDefault();
 		}
 
 		/**
@@ -42,6 +43,11 @@
 		*/
     ArrowCluster.prototype.getArrow = function (mouseCoords1, mouseCoords2) {
 			var possibleVectors = [], vector, i;
+
+			if (Utils.insideCircle(mouseCoords1, mouseCoords2, Const.CIRC_R)) {
+				return this.defaultStructure;
+			}
+
 			for (i = 0; i < this.defs.length; i += 1) {
 				possibleVectors.push(this.defs[i].getRelativeEnd());
 			}

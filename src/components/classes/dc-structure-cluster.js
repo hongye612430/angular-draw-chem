@@ -93,6 +93,11 @@
 		*/
 		StructureCluster.prototype.getStructure = function (mouseCoords1, mouseCoords2) {
 			var i, possibleVectors = [], vector, bond;
+
+			if (Utils.insideCircle(mouseCoords1, mouseCoords2, Const.CIRC_R)) {
+				return this.defaultStructure;
+			}
+			
 			for (i = 0; i < Const.BONDS.length; i += 1) {
 				possibleVectors.push(Const.BONDS[i].bond);
 			}

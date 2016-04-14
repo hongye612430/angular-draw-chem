@@ -10,17 +10,12 @@
 		var service = {};
 
     service.mouseFlags = {
-      downAtomCoords: undefined,
-			downAtomObject: undefined,
-      downMouseCoords: undefined,
       movedOnEmpty: false,
       mouseDown: false,
       downOnAtom: false,
 			downOnBond: false,
-			downBondObject: undefined
+			downOnNothing: false
     };
-
-		service.copy;
 
 		service.customLabel = "";
 
