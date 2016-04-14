@@ -60,7 +60,7 @@
 			service.BOND_FOCUS = 0.2;
 
 			// correction for 'left' and 'right' double bonds
-			service.DBL_BOND_CORR = service.BOND_LENGTH * 3 / 800;
+			service.DBL_BOND_CORR = service.BOND_LENGTH * 3 / 1200;
 
 			// factor for Bezier curve in 'undefined' bond
 			service.UNDEF_BOND = 1.5 * service.BETWEEN_DBL_BONDS;

@@ -1849,7 +1849,7 @@
       }
 
       function checkIfDownOnAtom() {
-				var withinObject = ModStructure.isWithin(currWorkingStructure, mouseFlags.downMouseCoords);
+				var withinObject = ModStructure.isWithinAtom(currWorkingStructure, mouseFlags.downMouseCoords);
         if (typeof withinObject.foundAtom !== "undefined") {
           // set flags if atom was found
           mouseFlags.downOnAtom = true;
@@ -1860,7 +1860,7 @@
       }
 
 			function checkIfDownOnBond() {
-				var withinObject = ModStructure.isWithinBond(Cache.getCurrentStructure(), mouseFlags.downMouseCoords);
+				var withinObject = ModStructure.isWithinBond(currWorkingStructure, mouseFlags.downMouseCoords);
         if (typeof withinObject.foundBond !== "undefined") {
 					// set flags if bond was found
           mouseFlags.downOnBond = true;
@@ -1902,10 +1902,9 @@
 			} else if (mouseFlags.downOnAtom && DirUtils.performSearch(["label", "removeLabel", "customLabel"])) {
         // if atom has been found and label is selected
         ModStructure.modifyLabel(
-					currWorkingStructure,
 					mouseFlags.downAtomObject,
-					scope.chosenLabel,
 					Flags.selected,
+					scope.chosenLabel,
 					Flags.customLabel
 				);
       } else if (mouseFlags.downOnAtom && Flags.selected === "structure") {
@@ -1943,7 +1942,7 @@
     };
 
     service.doOnMouseMove = function ($event, scope, element) {
-      var mouseCoords = DirUtils.innerCoords(element, $event), drawn, frozenStructure;
+      var mouseCoords = DirUtils.innerCoords(element, $event), drawn, frozenStructure, frozenAtomObj = {};
 
       if (!mouseFlags.mouseDown || DirUtils.performSearch(["label", "labelCustom", ""])) {
 				// if mousedown event did not occur, then do nothing
@@ -1952,6 +1951,9 @@
       }
 
 			frozenStructure = angular.copy(currWorkingStructure);
+			if (frozenStructure !== null) {
+				frozenAtomObj = ModStructure.isWithinAtom(frozenStructure, mouseFlags.downMouseCoords);
+			}
 
 			if (Flags.selected === "select") {
 				// if selection tool was selected
@@ -1967,13 +1969,13 @@
 					mouseFlags.downMouseCoords,
 					scope.chosenArrow
 				);
-      } else if (mouseFlags.downOnAtom) {
+      } else if (typeof frozenAtomObj.foundAtom !== "undefined") {
 				// if atom has been found and structure has been selected
         ModStructure.modifyAtom(
 					frozenStructure,
-					mouseFlags.downAtomObject,
-					mouseFlags.downAtomFirst,
-					mouseFlags.downAtomCoords,
+					frozenAtomObj.foundAtom,
+					frozenAtomObj.firstAtom,
+					frozenAtomObj.absPos,
 					mouseCoords,
 					scope.chosenStructure
 				);
@@ -1983,8 +1985,7 @@
 					frozenStructure,
 					scope.chosenStructure,
 					mouseCoords,
-					mouseFlags.downMouseCoords,
-					mouseFlags.movedOnEmpty
+					mouseFlags.downMouseCoords
 				);
       }
 
@@ -2290,7 +2291,7 @@
 			service.BOND_FOCUS = 0.2;
 
 			// correction for 'left' and 'right' double bonds
-			service.DBL_BOND_CORR = service.BOND_LENGTH * 3 / 800;
+			service.DBL_BOND_CORR = service.BOND_LENGTH * 3 / 1200;
 
 			// factor for Bezier curve in 'undefined' bond
 			service.UNDEF_BOND = 1.5 * service.BETWEEN_DBL_BONDS;
@@ -4029,10 +4030,11 @@
 		"DCArrow",
 		"DCSelection",
 		"DCSvg",
+		"DCLabel",
 		"DCStructure"
 	];
 
-	function DrawChemModStructure(Const, Utils, Structures, DCAtom, DCBond, DCArrow, DCSelection, DCSvg, DCStructure) {
+	function DrawChemModStructure(Const, Utils, Structures, DCAtom, DCBond, DCArrow, DCSelection, DCSvg, DCLabel, DCStructure) {
 
 		var service = {},
 			BOND_LENGTH = Const.BOND_LENGTH,
@@ -4041,6 +4043,7 @@
 			Arrow = DCArrow.Arrow,
 			Bond = DCBond.Bond,
 			Svg = DCSvg.Svg,
+			Label = DCLabel.Label,
 			Structure = DCStructure.Structure,
 			Selection = DCSelection.Selection;
 
@@ -4151,7 +4154,7 @@
 		 * @param {number[]} position - set of coordinates against which the search is performed,
 		 * @returns {Object}
 		 */
-		service.isWithin = function (structure, position) {
+		service.isWithinAtom = function (structure, position) {
 			var found = false,
 				foundObj = {}, firstAtom,
 				origin = structure.getOrigin();
@@ -4233,8 +4236,10 @@
 			}
 		};
 
-		service.modifyLabel = function (structure, atom, selected, chosenLabel, customLabel) {
-			var currentLabel = atom.getLabel();
+		service.modifyLabel = function (atom, selected, chosenLabel, customLabel) {
+			var currentLabel = atom.getLabel(), mode,
+			  inBonds = atom.getAttachedBonds("in"),
+			  outBonds = atom.getAttachedBonds("out");
 			// set `Label` object
 			// either predefined or custom
 			if (selected === "label") {
@@ -4243,6 +4248,10 @@
 				customLabel = typeof customLabel === "undefined" ? "": customLabel;
 				atom.setLabel(new Label(customLabel, 0));
 			}
+			// if mode is not known (if there was previously no label)
+			// try to guess which one should it be
+			mode = getTextDirection();
+			atom.getLabel().setMode(mode);
 			// if `Atom` object already has a label on it
 			// then change its direction on mouseup event
 			if (typeof currentLabel !== "undefined") {
@@ -4254,6 +4263,29 @@
 			}
 			if (selected === "removeLabel") {
 				atom.removeLabel();
+			}
+
+			function getTextDirection() {
+				var countE = 0, countW = 0;
+				if (typeof inBonds !== "undefined") {
+					inBonds.forEach(function (bond) {
+						if (bond.vector[0] > 0) {
+							countE += 1;
+						} else {
+							countW += 1;
+						}
+					});
+				}
+				if (typeof outBonds !== "undefined") {
+					outBonds.forEach(function (bond) {
+						if (bond.vector[0] < 0) {
+							countE += 1;
+						} else {
+							countW += 1;
+						}
+					});
+				}
+				return countE > countW ? "lr": "rl";
 			}
 		};
 
@@ -4299,7 +4331,7 @@
 					// generate `Bond` object in the direction indicated by `vector`
 					bond = Structures.generateBond(vector, name, mult);
 					// check if an `Atom` object laready exists at this coords
-					foundAtom = service.isWithin(
+					foundAtom = service.isWithinAtom(
 						structure,
 						Utils.addVectors(absPos, vector)
 					).foundAtom;
@@ -4450,11 +4482,20 @@
 		};
 
 		service.modifyBond = function (bond, chosenStructure) {
-			var ringSize = chosenStructure.getRingSize(), bondType;
+			var ringSize = chosenStructure.getRingSize(), bondType, newIndex, index,
+			  doubleBonds = ["double", "double-left", "double-right"],
+				currentType = bond.getType();
 			if (ringSize > 0) {
 				// todo
 			} else {
 				bondType = chosenStructure.getDefault().getStructure(0).getBonds(0).getType();
+				if (bondType === "double") {
+					index = doubleBonds.indexOf(currentType);
+					newIndex = index < 0 ? 0: Utils.moveToRight(doubleBonds, index, 1);
+					bondType = doubleBonds[newIndex];
+				} else {
+
+				}
 				bond.setType(bondType);
 			}
 		};
@@ -4465,14 +4506,14 @@
 				// if the content is empty
 				structure = angular.copy(chosenStructure.getStructure(downMouseCoords, mouseCoords));
 				// and set its origin
-				structure.setOrigin(mouseCoords);
+				structure.setOrigin(downMouseCoords);
 				if (structure.isAromatic()) {
 					// if the chosen Structure object is aromatic,
 					// then add appropriate flag to the original Structure object
 					bond = Const.getBondByDirection(structure.getName()).bond;
 					structure.addDecorate("aromatic", {
 						fromWhich: [0, 0],
-						coords: [mouseCoords[0] + bond[0], mouseCoords[1] + bond[1]]
+						coords: [downMouseCoords[0] + bond[0], downMouseCoords[1] + bond[1]]
 					});
 				}
 			} else {
@@ -4489,7 +4530,7 @@
 					bond = Const.getBondByDirection(structureAux.getName()).bond;
 					structure.addDecorate("aromatic", {
 						fromWhich: angular.copy(coords),
-						coords: [mouseCoords[0] + bond[0], mouseCoords[1] + bond[1]]
+						coords: [downMouseCoords[0] + bond[0], downMouseCoords[1] + bond[1]]
 					});
 				}
 				// extract the first object from structures array and set its origin
@@ -4685,7 +4726,7 @@
 							Utils.multVectByScalar(atom.getCoords(), 1 - PUSH)
 						);
 					if (atom.isOrphan()) {
-						foundAtom = ModStructure.isWithin(input, absPos).foundAtom;
+						foundAtom = ModStructure.isWithinAtom(input, absPos).foundAtom;
 						newPush = typeof foundAtom.getLabel() !== "undefined";
 					}
 					if (bondType === "single") {
@@ -5306,14 +5347,6 @@
 
 					// set number of hydrogens
 					labelNameObj.hydrogens = hydrogens;
-
-					if (typeof mode === "undefined") {
-						// if mode is not known (if there was previously no label)
-						// try to guess which one should it be
-						mode = getTextDirection();
-						label.setMode(mode);
-					}
-
 					labelNameObj.mode = mode;
 
 					if (hydrogens > 0) {
@@ -5338,29 +5371,6 @@
 						if (mode === "rl") {
 							labelNameObj.name = Utils.invertGroup(labelNameObj.name);
 						}
-					}
-
-					function getTextDirection() {
-						var countE = 0, countW = 0;
-						if (typeof inBonds !== "undefined") {
-							inBonds.forEach(function (bond) {
-								if (bond.vector[0] > 0) {
-									countE += 1;
-								} else {
-									countW += 1;
-								}
-							});
-						}
-						if (typeof outBonds !== "undefined") {
-							outBonds.forEach(function (bond) {
-								if (bond.vector[0] < 0) {
-									countE += 1;
-								} else {
-									countW += 1;
-								}
-							});
-						}
-						return countE > countW ? "lr": "rl";
 					}
 				}
 			}

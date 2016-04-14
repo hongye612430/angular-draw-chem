@@ -12,10 +12,11 @@
 		"DCArrow",
 		"DCSelection",
 		"DCSvg",
+		"DCLabel",
 		"DCStructure"
 	];
 
-	function DrawChemModStructure(Const, Utils, Structures, DCAtom, DCBond, DCArrow, DCSelection, DCSvg, DCStructure) {
+	function DrawChemModStructure(Const, Utils, Structures, DCAtom, DCBond, DCArrow, DCSelection, DCSvg, DCLabel, DCStructure) {
 
 		var service = {},
 			BOND_LENGTH = Const.BOND_LENGTH,
@@ -24,6 +25,7 @@
 			Arrow = DCArrow.Arrow,
 			Bond = DCBond.Bond,
 			Svg = DCSvg.Svg,
+			Label = DCLabel.Label,
 			Structure = DCStructure.Structure,
 			Selection = DCSelection.Selection;
 
@@ -134,7 +136,7 @@
 		 * @param {number[]} position - set of coordinates against which the search is performed,
 		 * @returns {Object}
 		 */
-		service.isWithin = function (structure, position) {
+		service.isWithinAtom = function (structure, position) {
 			var found = false,
 				foundObj = {}, firstAtom,
 				origin = structure.getOrigin();
@@ -216,8 +218,10 @@
 			}
 		};
 
-		service.modifyLabel = function (structure, atom, selected, chosenLabel, customLabel) {
-			var currentLabel = atom.getLabel();
+		service.modifyLabel = function (atom, selected, chosenLabel, customLabel) {
+			var currentLabel = atom.getLabel(), mode,
+			  inBonds = atom.getAttachedBonds("in"),
+			  outBonds = atom.getAttachedBonds("out");
 			// set `Label` object
 			// either predefined or custom
 			if (selected === "label") {
@@ -226,6 +230,10 @@
 				customLabel = typeof customLabel === "undefined" ? "": customLabel;
 				atom.setLabel(new Label(customLabel, 0));
 			}
+			// if mode is not known (if there was previously no label)
+			// try to guess which one should it be
+			mode = getTextDirection();
+			atom.getLabel().setMode(mode);
 			// if `Atom` object already has a label on it
 			// then change its direction on mouseup event
 			if (typeof currentLabel !== "undefined") {
@@ -237,6 +245,29 @@
 			}
 			if (selected === "removeLabel") {
 				atom.removeLabel();
+			}
+
+			function getTextDirection() {
+				var countE = 0, countW = 0;
+				if (typeof inBonds !== "undefined") {
+					inBonds.forEach(function (bond) {
+						if (bond.vector[0] > 0) {
+							countE += 1;
+						} else {
+							countW += 1;
+						}
+					});
+				}
+				if (typeof outBonds !== "undefined") {
+					outBonds.forEach(function (bond) {
+						if (bond.vector[0] < 0) {
+							countE += 1;
+						} else {
+							countW += 1;
+						}
+					});
+				}
+				return countE > countW ? "lr": "rl";
 			}
 		};
 
@@ -282,7 +313,7 @@
 					// generate `Bond` object in the direction indicated by `vector`
 					bond = Structures.generateBond(vector, name, mult);
 					// check if an `Atom` object laready exists at this coords
-					foundAtom = service.isWithin(
+					foundAtom = service.isWithinAtom(
 						structure,
 						Utils.addVectors(absPos, vector)
 					).foundAtom;
@@ -433,11 +464,20 @@
 		};
 
 		service.modifyBond = function (bond, chosenStructure) {
-			var ringSize = chosenStructure.getRingSize(), bondType;
+			var ringSize = chosenStructure.getRingSize(), bondType, newIndex, index,
+			  doubleBonds = ["double", "double-left", "double-right"],
+				currentType = bond.getType();
 			if (ringSize > 0) {
 				// todo
 			} else {
 				bondType = chosenStructure.getDefault().getStructure(0).getBonds(0).getType();
+				if (bondType === "double") {
+					index = doubleBonds.indexOf(currentType);
+					newIndex = index < 0 ? 0: Utils.moveToRight(doubleBonds, index, 1);
+					bondType = doubleBonds[newIndex];
+				} else {
+
+				}
 				bond.setType(bondType);
 			}
 		};
@@ -448,14 +488,14 @@
 				// if the content is empty
 				structure = angular.copy(chosenStructure.getStructure(downMouseCoords, mouseCoords));
 				// and set its origin
-				structure.setOrigin(mouseCoords);
+				structure.setOrigin(downMouseCoords);
 				if (structure.isAromatic()) {
 					// if the chosen Structure object is aromatic,
 					// then add appropriate flag to the original Structure object
 					bond = Const.getBondByDirection(structure.getName()).bond;
 					structure.addDecorate("aromatic", {
 						fromWhich: [0, 0],
-						coords: [mouseCoords[0] + bond[0], mouseCoords[1] + bond[1]]
+						coords: [downMouseCoords[0] + bond[0], downMouseCoords[1] + bond[1]]
 					});
 				}
 			} else {
@@ -472,7 +512,7 @@
 					bond = Const.getBondByDirection(structureAux.getName()).bond;
 					structure.addDecorate("aromatic", {
 						fromWhich: angular.copy(coords),
-						coords: [mouseCoords[0] + bond[0], mouseCoords[1] + bond[1]]
+						coords: [downMouseCoords[0] + bond[0], downMouseCoords[1] + bond[1]]
 					});
 				}
 				// extract the first object from structures array and set its origin

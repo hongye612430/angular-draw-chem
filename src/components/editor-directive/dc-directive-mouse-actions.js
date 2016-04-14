@@ -57,7 +57,7 @@
       }
 
       function checkIfDownOnAtom() {
-				var withinObject = ModStructure.isWithin(currWorkingStructure, mouseFlags.downMouseCoords);
+				var withinObject = ModStructure.isWithinAtom(currWorkingStructure, mouseFlags.downMouseCoords);
         if (typeof withinObject.foundAtom !== "undefined") {
           // set flags if atom was found
           mouseFlags.downOnAtom = true;
@@ -68,7 +68,7 @@
       }
 
 			function checkIfDownOnBond() {
-				var withinObject = ModStructure.isWithinBond(Cache.getCurrentStructure(), mouseFlags.downMouseCoords);
+				var withinObject = ModStructure.isWithinBond(currWorkingStructure, mouseFlags.downMouseCoords);
         if (typeof withinObject.foundBond !== "undefined") {
 					// set flags if bond was found
           mouseFlags.downOnBond = true;
@@ -110,10 +110,9 @@
 			} else if (mouseFlags.downOnAtom && DirUtils.performSearch(["label", "removeLabel", "customLabel"])) {
         // if atom has been found and label is selected
         ModStructure.modifyLabel(
-					currWorkingStructure,
 					mouseFlags.downAtomObject,
-					scope.chosenLabel,
 					Flags.selected,
+					scope.chosenLabel,
 					Flags.customLabel
 				);
       } else if (mouseFlags.downOnAtom && Flags.selected === "structure") {
@@ -151,7 +150,7 @@
     };
 
     service.doOnMouseMove = function ($event, scope, element) {
-      var mouseCoords = DirUtils.innerCoords(element, $event), drawn, frozenStructure;
+      var mouseCoords = DirUtils.innerCoords(element, $event), drawn, frozenStructure, frozenAtomObj = {};
 
       if (!mouseFlags.mouseDown || DirUtils.performSearch(["label", "labelCustom", ""])) {
 				// if mousedown event did not occur, then do nothing
@@ -160,6 +159,9 @@
       }
 
 			frozenStructure = angular.copy(currWorkingStructure);
+			if (frozenStructure !== null) {
+				frozenAtomObj = ModStructure.isWithinAtom(frozenStructure, mouseFlags.downMouseCoords);
+			}
 
 			if (Flags.selected === "select") {
 				// if selection tool was selected
@@ -175,13 +177,13 @@
 					mouseFlags.downMouseCoords,
 					scope.chosenArrow
 				);
-      } else if (mouseFlags.downOnAtom) {
+      } else if (typeof frozenAtomObj.foundAtom !== "undefined") {
 				// if atom has been found and structure has been selected
         ModStructure.modifyAtom(
 					frozenStructure,
-					mouseFlags.downAtomObject,
-					mouseFlags.downAtomFirst,
-					mouseFlags.downAtomCoords,
+					frozenAtomObj.foundAtom,
+					frozenAtomObj.firstAtom,
+					frozenAtomObj.absPos,
 					mouseCoords,
 					scope.chosenStructure
 				);
@@ -191,8 +193,7 @@
 					frozenStructure,
 					scope.chosenStructure,
 					mouseCoords,
-					mouseFlags.downMouseCoords,
-					mouseFlags.movedOnEmpty
+					mouseFlags.downMouseCoords
 				);
       }
 

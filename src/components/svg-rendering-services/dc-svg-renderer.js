@@ -179,7 +179,7 @@
 							Utils.multVectByScalar(atom.getCoords(), 1 - PUSH)
 						);
 					if (atom.isOrphan()) {
-						foundAtom = ModStructure.isWithin(input, absPos).foundAtom;
+						foundAtom = ModStructure.isWithinAtom(input, absPos).foundAtom;
 						newPush = typeof foundAtom.getLabel() !== "undefined";
 					}
 					if (bondType === "single") {

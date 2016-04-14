@@ -244,14 +244,6 @@
 
 					// set number of hydrogens
 					labelNameObj.hydrogens = hydrogens;
-
-					if (typeof mode === "undefined") {
-						// if mode is not known (if there was previously no label)
-						// try to guess which one should it be
-						mode = getTextDirection();
-						label.setMode(mode);
-					}
-
 					labelNameObj.mode = mode;
 
 					if (hydrogens > 0) {
@@ -276,29 +268,6 @@
 						if (mode === "rl") {
 							labelNameObj.name = Utils.invertGroup(labelNameObj.name);
 						}
-					}
-
-					function getTextDirection() {
-						var countE = 0, countW = 0;
-						if (typeof inBonds !== "undefined") {
-							inBonds.forEach(function (bond) {
-								if (bond.vector[0] > 0) {
-									countE += 1;
-								} else {
-									countW += 1;
-								}
-							});
-						}
-						if (typeof outBonds !== "undefined") {
-							outBonds.forEach(function (bond) {
-								if (bond.vector[0] < 0) {
-									countE += 1;
-								} else {
-									countW += 1;
-								}
-							});
-						}
-						return countE > countW ? "lr": "rl";
 					}
 				}
 			}
