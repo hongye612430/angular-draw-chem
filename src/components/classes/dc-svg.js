@@ -111,15 +111,6 @@
 						"circle.atom:hover": {
 							"opacity": "0.3"
 						},
-						"path.focus": {
-							"opacity": "0",
-							"stroke": "black",
-							"stroke-linecap": "round",
-							"stroke-width": 8 * Const.BOND_WIDTH
-						},
-						"path.focus:hover": {
-							"opacity": "0.3"
-						},
 						"circle.arom:hover": {
 							"opacity": "0.3",
 							"stroke": "black",

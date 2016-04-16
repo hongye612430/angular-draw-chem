@@ -195,7 +195,6 @@
 								output[newLen - 1].push(absPos);
 							}
 						} else if (mode === "begin") {
-							output.push(["focus", "M", prevAbsPos, "L", absPos]);
 							if (push && newPush) {
 								newLen = output.push(["M", pushVector, "L", newPushVector]);
 							} else if (push) {
@@ -208,37 +207,27 @@
 						}
 					} else if (bondType === "double") {
 						output.push(calcDoubleBondCoords("middle", prevAbsPos, absPos, push, newPush));
-						output.push(["focus", "M", prevAbsPos, "L", absPos]);
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "double-right") {
 						output.push(calcDoubleBondCoords("right", prevAbsPos, absPos, push, newPush));
-						output.push(["focus", "M", prevAbsPos, "L", absPos]);
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "double-left") {
 						output.push(calcDoubleBondCoords("left", prevAbsPos, absPos, push, newPush));
-						output.push(["focus", "M", prevAbsPos, "L", absPos]);
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "triple") {
 						output.push(calcTripleBondCoords(prevAbsPos, absPos, push, newPush));
-						output.push(["focus", "M", prevAbsPos, "L", absPos]);
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "wedge") {
 						output.push(calcWedgeBondCoords(prevAbsPos, absPos, push, newPush));
-						output.push(["focus", "M", prevAbsPos, "L", absPos]);
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "dash") {
 						output.push(calcDashBondCoords(prevAbsPos, absPos, push, newPush));
-						output.push(["focus", "M", prevAbsPos, "L", absPos]);
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "undefined") {
 						output.push(calcUndefinedBondCoords(prevAbsPos, absPos, push, newPush));
-						output.push(["focus", "M", prevAbsPos, "L", absPos]);
 						newLen = output.push(["M", absPos]);
 					}
 					connect(absPos, atom.getBonds(), output[newLen - 1], newPush);
-					if (mode === "continue") {
-						output.push(["focus", "M", prevAbsPos, "L", absPos]);
-					}
 				}
 
 				function updateMinMax(absPos) {

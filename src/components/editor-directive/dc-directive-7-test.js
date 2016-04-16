@@ -60,12 +60,12 @@ describe("DrawChemEditor directive tests - part7", function () {
             styleBase + styleExpanded +
           "</style>" +
           "<path d=\"M 198.00 198.00 L 215.32 208.00 L 215.32 228.00 L 198.00 238.00 L 180.68 228.00 L 180.68 208.00 L 198.00 198.00 \"></path>" +
-          "<circle class=\"atom\" cx=\"198.00\" cy=\"198.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"atom\" cx=\"215.32\" cy=\"208.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"atom\" cx=\"215.32\" cy=\"228.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"atom\" cx=\"198.00\" cy=\"238.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"atom\" cx=\"180.68\" cy=\"228.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"atom\" cx=\"180.68\" cy=\"208.00\" r=\"2.40\"></circle>" +
+          "<circle class=\"atom\" cx=\"198.00\" cy=\"198.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"atom\" cx=\"215.32\" cy=\"208.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"atom\" cx=\"215.32\" cy=\"228.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"atom\" cx=\"198.00\" cy=\"238.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"atom\" cx=\"180.68\" cy=\"228.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"atom\" cx=\"180.68\" cy=\"208.00\" r=\"3.40\"></circle>" +
         "</g>" +
       "</svg>"
     );
@@ -104,12 +104,12 @@ describe("DrawChemEditor directive tests - part7", function () {
             styleBase + styleExpanded +
           "</style>" +
 					"<path d=\"M 198.00 198.00 L 215.32 208.00 L 215.32 228.00 L 198.00 238.00 L 180.68 228.00 L 180.68 208.00 L 198.00 198.00 \"></path>" +
-					"<circle class=\"atom\" cx=\"198.00\" cy=\"198.00\" r=\"2.40\"></circle>" +
-					"<circle class=\"atom\" cx=\"215.32\" cy=\"208.00\" r=\"2.40\"></circle>" +
-					"<circle class=\"atom\" cx=\"215.32\" cy=\"228.00\" r=\"2.40\"></circle>" +
-					"<circle class=\"atom\" cx=\"198.00\" cy=\"238.00\" r=\"2.40\"></circle>" +
-					"<circle class=\"atom\" cx=\"180.68\" cy=\"228.00\" r=\"2.40\"></circle>" +
-					"<circle class=\"atom\" cx=\"180.68\" cy=\"208.00\" r=\"2.40\"></circle>" +
+					"<circle class=\"atom\" cx=\"198.00\" cy=\"198.00\" r=\"3.40\"></circle>" +
+					"<circle class=\"atom\" cx=\"215.32\" cy=\"208.00\" r=\"3.40\"></circle>" +
+					"<circle class=\"atom\" cx=\"215.32\" cy=\"228.00\" r=\"3.40\"></circle>" +
+					"<circle class=\"atom\" cx=\"198.00\" cy=\"238.00\" r=\"3.40\"></circle>" +
+					"<circle class=\"atom\" cx=\"180.68\" cy=\"228.00\" r=\"3.40\"></circle>" +
+					"<circle class=\"atom\" cx=\"180.68\" cy=\"208.00\" r=\"3.40\"></circle>" +
 					"<circle class=\"arom\" cx=\"198.00\" cy=\"218.00\" r=\"9.00\"></circle>" +
         "</g>" +
       "</svg>"

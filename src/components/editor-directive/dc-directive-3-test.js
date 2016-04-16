@@ -33,26 +33,10 @@ describe("DrawChemEditor directive tests - part3", function () {
 		expect(DrawChem.showEditor()).toEqual(true);
 		temp.find("#dc-" + custom.name).click();
 		expect(element.isolateScope().chosenStructure.getDefault()).toEqual(custom.getDefault());
-		temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mouseup",
-			which: 1,
-			clientX: 100,
-			clientY: 100
-		});
+		mouseClick(temp, 100, 100);
 		temp.find("#dc-double-bond").click();
 		expect(element.isolateScope().chosenStructure.getDefault()).toEqual(add.getDefault());
-		temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mousedown",
-			which: 1,
-			clientX: 101,
-			clientY: 99
-		});
-		temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mouseup",
-			which: 1,
-			clientX: 101,
-			clientY: 99
-		});
+		mouseClick(temp, 100, 100);
 		expect(temp.find(".dc-editor-dialog-content").html())
 			.toEqual(
 				"<svg>" +
@@ -63,13 +47,13 @@ describe("DrawChemEditor directive tests - part3", function () {
 							"<path d=\"M 98.00 98.00 L 115.32 108.00 L 115.32 128.00 L 98.00 138.00 L 80.68 128.00 L 80.68 108.00 L 98.00 98.00 \"></path>" +
 							"<path d=\"M 99.30 98.00 L 99.30 78.00 M 96.70 98.00 L 96.70 78.00 \"></path>" +
 							"<path d=\"M 98.00 78.00 \"></path>" +
-							"<circle class=\"atom\" cx=\"98.00\" cy=\"98.00\" r=\"2.40\"></circle>" +
-							"<circle class=\"atom\" cx=\"115.32\" cy=\"108.00\" r=\"2.40\"></circle>" +
-							"<circle class=\"atom\" cx=\"115.32\" cy=\"128.00\" r=\"2.40\"></circle>" +
-							"<circle class=\"atom\" cx=\"98.00\" cy=\"138.00\" r=\"2.40\"></circle>" +
-							"<circle class=\"atom\" cx=\"80.68\" cy=\"128.00\" r=\"2.40\"></circle>" +
-							"<circle class=\"atom\" cx=\"80.68\" cy=\"108.00\" r=\"2.40\"></circle>" +
-							"<circle class=\"atom\" cx=\"98.00\" cy=\"78.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"98.00\" cy=\"98.00\" r=\"3.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"108.00\" r=\"3.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"128.00\" r=\"3.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"98.00\" cy=\"138.00\" r=\"3.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"128.00\" r=\"3.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"108.00\" r=\"3.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"98.00\" cy=\"78.00\" r=\"3.40\"></circle>" +
 						"</g>" +
 				"</svg>"
 			);
@@ -82,26 +66,27 @@ describe("DrawChemEditor directive tests - part3", function () {
 		expect(DrawChem.showEditor()).toEqual(true);
 		temp.find("#dc-" + custom.name).click();
 		expect(element.isolateScope().chosenStructure.getDefault()).toEqual(custom.getDefault());
-		temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mouseup",
-			which: 1,
-			clientX: 100,
-			clientY: 100
-		});
+		mouseClick(temp, 100, 100);
 		temp.find("#dc-triple-bond").click();
 		expect(element.isolateScope().chosenStructure.getDefault()).toEqual(add.getDefault());
-		temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mousedown",
-			which: 1,
-			clientX: 101,
-			clientY: 99
-		});
-		temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mouseup",
-			which: 1,
-			clientX: 101,
-			clientY: 99
-		});
+		mouseClick(temp, 100, 100);
+		stringCompare(temp.find(".dc-editor-dialog-content").html(), "<svg>" +
+				"<g id=\"cmpd1\">" +
+					"<style type=\"text/css\">" +
+						styleBase + styleExpanded +
+					"</style>" +
+					"<path d=\"M 98.00 98.00 L 115.32 108.00 L 115.32 128.00 L 98.00 138.00 L 80.68 128.00 L 80.68 108.00 L 98.00 98.00 \"></path>" +
+					"<path d=\"M 100.00 98.00 L 100.00 78.00 M 98.00 98.00 L 98.00 78.00 M 96.00 98.00 L 96.00 78.00 \"></path>" +
+					"<path d=\"M 98.00 78.00 \"></path>" +
+					"<circle class=\"atom\" cx=\"98.00\" cy=\"98.00\" r=\"3.40\"></circle>" +
+					"<circle class=\"atom\" cx=\"115.32\" cy=\"108.00\" r=\"3.40\"></circle>" +
+					"<circle class=\"atom\" cx=\"115.32\" cy=\"128.00\" r=\"3.40\"></circle>" +
+					"<circle class=\"atom\" cx=\"98.00\" cy=\"138.00\" r=\"3.40\"></circle>" +
+					"<circle class=\"atom\" cx=\"80.68\" cy=\"128.00\" r=\"3.40\"></circle>" +
+					"<circle class=\"atom\" cx=\"80.68\" cy=\"108.00\" r=\"3.40\"></circle>" +
+					"<circle class=\"atom\" cx=\"98.00\" cy=\"78.00\" r=\"3.40\"></circle>" +
+				"</g>" +
+		"</svg>")
 		expect(temp.find(".dc-editor-dialog-content").html())
 			.toEqual(
 				"<svg>" +
@@ -112,13 +97,13 @@ describe("DrawChemEditor directive tests - part3", function () {
 							"<path d=\"M 98.00 98.00 L 115.32 108.00 L 115.32 128.00 L 98.00 138.00 L 80.68 128.00 L 80.68 108.00 L 98.00 98.00 \"></path>" +
 							"<path d=\"M 100.00 98.00 L 100.00 78.00 M 98.00 98.00 L 98.00 78.00 M 96.00 98.00 L 96.00 78.00 \"></path>" +
 							"<path d=\"M 98.00 78.00 \"></path>" +
-							"<circle class=\"atom\" cx=\"98.00\" cy=\"98.00\" r=\"2.40\"></circle>" +
-							"<circle class=\"atom\" cx=\"115.32\" cy=\"108.00\" r=\"2.40\"></circle>" +
-							"<circle class=\"atom\" cx=\"115.32\" cy=\"128.00\" r=\"2.40\"></circle>" +
-							"<circle class=\"atom\" cx=\"98.00\" cy=\"138.00\" r=\"2.40\"></circle>" +
-							"<circle class=\"atom\" cx=\"80.68\" cy=\"128.00\" r=\"2.40\"></circle>" +
-							"<circle class=\"atom\" cx=\"80.68\" cy=\"108.00\" r=\"2.40\"></circle>" +
-							"<circle class=\"atom\" cx=\"98.00\" cy=\"78.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"98.00\" cy=\"98.00\" r=\"3.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"108.00\" r=\"3.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"128.00\" r=\"3.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"98.00\" cy=\"138.00\" r=\"3.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"128.00\" r=\"3.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"108.00\" r=\"3.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"98.00\" cy=\"78.00\" r=\"3.40\"></circle>" +
 						"</g>" +
 				"</svg>"
 			);
@@ -131,26 +116,10 @@ describe("DrawChemEditor directive tests - part3", function () {
 		expect(DrawChem.showEditor()).toEqual(true);
 		temp.find("#dc-" + custom.name).click();
 		expect(element.isolateScope().chosenStructure.getDefault()).toEqual(custom.getDefault());
-		temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mouseup",
-			which: 1,
-			clientX: 100,
-			clientY: 100
-		});
+		mouseClick(temp, 100, 100);
 		temp.find("#dc-wedge-bond").click();
 		expect(element.isolateScope().chosenStructure.getDefault()).toEqual(add.getDefault());
-		temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mousedown",
-			which: 1,
-			clientX: 101,
-			clientY: 99
-		});
-		temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mouseup",
-			which: 1,
-			clientX: 101,
-			clientY: 99
-		});
+		mouseClick(temp, 100, 100);
 		expect(temp.find(".dc-editor-dialog-content").html())
 			.toEqual(
 				"<svg>" +
@@ -161,13 +130,13 @@ describe("DrawChemEditor directive tests - part3", function () {
 							"<path d=\"M 98.00 98.00 L 115.32 108.00 L 115.32 128.00 L 98.00 138.00 L 80.68 128.00 L 80.68 108.00 L 98.00 98.00 \"></path>" +
 							"<path class=\"wedge\" d=\"M 98.00 98.00 L 99.30 78.00 L 96.70 78.00 Z \"></path>" +
 							"<path d=\"M 98.00 78.00 \"></path>" +
-							"<circle class=\"atom\" cx=\"98.00\" cy=\"98.00\" r=\"2.40\"></circle>" +
-							"<circle class=\"atom\" cx=\"115.32\" cy=\"108.00\" r=\"2.40\"></circle>" +
-							"<circle class=\"atom\" cx=\"115.32\" cy=\"128.00\" r=\"2.40\"></circle>" +
-							"<circle class=\"atom\" cx=\"98.00\" cy=\"138.00\" r=\"2.40\"></circle>" +
-							"<circle class=\"atom\" cx=\"80.68\" cy=\"128.00\" r=\"2.40\"></circle>" +
-							"<circle class=\"atom\" cx=\"80.68\" cy=\"108.00\" r=\"2.40\"></circle>" +
-							"<circle class=\"atom\" cx=\"98.00\" cy=\"78.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"98.00\" cy=\"98.00\" r=\"3.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"108.00\" r=\"3.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"128.00\" r=\"3.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"98.00\" cy=\"138.00\" r=\"3.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"128.00\" r=\"3.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"108.00\" r=\"3.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"98.00\" cy=\"78.00\" r=\"3.40\"></circle>" +
 						"</g>" +
 				"</svg>"
 			);
@@ -180,26 +149,10 @@ describe("DrawChemEditor directive tests - part3", function () {
 		expect(DrawChem.showEditor()).toEqual(true);
 		temp.find("#dc-" + custom.name).click();
 		expect(element.isolateScope().chosenStructure.getDefault()).toEqual(custom.getDefault());
-		temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mouseup",
-			which: 1,
-			clientX: 100,
-			clientY: 100
-		});
+		mouseClick(temp, 100, 100);
 		temp.find("#dc-dash-bond").click();
 		expect(element.isolateScope().chosenStructure.getDefault()).toEqual(add.getDefault());
-		temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mousedown",
-			which: 1,
-			clientX: 101,
-			clientY: 99
-		});
-		temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mouseup",
-			which: 1,
-			clientX: 101,
-			clientY: 99
-		});
+		mouseClick(temp, 100, 100);
 		expect(temp.find(".dc-editor-dialog-content").html())
 			.toEqual(
 				"<svg>" +
@@ -210,13 +163,13 @@ describe("DrawChemEditor directive tests - part3", function () {
 							"<path d=\"M 98.00 98.00 L 115.32 108.00 L 115.32 128.00 L 98.00 138.00 L 80.68 128.00 L 80.68 108.00 L 98.00 98.00 \"></path>" +
 							"<path d=\"M 98.26 96.00 L 97.74 96.00 M 98.39 94.00 L 97.61 94.00 M 98.52 92.00 L 97.48 92.00 M 98.65 90.00 L 97.35 90.00 M 98.78 88.00 L 97.22 88.00 M 98.91 86.00 L 97.09 86.00 M 99.04 84.00 L 96.96 84.00 M 99.17 82.00 L 96.83 82.00 M 99.30 80.00 L 96.70 80.00 M 99.43 78.00 L 96.57 78.00 \"></path>" +
 							"<path d=\"M 98.00 78.00 \"></path>" +
-							"<circle class=\"atom\" cx=\"98.00\" cy=\"98.00\" r=\"2.40\"></circle>" +
-							"<circle class=\"atom\" cx=\"115.32\" cy=\"108.00\" r=\"2.40\"></circle>" +
-							"<circle class=\"atom\" cx=\"115.32\" cy=\"128.00\" r=\"2.40\"></circle>" +
-							"<circle class=\"atom\" cx=\"98.00\" cy=\"138.00\" r=\"2.40\"></circle>" +
-							"<circle class=\"atom\" cx=\"80.68\" cy=\"128.00\" r=\"2.40\"></circle>" +
-							"<circle class=\"atom\" cx=\"80.68\" cy=\"108.00\" r=\"2.40\"></circle>" +
-							"<circle class=\"atom\" cx=\"98.00\" cy=\"78.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"98.00\" cy=\"98.00\" r=\"3.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"108.00\" r=\"3.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"128.00\" r=\"3.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"98.00\" cy=\"138.00\" r=\"3.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"128.00\" r=\"3.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"108.00\" r=\"3.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"98.00\" cy=\"78.00\" r=\"3.40\"></circle>" +
 						"</g>" +
 				"</svg>"
 			);
@@ -229,26 +182,10 @@ describe("DrawChemEditor directive tests - part3", function () {
 		expect(DrawChem.showEditor()).toEqual(true);
 		temp.find("#dc-" + custom.name).click();
 		expect(element.isolateScope().chosenStructure.getDefault()).toEqual(custom.getDefault());
-		temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mouseup",
-			which: 1,
-			clientX: 100,
-			clientY: 100
-		});
+		mouseClick(temp, 100, 100);
 		temp.find("#dc-undefined-bond").click();
 		expect(element.isolateScope().chosenStructure.getDefault()).toEqual(add.getDefault());
-		temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mousedown",
-			which: 1,
-			clientX: 101,
-			clientY: 99
-		});
-		temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mouseup",
-			which: 1,
-			clientX: 101,
-			clientY: 99
-		});
+		mouseClick(temp, 100, 100);
 		expect(temp.find(".dc-editor-dialog-content").html())
 			.toEqual(
 				"<svg>" +
@@ -257,15 +194,15 @@ describe("DrawChemEditor directive tests - part3", function () {
 								styleBase + styleExpanded +
 							"</style>" +
 							"<path d=\"M 98.00 98.00 L 115.32 108.00 L 115.32 128.00 L 98.00 138.00 L 80.68 128.00 L 80.68 108.00 L 98.00 98.00 \"></path>" +
-							"<path d=\"M 98.00 98.00 C 96.05 98.00, 96.05 96.00, 98.00 96.00 S 99.95 94.00, 98.00 94.00 S 96.05 92.00, 98.00 92.00 S 99.95 90.00, 98.00 90.00 S 96.05 88.00, 98.00 88.00 S 99.95 86.00, 98.00 86.00 S 96.05 84.00, 98.00 84.00 S 99.95 82.00, 98.00 82.00 S 96.05 80.00, 98.00 80.00 S 99.95 78.00, 98.00 78.00 \"></path>" +
+							"<path d=\"M 98.00 98.00 C 96.05 98.00 , 96.05 96.00 , 98.00 96.00 S 99.95 94.00 , 98.00 94.00 S 96.05 92.00 , 98.00 92.00 S 99.95 90.00 , 98.00 90.00 S 96.05 88.00 , 98.00 88.00 S 99.95 86.00 , 98.00 86.00 S 96.05 84.00 , 98.00 84.00 S 99.95 82.00 , 98.00 82.00 S 96.05 80.00 , 98.00 80.00 S 99.95 78.00 , 98.00 78.00 \"></path>" +
 							"<path d=\"M 98.00 78.00 \"></path>" +
-							"<circle class=\"atom\" cx=\"98.00\" cy=\"98.00\" r=\"2.40\"></circle>" +
-							"<circle class=\"atom\" cx=\"115.32\" cy=\"108.00\" r=\"2.40\"></circle>" +
-							"<circle class=\"atom\" cx=\"115.32\" cy=\"128.00\" r=\"2.40\"></circle>" +
-							"<circle class=\"atom\" cx=\"98.00\" cy=\"138.00\" r=\"2.40\"></circle>" +
-							"<circle class=\"atom\" cx=\"80.68\" cy=\"128.00\" r=\"2.40\"></circle>" +
-							"<circle class=\"atom\" cx=\"80.68\" cy=\"108.00\" r=\"2.40\"></circle>" +
-							"<circle class=\"atom\" cx=\"98.00\" cy=\"78.00\" r=\"2.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"98.00\" cy=\"98.00\" r=\"3.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"108.00\" r=\"3.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"115.32\" cy=\"128.00\" r=\"3.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"98.00\" cy=\"138.00\" r=\"3.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"128.00\" r=\"3.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"80.68\" cy=\"108.00\" r=\"3.40\"></circle>" +
+							"<circle class=\"atom\" cx=\"98.00\" cy=\"78.00\" r=\"3.40\"></circle>" +
 						"</g>" +
 				"</svg>"
 			);

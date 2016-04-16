@@ -60,14 +60,14 @@ describe("DrawChemEditor directive tests - part5", function () {
           "</style>" +
           "<path d=\"M 98.00 98.00 L 115.32 108.00 L 115.32 128.00 L 98.00 138.00 L 80.68 128.00 L 80.68 108.00 L 98.00 98.00 \"></path>" +
           "<path class=\"arrow\" d=\"M 198.00 118.00 L 218.00 118.00 M 215.00 118.00 L 215.00 116.70 L 218.00 118.00 L 215.00 119.30 Z \"></path>" +
-          "<circle class=\"edit\" cx=\"98.00\" cy=\"98.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"115.32\" cy=\"108.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"115.32\" cy=\"128.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"98.00\" cy=\"138.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"80.68\" cy=\"128.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"80.68\" cy=\"108.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"198.00\" cy=\"118.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"218.00\" cy=\"118.00\" r=\"2.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"98.00\" cy=\"98.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"115.32\" cy=\"108.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"115.32\" cy=\"128.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"98.00\" cy=\"138.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"80.68\" cy=\"128.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"80.68\" cy=\"108.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"198.00\" cy=\"118.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"218.00\" cy=\"118.00\" r=\"3.40\"></circle>" +
         "</g>" +
     "</svg>");
     temp.find("#dc-align-up").click();
@@ -79,14 +79,14 @@ describe("DrawChemEditor directive tests - part5", function () {
           "</style>" +
           "<path d=\"M 98.00 98.00 L 115.32 108.00 L 115.32 128.00 L 98.00 138.00 L 80.68 128.00 L 80.68 108.00 L 98.00 98.00 \"></path>" +
           "<path class=\"arrow\" d=\"M 198.00 98.00 L 218.00 98.00 M 215.00 98.00 L 215.00 96.70 L 218.00 98.00 L 215.00 99.30 Z \"></path>" +
-          "<circle class=\"edit\" cx=\"98.00\" cy=\"98.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"115.32\" cy=\"108.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"115.32\" cy=\"128.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"98.00\" cy=\"138.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"80.68\" cy=\"128.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"80.68\" cy=\"108.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"198.00\" cy=\"98.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"218.00\" cy=\"98.00\" r=\"2.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"98.00\" cy=\"98.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"115.32\" cy=\"108.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"115.32\" cy=\"128.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"98.00\" cy=\"138.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"80.68\" cy=\"128.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"80.68\" cy=\"108.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"198.00\" cy=\"98.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"218.00\" cy=\"98.00\" r=\"3.40\"></circle>" +
         "</g>" +
     "</svg>");
 	});
@@ -124,14 +124,14 @@ describe("DrawChemEditor directive tests - part5", function () {
           "</style>" +
           "<path d=\"M 98.00 98.00 L 115.32 108.00 L 115.32 128.00 L 98.00 138.00 L 80.68 128.00 L 80.68 108.00 L 98.00 98.00 \"></path>" +
           "<path class=\"arrow\" d=\"M 198.00 118.00 L 218.00 118.00 M 215.00 118.00 L 215.00 116.70 L 218.00 118.00 L 215.00 119.30 Z \"></path>" +
-          "<circle class=\"edit\" cx=\"98.00\" cy=\"98.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"115.32\" cy=\"108.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"115.32\" cy=\"128.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"98.00\" cy=\"138.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"80.68\" cy=\"128.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"80.68\" cy=\"108.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"198.00\" cy=\"118.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"218.00\" cy=\"118.00\" r=\"2.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"98.00\" cy=\"98.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"115.32\" cy=\"108.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"115.32\" cy=\"128.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"98.00\" cy=\"138.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"80.68\" cy=\"128.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"80.68\" cy=\"108.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"198.00\" cy=\"118.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"218.00\" cy=\"118.00\" r=\"3.40\"></circle>" +
         "</g>" +
     "</svg>");
     temp.find("#dc-align-down").click();
@@ -143,14 +143,14 @@ describe("DrawChemEditor directive tests - part5", function () {
           "</style>" +
           "<path d=\"M 98.00 98.00 L 115.32 108.00 L 115.32 128.00 L 98.00 138.00 L 80.68 128.00 L 80.68 108.00 L 98.00 98.00 \"></path>" +
           "<path class=\"arrow\" d=\"M 198.00 138.00 L 218.00 138.00 M 215.00 138.00 L 215.00 136.70 L 218.00 138.00 L 215.00 139.30 Z \"></path>" +
-          "<circle class=\"edit\" cx=\"98.00\" cy=\"98.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"115.32\" cy=\"108.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"115.32\" cy=\"128.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"98.00\" cy=\"138.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"80.68\" cy=\"128.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"80.68\" cy=\"108.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"198.00\" cy=\"138.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"218.00\" cy=\"138.00\" r=\"2.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"98.00\" cy=\"98.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"115.32\" cy=\"108.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"115.32\" cy=\"128.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"98.00\" cy=\"138.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"80.68\" cy=\"128.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"80.68\" cy=\"108.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"198.00\" cy=\"138.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"218.00\" cy=\"138.00\" r=\"3.40\"></circle>" +
         "</g>" +
     "</svg>");
 	});
@@ -188,14 +188,14 @@ describe("DrawChemEditor directive tests - part5", function () {
           "</style>" +
           "<path d=\"M 98.00 98.00 L 115.32 108.00 L 115.32 128.00 L 98.00 138.00 L 80.68 128.00 L 80.68 108.00 L 98.00 98.00 \"></path>" +
           "<path class=\"arrow\" d=\"M 198.00 118.00 L 218.00 118.00 M 215.00 118.00 L 215.00 116.70 L 218.00 118.00 L 215.00 119.30 Z \"></path>" +
-          "<circle class=\"edit\" cx=\"98.00\" cy=\"98.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"115.32\" cy=\"108.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"115.32\" cy=\"128.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"98.00\" cy=\"138.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"80.68\" cy=\"128.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"80.68\" cy=\"108.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"198.00\" cy=\"118.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"218.00\" cy=\"118.00\" r=\"2.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"98.00\" cy=\"98.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"115.32\" cy=\"108.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"115.32\" cy=\"128.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"98.00\" cy=\"138.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"80.68\" cy=\"128.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"80.68\" cy=\"108.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"198.00\" cy=\"118.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"218.00\" cy=\"118.00\" r=\"3.40\"></circle>" +
         "</g>" +
     "</svg>");
     temp.find("#dc-align-left").click();
@@ -207,14 +207,14 @@ describe("DrawChemEditor directive tests - part5", function () {
           "</style>" +
           "<path d=\"M 98.00 98.00 L 115.32 108.00 L 115.32 128.00 L 98.00 138.00 L 80.68 128.00 L 80.68 108.00 L 98.00 98.00 \"></path>" +
           "<path class=\"arrow\" d=\"M 80.68 118.00 L 100.68 118.00 M 97.68 118.00 L 97.68 116.70 L 100.68 118.00 L 97.68 119.30 Z \"></path>" +
-          "<circle class=\"edit\" cx=\"98.00\" cy=\"98.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"115.32\" cy=\"108.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"115.32\" cy=\"128.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"98.00\" cy=\"138.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"80.68\" cy=\"128.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"80.68\" cy=\"108.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"80.68\" cy=\"118.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"100.68\" cy=\"118.00\" r=\"2.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"98.00\" cy=\"98.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"115.32\" cy=\"108.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"115.32\" cy=\"128.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"98.00\" cy=\"138.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"80.68\" cy=\"128.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"80.68\" cy=\"108.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"80.68\" cy=\"118.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"100.68\" cy=\"118.00\" r=\"3.40\"></circle>" +
         "</g>" +
     "</svg>");
 	});
@@ -252,14 +252,14 @@ describe("DrawChemEditor directive tests - part5", function () {
           "</style>" +
           "<path d=\"M 98.00 98.00 L 115.32 108.00 L 115.32 128.00 L 98.00 138.00 L 80.68 128.00 L 80.68 108.00 L 98.00 98.00 \"></path>" +
           "<path class=\"arrow\" d=\"M 198.00 118.00 L 218.00 118.00 M 215.00 118.00 L 215.00 116.70 L 218.00 118.00 L 215.00 119.30 Z \"></path>" +
-          "<circle class=\"edit\" cx=\"98.00\" cy=\"98.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"115.32\" cy=\"108.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"115.32\" cy=\"128.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"98.00\" cy=\"138.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"80.68\" cy=\"128.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"80.68\" cy=\"108.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"198.00\" cy=\"118.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"218.00\" cy=\"118.00\" r=\"2.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"98.00\" cy=\"98.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"115.32\" cy=\"108.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"115.32\" cy=\"128.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"98.00\" cy=\"138.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"80.68\" cy=\"128.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"80.68\" cy=\"108.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"198.00\" cy=\"118.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"218.00\" cy=\"118.00\" r=\"3.40\"></circle>" +
         "</g>" +
     "</svg>");
     temp.find("#dc-align-right").click();
@@ -271,14 +271,14 @@ describe("DrawChemEditor directive tests - part5", function () {
           "</style>" +
           "<path d=\"M 200.68 98.00 L 218.00 108.00 L 218.00 128.00 L 200.68 138.00 L 183.36 128.00 L 183.36 108.00 L 200.68 98.00 \"></path>" +
           "<path class=\"arrow\" d=\"M 198.00 118.00 L 218.00 118.00 M 215.00 118.00 L 215.00 116.70 L 218.00 118.00 L 215.00 119.30 Z \"></path>" +
-          "<circle class=\"edit\" cx=\"200.68\" cy=\"98.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"218.00\" cy=\"108.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"218.00\" cy=\"128.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"200.68\" cy=\"138.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"183.36\" cy=\"128.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"183.36\" cy=\"108.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"198.00\" cy=\"118.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"218.00\" cy=\"118.00\" r=\"2.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"200.68\" cy=\"98.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"218.00\" cy=\"108.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"218.00\" cy=\"128.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"200.68\" cy=\"138.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"183.36\" cy=\"128.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"183.36\" cy=\"108.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"198.00\" cy=\"118.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"218.00\" cy=\"118.00\" r=\"3.40\"></circle>" +
         "</g>" +
     "</svg>");
 	});
@@ -316,14 +316,14 @@ describe("DrawChemEditor directive tests - part5", function () {
           "</style>" +
           "<path d=\"M 98.00 98.00 L 115.32 108.00 L 115.32 128.00 L 98.00 138.00 L 80.68 128.00 L 80.68 108.00 L 98.00 98.00 \"></path>" +
           "<path class=\"arrow\" d=\"M 198.00 118.00 L 218.00 118.00 M 215.00 118.00 L 215.00 116.70 L 218.00 118.00 L 215.00 119.30 Z \"></path>" +
-          "<circle class=\"edit\" cx=\"98.00\" cy=\"98.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"115.32\" cy=\"108.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"115.32\" cy=\"128.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"98.00\" cy=\"138.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"80.68\" cy=\"128.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"80.68\" cy=\"108.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"198.00\" cy=\"118.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"218.00\" cy=\"118.00\" r=\"2.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"98.00\" cy=\"98.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"115.32\" cy=\"108.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"115.32\" cy=\"128.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"98.00\" cy=\"138.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"80.68\" cy=\"128.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"80.68\" cy=\"108.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"198.00\" cy=\"118.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"218.00\" cy=\"118.00\" r=\"3.40\"></circle>" +
         "</g>" +
     "</svg>");
     temp.find("#dc-align-right").click();
@@ -335,14 +335,14 @@ describe("DrawChemEditor directive tests - part5", function () {
           "</style>" +
           "<path d=\"M 200.68 98.00 L 218.00 108.00 L 218.00 128.00 L 200.68 138.00 L 183.36 128.00 L 183.36 108.00 L 200.68 98.00 \"></path>" +
           "<path class=\"arrow\" d=\"M 198.00 118.00 L 218.00 118.00 M 215.00 118.00 L 215.00 116.70 L 218.00 118.00 L 215.00 119.30 Z \"></path>" +
-          "<circle class=\"edit\" cx=\"200.68\" cy=\"98.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"218.00\" cy=\"108.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"218.00\" cy=\"128.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"200.68\" cy=\"138.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"183.36\" cy=\"128.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"183.36\" cy=\"108.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"198.00\" cy=\"118.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"218.00\" cy=\"118.00\" r=\"2.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"200.68\" cy=\"98.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"218.00\" cy=\"108.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"218.00\" cy=\"128.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"200.68\" cy=\"138.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"183.36\" cy=\"128.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"183.36\" cy=\"108.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"198.00\" cy=\"118.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"218.00\" cy=\"118.00\" r=\"3.40\"></circle>" +
         "</g>" +
     "</svg>");
     temp.find("#dc-align-right").click();
@@ -357,14 +357,14 @@ describe("DrawChemEditor directive tests - part5", function () {
           "</style>" +
           "<path d=\"M 200.68 98.00 L 218.00 108.00 L 218.00 128.00 L 200.68 138.00 L 183.36 128.00 L 183.36 108.00 L 200.68 98.00 \"></path>" +
           "<path class=\"arrow\" d=\"M 198.00 118.00 L 218.00 118.00 M 215.00 118.00 L 215.00 116.70 L 218.00 118.00 L 215.00 119.30 Z \"></path>" +
-          "<circle class=\"edit\" cx=\"200.68\" cy=\"98.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"218.00\" cy=\"108.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"218.00\" cy=\"128.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"200.68\" cy=\"138.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"183.36\" cy=\"128.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"183.36\" cy=\"108.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"198.00\" cy=\"118.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"218.00\" cy=\"118.00\" r=\"2.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"200.68\" cy=\"98.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"218.00\" cy=\"108.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"218.00\" cy=\"128.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"200.68\" cy=\"138.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"183.36\" cy=\"128.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"183.36\" cy=\"108.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"198.00\" cy=\"118.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"218.00\" cy=\"118.00\" r=\"3.40\"></circle>" +
         "</g>" +
     "</svg>");
     temp.find("#dc-undo").click();
@@ -376,14 +376,14 @@ describe("DrawChemEditor directive tests - part5", function () {
           "</style>" +
           "<path d=\"M 98.00 98.00 L 115.32 108.00 L 115.32 128.00 L 98.00 138.00 L 80.68 128.00 L 80.68 108.00 L 98.00 98.00 \"></path>" +
           "<path class=\"arrow\" d=\"M 198.00 118.00 L 218.00 118.00 M 215.00 118.00 L 215.00 116.70 L 218.00 118.00 L 215.00 119.30 Z \"></path>" +
-          "<circle class=\"edit\" cx=\"98.00\" cy=\"98.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"115.32\" cy=\"108.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"115.32\" cy=\"128.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"98.00\" cy=\"138.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"80.68\" cy=\"128.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"80.68\" cy=\"108.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"198.00\" cy=\"118.00\" r=\"2.40\"></circle>" +
-          "<circle class=\"edit\" cx=\"218.00\" cy=\"118.00\" r=\"2.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"98.00\" cy=\"98.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"115.32\" cy=\"108.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"115.32\" cy=\"128.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"98.00\" cy=\"138.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"80.68\" cy=\"128.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"80.68\" cy=\"108.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"198.00\" cy=\"118.00\" r=\"3.40\"></circle>" +
+          "<circle class=\"edit\" cx=\"218.00\" cy=\"118.00\" r=\"3.40\"></circle>" +
         "</g>" +
     "</svg>");
 	});

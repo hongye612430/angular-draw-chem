@@ -41,8 +41,8 @@
 			service.FREQ = 15;
 
 			// 'push' factor is related to bonds starting/ending on an atom with a label
-			// (it has to start/end outside of the label)
-			service.PUSH = service.BOND_LENGTH * 3 / 350;
+			// (bond has to start/end outside of the label)
+			service.PUSH = 0.3;
 
 			// default angle between two bonds (in degrees)
 			service.ANGLE = 120;
@@ -60,7 +60,7 @@
 			service.BOND_FOCUS = 0.2;
 
 			// correction for 'left' and 'right' double bonds
-			service.DBL_BOND_CORR = service.BOND_LENGTH * 3 / 1200;
+			service.DBL_BOND_CORR = 0.05;
 
 			// factor for Bezier curve in 'undefined' bond
 			service.UNDEF_BOND = 1.5 * service.BETWEEN_DBL_BONDS;
@@ -78,7 +78,7 @@
 			service.BOND_WIDTH = (service.BOND_LENGTH * service.WIDTH_TO_LENGTH).toFixed(2);
 
 			// default r of a circle around an atom
-			service.CIRC_R = service.BOND_LENGTH * 0.15;
+			service.CIRC_R = service.BOND_LENGTH * 0.17;
 
 			// default directions, clock-wise
 			service.DIRECTIONS = [
