@@ -42,14 +42,14 @@ describe("DrawChemSvgRenderer service tests", function () {
 					"<path d='M 10.00 10.00 L 15.00 20.00 '></path>" +
 					"<path d='M 10.00 10.00 L 5.00 26.00 '></path>" +
 					"<path d='M 10.00 10.00 L 14.00 12.00 '></path>" +
-					"<circle class='atom' cx='10.00' cy='10.00' r='2.40'></circle>" +
-					"<circle class='atom' cx='25.00' cy='25.00' r='2.40'></circle>" +
-					"<circle class='atom' cx='45.00' cy='45.00' r='2.40'></circle>" +
-					"<circle class='atom' cx='75.00' cy='75.00' r='2.40'></circle>" +
-					"<circle class='atom' cx='50.00' cy='50.00' r='2.40'></circle>" +
-					"<circle class='atom' cx='15.00' cy='20.00' r='2.40'></circle>" +
-					"<circle class='atom' cx='5.00' cy='26.00' r='2.40'></circle>" +
-					"<circle class='atom' cx='14.00' cy='12.00' r='2.40'></circle>" +
+					"<circle class='atom' cx='10.00' cy='10.00' r='3.40'></circle>" +
+					"<circle class='atom' cx='25.00' cy='25.00' r='3.40'></circle>" +
+					"<circle class='atom' cx='45.00' cy='45.00' r='3.40'></circle>" +
+					"<circle class='atom' cx='75.00' cy='75.00' r='3.40'></circle>" +
+					"<circle class='atom' cx='50.00' cy='50.00' r='3.40'></circle>" +
+					"<circle class='atom' cx='15.00' cy='20.00' r='3.40'></circle>" +
+					"<circle class='atom' cx='5.00' cy='26.00' r='3.40'></circle>" +
+					"<circle class='atom' cx='14.00' cy='12.00' r='3.40'></circle>" +
 				"</g>" +
 			"</svg>"
 		);

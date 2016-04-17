@@ -117,6 +117,13 @@
 							"stroke-width": Const.BOND_WIDTH,
 							"fill": "black"
 						},
+						"rect.focus": {
+							"opacity": "0",
+							"stroke": "black"
+						},
+						"rect.focus:hover": {
+							"opacity": "0.3"
+						},
 						"text.edit:hover": {
 							"opacity": "0.3"
 						},

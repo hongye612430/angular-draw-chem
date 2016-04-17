@@ -9,6 +9,7 @@
 
 		var service = {},
       BONDS = Const.BONDS,
+			BOND_FOCUS = Const.BOND_FOCUS,
       BOND_LENGTH = Const.BOND_LENGTH,
       AROMATIC_R = Const.AROMATIC_R;
 
@@ -20,15 +21,32 @@
     service.generateRects = function (rects, obj) {
       rects.forEach(function (rect) {
         var aux =
-          "<rect class='" + rect.class +
-            "' x='" + rect.rect[0].toFixed(2) +
-            "' y='" + rect.rect[1].toFixed(2) +
-            "' width='" + rect.rect[2].toFixed(2) +
-            "' height='" + rect.rect[3].toFixed(2) +
-          "'></rect>";
+          "<rect class='" + rect.class + "'" +
+            "x='" + rect.rect[0].toFixed(2) + "'" +
+            "y='" + rect.rect[1].toFixed(2) + "'" +
+            "width='" + rect.rect[2].toFixed(2) + "'" +
+            "height='" + rect.rect[3].toFixed(2) + "'" +
+          "></rect>";
         obj.full += aux;
         obj.mini += aux;
       });
+    };
+
+		service.generateBondFocus = function(bondFocus, obj) {
+			bondFocus.forEach(function (bf) {
+				obj.full += "<rect class='focus'" +
+					"x='" + bf.start[0].toFixed(2) + "'" +
+					"y='" + bf.start[1].toFixed(2) + "'" +
+					"rx='" + (0.1 * BOND_LENGTH).toFixed(2) + "'" +
+					"ry='" + (0.1 * BOND_LENGTH).toFixed(2) + "'" +
+					"width='" + BOND_LENGTH.toFixed(2) + "'" +
+					"height='" + bf.height.toFixed(2) + "'" +
+					"transform='rotate(" +
+					  bf.rotate.toFixed(2) + ", " +
+						bf.start[0].toFixed(2) + ", " +
+						bf.start[1].toFixed(2) + ")'" +
+				  "></rect>";
+			});
     };
 
 		/**
@@ -175,6 +193,19 @@
 				return str !== "M" && str !== "L" && str !== "C" && str !== "S" && str !== "Z" && str !== ",";
 			}
     };
+
+		service.updateBondFocus = function (bondFocus, prevAbsPos, absPos, push, newPush) {
+			var vectCoords = [absPos[0] - prevAbsPos[0], absPos[1] - prevAbsPos[1]],
+				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]];
+
+			bondFocus.push({
+				start: Utils.addVectors(prevAbsPos, perpVectCoordsCW, BOND_FOCUS),
+				rotate: -Utils.calcAngle(vectCoords),
+				height: Utils.getLength(
+					Utils.multVectByScalar(vectCoords, BOND_FOCUS * 2)
+				)
+			});
+		};
 
 		/**
 		* Adds new element to `labels` array based on supplied `Atom` object and its absolute position.

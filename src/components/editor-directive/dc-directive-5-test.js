@@ -32,25 +32,9 @@ describe("DrawChemEditor directive tests - part5", function () {
     DrawChem.runEditor("test");
 		expect(DrawChem.showEditor()).toEqual(true);
     temp.find("#dc-" + custom.name).click();
-    temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mouseup",
-			which: 1,
-			clientX: 100,
-			clientY: 100
-		});
+		mouseClick(temp, 100, 100);
     temp.find("#dc-one-way-arrow").click();
-    temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mousedown",
-			which: 1,
-			clientX: 200,
-			clientY: 120
-		});
-    temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mouseup",
-			which: 1,
-			clientX: 200,
-			clientY: 120
-		});
+    mouseClick(temp, 200, 120);
 		temp.find("#dc-select-all").click();
     expect(temp.find(".dc-editor-dialog-content").html()).toEqual(
       "<svg>" +
@@ -96,25 +80,9 @@ describe("DrawChemEditor directive tests - part5", function () {
     DrawChem.runEditor("test");
 		expect(DrawChem.showEditor()).toEqual(true);
     temp.find("#dc-" + custom.name).click();
-    temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mouseup",
-			which: 1,
-			clientX: 100,
-			clientY: 100
-		});
+    mouseClick(temp, 100, 100);
     temp.find("#dc-one-way-arrow").click();
-    temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mousedown",
-			which: 1,
-			clientX: 200,
-			clientY: 120
-		});
-    temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mouseup",
-			which: 1,
-			clientX: 200,
-			clientY: 120
-		});
+    mouseClick(temp, 200, 120);
 		temp.find("#dc-select-all").click();
     expect(temp.find(".dc-editor-dialog-content").html()).toEqual(
       "<svg>" +
@@ -160,25 +128,9 @@ describe("DrawChemEditor directive tests - part5", function () {
     DrawChem.runEditor("test");
 		expect(DrawChem.showEditor()).toEqual(true);
     temp.find("#dc-" + custom.name).click();
-    temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mouseup",
-			which: 1,
-			clientX: 100,
-			clientY: 100
-		});
+    mouseClick(temp, 100, 100);
     temp.find("#dc-one-way-arrow").click();
-    temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mousedown",
-			which: 1,
-			clientX: 200,
-			clientY: 120
-		});
-    temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mouseup",
-			which: 1,
-			clientX: 200,
-			clientY: 120
-		});
+    mouseClick(temp, 200, 120);
 		temp.find("#dc-select-all").click();
     expect(temp.find(".dc-editor-dialog-content").html()).toEqual(
       "<svg>" +
@@ -224,25 +176,9 @@ describe("DrawChemEditor directive tests - part5", function () {
     DrawChem.runEditor("test");
 		expect(DrawChem.showEditor()).toEqual(true);
     temp.find("#dc-" + custom.name).click();
-    temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mouseup",
-			which: 1,
-			clientX: 100,
-			clientY: 100
-		});
+    mouseClick(temp, 100, 100);
     temp.find("#dc-one-way-arrow").click();
-    temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mousedown",
-			which: 1,
-			clientX: 200,
-			clientY: 120
-		});
-    temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mouseup",
-			which: 1,
-			clientX: 200,
-			clientY: 120
-		});
+    mouseClick(temp, 200, 120);
 		temp.find("#dc-select-all").click();
     expect(temp.find(".dc-editor-dialog-content").html()).toEqual(
       "<svg>" +
@@ -288,25 +224,9 @@ describe("DrawChemEditor directive tests - part5", function () {
     DrawChem.runEditor("test");
 		expect(DrawChem.showEditor()).toEqual(true);
     temp.find("#dc-" + custom.name).click();
-    temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mouseup",
-			which: 1,
-			clientX: 100,
-			clientY: 100
-		});
+    mouseClick(temp, 100, 100);
     temp.find("#dc-one-way-arrow").click();
-    temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mousedown",
-			which: 1,
-			clientX: 200,
-			clientY: 120
-		});
-    temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mouseup",
-			which: 1,
-			clientX: 200,
-			clientY: 120
-		});
+    mouseClick(temp, 200, 120);
 		temp.find("#dc-select-all").click();
     expect(temp.find(".dc-editor-dialog-content").html()).toEqual(
       "<svg>" +
@@ -393,38 +313,12 @@ describe("DrawChemEditor directive tests - part5", function () {
     DrawChem.runEditor("test");
 		expect(DrawChem.showEditor()).toEqual(true);
     temp.find("#dc-" + custom.name).click();
-    temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mouseup",
-			which: 1,
-			clientX: 100,
-			clientY: 100
-		});
+    mouseClick(temp, 100, 100);
     temp.find("#dc-one-way-arrow").click();
-    temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mousedown",
-			which: 1,
-			clientX: 200,
-			clientY: 120
-		});
-    temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mouseup",
-			which: 1,
-			clientX: 200,
-			clientY: 120
-		});
+    mouseClick(temp, 200, 120);
 		temp.find("#dc-select").click();
-		temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mousedown",
-			which: 1,
-			clientX: 50,
-			clientY: 50
-		});
-    temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mouseup",
-			which: 1,
-			clientX: 250,
-			clientY: 250
-		});
+		mouseDown(temp, 50, 50);
+    mouseUp(temp, 250, 250);
 		structureArray = DrawChemCache.getCurrentStructure().getStructure();
     expect(structureArray.length).toEqual(2);
     for (i = 0; i < structureArray.length; i++) {

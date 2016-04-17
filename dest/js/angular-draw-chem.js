@@ -1667,6 +1667,13 @@
 							"stroke-width": Const.BOND_WIDTH,
 							"fill": "black"
 						},
+						"rect.focus": {
+							"opacity": "0",
+							"stroke": "black"
+						},
+						"rect.focus:hover": {
+							"opacity": "0.3"
+						},
 						"text.edit:hover": {
 							"opacity": "0.3"
 						},
@@ -1870,10 +1877,10 @@
 				return;
 			}
 
-			if (Flags.selected === "delete") {
+			if (currWorkingStructure !== null && Flags.selected === "delete") {
 				// if delete was selected
 				ModStructure.deleteFromStructure(currWorkingStructure, mouseCoords);
-			} else if (Flags.selected === "select") {
+			} else if (currWorkingStructure !== null && Flags.selected === "select") {
 				// if selection tool was selected
 				currWorkingStructure = ModStructure.makeSelection(
 					currWorkingStructure,
@@ -1882,7 +1889,7 @@
 				);
 				// remove `Selection` object afterwards
 				currWorkingStructure.getStructure().pop();
-			} else if (Flags.selected === "moveStructure") {
+			} else if (currWorkingStructure !== null && Flags.selected === "moveStructure") {
 				// if `move` tool was selected
 				ModStructure.moveStructure(currWorkingStructure, mouseCoords, mouseFlags.downMouseCoords);
 			} else if (Flags.selected === "arrow") {
@@ -2126,8 +2133,7 @@
 
 				// Returns content which will be bound in the dialog box.
 				scope.content = function () {
-					var svg = $sce.trustAsHtml(Cache.getCurrentSvg());
-					return svg;
+					return $sce.trustAsHtml(Cache.getCurrentSvg());
 				};
 
 				// Adds all buttons to the scope
@@ -2138,7 +2144,7 @@
 					try {
 						MouseActions.doOnMouseDown($event, scope, element);
 					} catch (e) {
-						console.log(e);
+						console.log(e.name, e.message);
 					}
 				};
 
@@ -2146,7 +2152,7 @@
 					try {
 						MouseActions.doOnMouseUp($event, scope, element);
 					} catch (e) {
-						console.log(e);
+						console.log(e.name, e.message);
 					}
 				};
 
@@ -2154,7 +2160,7 @@
 					try {
 						MouseActions.doOnMouseMove($event, scope, element);
 					} catch (e) {
-						console.log(e);
+						console.log(e.name, e.message);
 					}
 				};
 			}
@@ -2283,7 +2289,7 @@
 			service.BETWEEN_DBL_BONDS = 0.065;
 
 			// bond focus
-			service.BOND_FOCUS = 0.2;
+			service.BOND_FOCUS = 0.15;
 
 			// correction for 'left' and 'right' double bonds
 			service.DBL_BOND_CORR = 0.05;
@@ -2715,6 +2721,15 @@
 		 */
 		service.getLength = function (v) {
 			return Math.sqrt(v[0] * v[0] + v[1] * v[1]);
+		};
+
+		service.calcAngle = function(v1, v2) {
+			var rads;
+			if (typeof v2 === "undefined") {
+				v2 = [1, 0];
+			}
+			rads = Math.atan2(v2[1], v2[0]) - Math.atan2(v1[1], v1[0]);
+			return rads * 180 / Math.PI;
 		};
 
 		return service;
@@ -3205,7 +3220,7 @@
 
 	DrawChemEdits.$inject = ["DrawChem", "DrawChemCache", "DrawChemDirectiveUtils", "DrawChemDirectiveFlags"];
 
-	function DrawChemEdits(DrawChem, Cache, Utils, Flags) {
+	function DrawChemEdits(DrawChem, Cache, DirUtils, Flags) {
 
 		var service = {};
 
@@ -3220,11 +3235,12 @@
 		* Deletes all structures marked as selected.
 		*/
     service.deleteSelected = function () {
-			var structure = angular.copy(Cache.getCurrentStructure());
+			var structure = angular.copy(Cache.getCurrentStructure()), drawn;
 			if (structure !== null) {
 				structure.deleteSelected();
 				Cache.addStructure(structure);
-				Utils.drawStructure(structure);
+				drawn = DirUtils.drawStructure(structure);
+				Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
 			}
     };
 
@@ -3240,11 +3256,12 @@
 		* Marks all structures as selected.
 		*/
     service.selectAll = function () {
-			var structure = angular.copy(Cache.getCurrentStructure());
+			var structure = angular.copy(Cache.getCurrentStructure()), drawn;
 			if (structure !== null) {
 				structure.selectAll();
 				Cache.addStructure(structure);
-			  Utils.drawStructure(structure);
+			  drawn = DirUtils.drawStructure(structure);
+				Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
 			}
     };
 
@@ -3252,11 +3269,12 @@
 		* Deselects all structures.
 		*/
 		service.deselectAll = function () {
-			var structure = angular.copy(Cache.getCurrentStructure());
+			var structure = angular.copy(Cache.getCurrentStructure()), drawn;
 			if (structure !== null) {
 				structure.deselectAll();
 				Cache.addStructure(structure);
-				Utils.drawStructure(structure);
+				drawn = DirUtils.drawStructure(structure);
+				Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
 			}
     };
 
@@ -3276,7 +3294,7 @@
 		* Copies all selected structures.
 		*/
 		service.cut = function () {
-			var structure = angular.copy(Cache.getCurrentStructure()),
+			var structure = angular.copy(Cache.getCurrentStructure()), drawn,
 			  cut = angular.copy(Cache.getCurrentStructure()), selected;
 			if (structure !== null) {
 				selected = cut.getSelected();
@@ -3284,7 +3302,8 @@
 				Flags.copy = cut;
 				structure.deleteSelected();
 				Cache.addStructure(structure);
-				Utils.drawStructure(structure);
+				drawn = DirUtils.drawStructure(structure);
+				Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
 			}
 		};
 
@@ -3292,14 +3311,15 @@
 		* Pastes all copied structures.
 		*/
 		service.paste = function () {
-			var structure = angular.copy(Cache.getCurrentStructure()),
+			var structure = angular.copy(Cache.getCurrentStructure()), drawn,
 			  copy = angular.copy(Flags.copy);
 			if (structure !== null && typeof copy !== "undefined") {
 				structure.deselectAll();
 				moveSelected(copy.getStructure());
 				structure.addToStructures(copy.getStructure());
 				Cache.addStructure(structure);
-				Utils.drawStructure(structure);
+				drawn = DirUtils.drawStructure(structure);
+				Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
 			}
 
 			function moveSelected(selected) {
@@ -3313,13 +3333,14 @@
 		* Aligns all structures to the uppermost point.
 		*/
 		service.alignUp = function () {
-			var structure = angular.copy(Cache.getCurrentStructure()), changed = false, minMax;
+			var structure = angular.copy(Cache.getCurrentStructure()), drawn, changed = false, minMax;
 			if (structure !== null) {
 				minMax = structure.findMinMax();
 				changed = structure.alignUp(minMax.minY);
 				if (changed) {
 					Cache.addStructure(structure);
-					Utils.drawStructure(structure);
+					drawn = DirUtils.drawStructure(structure);
+					Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
 				}
 			}
 		};
@@ -3328,13 +3349,14 @@
 		* Aligns all structures to the lowermost point.
 		*/
 		service.alignDown = function () {
-			var structure = angular.copy(Cache.getCurrentStructure()), changed = false, minMax;
+			var structure = angular.copy(Cache.getCurrentStructure()), changed = false, minMax, drawn;
 			if (structure !== null) {
 				minMax = structure.findMinMax();
 				changed = structure.alignDown(minMax.maxY);
 				if (changed) {
 					Cache.addStructure(structure);
-					Utils.drawStructure(structure);
+					drawn = DirUtils.drawStructure(structure);
+					Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
 				}
 			}
 		};
@@ -3343,13 +3365,14 @@
 		* Aligns all structures to the rightmost point.
 		*/
 		service.alignRight = function () {
-			var structure = angular.copy(Cache.getCurrentStructure()), changed = false, minMax;
+			var structure = angular.copy(Cache.getCurrentStructure()), drawn, changed = false, minMax;
 			if (structure !== null) {
 				minMax = structure.findMinMax();
 				changed = structure.alignRight(minMax.maxX);
 				if (changed) {
 					Cache.addStructure(structure);
-					Utils.drawStructure(structure);
+					drawn = DirUtils.drawStructure(structure);
+					Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
 				}
 			}
 		};
@@ -3358,13 +3381,14 @@
 		* Aligns all structures to the rightmost point.
 		*/
 		service.alignLeft = function () {
-			var structure = angular.copy(Cache.getCurrentStructure()), changed = false, minMax;
+			var structure = angular.copy(Cache.getCurrentStructure()), drawn, changed = false, minMax;
 			if (structure !== null) {
 				minMax = structure.findMinMax();
 				changed = structure.alignLeft(minMax.minX);
 				if (changed) {
 					Cache.addStructure(structure);
-					Utils.drawStructure(structure);
+					drawn = DirUtils.drawStructure(structure);
+					Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
 				}
 			}
 		};
@@ -3383,11 +3407,12 @@
 
 			function moveStructureTo(dir) {
 				return function () {
-					var structure = angular.copy(Cache.getCurrentStructure());
+					var structure = angular.copy(Cache.getCurrentStructure()), drawn;
 					if (structure !== null) {
 						structure.moveStructureTo(dir);
 						Cache.addStructure(structure);
-						Utils.drawStructure(structure);
+						drawn = DirUtils.drawStructure(structure);
+						Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
 					}
 				};
 			}
@@ -3397,11 +3422,13 @@
 		 * Undoes a change associated with the recent 'mouseup' event.
 		 */
 		service.undo = function () {
+			var drawn;
 			Cache.moveLeftInStructures();
 			if (Cache.getCurrentStructure() === null) {
 				DrawChem.clearContent();
 			} else {
-				Utils.drawStructure(Cache.getCurrentStructure());
+				drawn = DirUtils.drawStructure(Cache.getCurrentStructure());
+				Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
 			}
 		};
 
@@ -3409,11 +3436,13 @@
 		 * Reverses the recent 'undo' action.
 		 */
 		service.forward = function () {
+			var drawn;
 			Cache.moveRightInStructures();
 			if (Cache.getCurrentStructure() === null) {
 				DrawChem.clearContent();
 			} else {
-				Utils.drawStructure(Cache.getCurrentStructure());
+				drawn = DirUtils.drawStructure(Cache.getCurrentStructure());
+				Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
 			}
 		};
 
@@ -4243,10 +4272,14 @@
 				customLabel = typeof customLabel === "undefined" ? "": customLabel;
 				atom.setLabel(new Label(customLabel, 0));
 			}
-			// if mode is not known (if there was previously no label)
-			// try to guess which one should it be
-			mode = getTextDirection();
-			atom.getLabel().setMode(mode);
+
+			if (typeof atom.getLabel() !== "undefined") {
+				// if mode is not known (if there was previously no label)
+				// try to guess which one should it be
+				mode = getTextDirection();
+				atom.getLabel().setMode(mode);
+			}
+
 			// if `Atom` object already has a label on it
 			// then change its direction on mouseup event
 			if (typeof currentLabel !== "undefined") {
@@ -4438,17 +4471,15 @@
 				// new `Structure` object has to be created
 				structure = new Structure();
 				// if mousemove event didn't occur, assume mouse coords from (mouseup) event
-				structure.setOrigin(mouseCoords);
+				structure.setOrigin(downMouseCoords);
 				// get default arrow
-				arrow = angular.copy(chosenArrow.getDefault());
-				// calculate and set coords
-				coords = Utils.subtractVectors(mouseCoords, structure.getOrigin());
-				arrow.setOrigin(coords);
+				arrow = angular.copy(chosenArrow.getArrow(downMouseCoords, mouseCoords));
+				arrow.setOrigin([0, 0]);
 			} else {
 				// if the content is not empty, a `Structure` object already exists
 				arrow = angular.copy(chosenArrow.getArrow(downMouseCoords, mouseCoords));
-				coords = Utils.subtractVectors(mouseCoords, structure.getOrigin());
 				// calculate and set coords
+				coords = Utils.subtractVectors(downMouseCoords, structure.getOrigin());
 				arrow.setOrigin(coords);
 			}
 			// add Arrow object to the structures array in the Structure object
@@ -4587,6 +4618,7 @@
 				circles = output.circles,
 				labels = output.labels,
 				rects = output.rects,
+				bondFocus = output.bondFocus,
 				minMax = output.minMax,
 			  svg = new Svg(
   				styleExpanded + genElements().full,
@@ -4607,6 +4639,7 @@
 				var result = { full: "", mini: "" };
 				SvgUtils.generateRects(rects, result);
 				SvgUtils.generatePaths(paths, result);
+				SvgUtils.generateBondFocus(bondFocus, result);
 				SvgUtils.generateCircles(circles, result);
 				SvgUtils.generateLabels(labels, result);
 				if (input.isAromatic()) {
@@ -4621,7 +4654,7 @@
 			* @returns {Object}
 			*/
 		  function parseInput(input) {
-				var output = [], circles = [], labels = [], rects = [],
+				var output = [], circles = [], labels = [], rects = [], bondFocus = [],
           i, absPos, absPosStart, absPosEnd, len,
           selection, atom, arrow, obj, push,
 					origin = input.getOrigin(),
@@ -4666,6 +4699,7 @@
 					rects: rects,
 					circles: circles,
 					labels: labels,
+					bondFocus: bondFocus,
 					minMax: minMax
 				};
 
@@ -4686,6 +4720,7 @@
 							prevAbsPos[1] + atom.getCoords("y")
 						];
 						updateMinMax(absPos);
+						SvgUtils.updateBondFocus(bondFocus, prevAbsPos, absPos, push, typeof atom.getLabel() !== "undefined");
 						SvgUtils.updateLabel(labels, absPos, atom);
 						circles.push({
 							isSelected: atom.isSelected(),
@@ -5097,6 +5132,7 @@
 
 		var service = {},
       BONDS = Const.BONDS,
+			BOND_FOCUS = Const.BOND_FOCUS,
       BOND_LENGTH = Const.BOND_LENGTH,
       AROMATIC_R = Const.AROMATIC_R;
 
@@ -5108,15 +5144,32 @@
     service.generateRects = function (rects, obj) {
       rects.forEach(function (rect) {
         var aux =
-          "<rect class='" + rect.class +
-            "' x='" + rect.rect[0].toFixed(2) +
-            "' y='" + rect.rect[1].toFixed(2) +
-            "' width='" + rect.rect[2].toFixed(2) +
-            "' height='" + rect.rect[3].toFixed(2) +
-          "'></rect>";
+          "<rect class='" + rect.class + "'" +
+            "x='" + rect.rect[0].toFixed(2) + "'" +
+            "y='" + rect.rect[1].toFixed(2) + "'" +
+            "width='" + rect.rect[2].toFixed(2) + "'" +
+            "height='" + rect.rect[3].toFixed(2) + "'" +
+          "></rect>";
         obj.full += aux;
         obj.mini += aux;
       });
+    };
+
+		service.generateBondFocus = function(bondFocus, obj) {
+			bondFocus.forEach(function (bf) {
+				obj.full += "<rect class='focus'" +
+					"x='" + bf.start[0].toFixed(2) + "'" +
+					"y='" + bf.start[1].toFixed(2) + "'" +
+					"rx='" + (0.1 * BOND_LENGTH).toFixed(2) + "'" +
+					"ry='" + (0.1 * BOND_LENGTH).toFixed(2) + "'" +
+					"width='" + BOND_LENGTH.toFixed(2) + "'" +
+					"height='" + bf.height.toFixed(2) + "'" +
+					"transform='rotate(" +
+					  bf.rotate.toFixed(2) + ", " +
+						bf.start[0].toFixed(2) + ", " +
+						bf.start[1].toFixed(2) + ")'" +
+				  "></rect>";
+			});
     };
 
 		/**
@@ -5263,6 +5316,19 @@
 				return str !== "M" && str !== "L" && str !== "C" && str !== "S" && str !== "Z" && str !== ",";
 			}
     };
+
+		service.updateBondFocus = function (bondFocus, prevAbsPos, absPos, push, newPush) {
+			var vectCoords = [absPos[0] - prevAbsPos[0], absPos[1] - prevAbsPos[1]],
+				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]];
+
+			bondFocus.push({
+				start: Utils.addVectors(prevAbsPos, perpVectCoordsCW, BOND_FOCUS),
+				rotate: -Utils.calcAngle(vectCoords),
+				height: Utils.getLength(
+					Utils.multVectByScalar(vectCoords, BOND_FOCUS * 2)
+				)
+			});
+		};
 
 		/**
 		* Adds new element to `labels` array based on supplied `Atom` object and its absolute position.

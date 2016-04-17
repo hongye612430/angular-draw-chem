@@ -5,7 +5,7 @@
 
 	DrawChemEdits.$inject = ["DrawChem", "DrawChemCache", "DrawChemDirectiveUtils", "DrawChemDirectiveFlags"];
 
-	function DrawChemEdits(DrawChem, Cache, Utils, Flags) {
+	function DrawChemEdits(DrawChem, Cache, DirUtils, Flags) {
 
 		var service = {};
 
@@ -20,11 +20,12 @@
 		* Deletes all structures marked as selected.
 		*/
     service.deleteSelected = function () {
-			var structure = angular.copy(Cache.getCurrentStructure());
+			var structure = angular.copy(Cache.getCurrentStructure()), drawn;
 			if (structure !== null) {
 				structure.deleteSelected();
 				Cache.addStructure(structure);
-				Utils.drawStructure(structure);
+				drawn = DirUtils.drawStructure(structure);
+				Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
 			}
     };
 
@@ -40,11 +41,12 @@
 		* Marks all structures as selected.
 		*/
     service.selectAll = function () {
-			var structure = angular.copy(Cache.getCurrentStructure());
+			var structure = angular.copy(Cache.getCurrentStructure()), drawn;
 			if (structure !== null) {
 				structure.selectAll();
 				Cache.addStructure(structure);
-			  Utils.drawStructure(structure);
+			  drawn = DirUtils.drawStructure(structure);
+				Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
 			}
     };
 
@@ -52,11 +54,12 @@
 		* Deselects all structures.
 		*/
 		service.deselectAll = function () {
-			var structure = angular.copy(Cache.getCurrentStructure());
+			var structure = angular.copy(Cache.getCurrentStructure()), drawn;
 			if (structure !== null) {
 				structure.deselectAll();
 				Cache.addStructure(structure);
-				Utils.drawStructure(structure);
+				drawn = DirUtils.drawStructure(structure);
+				Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
 			}
     };
 
@@ -76,7 +79,7 @@
 		* Copies all selected structures.
 		*/
 		service.cut = function () {
-			var structure = angular.copy(Cache.getCurrentStructure()),
+			var structure = angular.copy(Cache.getCurrentStructure()), drawn,
 			  cut = angular.copy(Cache.getCurrentStructure()), selected;
 			if (structure !== null) {
 				selected = cut.getSelected();
@@ -84,7 +87,8 @@
 				Flags.copy = cut;
 				structure.deleteSelected();
 				Cache.addStructure(structure);
-				Utils.drawStructure(structure);
+				drawn = DirUtils.drawStructure(structure);
+				Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
 			}
 		};
 
@@ -92,14 +96,15 @@
 		* Pastes all copied structures.
 		*/
 		service.paste = function () {
-			var structure = angular.copy(Cache.getCurrentStructure()),
+			var structure = angular.copy(Cache.getCurrentStructure()), drawn,
 			  copy = angular.copy(Flags.copy);
 			if (structure !== null && typeof copy !== "undefined") {
 				structure.deselectAll();
 				moveSelected(copy.getStructure());
 				structure.addToStructures(copy.getStructure());
 				Cache.addStructure(structure);
-				Utils.drawStructure(structure);
+				drawn = DirUtils.drawStructure(structure);
+				Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
 			}
 
 			function moveSelected(selected) {
@@ -113,13 +118,14 @@
 		* Aligns all structures to the uppermost point.
 		*/
 		service.alignUp = function () {
-			var structure = angular.copy(Cache.getCurrentStructure()), changed = false, minMax;
+			var structure = angular.copy(Cache.getCurrentStructure()), drawn, changed = false, minMax;
 			if (structure !== null) {
 				minMax = structure.findMinMax();
 				changed = structure.alignUp(minMax.minY);
 				if (changed) {
 					Cache.addStructure(structure);
-					Utils.drawStructure(structure);
+					drawn = DirUtils.drawStructure(structure);
+					Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
 				}
 			}
 		};
@@ -128,13 +134,14 @@
 		* Aligns all structures to the lowermost point.
 		*/
 		service.alignDown = function () {
-			var structure = angular.copy(Cache.getCurrentStructure()), changed = false, minMax;
+			var structure = angular.copy(Cache.getCurrentStructure()), changed = false, minMax, drawn;
 			if (structure !== null) {
 				minMax = structure.findMinMax();
 				changed = structure.alignDown(minMax.maxY);
 				if (changed) {
 					Cache.addStructure(structure);
-					Utils.drawStructure(structure);
+					drawn = DirUtils.drawStructure(structure);
+					Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
 				}
 			}
 		};
@@ -143,13 +150,14 @@
 		* Aligns all structures to the rightmost point.
 		*/
 		service.alignRight = function () {
-			var structure = angular.copy(Cache.getCurrentStructure()), changed = false, minMax;
+			var structure = angular.copy(Cache.getCurrentStructure()), drawn, changed = false, minMax;
 			if (structure !== null) {
 				minMax = structure.findMinMax();
 				changed = structure.alignRight(minMax.maxX);
 				if (changed) {
 					Cache.addStructure(structure);
-					Utils.drawStructure(structure);
+					drawn = DirUtils.drawStructure(structure);
+					Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
 				}
 			}
 		};
@@ -158,13 +166,14 @@
 		* Aligns all structures to the rightmost point.
 		*/
 		service.alignLeft = function () {
-			var structure = angular.copy(Cache.getCurrentStructure()), changed = false, minMax;
+			var structure = angular.copy(Cache.getCurrentStructure()), drawn, changed = false, minMax;
 			if (structure !== null) {
 				minMax = structure.findMinMax();
 				changed = structure.alignLeft(minMax.minX);
 				if (changed) {
 					Cache.addStructure(structure);
-					Utils.drawStructure(structure);
+					drawn = DirUtils.drawStructure(structure);
+					Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
 				}
 			}
 		};
@@ -183,11 +192,12 @@
 
 			function moveStructureTo(dir) {
 				return function () {
-					var structure = angular.copy(Cache.getCurrentStructure());
+					var structure = angular.copy(Cache.getCurrentStructure()), drawn;
 					if (structure !== null) {
 						structure.moveStructureTo(dir);
 						Cache.addStructure(structure);
-						Utils.drawStructure(structure);
+						drawn = DirUtils.drawStructure(structure);
+						Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
 					}
 				};
 			}
@@ -197,11 +207,13 @@
 		 * Undoes a change associated with the recent 'mouseup' event.
 		 */
 		service.undo = function () {
+			var drawn;
 			Cache.moveLeftInStructures();
 			if (Cache.getCurrentStructure() === null) {
 				DrawChem.clearContent();
 			} else {
-				Utils.drawStructure(Cache.getCurrentStructure());
+				drawn = DirUtils.drawStructure(Cache.getCurrentStructure());
+				Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
 			}
 		};
 
@@ -209,11 +221,13 @@
 		 * Reverses the recent 'undo' action.
 		 */
 		service.forward = function () {
+			var drawn;
 			Cache.moveRightInStructures();
 			if (Cache.getCurrentStructure() === null) {
 				DrawChem.clearContent();
 			} else {
-				Utils.drawStructure(Cache.getCurrentStructure());
+				drawn = DirUtils.drawStructure(Cache.getCurrentStructure());
+				Cache.setCurrentSvg(drawn.wrap("full", "g").wrap("full", "svg").elementFull);
 			}
 		};
 

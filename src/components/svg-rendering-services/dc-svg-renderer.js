@@ -44,6 +44,7 @@
 				circles = output.circles,
 				labels = output.labels,
 				rects = output.rects,
+				bondFocus = output.bondFocus,
 				minMax = output.minMax,
 			  svg = new Svg(
   				styleExpanded + genElements().full,
@@ -64,6 +65,7 @@
 				var result = { full: "", mini: "" };
 				SvgUtils.generateRects(rects, result);
 				SvgUtils.generatePaths(paths, result);
+				SvgUtils.generateBondFocus(bondFocus, result);
 				SvgUtils.generateCircles(circles, result);
 				SvgUtils.generateLabels(labels, result);
 				if (input.isAromatic()) {
@@ -78,7 +80,7 @@
 			* @returns {Object}
 			*/
 		  function parseInput(input) {
-				var output = [], circles = [], labels = [], rects = [],
+				var output = [], circles = [], labels = [], rects = [], bondFocus = [],
           i, absPos, absPosStart, absPosEnd, len,
           selection, atom, arrow, obj, push,
 					origin = input.getOrigin(),
@@ -123,6 +125,7 @@
 					rects: rects,
 					circles: circles,
 					labels: labels,
+					bondFocus: bondFocus,
 					minMax: minMax
 				};
 
@@ -143,6 +146,7 @@
 							prevAbsPos[1] + atom.getCoords("y")
 						];
 						updateMinMax(absPos);
+						SvgUtils.updateBondFocus(bondFocus, prevAbsPos, absPos, push, typeof atom.getLabel() !== "undefined");
 						SvgUtils.updateLabel(labels, absPos, atom);
 						circles.push({
 							isSelected: atom.isSelected(),

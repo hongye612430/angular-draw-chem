@@ -87,10 +87,10 @@
 				return;
 			}
 
-			if (Flags.selected === "delete") {
+			if (currWorkingStructure !== null && Flags.selected === "delete") {
 				// if delete was selected
 				ModStructure.deleteFromStructure(currWorkingStructure, mouseCoords);
-			} else if (Flags.selected === "select") {
+			} else if (currWorkingStructure !== null && Flags.selected === "select") {
 				// if selection tool was selected
 				currWorkingStructure = ModStructure.makeSelection(
 					currWorkingStructure,
@@ -99,7 +99,7 @@
 				);
 				// remove `Selection` object afterwards
 				currWorkingStructure.getStructure().pop();
-			} else if (Flags.selected === "moveStructure") {
+			} else if (currWorkingStructure !== null && Flags.selected === "moveStructure") {
 				// if `move` tool was selected
 				ModStructure.moveStructure(currWorkingStructure, mouseCoords, mouseFlags.downMouseCoords);
 			} else if (Flags.selected === "arrow") {

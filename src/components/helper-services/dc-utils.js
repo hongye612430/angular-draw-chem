@@ -364,6 +364,15 @@
 			return Math.sqrt(v[0] * v[0] + v[1] * v[1]);
 		};
 
+		service.calcAngle = function(v1, v2) {
+			var rads;
+			if (typeof v2 === "undefined") {
+				v2 = [1, 0];
+			}
+			rads = Math.atan2(v2[1], v2[0]) - Math.atan2(v1[1], v1[0]);
+			return rads * 180 / Math.PI;
+		};
+
 		return service;
 	}
 })();

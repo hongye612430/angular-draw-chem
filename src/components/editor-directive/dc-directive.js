@@ -47,8 +47,7 @@
 
 				// Returns content which will be bound in the dialog box.
 				scope.content = function () {
-					var svg = $sce.trustAsHtml(Cache.getCurrentSvg());
-					return svg;
+					return $sce.trustAsHtml(Cache.getCurrentSvg());
 				};
 
 				// Adds all buttons to the scope
@@ -59,7 +58,7 @@
 					try {
 						MouseActions.doOnMouseDown($event, scope, element);
 					} catch (e) {
-						console.log(e);
+						console.log(e.name, e.message);
 					}
 				};
 
@@ -67,7 +66,7 @@
 					try {
 						MouseActions.doOnMouseUp($event, scope, element);
 					} catch (e) {
-						console.log(e);
+						console.log(e.name, e.message);
 					}
 				};
 
@@ -75,7 +74,7 @@
 					try {
 						MouseActions.doOnMouseMove($event, scope, element);
 					} catch (e) {
-						console.log(e);
+						console.log(e.name, e.message);
 					}
 				};
 			}

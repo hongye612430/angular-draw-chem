@@ -230,10 +230,14 @@
 				customLabel = typeof customLabel === "undefined" ? "": customLabel;
 				atom.setLabel(new Label(customLabel, 0));
 			}
-			// if mode is not known (if there was previously no label)
-			// try to guess which one should it be
-			mode = getTextDirection();
-			atom.getLabel().setMode(mode);
+
+			if (typeof atom.getLabel() !== "undefined") {
+				// if mode is not known (if there was previously no label)
+				// try to guess which one should it be
+				mode = getTextDirection();
+				atom.getLabel().setMode(mode);
+			}
+
 			// if `Atom` object already has a label on it
 			// then change its direction on mouseup event
 			if (typeof currentLabel !== "undefined") {
@@ -425,17 +429,15 @@
 				// new `Structure` object has to be created
 				structure = new Structure();
 				// if mousemove event didn't occur, assume mouse coords from (mouseup) event
-				structure.setOrigin(mouseCoords);
+				structure.setOrigin(downMouseCoords);
 				// get default arrow
-				arrow = angular.copy(chosenArrow.getDefault());
-				// calculate and set coords
-				coords = Utils.subtractVectors(mouseCoords, structure.getOrigin());
-				arrow.setOrigin(coords);
+				arrow = angular.copy(chosenArrow.getArrow(downMouseCoords, mouseCoords));
+				arrow.setOrigin([0, 0]);
 			} else {
 				// if the content is not empty, a `Structure` object already exists
 				arrow = angular.copy(chosenArrow.getArrow(downMouseCoords, mouseCoords));
-				coords = Utils.subtractVectors(mouseCoords, structure.getOrigin());
 				// calculate and set coords
+				coords = Utils.subtractVectors(downMouseCoords, structure.getOrigin());
 				arrow.setOrigin(coords);
 			}
 			// add Arrow object to the structures array in the Structure object
