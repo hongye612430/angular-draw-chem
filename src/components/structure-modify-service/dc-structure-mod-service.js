@@ -455,12 +455,13 @@
 			} else {
 				// if the content is not empty, a `Structure` object already exists
 				coords = Utils.subtractVectors(downMouseCoords, structure.getOrigin());
-				selection = new Selection(newCoords, mouseCoords);
+				selection = new Selection(coords, mouseCoords);
 			}
 			// change selection of already existing `Atom` and `Arrow` objects
 			structure.select(selection);
 			// add `Selection` object
 			structure.addToStructures(selection);
+			return structure;
 		};
 
 		service.modifyBond = function (bond, chosenStructure) {

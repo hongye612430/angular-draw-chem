@@ -39,25 +39,9 @@ describe("DrawChemEditor directive tests - part4", function () {
     DrawChem.runEditor("test");
 		expect(DrawChem.showEditor()).toEqual(true);
     temp.find("#dc-" + custom.name).click();
-    temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mouseup",
-			which: 1,
-			clientX: 100,
-			clientY: 100
-		});
+    mouseClick(temp, 100, 100);
     temp.find("#dc-one-way-arrow").click();
-    temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mousedown",
-			which: 1,
-			clientX: 200,
-			clientY: 120
-		});
-    temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mouseup",
-			which: 1,
-			clientX: 200,
-			clientY: 120
-		});
+    mouseClick(temp, 200, 120);
 		temp.find("#dc-select-all").click();
     expect(temp.find(".dc-editor-dialog-content").html()).toEqual(
       "<svg>" +
@@ -89,25 +73,9 @@ describe("DrawChemEditor directive tests - part4", function () {
     DrawChem.runEditor("test");
 		expect(DrawChem.showEditor()).toEqual(true);
     temp.find("#dc-" + custom.name).click();
-    temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mouseup",
-			which: 1,
-			clientX: 100,
-			clientY: 100
-		});
+    mouseClick(temp, 100, 100);
     temp.find("#dc-one-way-arrow").click();
-    temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mousedown",
-			which: 1,
-			clientX: 200,
-			clientY: 120
-		});
-    temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mouseup",
-			which: 1,
-			clientX: 200,
-			clientY: 120
-		});
+    mouseClick(temp, 200, 120);
 		temp.find("#dc-select-all").click();
     temp.find("#dc-deselect-all").click();
     expect(temp.find(".dc-editor-dialog-content").html()).toEqual(
@@ -140,40 +108,13 @@ describe("DrawChemEditor directive tests - part4", function () {
     DrawChem.runEditor("test");
 		expect(DrawChem.showEditor()).toEqual(true);
     temp.find("#dc-" + custom.name).click();
-    temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mouseup",
-			which: 1,
-			clientX: 100,
-			clientY: 100
-		});
+    mouseClick(temp, 100, 100);
     temp.find("#dc-one-way-arrow").click();
-    temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mousedown",
-			which: 1,
-			clientX: 200,
-			clientY: 120
-		});
-    temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mouseup",
-			which: 1,
-			clientX: 200,
-			clientY: 120
-		});
+    mouseClick(temp, 200, 120);
 		temp.find("#dc-select-all").click();
 		temp.find("#dc-delete-selected").click();
 		temp.find("#dc-" + custom.name).click();
-		temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mousedown",
-			which: 1,
-			clientX: 400,
-			clientY: 400
-		});
-		temp.find(".dc-editor-dialog-content").triggerHandler({
-			type : "mouseup",
-			which: 1,
-			clientX: 400,
-			clientY: 400
-		});
+		mouseClick(temp, 400, 400);
     expect(temp.find(".dc-editor-dialog-content").html()).toEqual(
       "<svg>" +
         "<g id=\"cmpd1\">" +

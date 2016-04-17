@@ -92,7 +92,11 @@
 				ModStructure.deleteFromStructure(currWorkingStructure, mouseCoords);
 			} else if (Flags.selected === "select") {
 				// if selection tool was selected
-				ModStructure.makeSelection(currWorkingStructure, mouseCoords, mouseFlags.downMouseCoords);
+				currWorkingStructure = ModStructure.makeSelection(
+					currWorkingStructure,
+					mouseCoords,
+					mouseFlags.downMouseCoords
+				);
 				// remove `Selection` object afterwards
 				currWorkingStructure.getStructure().pop();
 			} else if (Flags.selected === "moveStructure") {
