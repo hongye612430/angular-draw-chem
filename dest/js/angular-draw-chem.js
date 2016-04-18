@@ -5144,10 +5144,10 @@
     service.generateRects = function (rects, obj) {
       rects.forEach(function (rect) {
         var aux =
-          "<rect class='" + rect.class + "'" +
-            "x='" + rect.rect[0].toFixed(2) + "'" +
-            "y='" + rect.rect[1].toFixed(2) + "'" +
-            "width='" + rect.rect[2].toFixed(2) + "'" +
+          "<rect class='" + rect.class + "' " +
+            "x='" + rect.rect[0].toFixed(2) + "' " +
+            "y='" + rect.rect[1].toFixed(2) + "' " +
+            "width='" + rect.rect[2].toFixed(2) + "' " +
             "height='" + rect.rect[3].toFixed(2) + "'" +
           "></rect>";
         obj.full += aux;
@@ -5157,13 +5157,13 @@
 
 		service.generateBondFocus = function(bondFocus, obj) {
 			bondFocus.forEach(function (bf) {
-				obj.full += "<rect class='focus'" +
-					"x='" + bf.start[0].toFixed(2) + "'" +
-					"y='" + bf.start[1].toFixed(2) + "'" +
-					"rx='" + (0.1 * BOND_LENGTH).toFixed(2) + "'" +
-					"ry='" + (0.1 * BOND_LENGTH).toFixed(2) + "'" +
-					"width='" + BOND_LENGTH.toFixed(2) + "'" +
-					"height='" + bf.height.toFixed(2) + "'" +
+				obj.full += "<rect class='focus' " +
+					"x='" + bf.start[0].toFixed(2) + "' " +
+					"y='" + bf.start[1].toFixed(2) + "' " +
+					"rx='" + (0.1 * BOND_LENGTH).toFixed(2) + "' " +
+					"ry='" + (0.1 * BOND_LENGTH).toFixed(2) + "' " +
+					"width='" + BOND_LENGTH.toFixed(2) + "' " +
+					"height='" + bf.height.toFixed(2) + "' " +
 					"transform='rotate(" +
 					  bf.rotate.toFixed(2) + ", " +
 						bf.start[0].toFixed(2) + ", " +
