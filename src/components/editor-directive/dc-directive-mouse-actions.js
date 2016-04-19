@@ -23,6 +23,12 @@
       mouseFlags = Flags.mouseFlags,
 			currWorkingStructure = null;
 
+		/**
+		* Function telling what to do on `mousedown` event.
+		* @param {Object} $event - event object,
+		* @param {Object} scope - scope object,
+		* @param {Object} element - element object listening to this event
+		*/
     service.doOnMouseDown = function ($event, scope, element) {
       var elem, structure;
 			// if button other than left was used
@@ -37,22 +43,19 @@
 			// check if the event occurred on an atom
 			// if content is not empty and (label is selected or structure is selected or delete is selected)
 			// otherwise there is no necessity for checking this
-			if (currWorkingStructure !== null && DirUtils.performSearch(["label", "removeLabel", "customLabel", "structure"])) {
+			if (currWorkingStructure !== null && DirUtils.performSearch(["label", "removeLabel", "customLabel", "structure", "delete"])) {
         // if content is not empty
 				// check if label was clicked
 				// if so, replace mouseCoords with coords of an underlying atom
         if ($event.target.nodeName === "tspan") {
           elem = angular.element($event.target).parent();
-          mouseFlags.downMouseCoords = [elem.attr("atomx"), elem.attr("atomy")];
+          mouseFlags.downMouseCoords = [parseFloat(elem.attr("atomx")), parseFloat(elem.attr("atomy"))];
         }
         checkIfDownOnAtom(); // checks if mouseCoords are within an atom
 				if (!mouseFlags.downOnAtom) {
 					// if mouseCoords are not within an atom,
 					// then check if they are within a bond
 					checkIfDownOnBond();
-				}
-				if (!mouseFlags.downOnAtom && !mouseFlags.downOnBond) {
-					mouseFlags.downOnNothing = true;
 				}
       }
 
@@ -73,12 +76,20 @@
 					// set flags if bond was found
           mouseFlags.downOnBond = true;
 					mouseFlags.downBondObject = withinObject.foundBond;
+					mouseFlags.downBondEndAtomPos = withinObject.endAtomAbsPos;
+					mouseFlags.downBondStartAtom = withinObject.startAtom;
         }
       }
     }
 
+		/**
+		* Function telling what to do on `mouseup` event.
+		* @param {Object} $event - event object,
+		* @param {Object} scope - scope object,
+		* @param {Object} element - element object listening to this event
+		*/
     service.doOnMouseUp = function ($event, scope, element) {
-      var mouseCoords = DirUtils.innerCoords(element, $event), drawn;
+      var mouseCoords = DirUtils.innerCoords(element, $event), drawn, changedStructure = true;
 
 			// if button other than left was released do nothing
 			// or if selected flag is empty do nothing
@@ -87,10 +98,7 @@
 				return;
 			}
 
-			if (currWorkingStructure !== null && Flags.selected === "delete") {
-				// if delete was selected
-				ModStructure.deleteFromStructure(currWorkingStructure, mouseCoords);
-			} else if (currWorkingStructure !== null && Flags.selected === "select") {
+			if (currWorkingStructure !== null && Flags.selected === "select") {
 				// if selection tool was selected
 				currWorkingStructure = ModStructure.makeSelection(
 					currWorkingStructure,
@@ -111,7 +119,19 @@
 					mouseFlags.downMouseCoords,
 					scope.chosenArrow
 				);
-			} else if (mouseFlags.downOnAtom && DirUtils.performSearch(["label", "removeLabel", "customLabel"])) {
+			} else if (mouseFlags.downOnAtom && Flags.selected === "removeLabel") {
+        // if atom has been found and label is selected
+        ModStructure.removeLabel(
+					mouseFlags.downAtomObject,
+					Flags.selected,
+					scope.chosenLabel,
+					Flags.customLabel
+				);
+      } else if (mouseFlags.downOnAtom && Flags.selected === "delete") {
+				// if delete was selected
+				ModStructure.deleteFromStructure(currWorkingStructure, mouseCoords);
+				ModStructure.labelSingleAtoms(currWorkingStructure);
+			} else if (mouseFlags.downOnAtom && DirUtils.performSearch(["label", "customLabel"])) {
         // if atom has been found and label is selected
         ModStructure.modifyLabel(
 					mouseFlags.downAtomObject,
@@ -131,18 +151,27 @@
 				);
       } else if (mouseFlags.downOnBond && Flags.selected === "structure") {
         // if atom has been found and structure has been selected
-        ModStructure.modifyBond(mouseFlags.downBondObject, scope.chosenStructure);
+        changedStructure = ModStructure.modifyBond(mouseFlags.downBondObject, scope.chosenStructure);
+      } else if (mouseFlags.downOnBond && Flags.selected === "delete") {
+        // if atom has been found and structure has been selected
+        ModStructure.deleteBond(
+					currWorkingStructure,
+					mouseFlags.downBondObject,
+					mouseFlags.downBondStartAtom,
+					mouseFlags.downBondEndAtomPos
+				);
+				ModStructure.labelSingleAtoms(currWorkingStructure);
       } else if (Flags.selected === "structure") {
 				// if content is empty or atom was not found
         currWorkingStructure = ModStructure.addStructureOnEmptySpace(
 					currWorkingStructure,
-					scope.chosenStructure,
 					mouseCoords,
-					mouseFlags.downMouseCoords
+					mouseFlags.downMouseCoords,
+					scope.chosenStructure
 				);
       }
 
-      if (currWorkingStructure !== null) {
+      if (currWorkingStructure !== null && changedStructure) {
         // if the structure has been successfully set to something
 				// then add it to Cache and draw it
         Cache.addStructure(angular.copy(currWorkingStructure));
@@ -153,10 +182,16 @@
       DirUtils.resetMouseFlags();
     };
 
+		/**
+		* Function telling what to do on `mousemove` event.
+		* @param {Object} $event - event object,
+		* @param {Object} scope - scope object,
+		* @param {Object} element - element object listening to this event
+		*/
     service.doOnMouseMove = function ($event, scope, element) {
       var mouseCoords = DirUtils.innerCoords(element, $event), drawn, frozenStructure, frozenAtomObj = {};
 
-      if (!mouseFlags.mouseDown || DirUtils.performSearch(["label", "labelCustom", ""])) {
+      if (!mouseFlags.mouseDown || DirUtils.performSearch(["label", "labelCustom", "delete", ""])) {
 				// if mousedown event did not occur, then do nothing
         // if label is selected or nothing is selected, then also do nothing
         return;
@@ -171,7 +206,7 @@
 				// if selection tool was selected
 				ModStructure.makeSelection(frozenStructure, mouseCoords, mouseFlags.downMouseCoords);
 			} else if (Flags.selected === "moveStructure") {
-				// if `move` tool was selected
+				// if move tool was selected
 				ModStructure.moveStructure(frozenStructure, mouseCoords, mouseFlags.downMouseCoords);
 			} else if (Flags.selected === "arrow") {
 				// the content is either empty or the mousedown event occurred somewhere outside of the current `Structure` object

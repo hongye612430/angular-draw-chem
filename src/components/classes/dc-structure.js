@@ -3,13 +3,14 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DCStructure", DCStructure);
 
-	DCStructure.$inject = ["DCArrow", "DCAtom", "DCSelection", "DrawChemUtils"];
+	DCStructure.$inject = ["DCArrow", "DCAtom", "DCLabel", "DCSelection", "DrawChemUtils"];
 
-	function DCStructure(DCArrow, DCAtom, DCSelection, Utils) {
+	function DCStructure(DCArrow, DCAtom, DCLabel, DCSelection, Utils) {
 
 		var service = {},
 			Arrow = DCArrow.Arrow,
 			Selection = DCSelection.Selection,
+			Label = DCLabel.Label,
 			Atom = DCAtom.Atom;
 
 		/**
@@ -39,7 +40,7 @@
 		*/
 		Structure.prototype.isAromatic = function () {
 			return !!this.aromatic;
-		}
+		};
 
 		/**
 		* Moves all structures marked as selected in a supplied `direction` by a `distance` vector.

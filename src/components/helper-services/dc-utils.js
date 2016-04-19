@@ -373,6 +373,29 @@
 			return rads * 180 / Math.PI;
 		};
 
+		service.doWithManyVectors = function (what, vectors, u) {
+			var aux;
+			vectors.forEach(function (v) {
+				if (what === "add") {
+					aux = service.addVectors(v, u);
+					v[0] = aux[0];
+					v[1] = aux[1];
+				} else if (what === "subtract") {
+					aux = service.subtractVectors(v, u);
+					v[0] = aux[0];
+					v[1] = aux[1];
+				}
+			});
+		};
+
+		service.getPerpVectorCCW = function (v) {
+			return [-v[1], v[0]];
+		};
+
+		service.getPerpVectorCW = function (v) {
+			return [v[1], -v[0]];
+		};
+
 		return service;
 	}
 })();

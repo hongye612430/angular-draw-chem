@@ -31,9 +31,9 @@
 
 		/**
 		 * Looks for an `Atom` object (or objects if more than one has the specified coords) and deletes it (them).
-		 * Attaches items in its 'bonds' array directly to 'structure' array in Structure object.
+		 * Attaches items in its `bonds` array directly to `structure` array in `Structure` object.
 		 * @params {Structure} structure - a Structure object to modify,
-		 * @params {Number[]} mouseCoords - coordinates of the mouse pointer (where 'mouseup occurred')
+		 * @params {number[]} mouseCoords - coordinates of the mouse pointer (where `mouseup` occurred)
 		 * @returns {Structure}
 		 */
 		service.deleteFromStructure = function (structure, mouseCoords) {
@@ -68,17 +68,17 @@
 			structure.setStructure(aux);
 
 			/**
-			* Recursively looks for atom Objects to delete.
-			* @param {Atom|Bond|Arrow} struct - 'structure' array or 'bonds' array,
-			* @param {Number[]} pos - current absolute position,
-			* @param {Atom} prevAtom - preceding atom Object (makes sense when iterating over 'bonds' array)
+			* Recursively looks for `Atom` objects to delete.
+			* @param {Atom|Bond|Arrow} struct - `structure` array or `bonds` array,
+			* @param {number[]} pos - current absolute position,
+			* @param {Atom} prevAtom - preceding `Atom` object (makes sense when iterating over `bonds` array)
 			*/
 			function check(struct, pos, prevAtom) {
 				var i, absPos, current, newBondArray = [], absPosStart, absPosEnd;
 				for(i = 0; i < struct.length; i += 1) {
 					current = struct[i];
 					if (current instanceof Arrow) {
-						// current Object is arrow
+						// current object is `Arrow`
 						absPosStart = [current.getOrigin("x") + pos[0], current.getOrigin("y") + pos[1]];
 						absPosEnd = [current.getEnd("x") + pos[0], current.getEnd("y") + pos[1]];
 						if (!(Utils.insideCircle(absPosStart, mouseCoords, Const.CIRC_R) || Utils.insideCircle(absPosEnd, mouseCoords, Const.CIRC_R))) {
@@ -87,7 +87,7 @@
 							newAtomArray.push({ obj: current, coords: current.getOrigin() });
 						}
 					} else if (current instanceof Atom) {
-						// current Object is atom
+						// current object is `Atom`
 						absPos = [current.getCoords("x") + pos[0], current.getCoords("y") + pos[1]];
 						if (Utils.insideCircle(absPos, mouseCoords, Const.CIRC_R)) {
 							// if this atom was chosen then apply changes
@@ -112,12 +112,12 @@
 				}
 
 				// when finished iterating over 'bonds' array
-				// set an array of all bond Objects that were NOT chosen
+				// set an array of all `Bond` objects that were NOT chosen
 				// otherwise prevAtom is undefined
 				if (typeof prevAtom !== "undefined") { prevAtom.setBonds(newBondArray); }
 
-				// extracts atom Objects from the 'bonds' array of the deleted atom Object
-				// adds them to 'newAtomArray' array and sets their new coords
+				// extracts `Atom` objects from the `bonds` array of the deleted `Atom` object
+				// adds them to `newAtomArray` array and sets their new coords
 				function changeArray(absPos, atom) {
 					var i, newCoords, newAbsPos, at;
 					for (i = 0; i < atom.getBonds().length; i += 1) {
@@ -155,14 +155,17 @@
 						firstAtom = obj;
 					} else {
 						aux = obj.getAtom();
-						if (aux.isOrphan()) { continue; }
 					}
-					absPos = [aux.getCoords("x") + pos[0], aux.getCoords("y") + pos[1]];
-					if (!found && Utils.insideCircle(absPos, position, Const.CIRC_R)) {
+					absPos = Utils.addVectors(aux.getCoords(), pos);
+					if (Utils.insideCircle(absPos, position, Const.CIRC_R)) {
+						if (!found) {
+							foundObj.foundAtom = aux;
+							foundObj.absPos = absPos;
+							foundObj.firstAtom = firstAtom;
+						} else {
+						  foundObj.hasDuplicate = true;
+						}
 						found = true;
-						foundObj.foundAtom = aux;
-						foundObj.absPos = absPos;
-						foundObj.firstAtom = firstAtom;
 					} else {
 					  check(aux.getBonds(), absPos);
 					}
@@ -171,7 +174,7 @@
 		};
 
 		/**
-		 * Checks if supplied coordinates are within bond 'focus'.
+		 * Checks if supplied coordinates are within bond's 'focus'.
 		 * @param {Structure} structure - a `Structure` object on which search is performed,
 		 * @param {number[]} position - set of coordinates against which the search is performed,
 		 * @returns {Object}
@@ -185,6 +188,7 @@
 
 			return foundObj;
 
+			// iterate over starting `Atom` objects
 			function checkAtom(struct, pos) {
 				var i, obj, absPos;
 				for(i = 0; i < struct.length; i += 1) {
@@ -195,20 +199,44 @@
 				}
 			}
 
+			// recursively check `Bond` objects
 			function checkBonds(atom, pos) {
 				var i, bonds, absPos;
 				bonds = atom.getBonds();
 				for (i = 0; i < bonds.length; i += 1) {
+					absPos = Utils.addVectors(bonds[i].getAtom().getCoords(), pos);
 					if (!found && Utils.insideFocus(pos, bonds[i], position, Const.BOND_FOCUS)) {
 						found = true;
 						foundObj.foundBond = bonds[i];
+						foundObj.startAtom = atom;
+						foundObj.endAtomAbsPos = absPos;
 					}
-					absPos = Utils.addVectors(bonds[i].getAtom().getCoords(), pos);
 					checkBonds(bonds[i].getAtom(), absPos);
 				}
 			}
 		};
 
+		/**
+		 * Deletes `Bond` object. Takes care of `Atom` objects connected with it.
+		 * @param {Structure} structure - a `Structure` object on which search is performed,
+		 * @param {Bond} bond - `Bond` object to remove,
+		 * @param {Atom} startAtom - `Atom` object at the beginning of the bond,
+		 * @param {number[]} endAtomAbsPos - end `Atom` object's absolute coords
+		 */
+		service.deleteBond = function (structure, bond, startAtom, endAtomAbsPos) {
+			var atom = bond.getAtom(),
+			  coords = Utils.subtractVectors(endAtomAbsPos, structure.getOrigin());
+			startAtom.deleteBond(bond);
+			atom.setCoords(coords);
+			structure.addToStructures(atom);
+		};
+
+		/**
+		 * Moves `Structure` object.
+		 * @param {Structure} structure - a `Structure` object to be moved,
+		 * @param {number[]} mouseCoords - coordinates of the `mouseup` event,
+		 * @param {number[]} mouseCoords - coordinates of the `mousedown` event
+		 */
 		service.moveStructure = function (structure, mouseCoords, downMouseCoords) {
 			var moveDistance;
 			if (structure !== null) {
@@ -218,6 +246,40 @@
 			}
 		};
 
+		/**
+		 * Adds `Label` object to each `Atom` object that has no bonds attached to it.
+		 * @param {Structure} structure - a `Structure` object to be labeled
+		 */
+		service.labelSingleAtoms = function (structure) {
+			var i, obj, struct = structure.getStructure(), hasDuplicate, absPos;
+			for (i = 0; i < struct.length; i += 1) {
+				obj = struct[i];
+				if (obj instanceof Atom && !obj.isOrphan() && obj.getBonds().length === 0) {
+					absPos = Utils.addVectors(structure.getOrigin(), obj.getCoords());
+					hasDuplicate = service.isWithinAtom(structure, absPos).hasDuplicate;
+					if (!hasDuplicate) {
+						obj.setLabel(new Label("C", 4, "lr"));
+						obj.resetAttachedBonds();
+					}
+				}
+			}
+		};
+
+		/**
+		 * Removes `Label` object.
+		 * @param {Atom} atom - chosen `Atom` object
+		 */
+		service.removeLabel = function (atom) {
+			atom.removeLabel();
+		};
+
+		/**
+		 * Modifies/creates `Label` object.
+		 * @param {Atom} atom - chosen `Atom` object,
+		 * @param {string} selected - selected flag,
+		 * @param {Label} chosenLabel - chosen `Label` object (for predefined labels),
+		 * @param {string} customLabel - chosen string for making a custom `Label` object
+		 */
 		service.modifyLabel = function (atom, selected, chosenLabel, customLabel) {
 			var currentLabel = atom.getLabel(), mode,
 			  inBonds = atom.getAttachedBonds("in"),
@@ -247,9 +309,6 @@
 					atom.getLabel().setMode("lr");
 				}
 			}
-			if (selected === "removeLabel") {
-				atom.removeLabel();
-			}
 
 			function getTextDirection() {
 				var countE = 0, countW = 0;
@@ -275,6 +334,15 @@
 			}
 		};
 
+		/**
+		 * Modifies `Atom` object by adding new `Bond` objects to it.
+		 * @param {Structure} structure - `Structure` object,
+		 * @param {Atom} atom - chosen `Atom` object,
+		 * @param {Atom} firstAtom - first `Atom` object in the tree,
+		 * @param {number[]} absPos - absolute position of chosen `Atom`  object,
+		 * @param {number[]} mouseCoords - coordinates associated with a mouse event,
+		 * @param {StructureCluster} chosenStructure - `StructureCluster` object,
+		 */
 		service.modifyAtom = function (structure, atom, firstAtom, absPos, mouseCoords, chosenStructure) {
 			var vector;
 
@@ -414,7 +482,7 @@
 					// defaults to bond in north direction
 					vect = Const.BOND_N;
 				}
-				// finds all possible bonds, starting with `vect` and rotating it every `Const.FREQ`
+				// finds all possible bonds, starting with `vect` and rotates it by `Const.FREQ`
 				possibleBonds = Utils.calcPossibleVectors(vect, Const.FREQ);
 				// returns that vector from `possibleBonds` array,
 				// that is closest to the vector made with `down` and `mousePos` coordinates
@@ -422,6 +490,13 @@
 			}
 		};
 
+		/**
+		 * Modifies `Structure` object by adding new `Arrow` object to its `structure` array.
+		 * @param {Structure} structure - `Structure` object,
+		 * @param {number[]} mouseCoords - coordinates associated with a mouse event,
+		 * @param {number[]} downMouseCoords - coordinates associated with 'mousedown' event,
+		 * @param {StructureCluster} chosenArrow - `ArrowCluster` object,
+		 */
 		service.addArrowOnEmptySpace = function (structure, mouseCoords, downMouseCoords, chosenArrow) {
 			var arrow, coords;
 			if (structure === null) {
@@ -440,11 +515,18 @@
 				coords = Utils.subtractVectors(downMouseCoords, structure.getOrigin());
 				arrow.setOrigin(coords);
 			}
-			// add Arrow object to the structures array in the Structure object
+			// add `Arrow` object to the structures array in the Structure object
 			structure.addToStructures(arrow);
 			return structure;
 		};
 
+		/**
+		 * Adds new `Selection` object to `structure` array.
+		 * @param {Structure} structure - `Structure` object,
+		 * @param {number[]} mouseCoords - coordinates associated with a mouse event,
+		 * @param {number[]} downMouseCoords - coordinates associated with 'mousedown' event,
+		 * @param {Structure}
+		 */
 		service.makeSelection = function(structure, mouseCoords, downMouseCoords) {
 			var selection, coords;
 			if (structure === null) {
@@ -466,26 +548,50 @@
 			return structure;
 		};
 
+		/**
+		 * Modifies `Bond` object.
+		 * @param {Bond} bond - `Bond` object to be modified,
+		 * @param {StructureCluster} chosenStructure - `StructureCluster` object
+		 */
 		service.modifyBond = function (bond, chosenStructure) {
 			var ringSize = chosenStructure.getRingSize(), bondType, newIndex, index,
-			  doubleBonds = ["double", "double-left", "double-right"],
+			  singleBondsAdd = ["single", "double", "triple"],
+			  doubleBonds = ["double", "double-left", "double-right"], inverted,
 				currentType = bond.getType();
 			if (ringSize > 0) {
 				// todo
 			} else {
 				bondType = chosenStructure.getDefault().getStructure(0).getBonds(0).getType();
-				if (bondType === "double") {
+				if (bondType === "single") {
+					index = singleBondsAdd.indexOf(currentType);
+					newIndex = index < 0 ? 0: Utils.moveToRight(singleBondsAdd, index, 1);
+					bondType = singleBondsAdd[newIndex];
+				} else if (bondType === "double") {
 					index = doubleBonds.indexOf(currentType);
 					newIndex = index < 0 ? 0: Utils.moveToRight(doubleBonds, index, 1);
 					bondType = doubleBonds[newIndex];
-				} else {
-
+				} else if (bondType === "wedge" || bondType === "dash") {
+					inverted = currentType.indexOf("inverted") >= 0 || currentType !== bondType;
+					bondType = inverted ? bondType: bondType + "-inverted";
 				}
-				bond.setType(bondType);
+
+				if (bondType === currentType) {
+					return false;
+				} else {
+				  bond.setType(bondType);
+					return true;
+				}
 			}
 		};
 
-		service.addStructureOnEmptySpace = function (structure, chosenStructure, mouseCoords, downMouseCoords) {
+		/**
+		 * Modifies `Structure` object by adding new `Atom` object to its `structure` array.
+		 * @param {Structure} structure - `Structure` object,
+		 * @param {number[]} mouseCoords - coordinates associated with a mouse event,
+		 * @param {number[]} downMouseCoords - coordinates associated with 'mousedown' event,
+		 * @param {StructureCluster} chosenStructure - `StructureCluster` object,
+		 */
+		service.addStructureOnEmptySpace = function (structure, mouseCoords, downMouseCoords, chosenStructure) {
 			var structureAux, coords, bond;
 			if (structure === null) {
 				// if the content is empty

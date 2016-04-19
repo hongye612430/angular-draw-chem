@@ -237,6 +237,18 @@
 		};
 
 		/**
+		 * Removes a `Bond` object from `bonds` array.
+		 * @param {Bond} bond - bond to be removed
+		 */
+		Atom.prototype.deleteBond = function (bond) {
+			var i, newBonds = [];
+			for (i = 0; i < this.bonds.length; i += 1) {
+				if (bond !== this.bonds[i]) { newBonds.push(this.bonds[i]); }
+			}
+			this.bonds = newBonds;
+		};
+
+		/**
 		* Marks `Atom` object as orphan.
 		*/
 		Atom.prototype.setAsOrphan = function () {
@@ -339,6 +351,13 @@
 				return this.attachedBonds;
 			}
 			return this.attachedBonds[type];
+		};
+
+		/**
+		 * Resets attached bonds.
+		 */
+		Atom.prototype.resetAttachedBonds = function () {
+			this.attachedBonds = {};
 		};
 
 		/**
@@ -862,13 +881,14 @@
 	angular.module("mmAngularDrawChem")
 		.factory("DCStructure", DCStructure);
 
-	DCStructure.$inject = ["DCArrow", "DCAtom", "DCSelection", "DrawChemUtils"];
+	DCStructure.$inject = ["DCArrow", "DCAtom", "DCLabel", "DCSelection", "DrawChemUtils"];
 
-	function DCStructure(DCArrow, DCAtom, DCSelection, Utils) {
+	function DCStructure(DCArrow, DCAtom, DCLabel, DCSelection, Utils) {
 
 		var service = {},
 			Arrow = DCArrow.Arrow,
 			Selection = DCSelection.Selection,
+			Label = DCLabel.Label,
 			Atom = DCAtom.Atom;
 
 		/**
@@ -898,7 +918,7 @@
 		*/
 		Structure.prototype.isAromatic = function () {
 			return !!this.aromatic;
-		}
+		};
 
 		/**
 		* Moves all structures marked as selected in a supplied `direction` by a `distance` vector.
@@ -1813,6 +1833,12 @@
       mouseFlags = Flags.mouseFlags,
 			currWorkingStructure = null;
 
+		/**
+		* Function telling what to do on `mousedown` event.
+		* @param {Object} $event - event object,
+		* @param {Object} scope - scope object,
+		* @param {Object} element - element object listening to this event
+		*/
     service.doOnMouseDown = function ($event, scope, element) {
       var elem, structure;
 			// if button other than left was used
@@ -1827,22 +1853,19 @@
 			// check if the event occurred on an atom
 			// if content is not empty and (label is selected or structure is selected or delete is selected)
 			// otherwise there is no necessity for checking this
-			if (currWorkingStructure !== null && DirUtils.performSearch(["label", "removeLabel", "customLabel", "structure"])) {
+			if (currWorkingStructure !== null && DirUtils.performSearch(["label", "removeLabel", "customLabel", "structure", "delete"])) {
         // if content is not empty
 				// check if label was clicked
 				// if so, replace mouseCoords with coords of an underlying atom
         if ($event.target.nodeName === "tspan") {
           elem = angular.element($event.target).parent();
-          mouseFlags.downMouseCoords = [elem.attr("atomx"), elem.attr("atomy")];
+          mouseFlags.downMouseCoords = [parseFloat(elem.attr("atomx")), parseFloat(elem.attr("atomy"))];
         }
         checkIfDownOnAtom(); // checks if mouseCoords are within an atom
 				if (!mouseFlags.downOnAtom) {
 					// if mouseCoords are not within an atom,
 					// then check if they are within a bond
 					checkIfDownOnBond();
-				}
-				if (!mouseFlags.downOnAtom && !mouseFlags.downOnBond) {
-					mouseFlags.downOnNothing = true;
 				}
       }
 
@@ -1863,12 +1886,20 @@
 					// set flags if bond was found
           mouseFlags.downOnBond = true;
 					mouseFlags.downBondObject = withinObject.foundBond;
+					mouseFlags.downBondEndAtomPos = withinObject.endAtomAbsPos;
+					mouseFlags.downBondStartAtom = withinObject.startAtom;
         }
       }
     }
 
+		/**
+		* Function telling what to do on `mouseup` event.
+		* @param {Object} $event - event object,
+		* @param {Object} scope - scope object,
+		* @param {Object} element - element object listening to this event
+		*/
     service.doOnMouseUp = function ($event, scope, element) {
-      var mouseCoords = DirUtils.innerCoords(element, $event), drawn;
+      var mouseCoords = DirUtils.innerCoords(element, $event), drawn, changedStructure = true;
 
 			// if button other than left was released do nothing
 			// or if selected flag is empty do nothing
@@ -1877,10 +1908,7 @@
 				return;
 			}
 
-			if (currWorkingStructure !== null && Flags.selected === "delete") {
-				// if delete was selected
-				ModStructure.deleteFromStructure(currWorkingStructure, mouseCoords);
-			} else if (currWorkingStructure !== null && Flags.selected === "select") {
+			if (currWorkingStructure !== null && Flags.selected === "select") {
 				// if selection tool was selected
 				currWorkingStructure = ModStructure.makeSelection(
 					currWorkingStructure,
@@ -1901,7 +1929,19 @@
 					mouseFlags.downMouseCoords,
 					scope.chosenArrow
 				);
-			} else if (mouseFlags.downOnAtom && DirUtils.performSearch(["label", "removeLabel", "customLabel"])) {
+			} else if (mouseFlags.downOnAtom && Flags.selected === "removeLabel") {
+        // if atom has been found and label is selected
+        ModStructure.removeLabel(
+					mouseFlags.downAtomObject,
+					Flags.selected,
+					scope.chosenLabel,
+					Flags.customLabel
+				);
+      } else if (mouseFlags.downOnAtom && Flags.selected === "delete") {
+				// if delete was selected
+				ModStructure.deleteFromStructure(currWorkingStructure, mouseCoords);
+				ModStructure.labelSingleAtoms(currWorkingStructure);
+			} else if (mouseFlags.downOnAtom && DirUtils.performSearch(["label", "customLabel"])) {
         // if atom has been found and label is selected
         ModStructure.modifyLabel(
 					mouseFlags.downAtomObject,
@@ -1921,18 +1961,27 @@
 				);
       } else if (mouseFlags.downOnBond && Flags.selected === "structure") {
         // if atom has been found and structure has been selected
-        ModStructure.modifyBond(mouseFlags.downBondObject, scope.chosenStructure);
+        changedStructure = ModStructure.modifyBond(mouseFlags.downBondObject, scope.chosenStructure);
+      } else if (mouseFlags.downOnBond && Flags.selected === "delete") {
+        // if atom has been found and structure has been selected
+        ModStructure.deleteBond(
+					currWorkingStructure,
+					mouseFlags.downBondObject,
+					mouseFlags.downBondStartAtom,
+					mouseFlags.downBondEndAtomPos
+				);
+				ModStructure.labelSingleAtoms(currWorkingStructure);
       } else if (Flags.selected === "structure") {
 				// if content is empty or atom was not found
         currWorkingStructure = ModStructure.addStructureOnEmptySpace(
 					currWorkingStructure,
-					scope.chosenStructure,
 					mouseCoords,
-					mouseFlags.downMouseCoords
+					mouseFlags.downMouseCoords,
+					scope.chosenStructure
 				);
       }
 
-      if (currWorkingStructure !== null) {
+      if (currWorkingStructure !== null && changedStructure) {
         // if the structure has been successfully set to something
 				// then add it to Cache and draw it
         Cache.addStructure(angular.copy(currWorkingStructure));
@@ -1943,10 +1992,16 @@
       DirUtils.resetMouseFlags();
     };
 
+		/**
+		* Function telling what to do on `mousemove` event.
+		* @param {Object} $event - event object,
+		* @param {Object} scope - scope object,
+		* @param {Object} element - element object listening to this event
+		*/
     service.doOnMouseMove = function ($event, scope, element) {
       var mouseCoords = DirUtils.innerCoords(element, $event), drawn, frozenStructure, frozenAtomObj = {};
 
-      if (!mouseFlags.mouseDown || DirUtils.performSearch(["label", "labelCustom", ""])) {
+      if (!mouseFlags.mouseDown || DirUtils.performSearch(["label", "labelCustom", "delete", ""])) {
 				// if mousedown event did not occur, then do nothing
         // if label is selected or nothing is selected, then also do nothing
         return;
@@ -1961,7 +2016,7 @@
 				// if selection tool was selected
 				ModStructure.makeSelection(frozenStructure, mouseCoords, mouseFlags.downMouseCoords);
 			} else if (Flags.selected === "moveStructure") {
-				// if `move` tool was selected
+				// if move tool was selected
 				ModStructure.moveStructure(frozenStructure, mouseCoords, mouseFlags.downMouseCoords);
 			} else if (Flags.selected === "arrow") {
 				// the content is either empty or the mousedown event occurred somewhere outside of the current `Structure` object
@@ -2099,7 +2154,7 @@
 		"$sce"
 	];
 
-	function DrawChemEditor(Paths, Cache, Flags, Utils, MouseActions, MenuButtons, $sce) {
+	function DrawChemEditor(Paths, Cache, Flags, DirUtils, MouseActions, MenuButtons, $sce) {
 		return {
 			template: "<div ng-include=\"getEditorUrl()\"></div>",
 			scope: {
@@ -2144,7 +2199,8 @@
 					try {
 						MouseActions.doOnMouseDown($event, scope, element);
 					} catch (e) {
-						console.log(e.name, e.message);
+						DirUtils.resetMouseFlags();
+						console.log(e, e.name, e.message);
 					}
 				};
 
@@ -2152,7 +2208,8 @@
 					try {
 						MouseActions.doOnMouseUp($event, scope, element);
 					} catch (e) {
-						console.log(e.name, e.message);
+						DirUtils.resetMouseFlags();
+						console.log(e, e.name, e.message);
 					}
 				};
 
@@ -2160,7 +2217,8 @@
 					try {
 						MouseActions.doOnMouseMove($event, scope, element);
 					} catch (e) {
-						console.log(e.name, e.message);
+						DirUtils.resetMouseFlags();
+						console.log(e, e.name, e.message);
 					}
 				};
 			}
@@ -2730,6 +2788,29 @@
 			}
 			rads = Math.atan2(v2[1], v2[0]) - Math.atan2(v1[1], v1[0]);
 			return rads * 180 / Math.PI;
+		};
+
+		service.doWithManyVectors = function (what, vectors, u) {
+			var aux;
+			vectors.forEach(function (v) {
+				if (what === "add") {
+					aux = service.addVectors(v, u);
+					v[0] = aux[0];
+					v[1] = aux[1];
+				} else if (what === "subtract") {
+					aux = service.subtractVectors(v, u);
+					v[0] = aux[0];
+					v[1] = aux[1];
+				}
+			});
+		};
+
+		service.getPerpVectorCCW = function (v) {
+			return [-v[1], v[0]];
+		};
+
+		service.getPerpVectorCW = function (v) {
+			return [v[1], -v[0]];
 		};
 
 		return service;
@@ -4073,9 +4154,9 @@
 
 		/**
 		 * Looks for an `Atom` object (or objects if more than one has the specified coords) and deletes it (them).
-		 * Attaches items in its 'bonds' array directly to 'structure' array in Structure object.
+		 * Attaches items in its `bonds` array directly to `structure` array in `Structure` object.
 		 * @params {Structure} structure - a Structure object to modify,
-		 * @params {Number[]} mouseCoords - coordinates of the mouse pointer (where 'mouseup occurred')
+		 * @params {number[]} mouseCoords - coordinates of the mouse pointer (where `mouseup` occurred)
 		 * @returns {Structure}
 		 */
 		service.deleteFromStructure = function (structure, mouseCoords) {
@@ -4110,17 +4191,17 @@
 			structure.setStructure(aux);
 
 			/**
-			* Recursively looks for atom Objects to delete.
-			* @param {Atom|Bond|Arrow} struct - 'structure' array or 'bonds' array,
-			* @param {Number[]} pos - current absolute position,
-			* @param {Atom} prevAtom - preceding atom Object (makes sense when iterating over 'bonds' array)
+			* Recursively looks for `Atom` objects to delete.
+			* @param {Atom|Bond|Arrow} struct - `structure` array or `bonds` array,
+			* @param {number[]} pos - current absolute position,
+			* @param {Atom} prevAtom - preceding `Atom` object (makes sense when iterating over `bonds` array)
 			*/
 			function check(struct, pos, prevAtom) {
 				var i, absPos, current, newBondArray = [], absPosStart, absPosEnd;
 				for(i = 0; i < struct.length; i += 1) {
 					current = struct[i];
 					if (current instanceof Arrow) {
-						// current Object is arrow
+						// current object is `Arrow`
 						absPosStart = [current.getOrigin("x") + pos[0], current.getOrigin("y") + pos[1]];
 						absPosEnd = [current.getEnd("x") + pos[0], current.getEnd("y") + pos[1]];
 						if (!(Utils.insideCircle(absPosStart, mouseCoords, Const.CIRC_R) || Utils.insideCircle(absPosEnd, mouseCoords, Const.CIRC_R))) {
@@ -4129,7 +4210,7 @@
 							newAtomArray.push({ obj: current, coords: current.getOrigin() });
 						}
 					} else if (current instanceof Atom) {
-						// current Object is atom
+						// current object is `Atom`
 						absPos = [current.getCoords("x") + pos[0], current.getCoords("y") + pos[1]];
 						if (Utils.insideCircle(absPos, mouseCoords, Const.CIRC_R)) {
 							// if this atom was chosen then apply changes
@@ -4154,12 +4235,12 @@
 				}
 
 				// when finished iterating over 'bonds' array
-				// set an array of all bond Objects that were NOT chosen
+				// set an array of all `Bond` objects that were NOT chosen
 				// otherwise prevAtom is undefined
 				if (typeof prevAtom !== "undefined") { prevAtom.setBonds(newBondArray); }
 
-				// extracts atom Objects from the 'bonds' array of the deleted atom Object
-				// adds them to 'newAtomArray' array and sets their new coords
+				// extracts `Atom` objects from the `bonds` array of the deleted `Atom` object
+				// adds them to `newAtomArray` array and sets their new coords
 				function changeArray(absPos, atom) {
 					var i, newCoords, newAbsPos, at;
 					for (i = 0; i < atom.getBonds().length; i += 1) {
@@ -4197,14 +4278,17 @@
 						firstAtom = obj;
 					} else {
 						aux = obj.getAtom();
-						if (aux.isOrphan()) { continue; }
 					}
-					absPos = [aux.getCoords("x") + pos[0], aux.getCoords("y") + pos[1]];
-					if (!found && Utils.insideCircle(absPos, position, Const.CIRC_R)) {
+					absPos = Utils.addVectors(aux.getCoords(), pos);
+					if (Utils.insideCircle(absPos, position, Const.CIRC_R)) {
+						if (!found) {
+							foundObj.foundAtom = aux;
+							foundObj.absPos = absPos;
+							foundObj.firstAtom = firstAtom;
+						} else {
+						  foundObj.hasDuplicate = true;
+						}
 						found = true;
-						foundObj.foundAtom = aux;
-						foundObj.absPos = absPos;
-						foundObj.firstAtom = firstAtom;
 					} else {
 					  check(aux.getBonds(), absPos);
 					}
@@ -4213,7 +4297,7 @@
 		};
 
 		/**
-		 * Checks if supplied coordinates are within bond 'focus'.
+		 * Checks if supplied coordinates are within bond's 'focus'.
 		 * @param {Structure} structure - a `Structure` object on which search is performed,
 		 * @param {number[]} position - set of coordinates against which the search is performed,
 		 * @returns {Object}
@@ -4227,6 +4311,7 @@
 
 			return foundObj;
 
+			// iterate over starting `Atom` objects
 			function checkAtom(struct, pos) {
 				var i, obj, absPos;
 				for(i = 0; i < struct.length; i += 1) {
@@ -4237,20 +4322,44 @@
 				}
 			}
 
+			// recursively check `Bond` objects
 			function checkBonds(atom, pos) {
 				var i, bonds, absPos;
 				bonds = atom.getBonds();
 				for (i = 0; i < bonds.length; i += 1) {
+					absPos = Utils.addVectors(bonds[i].getAtom().getCoords(), pos);
 					if (!found && Utils.insideFocus(pos, bonds[i], position, Const.BOND_FOCUS)) {
 						found = true;
 						foundObj.foundBond = bonds[i];
+						foundObj.startAtom = atom;
+						foundObj.endAtomAbsPos = absPos;
 					}
-					absPos = Utils.addVectors(bonds[i].getAtom().getCoords(), pos);
 					checkBonds(bonds[i].getAtom(), absPos);
 				}
 			}
 		};
 
+		/**
+		 * Deletes `Bond` object. Takes care of `Atom` objects connected with it.
+		 * @param {Structure} structure - a `Structure` object on which search is performed,
+		 * @param {Bond} bond - `Bond` object to remove,
+		 * @param {Atom} startAtom - `Atom` object at the beginning of the bond,
+		 * @param {number[]} endAtomAbsPos - end `Atom` object's absolute coords
+		 */
+		service.deleteBond = function (structure, bond, startAtom, endAtomAbsPos) {
+			var atom = bond.getAtom(),
+			  coords = Utils.subtractVectors(endAtomAbsPos, structure.getOrigin());
+			startAtom.deleteBond(bond);
+			atom.setCoords(coords);
+			structure.addToStructures(atom);
+		};
+
+		/**
+		 * Moves `Structure` object.
+		 * @param {Structure} structure - a `Structure` object to be moved,
+		 * @param {number[]} mouseCoords - coordinates of the `mouseup` event,
+		 * @param {number[]} mouseCoords - coordinates of the `mousedown` event
+		 */
 		service.moveStructure = function (structure, mouseCoords, downMouseCoords) {
 			var moveDistance;
 			if (structure !== null) {
@@ -4260,6 +4369,40 @@
 			}
 		};
 
+		/**
+		 * Adds `Label` object to each `Atom` object that has no bonds attached to it.
+		 * @param {Structure} structure - a `Structure` object to be labeled
+		 */
+		service.labelSingleAtoms = function (structure) {
+			var i, obj, struct = structure.getStructure(), hasDuplicate, absPos;
+			for (i = 0; i < struct.length; i += 1) {
+				obj = struct[i];
+				if (obj instanceof Atom && !obj.isOrphan() && obj.getBonds().length === 0) {
+					absPos = Utils.addVectors(structure.getOrigin(), obj.getCoords());
+					hasDuplicate = service.isWithinAtom(structure, absPos).hasDuplicate;
+					if (!hasDuplicate) {
+						obj.setLabel(new Label("C", 4, "lr"));
+						obj.resetAttachedBonds();
+					}
+				}
+			}
+		};
+
+		/**
+		 * Removes `Label` object.
+		 * @param {Atom} atom - chosen `Atom` object
+		 */
+		service.removeLabel = function (atom) {
+			atom.removeLabel();
+		};
+
+		/**
+		 * Modifies/creates `Label` object.
+		 * @param {Atom} atom - chosen `Atom` object,
+		 * @param {string} selected - selected flag,
+		 * @param {Label} chosenLabel - chosen `Label` object (for predefined labels),
+		 * @param {string} customLabel - chosen string for making a custom `Label` object
+		 */
 		service.modifyLabel = function (atom, selected, chosenLabel, customLabel) {
 			var currentLabel = atom.getLabel(), mode,
 			  inBonds = atom.getAttachedBonds("in"),
@@ -4289,9 +4432,6 @@
 					atom.getLabel().setMode("lr");
 				}
 			}
-			if (selected === "removeLabel") {
-				atom.removeLabel();
-			}
 
 			function getTextDirection() {
 				var countE = 0, countW = 0;
@@ -4317,6 +4457,15 @@
 			}
 		};
 
+		/**
+		 * Modifies `Atom` object by adding new `Bond` objects to it.
+		 * @param {Structure} structure - `Structure` object,
+		 * @param {Atom} atom - chosen `Atom` object,
+		 * @param {Atom} firstAtom - first `Atom` object in the tree,
+		 * @param {number[]} absPos - absolute position of chosen `Atom`  object,
+		 * @param {number[]} mouseCoords - coordinates associated with a mouse event,
+		 * @param {StructureCluster} chosenStructure - `StructureCluster` object,
+		 */
 		service.modifyAtom = function (structure, atom, firstAtom, absPos, mouseCoords, chosenStructure) {
 			var vector;
 
@@ -4456,7 +4605,7 @@
 					// defaults to bond in north direction
 					vect = Const.BOND_N;
 				}
-				// finds all possible bonds, starting with `vect` and rotating it every `Const.FREQ`
+				// finds all possible bonds, starting with `vect` and rotates it by `Const.FREQ`
 				possibleBonds = Utils.calcPossibleVectors(vect, Const.FREQ);
 				// returns that vector from `possibleBonds` array,
 				// that is closest to the vector made with `down` and `mousePos` coordinates
@@ -4464,6 +4613,13 @@
 			}
 		};
 
+		/**
+		 * Modifies `Structure` object by adding new `Arrow` object to its `structure` array.
+		 * @param {Structure} structure - `Structure` object,
+		 * @param {number[]} mouseCoords - coordinates associated with a mouse event,
+		 * @param {number[]} downMouseCoords - coordinates associated with 'mousedown' event,
+		 * @param {StructureCluster} chosenArrow - `ArrowCluster` object,
+		 */
 		service.addArrowOnEmptySpace = function (structure, mouseCoords, downMouseCoords, chosenArrow) {
 			var arrow, coords;
 			if (structure === null) {
@@ -4482,11 +4638,18 @@
 				coords = Utils.subtractVectors(downMouseCoords, structure.getOrigin());
 				arrow.setOrigin(coords);
 			}
-			// add Arrow object to the structures array in the Structure object
+			// add `Arrow` object to the structures array in the Structure object
 			structure.addToStructures(arrow);
 			return structure;
 		};
 
+		/**
+		 * Adds new `Selection` object to `structure` array.
+		 * @param {Structure} structure - `Structure` object,
+		 * @param {number[]} mouseCoords - coordinates associated with a mouse event,
+		 * @param {number[]} downMouseCoords - coordinates associated with 'mousedown' event,
+		 * @param {Structure}
+		 */
 		service.makeSelection = function(structure, mouseCoords, downMouseCoords) {
 			var selection, coords;
 			if (structure === null) {
@@ -4508,26 +4671,50 @@
 			return structure;
 		};
 
+		/**
+		 * Modifies `Bond` object.
+		 * @param {Bond} bond - `Bond` object to be modified,
+		 * @param {StructureCluster} chosenStructure - `StructureCluster` object
+		 */
 		service.modifyBond = function (bond, chosenStructure) {
 			var ringSize = chosenStructure.getRingSize(), bondType, newIndex, index,
-			  doubleBonds = ["double", "double-left", "double-right"],
+			  singleBondsAdd = ["single", "double", "triple"],
+			  doubleBonds = ["double", "double-left", "double-right"], inverted,
 				currentType = bond.getType();
 			if (ringSize > 0) {
 				// todo
 			} else {
 				bondType = chosenStructure.getDefault().getStructure(0).getBonds(0).getType();
-				if (bondType === "double") {
+				if (bondType === "single") {
+					index = singleBondsAdd.indexOf(currentType);
+					newIndex = index < 0 ? 0: Utils.moveToRight(singleBondsAdd, index, 1);
+					bondType = singleBondsAdd[newIndex];
+				} else if (bondType === "double") {
 					index = doubleBonds.indexOf(currentType);
 					newIndex = index < 0 ? 0: Utils.moveToRight(doubleBonds, index, 1);
 					bondType = doubleBonds[newIndex];
-				} else {
-
+				} else if (bondType === "wedge" || bondType === "dash") {
+					inverted = currentType.indexOf("inverted") >= 0 || currentType !== bondType;
+					bondType = inverted ? bondType: bondType + "-inverted";
 				}
-				bond.setType(bondType);
+
+				if (bondType === currentType) {
+					return false;
+				} else {
+				  bond.setType(bondType);
+					return true;
+				}
 			}
 		};
 
-		service.addStructureOnEmptySpace = function (structure, chosenStructure, mouseCoords, downMouseCoords) {
+		/**
+		 * Modifies `Structure` object by adding new `Atom` object to its `structure` array.
+		 * @param {Structure} structure - `Structure` object,
+		 * @param {number[]} mouseCoords - coordinates associated with a mouse event,
+		 * @param {number[]} downMouseCoords - coordinates associated with 'mousedown' event,
+		 * @param {StructureCluster} chosenStructure - `StructureCluster` object,
+		 */
+		service.addStructureOnEmptySpace = function (structure, mouseCoords, downMouseCoords, chosenStructure) {
 			var structureAux, coords, bond;
 			if (structure === null) {
 				// if the content is empty
@@ -4575,6 +4762,342 @@
 (function () {
 	"use strict";
 	angular.module("mmAngularDrawChem")
+		.factory("DrawChemSvgBonds", DrawChemSvgBonds);
+
+  DrawChemSvgBonds.$inject = [
+		"DrawChemConst",
+		"DrawChemUtils"
+	];
+
+	function DrawChemSvgBonds(Const, Utils) {
+
+		var service = {},
+		  BETWEEN_DBL_BONDS = Const.BETWEEN_DBL_BONDS,
+			BETWEEN_TRP_BONDS = Const.BETWEEN_TRP_BONDS,
+			ARROW_START = Const.ARROW_START,
+			ARROW_SIZE = Const.ARROW_SIZE,
+			UNDEF_BOND = Const.UNDEF_BOND,
+			PUSH = Const.PUSH,
+			DBL_BOND_CORR = Const.DBL_BOND_CORR;
+
+		/**
+		* Calculates data for the svg instructions in `path` element for arrow.
+		* @param {number[]} start - start coordinates (absolute) of the arrow,
+		* @param {number[]} end - end coordinates (absolute) of the arrow,
+		* @param {string} type - arrow type (one-way, etc.),
+		* @returns {Array}
+		*/
+		service.calcArrow = function (start, end, type) {
+			var vectCoords = [end[0] - start[0], end[1] - start[1]],
+				perpVectCoordsCW = [-vectCoords[1], vectCoords[0]],
+				perpVectCoordsCCW = [vectCoords[1], -vectCoords[0]],
+				endMarkerStart, startMarkerStart, M1, M2, L1, L2, L3, L4;
+			if (type === "one-way-arrow") {
+				endMarkerStart = [start[0] + vectCoords[0] * ARROW_START, start[1] + vectCoords[1] * ARROW_START];
+				L1 = Utils.addVectors(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+				L2 = Utils.addVectors(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+				return ["arrow", "M", start, "L", end, "M", endMarkerStart, "L", L1, "L", end, "L", L2, "Z"];
+			} else if (type === "two-way-arrow") {
+				endMarkerStart = [start[0] + vectCoords[0] * ARROW_START, start[1] + vectCoords[1] * ARROW_START];
+				startMarkerStart = [start[0] + vectCoords[0] * (1 - ARROW_START), start[1] + vectCoords[1] * (1 - ARROW_START)];
+				L1 = Utils.addVectors(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+				L2 = Utils.addVectors(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+				L3 = Utils.addVectors(startMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+				L4 = Utils.addVectors(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+				return [
+					"arrow",
+					"M", start, "L", end,
+					"M", endMarkerStart, "L", L1, "L", end, "L", L2, "Z",
+					"M", startMarkerStart, "L", L3, "L", start, "L", L4, "Z"
+				];
+			}
+			else if (type === "equilibrium-arrow") {
+				M1 = Utils.addVectors(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
+				L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
+				endMarkerStart = [parseFloat(M1[0]) + vectCoords[0] * ARROW_START, parseFloat(M1[1]) + vectCoords[1] * ARROW_START];
+				L2 = Utils.addVectors(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
+
+				M2 = Utils.addVectors(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+				L3 = Utils.addVectors(start, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+				startMarkerStart = [parseFloat(L3[0]) + vectCoords[0] * (1 - ARROW_START), parseFloat(L3[1]) + vectCoords[1] * (1 - ARROW_START)];
+				L4 = Utils.addVectors(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
+				return [
+					"arrow-eq",
+					"M", M1, "L", L1, "L", L2,
+					"M", M2, "L", L3, "L", L4
+				];
+			}
+		}
+
+		/**
+		* Calculates data for the svg instructions in `path` element for double bond.
+		* @param {string} type - type of the bond ('middle', 'left', 'right'),
+		* @param {number[]} start - start coordinates (absolute) of the atom,
+		* @param {number[]} end - end coordinates (absolute) of the atom,
+		* @returns {Array}
+		*/
+		service.calcDoubleBondCoords = function (type, start, end, push, newPush) {
+			var vectCoords = [end[0] - start[0], end[1] - start[1]],
+			  aux = Utils.multVectByScalar(vectCoords, PUSH), corr,
+				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
+				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
+				M1 = Utils.addVectors(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
+				L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
+				M2 = Utils.addVectors(start, perpVectCoordsCW, BETWEEN_DBL_BONDS),
+				L2 = Utils.addVectors(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+
+			if (type === "right") {
+				M2 = Utils.addVectors(start, perpVectCoordsCW, 2 * BETWEEN_DBL_BONDS);
+				L2 = Utils.addVectors(end, perpVectCoordsCW, 2 * BETWEEN_DBL_BONDS);
+			} else if (type === "left") {
+				M2 = Utils.addVectors(start, perpVectCoordsCCW, 2 * BETWEEN_DBL_BONDS);
+				L2 = Utils.addVectors(end, perpVectCoordsCCW, 2 * BETWEEN_DBL_BONDS);
+			}
+
+			if (type !== "middle") {
+				M1 = angular.copy(start);
+				L1 = angular.copy(end);
+				vectCoords = [L2[0] - M2[0], L2[1] - M2[1]];
+				corr = Utils.multVectByScalar(vectCoords, DBL_BOND_CORR);
+				M2 = Utils.addVectors(M2, corr);
+				L2 = Utils.subtractVectors(L2, corr);
+			}
+
+			if (push) {
+				if (type !== "middle") {
+					M1 = Utils.addVectors(M1, aux);
+					M2 = Utils.addVectors(M2, Utils.multVectByScalar(corr, 1.5));
+				} else {
+				  Utils.doWithManyVectors("add", [M1, M2], aux);
+				}
+			}
+			if (newPush) {
+				if (type !== "middle") {
+					L1 = Utils.subtractVectors(L1, aux);
+					L2 = Utils.subtractVectors(L2, Utils.multVectByScalar(corr, 1.5));
+				} else {
+				  Utils.doWithManyVectors("subtract", [L1, L2], aux);
+				}
+			}
+
+			return ["M", M1, "L", L1, "M", M2, "L", L2];
+		}
+
+		/**
+		* Calculates data for the svg instructions in `path` element for triple bond.
+		* @param {number[]} start - start coordinates (absolute) of the atom,
+		* @param {number[]} end - end coordinates (absolute) of the atom,
+		* @returns {Array}
+		*/
+		service.calcTripleBondCoords = function (start, end, push, newPush) {
+			var vectCoords = [end[0] - start[0], end[1] - start[1]],
+			  aux = Utils.multVectByScalar(vectCoords, PUSH),
+				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
+				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
+				M1 = Utils.addVectors(start, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
+				L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
+				M2 = Utils.addVectors(start, perpVectCoordsCW, BETWEEN_TRP_BONDS),
+				L2 = Utils.addVectors(end, perpVectCoordsCW, BETWEEN_TRP_BONDS);
+
+			if (push) {
+				Utils.doWithManyVectors("add", [M1, M2, start], aux);
+			}
+			if (newPush) {
+				Utils.doWithManyVectors("subtract", [L1, L2, end], aux);
+			}
+
+			return ["M", M1, "L", L1, "M", start, "L", end, "M", M2, "L", L2];
+		}
+
+		/**
+		* Calculates data for the svg instructions in `path` element for wedge bond.
+		* @param {number[]} start - start coordinates (absolute) of the atom,
+		* @param {number[]} end - end coordinates (absolute) of the atom,
+    * @param {string} inverted - equals 'inverted' if inverted bond should be returned,
+		* @returns {Array}
+		*/
+		service.calcWedgeBondCoords = function (start, end, push, newPush, inverted) {
+			var vectCoords = Utils.subtractVectors(end, start),
+			  aux = Utils.multVectByScalar(vectCoords, PUSH),
+				perpVectCoordsCCW = Utils.getPerpVectorCCW(vectCoords),
+				perpVectCoordsCW = Utils.getPerpVectorCW(vectCoords),
+				L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
+        L1inv = Utils.addVectors(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
+				L2 = Utils.addVectors(end, perpVectCoordsCW, BETWEEN_DBL_BONDS),
+        L2inv = Utils.addVectors(start, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+
+			if (push) {
+        if (inverted === "inverted") {
+          end = Utils.subtractVectors(end, aux);
+        } else {
+          start = Utils.addVectors(start, aux);
+        }
+      }
+
+			if (newPush) {
+        if (inverted === "inverted") {
+          start = Utils.addVectors(start, aux);
+  				L1inv = Utils.addVectors(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
+  				L2inv = Utils.addVectors(start, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+        } else {
+  				end = Utils.subtractVectors(end, aux);
+  				L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
+  				L2 = Utils.addVectors(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
+        }
+			}
+
+			return inverted === "inverted" ?
+        ["wedge", "M", end, "L", L1inv, "L", L2inv, "Z"]:
+        ["wedge", "M", start, "L", L1, "L", L2, "Z"];
+		}
+
+		/**
+		* Calculates data for the svg instructions in `path` element for dash bond.
+		* @param {number[]} start - start coordinates (absolute) of the atom,
+		* @param {number[]} end - end coordinates (absolute) of the atom,
+    * @param {string} inverted - equals 'inverted' if inverted bond should be returned,
+		* @returns {Array}
+		*/
+		service.calcDashBondCoords = function (start, end, push, newPush, inverted) {
+			var i, max = 10, factor = BETWEEN_DBL_BONDS / max, factorInv = BETWEEN_DBL_BONDS,
+        M, Minv, L, Linv,
+			  vectCoords = Utils.subtractVectors(end, start),
+			  aux = Utils.multVectByScalar(vectCoords, PUSH), currentEnd = start,
+				perpVectCoordsCCW = Utils.getPerpVectorCCW(vectCoords),
+				perpVectCoordsCW = Utils.getPerpVectorCW(vectCoords),
+        result, resultInv;
+
+			if (push) {
+				currentEnd = Utils.addVectors(start, aux);
+				vectCoords = Utils.subtractVectors(vectCoords, aux);
+        max -= 2;
+			}
+
+			if (newPush) {
+				vectCoords = Utils.subtractVectors(vectCoords, aux);
+				max -= 2;
+			}
+
+      result = [
+        "M", Utils.addVectors(currentEnd, perpVectCoordsCCW, factor),
+        "L", Utils.addVectors(currentEnd, perpVectCoordsCW, factor)
+      ];
+
+      resultInv = [
+        "M", Utils.addVectors(currentEnd, perpVectCoordsCCW, factorInv),
+        "L", Utils.addVectors(currentEnd, perpVectCoordsCW, factorInv)
+      ]
+
+			for (i = max; i > 0; i -= 1) {
+				factor = factor + BETWEEN_DBL_BONDS / max;
+        factorInv = factorInv - BETWEEN_DBL_BONDS / max;
+				currentEnd = Utils.addVectors(currentEnd, vectCoords, 1 / max);
+				M = Utils.addVectors(currentEnd, perpVectCoordsCCW, factor);
+        Minv = Utils.addVectors(currentEnd, perpVectCoordsCCW, factorInv);
+				L = Utils.addVectors(currentEnd, perpVectCoordsCW, factor);
+        Linv = Utils.addVectors(currentEnd, perpVectCoordsCW, factorInv);
+				result = result.concat(["M", M, "L", L]);
+        resultInv = resultInv.concat(["M", Minv, "L", Linv]);
+			}
+
+			return inverted === "inverted" ? resultInv: result;
+		}
+
+		/**
+		* Calculates data for the svg instructions in `path` element for undefined bond.
+		* @param {number[]} start - start coordinates (absolute) of the atom,
+		* @param {number[]} end - end coordinates (absolute) of the atom,
+		* @returns {Array}
+		*/
+		service.calcUndefinedBondCoords = function (start, end, push, newPush) {
+			var i, M, L, max = 10, result,
+			  vectCoords = [end[0] - start[0], end[1] - start[1]],
+				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
+				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
+				aux = Utils.multVectByScalar(vectCoords, PUSH),
+				subEnd = Utils.addVectors(start, vectCoords, 1 / max),
+				c1 = Utils.addVectors(start, perpVectCoordsCW, UNDEF_BOND),
+				c2 = Utils.addVectors(subEnd, perpVectCoordsCW, UNDEF_BOND);
+
+			if (push) {
+				start = Utils.addVectors(start, aux);
+				vectCoords = Utils.subtractVectors(vectCoords, aux);
+				max -= 2;
+				subEnd = Utils.addVectors(start, vectCoords, 1 / max);
+				c1 = Utils.addVectors(start, perpVectCoordsCW, UNDEF_BOND),
+				c2 = Utils.addVectors(subEnd, perpVectCoordsCW, UNDEF_BOND);
+			}
+
+			if (newPush) {
+				vectCoords = Utils.subtractVectors(vectCoords, aux);
+				max -= 2;
+				subEnd = Utils.addVectors(start, vectCoords, 1 / max);
+				c1 = Utils.addVectors(start, perpVectCoordsCW, UNDEF_BOND),
+				c2 = Utils.addVectors(subEnd, perpVectCoordsCW, UNDEF_BOND);
+			}
+
+			result = ["M", start, "C", c1, ",", c2, ",", subEnd];
+
+			for (i = max - 1; i > 0; i -= 1) {
+				subEnd = Utils.addVectors(subEnd, vectCoords, 1 / max);
+				if (i % 2 === 0) {
+					c2 = Utils.addVectors(subEnd, perpVectCoordsCW, UNDEF_BOND);
+				} else {
+					c2 = Utils.addVectors(subEnd, perpVectCoordsCCW, UNDEF_BOND);
+				}
+				result = result.concat(["S", c2, ",", subEnd]);
+			}
+
+			return result;
+		}
+
+		/**
+		* Calculates rectangle attributes (x, y, width, and height).
+		* @param {number[]} absPosStart - absolute coordinates associated with onMouseDown event,
+		* @param {number[]} absPosEnd - absolute coordinates associated with onMouseUp event,
+		* @returns {Object}
+		*/
+		service.calcRect = function (absPosStart, absPosEnd) {
+			var startX, startY, width, height,
+			  quadrant = Utils.getQuadrant(absPosStart, absPosEnd);
+
+			if (quadrant === 1) {
+				startX = absPosStart[0];
+				startY = absPosEnd[1];
+				width = absPosEnd[0] - startX;
+				height = absPosStart[1] - startY;
+			} else if (quadrant === 2) {
+				startX = absPosEnd[0];
+				startY = absPosEnd[1];
+				width = absPosStart[0] - startX;
+				height = absPosStart[1] - startY;
+			} else if (quadrant === 3) {
+				startX = absPosEnd[0];
+				startY = absPosStart[1];
+				width = absPosStart[0] - startX;
+				height = absPosEnd[1] - startY;
+			} else if (quadrant === 4) {
+				startX = absPosStart[0];
+				startY = absPosStart[1];
+				width = absPosEnd[0] - startX;
+				height = absPosEnd[1] - startY;
+			}
+			if (width < 0) {
+				width = 0;
+			}
+			if (height < 0) {
+				height = 0;
+			}
+			return { class: "selection", rect: [startX, startY, width, height] };
+		}
+
+		return service;
+	}
+})();
+
+(function () {
+	"use strict";
+	angular.module("mmAngularDrawChem")
 		.factory("DrawChemSvgRenderer", DrawChemSvgRenderer);
 
   DrawChemSvgRenderer.$inject = [
@@ -4586,10 +5109,11 @@
 		"DrawChemConst",
 		"DrawChemUtils",
 		"DrawChemSvgUtils",
+		"DrawChemSvgBonds",
 		"DrawChemModStructure"
 	];
 
-	function DrawChemSvgRenderer(DCSvg, DCBond, DCAtom, DCArrow, DCSelection, Const, Utils, SvgUtils, ModStructure) {
+	function DrawChemSvgRenderer(DCSvg, DCBond, DCAtom, DCArrow, DCSelection, Const, Utils, SvgUtils, SvgBonds, ModStructure) {
 
 		var service = {},
 		  BETWEEN_DBL_BONDS = Const.BETWEEN_DBL_BONDS,
@@ -4667,7 +5191,7 @@
 						selection = obj;
 						absPosStart = Utils.addVectors(origin, selection.getOrigin());
 						absPosEnd = selection.getCurrent();
-						rects.push(calcRect(absPosStart, absPosEnd));
+						rects.push(SvgBonds.calcRect(absPosStart, absPosEnd));
 					} else if (obj instanceof Atom) {
 						atom = obj;
 						absPos = Utils.addVectors(origin, atom.getCoords());
@@ -4690,7 +5214,9 @@
 						updateMinMax(absPosEnd);
 						circles.push({ isSelected: arrow.isSelected(), circle: [ absPosStart[0], absPosStart[1], circR ] });
 						circles.push({ isSelected: arrow.isSelected(), circle: [ absPosEnd[0], absPosEnd[1], circR ] });
-						output.push(calcArrow(absPosStart, absPosEnd, arrow.getType()));
+						output.push(
+							SvgBonds.calcArrow(absPosStart, absPosEnd, arrow.getType())
+						);
 					}
 				}
 
@@ -4784,25 +5310,49 @@
 							}
 						}
 					} else if (bondType === "double") {
-						output.push(calcDoubleBondCoords("middle", prevAbsPos, absPos, push, newPush));
+						output.push(
+							SvgBonds.calcDoubleBondCoords("middle", prevAbsPos, absPos, push, newPush)
+						);
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "double-right") {
-						output.push(calcDoubleBondCoords("right", prevAbsPos, absPos, push, newPush));
+						output.push(
+							SvgBonds.calcDoubleBondCoords("right", prevAbsPos, absPos, push, newPush)
+						);
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "double-left") {
-						output.push(calcDoubleBondCoords("left", prevAbsPos, absPos, push, newPush));
+						output.push(
+							SvgBonds.calcDoubleBondCoords("left", prevAbsPos, absPos, push, newPush)
+						);
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "triple") {
-						output.push(calcTripleBondCoords(prevAbsPos, absPos, push, newPush));
+						output.push(
+							SvgBonds.calcTripleBondCoords(prevAbsPos, absPos, push, newPush)
+						);
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "wedge") {
-						output.push(calcWedgeBondCoords(prevAbsPos, absPos, push, newPush));
+						output.push(
+							SvgBonds.calcWedgeBondCoords(prevAbsPos, absPos, push, newPush)
+						);
+						newLen = output.push(["M", absPos]);
+					} else if (bondType === "wedge-inverted") {
+						output.push(
+							SvgBonds.calcWedgeBondCoords(prevAbsPos, absPos, push, newPush, "inverted")
+						);
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "dash") {
-						output.push(calcDashBondCoords(prevAbsPos, absPos, push, newPush));
+						output.push(
+							SvgBonds.calcDashBondCoords(prevAbsPos, absPos, push, newPush)
+						);
+						newLen = output.push(["M", absPos]);
+					} else if (bondType === "dash-inverted") {
+						output.push(
+							SvgBonds.calcDashBondCoords(prevAbsPos, absPos, push, newPush, "inverted")
+						);
 						newLen = output.push(["M", absPos]);
 					} else if (bondType === "undefined") {
-						output.push(calcUndefinedBondCoords(prevAbsPos, absPos, push, newPush));
+						output.push(
+							SvgBonds.calcUndefinedBondCoords(prevAbsPos, absPos, push, newPush)
+						);
 						newLen = output.push(["M", absPos]);
 					}
 					connect(absPos, atom.getBonds(), output[newLen - 1], newPush);
@@ -4823,299 +5373,7 @@
 					}
 				}
 			}
-		}
-
-		/**
-		* Calculates data for the svg instructions in `path` element for arrow.
-		* @param {number[]} start - start coordinates (absolute) of the arrow,
-		* @param {number[]} end - end coordinates (absolute) of the arrow,
-		* @param {string} type - arrow type (one-way, etc.),
-		* @returns {Array}
-		*/
-		function calcArrow(start, end, type) {
-			var vectCoords = [end[0] - start[0], end[1] - start[1]],
-				perpVectCoordsCW = [-vectCoords[1], vectCoords[0]],
-				perpVectCoordsCCW = [vectCoords[1], -vectCoords[0]],
-				endMarkerStart, startMarkerStart, M1, M2, L1, L2, L3, L4;
-			if (type === "one-way-arrow") {
-				endMarkerStart = [start[0] + vectCoords[0] * ARROW_START, start[1] + vectCoords[1] * ARROW_START];
-				L1 = Utils.addVectors(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
-				L2 = Utils.addVectors(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
-				return ["arrow", "M", start, "L", end, "M", endMarkerStart, "L", L1, "L", end, "L", L2, "Z"];
-			} else if (type === "two-way-arrow") {
-				endMarkerStart = [start[0] + vectCoords[0] * ARROW_START, start[1] + vectCoords[1] * ARROW_START];
-				startMarkerStart = [start[0] + vectCoords[0] * (1 - ARROW_START), start[1] + vectCoords[1] * (1 - ARROW_START)];
-				L1 = Utils.addVectors(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
-				L2 = Utils.addVectors(endMarkerStart, perpVectCoordsCW, ARROW_SIZE);
-				L3 = Utils.addVectors(startMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
-				L4 = Utils.addVectors(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
-				return [
-					"arrow",
-					"M", start, "L", end,
-					"M", endMarkerStart, "L", L1, "L", end, "L", L2, "Z",
-					"M", startMarkerStart, "L", L3, "L", start, "L", L4, "Z"
-				];
-			}
-			else if (type === "equilibrium-arrow") {
-				M1 = Utils.addVectors(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
-				L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
-				endMarkerStart = [parseFloat(M1[0]) + vectCoords[0] * ARROW_START, parseFloat(M1[1]) + vectCoords[1] * ARROW_START];
-				L2 = Utils.addVectors(endMarkerStart, perpVectCoordsCCW, ARROW_SIZE);
-
-				M2 = Utils.addVectors(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
-				L3 = Utils.addVectors(start, perpVectCoordsCW, BETWEEN_DBL_BONDS);
-				startMarkerStart = [parseFloat(L3[0]) + vectCoords[0] * (1 - ARROW_START), parseFloat(L3[1]) + vectCoords[1] * (1 - ARROW_START)];
-				L4 = Utils.addVectors(startMarkerStart, perpVectCoordsCW, ARROW_SIZE);
-				return [
-					"arrow-eq",
-					"M", M1, "L", L1, "L", L2,
-					"M", M2, "L", L3, "L", L4
-				];
-			}
-		}
-
-		/**
-		* Calculates data for the svg instructions in `path` element for double bond.
-		* @param {string} type - type of the bond ('middle', 'left', 'right'),
-		* @param {number[]} start - start coordinates (absolute) of the atom,
-		* @param {number[]} end - end coordinates (absolute) of the atom,
-		* @returns {Array}
-		*/
-		function calcDoubleBondCoords(type, start, end, push, newPush) {
-			var vectCoords = [end[0] - start[0], end[1] - start[1]],
-			  aux = Utils.multVectByScalar(vectCoords, PUSH), corr,
-				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
-				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
-				M1 = Utils.addVectors(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
-				L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
-				M2 = Utils.addVectors(start, perpVectCoordsCW, BETWEEN_DBL_BONDS),
-				L2 = Utils.addVectors(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
-
-			if (type === "right") {
-				M2 = Utils.addVectors(start, perpVectCoordsCW, 2 * BETWEEN_DBL_BONDS);
-				L2 = Utils.addVectors(end, perpVectCoordsCW, 2 * BETWEEN_DBL_BONDS);
-			} else if (type === "left") {
-				M2 = Utils.addVectors(start, perpVectCoordsCCW, 2 * BETWEEN_DBL_BONDS);
-				L2 = Utils.addVectors(end, perpVectCoordsCCW, 2 * BETWEEN_DBL_BONDS);
-			}
-
-			if (type !== "middle") {
-				M1 = angular.copy(start);
-				L1 = angular.copy(end);
-				vectCoords = [L2[0] - M2[0], L2[1] - M2[1]];
-				corr = Utils.multVectByScalar(vectCoords, DBL_BOND_CORR);
-				M2 = Utils.addVectors(M2, corr);
-				L2 = Utils.subtractVectors(L2, corr);
-			}
-
-			if (push) {
-				if (type !== "middle") {
-					M1 = Utils.addVectors(M1, aux);
-					M2 = Utils.addVectors(M2, Utils.multVectByScalar(corr, 1.5));
-				} else {
-				  doWithManyVectors("add", [M1, M2], aux);
-				}
-			}
-			if (newPush) {
-				if (type !== "middle") {
-					L1 = Utils.subtractVectors(L1, aux);
-					L2 = Utils.subtractVectors(L2, Utils.multVectByScalar(corr, 1.5));
-				} else {
-				  doWithManyVectors("subtract", [L1, L2], aux);
-				}
-			}
-
-			return ["M", M1, "L", L1, "M", M2, "L", L2];
-		}
-
-		/**
-		* Calculates data for the svg instructions in `path` element for triple bond.
-		* @param {number[]} start - start coordinates (absolute) of the atom,
-		* @param {number[]} end - end coordinates (absolute) of the atom,
-		* @returns {Array}
-		*/
-		function calcTripleBondCoords(start, end, push, newPush) {
-			var vectCoords = [end[0] - start[0], end[1] - start[1]],
-			  aux = Utils.multVectByScalar(vectCoords, PUSH),
-				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
-				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
-				M1 = Utils.addVectors(start, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
-				L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
-				M2 = Utils.addVectors(start, perpVectCoordsCW, BETWEEN_TRP_BONDS),
-				L2 = Utils.addVectors(end, perpVectCoordsCW, BETWEEN_TRP_BONDS);
-
-			if (push) {
-				doWithManyVectors("add", [M1, M2, start], aux);
-			}
-			if (newPush) {
-				doWithManyVectors("subtract", [L1, L2, end], aux);
-			}
-
-			return ["M", M1, "L", L1, "M", start, "L", end, "M", M2, "L", L2];
-		}
-
-		/**
-		* Calculates data for the svg instructions in `path` element for wedge bond.
-		* @param {number[]} start - start coordinates (absolute) of the atom,
-		* @param {number[]} end - end coordinates (absolute) of the atom,
-		* @returns {Array}
-		*/
-		function calcWedgeBondCoords(start, end, push, newPush) {
-			var vectCoords = [end[0] - start[0], end[1] - start[1]],
-			  aux = Utils.multVectByScalar(vectCoords, PUSH),
-				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
-				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
-				L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
-				L2 = Utils.addVectors(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
-
-			if (push) { start = Utils.addVectors(start, aux); }
-
-			if (newPush) {
-				end = Utils.subtractVectors(end, aux);
-				L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
-				L2 = Utils.addVectors(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
-			}
-
-			return ["wedge", "M", start, "L", L1, "L", L2, "Z"];
-		}
-
-		/**
-		* Calculates data for the svg instructions in `path` element for dash bond.
-		* @param {number[]} start - start coordinates (absolute) of the atom,
-		* @param {number[]} end - end coordinates (absolute) of the atom,
-		* @returns {Array}
-		*/
-		function calcDashBondCoords(start, end, push, newPush) {
-			var i, max = 10, factor = BETWEEN_DBL_BONDS / max, M, L, result = [],
-			  vectCoords = [end[0] - start[0], end[1] - start[1]],
-			  aux = Utils.multVectByScalar(vectCoords, PUSH), currentEnd = start,
-				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
-				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]];
-
-			if (push) {
-				currentEnd = Utils.addVectors(start, aux);
-				vectCoords = Utils.subtractVectors(vectCoords, aux);
-				max -= 2;
-			}
-
-			if (newPush) {
-				vectCoords = Utils.subtractVectors(vectCoords, aux);
-				max -= 2;
-			}
-
-			for (i = max; i > 0; i -= 1) {
-				factor = factor + BETWEEN_DBL_BONDS / max;
-				currentEnd = [currentEnd[0] + vectCoords[0] / max, currentEnd[1] + vectCoords[1] / max];
-				M = Utils.addVectors(currentEnd, perpVectCoordsCCW, factor);
-				L = Utils.addVectors(currentEnd, perpVectCoordsCW, factor);
-				result = result.concat(["M", M, "L", L]);
-			}
-
-			return result;
-		}
-
-		/**
-		* Calculates data for the svg instructions in `path` element for undefined bond.
-		* @param {number[]} start - start coordinates (absolute) of the atom,
-		* @param {number[]} end - end coordinates (absolute) of the atom,
-		* @returns {Array}
-		*/
-		function calcUndefinedBondCoords(start, end, push, newPush) {
-			var i, M, L, max = 10, result,
-			  vectCoords = [end[0] - start[0], end[1] - start[1]],
-				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
-				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
-				aux = Utils.multVectByScalar(vectCoords, PUSH),
-				subEnd = Utils.addVectors(start, vectCoords, 1 / max),
-				c1 = Utils.addVectors(start, perpVectCoordsCW, UNDEF_BOND),
-				c2 = Utils.addVectors(subEnd, perpVectCoordsCW, UNDEF_BOND);
-
-			if (push) {
-				start = Utils.addVectors(start, aux);
-				vectCoords = Utils.subtractVectors(vectCoords, aux);
-				max -= 2;
-				subEnd = Utils.addVectors(start, vectCoords, 1 / max);
-				c1 = Utils.addVectors(start, perpVectCoordsCW, UNDEF_BOND),
-				c2 = Utils.addVectors(subEnd, perpVectCoordsCW, UNDEF_BOND);
-			}
-
-			if (newPush) {
-				vectCoords = Utils.subtractVectors(vectCoords, aux);
-				max -= 2;
-				subEnd = Utils.addVectors(start, vectCoords, 1 / max);
-				c1 = Utils.addVectors(start, perpVectCoordsCW, UNDEF_BOND),
-				c2 = Utils.addVectors(subEnd, perpVectCoordsCW, UNDEF_BOND);
-			}
-
-			result = ["M", start, "C", c1, ",", c2, ",", subEnd];
-
-			for (i = max - 1; i > 0; i -= 1) {
-				subEnd = Utils.addVectors(subEnd, vectCoords, 1 / max);
-				if (i % 2 === 0) {
-					c2 = Utils.addVectors(subEnd, perpVectCoordsCW, UNDEF_BOND);
-				} else {
-					c2 = Utils.addVectors(subEnd, perpVectCoordsCCW, UNDEF_BOND);
-				}
-				result = result.concat(["S", c2, ",", subEnd]);
-			}
-
-			return result;
-		}
-
-		/**
-		* Calculates rectangle attributes (x, y, width, and height).
-		* @param {number[]} absPosStart - absolute coordinates associated with onMouseDown event,
-		* @param {number[]} absPosEnd - absolute coordinates associated with onMouseUp event,
-		* @returns {Object}
-		*/
-		function calcRect(absPosStart, absPosEnd) {
-			var startX, startY, width, height,
-			  quadrant = Utils.getQuadrant(absPosStart, absPosEnd);
-
-			if (quadrant === 1) {
-				startX = absPosStart[0];
-				startY = absPosEnd[1];
-				width = absPosEnd[0] - startX;
-				height = absPosStart[1] - startY;
-			} else if (quadrant === 2) {
-				startX = absPosEnd[0];
-				startY = absPosEnd[1];
-				width = absPosStart[0] - startX;
-				height = absPosStart[1] - startY;
-			} else if (quadrant === 3) {
-				startX = absPosEnd[0];
-				startY = absPosStart[1];
-				width = absPosStart[0] - startX;
-				height = absPosEnd[1] - startY;
-			} else if (quadrant === 4) {
-				startX = absPosStart[0];
-				startY = absPosStart[1];
-				width = absPosEnd[0] - startX;
-				height = absPosEnd[1] - startY;
-			}
-			if (width < 0) {
-				width = 0;
-			}
-			if (height < 0) {
-				height = 0;
-			}
-			return { class: "selection", rect: [startX, startY, width, height] };
-		}
-
-		function doWithManyVectors(what, vectors, u) {
-			var aux;
-			vectors.forEach(function (v) {
-				if (what === "add") {
-					aux = Utils.addVectors(v, u);
-					v[0] = aux[0];
-					v[1] = aux[1];
-				} else if (what === "subtract") {
-					aux = Utils.subtractVectors(v, u);
-					v[0] = aux[0];
-					v[1] = aux[1];
-				}
-			});
-		}
+		};
 
 		return service;
 	}

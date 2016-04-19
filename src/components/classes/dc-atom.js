@@ -38,6 +38,18 @@
 		};
 
 		/**
+		 * Removes a `Bond` object from `bonds` array.
+		 * @param {Bond} bond - bond to be removed
+		 */
+		Atom.prototype.deleteBond = function (bond) {
+			var i, newBonds = [];
+			for (i = 0; i < this.bonds.length; i += 1) {
+				if (bond !== this.bonds[i]) { newBonds.push(this.bonds[i]); }
+			}
+			this.bonds = newBonds;
+		};
+
+		/**
 		* Marks `Atom` object as orphan.
 		*/
 		Atom.prototype.setAsOrphan = function () {
@@ -140,6 +152,13 @@
 				return this.attachedBonds;
 			}
 			return this.attachedBonds[type];
+		};
+
+		/**
+		 * Resets attached bonds.
+		 */
+		Atom.prototype.resetAttachedBonds = function () {
+			this.attachedBonds = {};
 		};
 
 		/**

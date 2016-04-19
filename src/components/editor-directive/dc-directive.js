@@ -13,7 +13,7 @@
 		"$sce"
 	];
 
-	function DrawChemEditor(Paths, Cache, Flags, Utils, MouseActions, MenuButtons, $sce) {
+	function DrawChemEditor(Paths, Cache, Flags, DirUtils, MouseActions, MenuButtons, $sce) {
 		return {
 			template: "<div ng-include=\"getEditorUrl()\"></div>",
 			scope: {
@@ -58,7 +58,8 @@
 					try {
 						MouseActions.doOnMouseDown($event, scope, element);
 					} catch (e) {
-						console.log(e.name, e.message);
+						DirUtils.resetMouseFlags();
+						console.log(e, e.name, e.message);
 					}
 				};
 
@@ -66,7 +67,8 @@
 					try {
 						MouseActions.doOnMouseUp($event, scope, element);
 					} catch (e) {
-						console.log(e.name, e.message);
+						DirUtils.resetMouseFlags();
+						console.log(e, e.name, e.message);
 					}
 				};
 
@@ -74,7 +76,8 @@
 					try {
 						MouseActions.doOnMouseMove($event, scope, element);
 					} catch (e) {
-						console.log(e.name, e.message);
+						DirUtils.resetMouseFlags();
+						console.log(e, e.name, e.message);
 					}
 				};
 			}
