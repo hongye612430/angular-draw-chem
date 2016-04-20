@@ -50,6 +50,44 @@
 		};
 
 		/**
+		* Changes mode of the `Label` object.
+		*/
+		Atom.prototype.changeMode = function () {
+			var mode, inBonds = this.getAttachedBonds("in"),
+			  outBonds = this.getAttachedBonds("out");
+
+			if (typeof this.label !== "undefined") {
+				// if mode is not known (if there was previously no label)
+				// try to guess which one should it be
+				mode = getTextDirection();
+				this.label.setMode(mode);
+			}
+
+			function getTextDirection() {
+				var countE = 0, countW = 0;
+				if (typeof inBonds !== "undefined") {
+					inBonds.forEach(function (bond) {
+						if (bond.vector[0] > 0) {
+							countE += 1;
+						} else {
+							countW += 1;
+						}
+					});
+				}
+				if (typeof outBonds !== "undefined") {
+					outBonds.forEach(function (bond) {
+						if (bond.vector[0] < 0) {
+							countE += 1;
+						} else {
+							countW += 1;
+						}
+					});
+				}
+				return countE > countW ? "lr": "rl";
+			}
+		};
+
+		/**
 		* Marks `Atom` object as orphan.
 		*/
 		Atom.prototype.setAsOrphan = function () {
@@ -146,12 +184,21 @@
 		 * @param {string} type - type of the bond, 'in' or 'out'
 		 * @returns {object|object[]} - returns an object if `type` is not supplied, an array of objects if `type` is supplied
 		 */
-		Atom.prototype.getAttachedBonds = function (type) {
-			if (typeof type === "undefined") {
+		Atom.prototype.getAttachedBonds = function (type, coords) {
+			var output = [];
+			if (typeof type !== "undefined" && typeof coords !== "undefined") {
+			  this.attachedBonds[type].forEach(function (bond) {
+					if (Utils.compareVectors(bond.vector, coords, 2)) {
+						output.push(bond);
+					}
+			  });
+				return output;
+			} else if (typeof type !== "undefined" && typeof coords === "undefined") {
+			  return this.attachedBonds[type];
+			} else if (typeof type === "undefined") {
 				// returns an object holding both 'in' and 'out' properties
 				return this.attachedBonds;
 			}
-			return this.attachedBonds[type];
 		};
 
 		/**

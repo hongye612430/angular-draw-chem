@@ -177,7 +177,11 @@
 				);
       } else if (mouseFlags.downOnBond && Flags.selected === "structure") {
         // if atom has been found and structure has been selected
-        changedStructure = ModStructure.modifyBond(mouseFlags.downBondObject, scope.chosenStructure);
+        changedStructure = ModStructure.modifyBond(
+					mouseFlags.downBondObject,
+					mouseFlags.downBondStartAtom,
+					scope.chosenStructure
+				);
       } else if (mouseFlags.downOnBond && Flags.selected === "delete") {
         // if atom has been found and structure has been selected
         ModStructure.deleteBond(

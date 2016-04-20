@@ -249,6 +249,44 @@
 		};
 
 		/**
+		* Changes mode of the `Label` object.
+		*/
+		Atom.prototype.changeMode = function () {
+			var mode, inBonds = this.getAttachedBonds("in"),
+			  outBonds = this.getAttachedBonds("out");
+
+			if (typeof this.label !== "undefined") {
+				// if mode is not known (if there was previously no label)
+				// try to guess which one should it be
+				mode = getTextDirection();
+				this.label.setMode(mode);
+			}
+
+			function getTextDirection() {
+				var countE = 0, countW = 0;
+				if (typeof inBonds !== "undefined") {
+					inBonds.forEach(function (bond) {
+						if (bond.vector[0] > 0) {
+							countE += 1;
+						} else {
+							countW += 1;
+						}
+					});
+				}
+				if (typeof outBonds !== "undefined") {
+					outBonds.forEach(function (bond) {
+						if (bond.vector[0] < 0) {
+							countE += 1;
+						} else {
+							countW += 1;
+						}
+					});
+				}
+				return countE > countW ? "lr": "rl";
+			}
+		};
+
+		/**
 		* Marks `Atom` object as orphan.
 		*/
 		Atom.prototype.setAsOrphan = function () {
@@ -345,12 +383,21 @@
 		 * @param {string} type - type of the bond, 'in' or 'out'
 		 * @returns {object|object[]} - returns an object if `type` is not supplied, an array of objects if `type` is supplied
 		 */
-		Atom.prototype.getAttachedBonds = function (type) {
-			if (typeof type === "undefined") {
+		Atom.prototype.getAttachedBonds = function (type, coords) {
+			var output = [];
+			if (typeof type !== "undefined" && typeof coords !== "undefined") {
+			  this.attachedBonds[type].forEach(function (bond) {
+					if (Utils.compareVectors(bond.vector, coords, 2)) {
+						output.push(bond);
+					}
+			  });
+				return output;
+			} else if (typeof type !== "undefined" && typeof coords === "undefined") {
+			  return this.attachedBonds[type];
+			} else if (typeof type === "undefined") {
 				// returns an object holding both 'in' and 'out' properties
 				return this.attachedBonds;
 			}
-			return this.attachedBonds[type];
 		};
 
 		/**
@@ -1987,7 +2034,11 @@
 				);
       } else if (mouseFlags.downOnBond && Flags.selected === "structure") {
         // if atom has been found and structure has been selected
-        changedStructure = ModStructure.modifyBond(mouseFlags.downBondObject, scope.chosenStructure);
+        changedStructure = ModStructure.modifyBond(
+					mouseFlags.downBondObject,
+					mouseFlags.downBondStartAtom,
+					scope.chosenStructure
+				);
       } else if (mouseFlags.downOnBond && Flags.selected === "delete") {
         // if atom has been found and structure has been selected
         ModStructure.deleteBond(
@@ -4239,7 +4290,7 @@
 			Label = DCLabel.Label,
 			Structure = DCStructure.Structure,
 			Selection = DCSelection.Selection;
-			
+
 		/**
 		 * Checks if supplied coordinates are within a circle of an atom.
 		 * @param {Structure} structure - a `Structure` object on which search is performed,
@@ -4452,9 +4503,7 @@
 		 * @param {string} customLabel - chosen string for making a custom `Label` object
 		 */
 		service.modifyLabel = function (atom, selected, chosenLabel, customLabel) {
-			var currentLabel = atom.getLabel(), mode,
-			  inBonds = atom.getAttachedBonds("in"),
-			  outBonds = atom.getAttachedBonds("out");
+			var currentLabel = atom.getLabel(), mode;
 			// set `Label` object
 			// either predefined or custom
 			if (selected === "label") {
@@ -4464,12 +4513,7 @@
 				atom.setLabel(new Label(customLabel, 0));
 			}
 
-			if (typeof atom.getLabel() !== "undefined") {
-				// if mode is not known (if there was previously no label)
-				// try to guess which one should it be
-				mode = getTextDirection();
-				atom.getLabel().setMode(mode);
-			}
+			atom.changeMode();
 
 			// if `Atom` object already has a label on it
 			// then change its direction on mouseup event
@@ -4479,29 +4523,6 @@
 				} else if (currentLabel.getMode() === "rl") {
 					atom.getLabel().setMode("lr");
 				}
-			}
-
-			function getTextDirection() {
-				var countE = 0, countW = 0;
-				if (typeof inBonds !== "undefined") {
-					inBonds.forEach(function (bond) {
-						if (bond.vector[0] > 0) {
-							countE += 1;
-						} else {
-							countW += 1;
-						}
-					});
-				}
-				if (typeof outBonds !== "undefined") {
-					outBonds.forEach(function (bond) {
-						if (bond.vector[0] < 0) {
-							countE += 1;
-						} else {
-							countW += 1;
-						}
-					});
-				}
-				return countE > countW ? "lr": "rl";
 			}
 		};
 
@@ -4570,6 +4591,7 @@
 					// update `attachedBonds` array
 					atom.attachBond("out", { vector: angular.copy(vector), multiplicity: mult });
 				}
+				atom.changeMode();
 			}
 
 			/**
@@ -4753,12 +4775,14 @@
 		/**
 		 * Modifies `Bond` object.
 		 * @param {Bond} bond - `Bond` object to be modified,
+		 * @param {Atom} startAtom - `Atom` object at the beginning of this bond,
 		 * @param {StructureCluster} chosenStructure - `StructureCluster` object
 		 */
-		service.modifyBond = function (bond, chosenStructure) {
+		service.modifyBond = function (bond, startAtom, chosenStructure) {
 			var ringSize = chosenStructure.getRingSize(), bondType, newIndex, index,
 			  singleBondsAdd = ["single", "double", "triple"],
 			  doubleBonds = ["double", "double-left", "double-right"], inverted,
+				endAtom = bond.getAtom(), attachedBondIn = [], attachedBondOut = [],
 				currentType = bond.getType();
 			if (ringSize > 0) {
 				// todo
@@ -4768,6 +4792,10 @@
 					index = singleBondsAdd.indexOf(currentType);
 					newIndex = index < 0 ? 0: Utils.moveToRight(singleBondsAdd, index, 1);
 					bondType = singleBondsAdd[newIndex];
+					attachedBondOut = startAtom.getAttachedBonds("out", endAtom.getCoords());
+					attachedBondOut.forEach(function (bond) {
+						bond.multiplicity = 1;
+					});
 				} else if (bondType === "double") {
 					index = doubleBonds.indexOf(currentType);
 					newIndex = index < 0 ? 0: Utils.moveToRight(doubleBonds, index, 1);
