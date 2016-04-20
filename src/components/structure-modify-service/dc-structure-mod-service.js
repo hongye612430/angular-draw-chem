@@ -342,8 +342,9 @@
 		 * @param {number[]} absPos - absolute position of chosen `Atom`  object,
 		 * @param {number[]} mouseCoords - coordinates associated with a mouse event,
 		 * @param {StructureCluster} chosenStructure - `StructureCluster` object,
+		 * @param {boolean} customLength - if custom length should be used,
 		 */
-		service.modifyAtom = function (structure, atom, firstAtom, absPos, mouseCoords, chosenStructure) {
+		service.modifyAtom = function (structure, atom, firstAtom, absPos, mouseCoords, chosenStructure, customLength) {
 			var vector;
 
 			if (Utils.insideCircle(absPos, mouseCoords, Const.CIRC_R)) {
@@ -427,8 +428,14 @@
 				if (typeof inBonds !== "undefined" && typeof outBonds !== "undefined") {
 					// if both in- and outcoming bonds are defined,
 					// get first in- and first outcoming bond,
-					firstInBond = inBonds[0].vector;
-					firstOutBond = outBonds[0].vector;
+					firstInBond = Utils.multVectByScalar(
+						Utils.norm(inBonds[0].vector),
+						BOND_LENGTH
+					);
+					firstOutBond = Utils.multVectByScalar(
+						Utils.norm(outBonds[0].vector),
+						BOND_LENGTH
+					);
 					// find angle between them
 					angle = Math.acos(Utils.dotProduct(Utils.norm(firstInBond), Utils.norm(firstOutBond))) * 180 / Math.PI;
 					// construct angle bisector
@@ -439,13 +446,21 @@
 						vect = vectAux;
 					}
 				} else if (typeof inBonds !== "undefined") {
+					firstInBond = Utils.multVectByScalar(
+						Utils.norm(inBonds[0].vector),
+						BOND_LENGTH
+					);
 					if (size > 0) {
-						vect = angular.copy(inBonds[0].vector);
+						vect = angular.copy(firstInBond);
 					} else {
-					  vect = Utils.rotVectCCW(inBonds[0].vector, Const.ANGLE / 2);
+					  vect = Utils.rotVectCCW(firstInBond, Const.ANGLE / 2);
 					}
 				} else if (typeof outBonds !== "undefined") {
-					vect = Utils.rotVectCCW(outBonds[0].vector, Const.ANGLE);
+					firstOutBond = Utils.multVectByScalar(
+						Utils.norm(outBonds[0].vector),
+						BOND_LENGTH
+					);
+					vect = Utils.rotVectCCW(firstOutBond, Const.ANGLE);
 				} else {
 					// defaults to bond in north direction
 					vect = Const.BOND_N;
@@ -465,19 +480,35 @@
 				  outBonds = atom.getAttachedBonds("out"), // attached outcoming bonds
 					possibleBonds, firstInBond, firstOutBond, angle, vect;
 
+				if (customLength) {
+					return Utils.subtractVectors(mouseCoords, absPos);
+				}
+
 				if (typeof inBonds !== "undefined" && typeof outBonds !== "undefined") {
 					// if both in- and outcoming bonds are defined,
 					// get first in- and first outcoming bond,
-					firstInBond = inBonds[0].vector;
-					firstOutBond = outBonds[0].vector;
+					firstInBond = Utils.multVectByScalar(
+						Utils.norm(inBonds[0].vector),
+						BOND_LENGTH
+					);
+					firstOutBond = Utils.multVectByScalar(
+						Utils.norm(outBonds[0].vector),
+						BOND_LENGTH
+					);
 					// find angle between them
 					angle = Math.acos(Utils.dotProduct(Utils.norm(firstInBond), Utils.norm(firstOutBond))) * 180 / Math.PI;
 					// construct angle bisector
 					vect = Utils.rotVectCCW(firstInBond, (180 - angle) / 2);
 				} else if (typeof inBonds !== "undefined") {
-					vect = inBonds[0].vector;
+					vect = Utils.multVectByScalar(
+						Utils.norm(inBonds[0].vector),
+						BOND_LENGTH
+					);
 				} else if (typeof outBonds !== "undefined") {
-					vect = outBonds[0].vector;
+					vect = Utils.multVectByScalar(
+						Utils.norm(outBonds[0].vector),
+						BOND_LENGTH
+					);
 				} else {
 					// defaults to bond in north direction
 					vect = Const.BOND_N;
@@ -589,7 +620,7 @@
 		 * @param {Structure} structure - `Structure` object,
 		 * @param {number[]} mouseCoords - coordinates associated with a mouse event,
 		 * @param {number[]} downMouseCoords - coordinates associated with 'mousedown' event,
-		 * @param {StructureCluster} chosenStructure - `StructureCluster` object,
+		 * @param {StructureCluster} chosenStructure - `StructureCluster` object
 		 */
 		service.addStructureOnEmptySpace = function (structure, mouseCoords, downMouseCoords, chosenStructure) {
 			var structureAux, coords, bond;

@@ -11,6 +11,7 @@
 	function DrawChemSvgBonds(Const, Utils) {
 
 		var service = {},
+		  BOND_LENGTH = Const.BOND_LENGTH,
 		  BETWEEN_DBL_BONDS = Const.BETWEEN_DBL_BONDS,
 			BETWEEN_TRP_BONDS = Const.BETWEEN_TRP_BONDS,
 			ARROW_START = Const.ARROW_START,
@@ -76,10 +77,14 @@
 		* @returns {Array}
 		*/
 		service.calcDoubleBondCoords = function (type, start, end, push, newPush) {
-			var vectCoords = [end[0] - start[0], end[1] - start[1]],
+			var vectCoords = Utils.subtractVectors(end, start),
+			  vectCoords = Utils.multVectByScalar(
+					Utils.norm(vectCoords),
+					BOND_LENGTH
+				),
 			  aux = Utils.multVectByScalar(vectCoords, PUSH), corr,
-				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
-				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
+				perpVectCoordsCCW = Utils.getPerpVectorCCW(vectCoords),
+				perpVectCoordsCW = Utils.getPerpVectorCW(vectCoords),
 				M1 = Utils.addVectors(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
 				L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS),
 				M2 = Utils.addVectors(start, perpVectCoordsCW, BETWEEN_DBL_BONDS),
@@ -129,10 +134,14 @@
 		* @returns {Array}
 		*/
 		service.calcTripleBondCoords = function (start, end, push, newPush) {
-			var vectCoords = [end[0] - start[0], end[1] - start[1]],
+			var vectCoords = Utils.subtractVectors(end, start),
+			  vectCoords = Utils.multVectByScalar(
+				  Utils.norm(vectCoords),
+				  BOND_LENGTH
+			  ),
 			  aux = Utils.multVectByScalar(vectCoords, PUSH),
-				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
-				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
+				perpVectCoordsCCW = Utils.getPerpVectorCCW(vectCoords),
+				perpVectCoordsCW = Utils.getPerpVectorCW(vectCoords),
 				M1 = Utils.addVectors(start, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
 				L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_TRP_BONDS),
 				M2 = Utils.addVectors(start, perpVectCoordsCW, BETWEEN_TRP_BONDS),
@@ -157,6 +166,10 @@
 		*/
 		service.calcWedgeBondCoords = function (start, end, push, newPush, inverted) {
 			var vectCoords = Utils.subtractVectors(end, start),
+			  vectCoords = Utils.multVectByScalar(
+				  Utils.norm(vectCoords),
+				  BOND_LENGTH
+			  ),
 			  aux = Utils.multVectByScalar(vectCoords, PUSH),
 				perpVectCoordsCCW = Utils.getPerpVectorCCW(vectCoords),
 				perpVectCoordsCW = Utils.getPerpVectorCW(vectCoords),
@@ -198,23 +211,31 @@
 		* @returns {Array}
 		*/
 		service.calcDashBondCoords = function (start, end, push, newPush, inverted) {
-			var i, max = 10, factor = BETWEEN_DBL_BONDS / max, factorInv = BETWEEN_DBL_BONDS,
-        M, Minv, L, Linv,
+			var i, M, Minv, L, Linv,
 			  vectCoords = Utils.subtractVectors(end, start),
-			  aux = Utils.multVectByScalar(vectCoords, PUSH), currentEnd = start,
-				perpVectCoordsCCW = Utils.getPerpVectorCCW(vectCoords),
-				perpVectCoordsCW = Utils.getPerpVectorCW(vectCoords),
-        result, resultInv;
+				normVector = Utils.multVectByScalar(
+				  Utils.norm(vectCoords),
+				  BOND_LENGTH
+			  ),
+				maxInit = 10 * Utils.getLength(vectCoords) / BOND_LENGTH, max = maxInit,
+				factor = BETWEEN_DBL_BONDS / max, factorInv = BETWEEN_DBL_BONDS,
+				currentEnd = start,
+				perpVectCoordsCCW = Utils.getPerpVectorCCW(normVector),
+				perpVectCoordsCW = Utils.getPerpVectorCW(normVector),
+        result, resultInv,
+				aux = Utils.vect(vectCoords).isLongerThan(normVector) ?
+				  Utils.multVectByScalar(normVector, 1.5 * PUSH):
+				  Utils.multVectByScalar(normVector, PUSH);
 
 			if (push) {
 				currentEnd = Utils.addVectors(start, aux);
 				vectCoords = Utils.subtractVectors(vectCoords, aux);
-        max -= 2;
+        max -= 0.2 * maxInit;
 			}
 
 			if (newPush) {
 				vectCoords = Utils.subtractVectors(vectCoords, aux);
-				max -= 2;
+				max -= 0.2 * maxInit;
 			}
 
       result = [
@@ -250,9 +271,13 @@
 		*/
 		service.calcUndefinedBondCoords = function (start, end, push, newPush) {
 			var i, M, L, max = 10, result,
-			  vectCoords = [end[0] - start[0], end[1] - start[1]],
-				perpVectCoordsCCW = [-vectCoords[1], vectCoords[0]],
-				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]],
+			  vectCoords = Utils.subtractVectors(end, start),
+				vectCoords = Utils.multVectByScalar(
+				  Utils.norm(vectCoords),
+				  BOND_LENGTH
+			  ),
+				perpVectCoordsCCW = Utils.getPerpVectorCCW(vectCoords),
+				perpVectCoordsCW = Utils.getPerpVectorCW(vectCoords),
 				aux = Utils.multVectByScalar(vectCoords, PUSH),
 				subEnd = Utils.addVectors(start, vectCoords, 1 / max),
 				c1 = Utils.addVectors(start, perpVectCoordsCW, UNDEF_BOND),

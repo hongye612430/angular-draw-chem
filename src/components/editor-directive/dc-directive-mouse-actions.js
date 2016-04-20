@@ -89,13 +89,17 @@
 		* @param {Object} element - element object listening to this event
 		*/
     service.doOnMouseUp = function ($event, scope, element) {
-      var mouseCoords = DirUtils.innerCoords(element, $event), drawn, changedStructure = true;
+      var mouseCoords = DirUtils.innerCoords(element, $event), drawn, changedStructure = true, ringSize;
 
 			// if button other than left was released do nothing
 			// or if selected flag is empty do nothing
       if ($event.which !== 1 || Flags.selected === "") {
 				DirUtils.resetMouseFlags();
 				return;
+			}
+
+			if (typeof scope.chosenStructure !== "undefined") {
+			  ringSize = scope.chosenStructure.getRingSize();
 			}
 
 			if (currWorkingStructure !== null && Flags.selected === "select") {
@@ -138,6 +142,18 @@
 					Flags.selected,
 					scope.chosenLabel,
 					Flags.customLabel
+				);
+      } else if (ringSize === 0 && mouseFlags.downOnAtom && $event.ctrlKey) {
+				// only when a bond is selected (ringSize = 0)
+				// if atom has been found and structure has been selected and ctrl key is pressed
+        ModStructure.modifyAtom(
+					currWorkingStructure,
+					mouseFlags.downAtomObject,
+					mouseFlags.downAtomFirst,
+					mouseFlags.downAtomCoords,
+					mouseCoords,
+					scope.chosenStructure,
+					true
 				);
       } else if (mouseFlags.downOnAtom && Flags.selected === "structure") {
         // if atom has been found and structure has been selected
@@ -189,15 +205,21 @@
 		* @param {Object} element - element object listening to this event
 		*/
     service.doOnMouseMove = function ($event, scope, element) {
-      var mouseCoords = DirUtils.innerCoords(element, $event), drawn, frozenStructure, frozenAtomObj = {};
+      var mouseCoords = DirUtils.innerCoords(element, $event),
+			  drawn, frozenStructure, frozenAtomObj = {}, ringSize;
 
-      if (!mouseFlags.mouseDown || DirUtils.performSearch(["label", "labelCustom", "delete", ""])) {
+      if ($event.which !== 1 || DirUtils.performSearch(["label", "labelCustom", "delete", ""])) {
 				// if mousedown event did not occur, then do nothing
         // if label is selected or nothing is selected, then also do nothing
         return;
       }
 
+			if (typeof scope.chosenStructure !== "undefined") {
+			  ringSize = scope.chosenStructure.getRingSize();
+			}
+
 			frozenStructure = angular.copy(currWorkingStructure);
+
 			if (frozenStructure !== null) {
 				frozenAtomObj = ModStructure.isWithinAtom(frozenStructure, mouseFlags.downMouseCoords);
 			}
@@ -216,6 +238,18 @@
 					mouseFlags.downMouseCoords,
 					scope.chosenArrow
 				);
+      } else if (ringSize === 0 && typeof frozenAtomObj.foundAtom !== "undefined" && $event.ctrlKey) {
+				// only when a bond is selected (ringSize = 0)
+				// if atom has been found and structure has been selected and ctrl key is pressed
+        ModStructure.modifyAtom(
+					frozenStructure,
+					frozenAtomObj.foundAtom,
+					frozenAtomObj.firstAtom,
+					frozenAtomObj.absPos,
+					mouseCoords,
+					scope.chosenStructure,
+					true
+				);
       } else if (typeof frozenAtomObj.foundAtom !== "undefined") {
 				// if atom has been found and structure has been selected
         ModStructure.modifyAtom(
@@ -230,9 +264,9 @@
 				// if content is empty or atom was not found
         frozenStructure = ModStructure.addStructureOnEmptySpace(
 					frozenStructure,
-					scope.chosenStructure,
 					mouseCoords,
-					mouseFlags.downMouseCoords
+					mouseFlags.downMouseCoords,
+					scope.chosenStructure
 				);
       }
 

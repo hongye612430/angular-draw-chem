@@ -39,7 +39,7 @@
 					"y='" + bf.start[1].toFixed(2) + "' " +
 					"rx='" + (0.1 * BOND_LENGTH).toFixed(2) + "' " +
 					"ry='" + (0.1 * BOND_LENGTH).toFixed(2) + "' " +
-					"width='" + BOND_LENGTH.toFixed(2) + "' " +
+					"width='" + bf.width.toFixed(2) + "' " +
 					"height='" + bf.height.toFixed(2) + "' " +
 					"transform='rotate(" +
 					  bf.rotate.toFixed(2) + ", " +
@@ -195,15 +195,20 @@
     };
 
 		service.updateBondFocus = function (bondFocus, prevAbsPos, absPos, push, newPush) {
-			var vectCoords = [absPos[0] - prevAbsPos[0], absPos[1] - prevAbsPos[1]],
-				perpVectCoordsCW = [vectCoords[1], -vectCoords[0]];
+			var vectCoords = Utils.subtractVectors(absPos, prevAbsPos),
+			  normVector = Utils.multVectByScalar(
+				  Utils.norm(vectCoords),
+				  BOND_LENGTH
+			  ),
+				perpVectCoordsCW = Utils.getPerpVectorCW(normVector);
 
 			bondFocus.push({
 				start: Utils.addVectors(prevAbsPos, perpVectCoordsCW, BOND_FOCUS),
-				rotate: -Utils.calcAngle(vectCoords),
+				rotate: -Utils.calcAngle(normVector),
 				height: Utils.getLength(
-					Utils.multVectByScalar(vectCoords, BOND_FOCUS * 2)
-				)
+					Utils.multVectByScalar(normVector, BOND_FOCUS * 2)
+				),
+				width: Utils.getLength(vectCoords)
 			});
 		};
 

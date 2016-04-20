@@ -396,6 +396,24 @@
 			return [v[1], -v[0]];
 		};
 
+		service.vect = function (v) {
+			var obj = {
+				vectorInit: v,
+				isLongerThan: isLongerThan,
+				isShorterThan: isShorterThan
+			};
+
+			return obj;
+
+			function isShorterThan(v) {
+				return service.getLength(obj.vectorInit) < service.getLength(v);
+			}
+
+			function isLongerThan(v) {
+				return service.getLength(obj.vectorInit) > service.getLength(v);
+			}
+		};
+
 		return service;
 	}
 })();

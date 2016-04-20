@@ -150,6 +150,12 @@ describe("DrawChemUtils service tests", function () {
 		expect(Utils.getRectArea(points)).toEqual(40);
 	});
 
+	it("should compare length of two vectors", function () {
+		var v1 = [3, 4], v2 = [1, 1];
+		expect(Utils.vect(v1).isLongerThan(v2)).toEqual(true);
+		expect(Utils.vect(v2).isShorterThan(v1)).toEqual(true);
+	});
+
 	it("should check if a point is inside a rectangle", function () {
 		var bond = new Bond("single", new Atom([10, 0])),
 		  inside = Utils.insideFocus([0, 0], bond, [1, 1], 0.2);
