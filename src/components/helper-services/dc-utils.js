@@ -295,13 +295,18 @@
 		 * @param {Bond} bond - bond object,
 		 * @param {number[]} point - coordinates of a point to be validated,
 		 * @param {number} factor - factor,
+		 * @param {number} bondLength - default bond length,
 		 * @returns {boolean}
 		 */
-		service.insideFocus = function (startAbsPos, bond, point, factor) {
+		service.insideFocus = function (startAbsPos, bond, point, factor, bondLength) {
 			var bondVect = bond.getAtom().getCoords(), i, j, area = 0,
 			  endAbsPos = service.addVectors(startAbsPos, bondVect),
-			  perpVectCoordsCCW = [-bondVect[1], bondVect[0]],
-			  perpVectCoordsCW = [bondVect[1], -bondVect[0]],
+				normVector = service.multVectByScalar(
+				  service.norm(bondVect),
+				  bondLength
+			  ),
+			  perpVectCoordsCCW = service.getPerpVectorCCW(normVector),
+			  perpVectCoordsCW = service.getPerpVectorCW(normVector),
 			  rectPoints = [
 					service.addVectors(startAbsPos, perpVectCoordsCCW, factor),
 				  service.addVectors(startAbsPos, perpVectCoordsCW, factor),

@@ -158,9 +158,9 @@ describe("DrawChemUtils service tests", function () {
 
 	it("should check if a point is inside a rectangle", function () {
 		var bond = new Bond("single", new Atom([10, 0])),
-		  inside = Utils.insideFocus([0, 0], bond, [1, 1], 0.2);
+		  inside = Utils.insideFocus([0, 0], bond, [1, 1], 0.2, 10);
 		expect(inside).toEqual(true);
-		inside = Utils.insideFocus([0, 0], bond, [1, 3], 0.2);
+		inside = Utils.insideFocus([0, 0], bond, [1, 3], 0.2, 10);
 		expect(inside).toEqual(false);
 	});
 });

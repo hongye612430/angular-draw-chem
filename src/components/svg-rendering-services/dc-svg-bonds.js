@@ -223,9 +223,7 @@
 				perpVectCoordsCCW = Utils.getPerpVectorCCW(normVector),
 				perpVectCoordsCW = Utils.getPerpVectorCW(normVector),
         result, resultInv,
-				aux = Utils.vect(vectCoords).isLongerThan(normVector) ?
-				  Utils.multVectByScalar(normVector, 1.5 * PUSH):
-				  Utils.multVectByScalar(normVector, PUSH);
+				aux = Utils.multVectByScalar(normVector, PUSH);
 
 			if (push) {
 				currentEnd = Utils.addVectors(start, aux);
@@ -246,7 +244,9 @@
       resultInv = [
         "M", Utils.addVectors(currentEnd, perpVectCoordsCCW, factorInv),
         "L", Utils.addVectors(currentEnd, perpVectCoordsCW, factorInv)
-      ]
+      ];
+
+			max = parseFloat(max.toFixed(0));
 
 			for (i = max; i > 0; i -= 1) {
 				factor = factor + BETWEEN_DBL_BONDS / max;
@@ -270,23 +270,29 @@
 		* @returns {Array}
 		*/
 		service.calcUndefinedBondCoords = function (start, end, push, newPush) {
-			var i, M, L, max = 10, result,
+			var i, M, L, result, maxInit, max, subEnd, c1, c2,
 			  vectCoords = Utils.subtractVectors(end, start),
-				vectCoords = Utils.multVectByScalar(
+				normVector = Utils.multVectByScalar(
 				  Utils.norm(vectCoords),
 				  BOND_LENGTH
 			  ),
-				perpVectCoordsCCW = Utils.getPerpVectorCCW(vectCoords),
-				perpVectCoordsCW = Utils.getPerpVectorCW(vectCoords),
-				aux = Utils.multVectByScalar(vectCoords, PUSH),
-				subEnd = Utils.addVectors(start, vectCoords, 1 / max),
-				c1 = Utils.addVectors(start, perpVectCoordsCW, UNDEF_BOND),
-				c2 = Utils.addVectors(subEnd, perpVectCoordsCW, UNDEF_BOND);
+				perpVectCoordsCCW = Utils.getPerpVectorCCW(normVector),
+				perpVectCoordsCW = Utils.getPerpVectorCW(normVector),
+				aux = Utils.multVectByScalar(normVector, PUSH);
+
+			maxInit = 10 * Utils.getLength(vectCoords) / BOND_LENGTH;
+			maxInit = parseFloat(maxInit.toFixed(0));
+			if (maxInit % 2 !== 0) { maxInit += 1; }
+			max = maxInit;
+			subEnd = Utils.addVectors(start, vectCoords, 1 / max);
+			c1 = Utils.addVectors(start, perpVectCoordsCW, UNDEF_BOND);
+			c2 = Utils.addVectors(subEnd, perpVectCoordsCW, UNDEF_BOND);
 
 			if (push) {
 				start = Utils.addVectors(start, aux);
 				vectCoords = Utils.subtractVectors(vectCoords, aux);
-				max -= 2;
+				max -= 0.2 * maxInit;
+				if (max % 2 !== 0) { max += 1; }
 				subEnd = Utils.addVectors(start, vectCoords, 1 / max);
 				c1 = Utils.addVectors(start, perpVectCoordsCW, UNDEF_BOND),
 				c2 = Utils.addVectors(subEnd, perpVectCoordsCW, UNDEF_BOND);
@@ -294,13 +300,16 @@
 
 			if (newPush) {
 				vectCoords = Utils.subtractVectors(vectCoords, aux);
-				max -= 2;
+				max -= 0.2 * maxInit;
+				if (max % 2 !== 0) { max += 1; }
 				subEnd = Utils.addVectors(start, vectCoords, 1 / max);
 				c1 = Utils.addVectors(start, perpVectCoordsCW, UNDEF_BOND),
 				c2 = Utils.addVectors(subEnd, perpVectCoordsCW, UNDEF_BOND);
 			}
 
 			result = ["M", start, "C", c1, ",", c2, ",", subEnd];
+
+			max = parseFloat(max.toFixed(0));
 
 			for (i = max - 1; i > 0; i -= 1) {
 				subEnd = Utils.addVectors(subEnd, vectCoords, 1 / max);

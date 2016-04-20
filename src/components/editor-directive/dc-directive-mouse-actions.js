@@ -66,7 +66,10 @@
           mouseFlags.downOnAtom = true;
 					mouseFlags.downAtomObject = withinObject.foundAtom;
 					mouseFlags.downAtomCoords = withinObject.absPos;
+					mouseFlags.downAtomPrevAtom = withinObject.prevAtom;
+					mouseFlags.downAtomLeadingBond = withinObject.leadingBond;
 					mouseFlags.downAtomFirst = withinObject.firstAtom;
+					mouseFlags.downAtomHasDuplicate = withinObject.hasDuplicate;
         }
       }
 
@@ -133,7 +136,14 @@
 				);
       } else if (mouseFlags.downOnAtom && Flags.selected === "delete") {
 				// if delete was selected
-				ModStructure.deleteFromStructure(currWorkingStructure, mouseCoords);
+				ModStructure.deleteAtom(
+					currWorkingStructure,
+					mouseFlags.downAtomObject,
+					mouseFlags.downAtomCoords,
+					mouseFlags.downAtomLeadingBond,
+					mouseFlags.downAtomPrevAtom,
+					mouseFlags.downAtomHasDuplicate
+				);
 				ModStructure.labelSingleAtoms(currWorkingStructure);
 			} else if (mouseFlags.downOnAtom && DirUtils.performSearch(["label", "customLabel"])) {
         // if atom has been found and label is selected
@@ -143,7 +153,7 @@
 					scope.chosenLabel,
 					Flags.customLabel
 				);
-      } else if (ringSize === 0 && mouseFlags.downOnAtom && $event.ctrlKey) {
+      } else if (ringSize === 0 && mouseFlags.downOnAtom && Flags.selected === "structure" && $event.ctrlKey) {
 				// only when a bond is selected (ringSize = 0)
 				// if atom has been found and structure has been selected and ctrl key is pressed
         ModStructure.modifyAtom(
@@ -177,6 +187,15 @@
 					mouseFlags.downBondEndAtomPos
 				);
 				ModStructure.labelSingleAtoms(currWorkingStructure);
+      } else if (ringSize === 0 && Flags.selected === "structure" && $event.ctrlKey) {
+				// if content is empty or atom was not found
+        currWorkingStructure = ModStructure.addStructureOnEmptySpace(
+					currWorkingStructure,
+					mouseCoords,
+					mouseFlags.downMouseCoords,
+					scope.chosenStructure,
+					true
+				);
       } else if (Flags.selected === "structure") {
 				// if content is empty or atom was not found
         currWorkingStructure = ModStructure.addStructureOnEmptySpace(
@@ -259,6 +278,15 @@
 					frozenAtomObj.absPos,
 					mouseCoords,
 					scope.chosenStructure
+				);
+      } else if (ringSize === 0 && Flags.selected === "structure" && $event.ctrlKey) {
+				// if content is empty or atom was not found
+        frozenStructure = ModStructure.addStructureOnEmptySpace(
+					frozenStructure,
+					mouseCoords,
+					mouseFlags.downMouseCoords,
+					scope.chosenStructure,
+					true
 				);
       } else if (Flags.selected === "structure") {
 				// if content is empty or atom was not found

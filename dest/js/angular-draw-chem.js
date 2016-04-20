@@ -1876,7 +1876,10 @@
           mouseFlags.downOnAtom = true;
 					mouseFlags.downAtomObject = withinObject.foundAtom;
 					mouseFlags.downAtomCoords = withinObject.absPos;
+					mouseFlags.downAtomPrevAtom = withinObject.prevAtom;
+					mouseFlags.downAtomLeadingBond = withinObject.leadingBond;
 					mouseFlags.downAtomFirst = withinObject.firstAtom;
+					mouseFlags.downAtomHasDuplicate = withinObject.hasDuplicate;
         }
       }
 
@@ -1943,7 +1946,14 @@
 				);
       } else if (mouseFlags.downOnAtom && Flags.selected === "delete") {
 				// if delete was selected
-				ModStructure.deleteFromStructure(currWorkingStructure, mouseCoords);
+				ModStructure.deleteAtom(
+					currWorkingStructure,
+					mouseFlags.downAtomObject,
+					mouseFlags.downAtomCoords,
+					mouseFlags.downAtomLeadingBond,
+					mouseFlags.downAtomPrevAtom,
+					mouseFlags.downAtomHasDuplicate
+				);
 				ModStructure.labelSingleAtoms(currWorkingStructure);
 			} else if (mouseFlags.downOnAtom && DirUtils.performSearch(["label", "customLabel"])) {
         // if atom has been found and label is selected
@@ -1953,7 +1963,7 @@
 					scope.chosenLabel,
 					Flags.customLabel
 				);
-      } else if (ringSize === 0 && mouseFlags.downOnAtom && $event.ctrlKey) {
+      } else if (ringSize === 0 && mouseFlags.downOnAtom && Flags.selected === "structure" && $event.ctrlKey) {
 				// only when a bond is selected (ringSize = 0)
 				// if atom has been found and structure has been selected and ctrl key is pressed
         ModStructure.modifyAtom(
@@ -1987,6 +1997,15 @@
 					mouseFlags.downBondEndAtomPos
 				);
 				ModStructure.labelSingleAtoms(currWorkingStructure);
+      } else if (ringSize === 0 && Flags.selected === "structure" && $event.ctrlKey) {
+				// if content is empty or atom was not found
+        currWorkingStructure = ModStructure.addStructureOnEmptySpace(
+					currWorkingStructure,
+					mouseCoords,
+					mouseFlags.downMouseCoords,
+					scope.chosenStructure,
+					true
+				);
       } else if (Flags.selected === "structure") {
 				// if content is empty or atom was not found
         currWorkingStructure = ModStructure.addStructureOnEmptySpace(
@@ -2069,6 +2088,15 @@
 					frozenAtomObj.absPos,
 					mouseCoords,
 					scope.chosenStructure
+				);
+      } else if (ringSize === 0 && Flags.selected === "structure" && $event.ctrlKey) {
+				// if content is empty or atom was not found
+        frozenStructure = ModStructure.addStructureOnEmptySpace(
+					frozenStructure,
+					mouseCoords,
+					mouseFlags.downMouseCoords,
+					scope.chosenStructure,
+					true
 				);
       } else if (Flags.selected === "structure") {
 				// if content is empty or atom was not found
@@ -2746,13 +2774,18 @@
 		 * @param {Bond} bond - bond object,
 		 * @param {number[]} point - coordinates of a point to be validated,
 		 * @param {number} factor - factor,
+		 * @param {number} bondLength - default bond length,
 		 * @returns {boolean}
 		 */
-		service.insideFocus = function (startAbsPos, bond, point, factor) {
+		service.insideFocus = function (startAbsPos, bond, point, factor, bondLength) {
 			var bondVect = bond.getAtom().getCoords(), i, j, area = 0,
 			  endAbsPos = service.addVectors(startAbsPos, bondVect),
-			  perpVectCoordsCCW = [-bondVect[1], bondVect[0]],
-			  perpVectCoordsCW = [bondVect[1], -bondVect[0]],
+				normVector = service.multVectByScalar(
+				  service.norm(bondVect),
+				  bondLength
+			  ),
+			  perpVectCoordsCCW = service.getPerpVectorCCW(normVector),
+			  perpVectCoordsCW = service.getPerpVectorCW(normVector),
 			  rectPoints = [
 					service.addVectors(startAbsPos, perpVectCoordsCCW, factor),
 				  service.addVectors(startAbsPos, perpVectCoordsCW, factor),
@@ -4195,7 +4228,10 @@
 
 		var service = {},
 			BOND_LENGTH = Const.BOND_LENGTH,
+			BOND_FOCUS = Const.BOND_FOCUS,
 			BONDS_AUX = Const.BONDS_AUX,
+			CIRC_R = Const.CIRC_R,
+			AROMATIC_R = Const.AROMATIC_R,
 			Atom = DCAtom.Atom,
 			Arrow = DCArrow.Arrow,
 			Bond = DCBond.Bond,
@@ -4203,108 +4239,7 @@
 			Label = DCLabel.Label,
 			Structure = DCStructure.Structure,
 			Selection = DCSelection.Selection;
-
-		/**
-		 * Looks for an `Atom` object (or objects if more than one has the specified coords) and deletes it (them).
-		 * Attaches items in its `bonds` array directly to `structure` array in `Structure` object.
-		 * @params {Structure} structure - a Structure object to modify,
-		 * @params {number[]} mouseCoords - coordinates of the mouse pointer (where `mouseup` occurred)
-		 * @returns {Structure}
-		 */
-		service.deleteFromStructure = function (structure, mouseCoords) {
-			var origin = structure.getOrigin(), newAtomArray = [], aux = [], aromaticArr, newAromaticArr;
-
-			// recursievly look for an atom to delete
-			check(structure.getStructure(), origin);
-
-			// applies new coords to the found atom Objects
-			angular.forEach(newAtomArray, function (ob) {
-				var obj = ob.obj;
-				if (obj instanceof Arrow) {
-					obj.setOrigin(ob.coords);
-				} else if (obj instanceof Atom) {
-					obj.setCoords(ob.coords);
-				}
-				aux.push(obj);
-			});
-
-			if (structure.isAromatic()) {
-				// if is aromatic
-				aromaticArr = structure.getDecorate("aromatic");
-				newAromaticArr = [];
-				angular.forEach(aromaticArr, function (arom) {
-					if (!Utils.insideCircle(arom.coords, mouseCoords, Const.AROMATIC_R)) {
-						newAromaticArr.push(arom);
-					}
-				});
-				structure.setDecorate("aromatic", newAromaticArr);
-			}
-
-			structure.setStructure(aux);
-
-			/**
-			* Recursively looks for `Atom` objects to delete.
-			* @param {Atom|Bond|Arrow} struct - `structure` array or `bonds` array,
-			* @param {number[]} pos - current absolute position,
-			* @param {Atom} prevAtom - preceding `Atom` object (makes sense when iterating over `bonds` array)
-			*/
-			function check(struct, pos, prevAtom) {
-				var i, absPos, current, newBondArray = [], absPosStart, absPosEnd;
-				for(i = 0; i < struct.length; i += 1) {
-					current = struct[i];
-					if (current instanceof Arrow) {
-						// current object is `Arrow`
-						absPosStart = [current.getOrigin("x") + pos[0], current.getOrigin("y") + pos[1]];
-						absPosEnd = [current.getEnd("x") + pos[0], current.getEnd("y") + pos[1]];
-						if (!(Utils.insideCircle(absPosStart, mouseCoords, Const.CIRC_R) || Utils.insideCircle(absPosEnd, mouseCoords, Const.CIRC_R))) {
-							// if this arrow was NOT chosen then don't apply any changes
-							// omit it otherwise
-							newAtomArray.push({ obj: current, coords: current.getOrigin() });
-						}
-					} else if (current instanceof Atom) {
-						// current object is `Atom`
-						absPos = [current.getCoords("x") + pos[0], current.getCoords("y") + pos[1]];
-						if (Utils.insideCircle(absPos, mouseCoords, Const.CIRC_R)) {
-							// if this atom was chosen then apply changes
-							changeArray(absPos, current);
-						} else {
-							// don't change anything otherwise
-							newAtomArray.push({ obj: current, coords: current.getCoords() });
-						}
-						check(current.getBonds(), absPos, current);
-					} else if (current instanceof Bond) {
-						// current Object is bond
-						absPos = [current.getAtom().getCoords("x") + pos[0], current.getAtom().getCoords("y") + pos[1]];
-						if (Utils.insideCircle(absPos, mouseCoords, Const.CIRC_R)) {
-							// if atom at the end of this bond was chosen then apply changes
-							changeArray(absPos, current.getAtom());
-						} else {
-							// don't change anything otherwise
-							newBondArray.push(current);
-						}
-						check(current.getAtom().getBonds(), absPos, current.getAtom());
-					}
-				}
-
-				// when finished iterating over 'bonds' array
-				// set an array of all `Bond` objects that were NOT chosen
-				// otherwise prevAtom is undefined
-				if (typeof prevAtom !== "undefined") { prevAtom.setBonds(newBondArray); }
-
-				// extracts `Atom` objects from the `bonds` array of the deleted `Atom` object
-				// adds them to `newAtomArray` array and sets their new coords
-				function changeArray(absPos, atom) {
-					var i, newCoords, newAbsPos, at;
-					for (i = 0; i < atom.getBonds().length; i += 1) {
-						at = atom.getBonds(i).getAtom();
-						newAbsPos = [at.getCoords("x") + absPos[0], at.getCoords("y") + absPos[1]];
-						newCoords = Utils.subtractVectors(newAbsPos, origin);
-						newAtomArray.push({ obj: at, coords: newCoords });
-					}
-				}
-			}
-		}
-
+			
 		/**
 		 * Checks if supplied coordinates are within a circle of an atom.
 		 * @param {Structure} structure - a `Structure` object on which search is performed,
@@ -4320,7 +4255,7 @@
 
 			return foundObj;
 
-			function check(struct, pos) {
+			function check(struct, pos, prevAtom) {
 				var i, absPos, aux, obj;
 				for(i = 0; i < struct.length; i += 1) {
 					obj = struct[i];
@@ -4332,18 +4267,19 @@
 						aux = obj.getAtom();
 					}
 					absPos = Utils.addVectors(aux.getCoords(), pos);
-					if (Utils.insideCircle(absPos, position, Const.CIRC_R)) {
+					if (Utils.insideCircle(absPos, position, CIRC_R)) {
 						if (!found) {
 							foundObj.foundAtom = aux;
+							foundObj.leadingBond = obj instanceof Bond ? obj: undefined;
+							foundObj.prevAtom = prevAtom;
 							foundObj.absPos = absPos;
 							foundObj.firstAtom = firstAtom;
 						} else {
 						  foundObj.hasDuplicate = true;
 						}
 						found = true;
-					} else {
-					  check(aux.getBonds(), absPos);
 					}
+					check(aux.getBonds(), absPos, aux);
 				}
 			}
 		};
@@ -4380,7 +4316,7 @@
 				bonds = atom.getBonds();
 				for (i = 0; i < bonds.length; i += 1) {
 					absPos = Utils.addVectors(bonds[i].getAtom().getCoords(), pos);
-					if (!found && Utils.insideFocus(pos, bonds[i], position, Const.BOND_FOCUS)) {
+					if (!found && Utils.insideFocus(pos, bonds[i], position, BOND_FOCUS, BOND_LENGTH)) {
 						found = true;
 						foundObj.foundBond = bonds[i];
 						foundObj.startAtom = atom;
@@ -4404,6 +4340,66 @@
 			startAtom.deleteBond(bond);
 			atom.setCoords(coords);
 			structure.addToStructures(atom);
+		};
+
+		/**
+		 * Deletes `Atom` object. Takes care of `Atom` and `Bond` objects connected with it.
+		 * @param {Structure} structure - a `Structure` object on which search is performed,
+		 * @param {Atom} atom - `Atom` object to remove,
+		 * @param {number[]} absPos - its absolute position,
+		 * @param {Bond} leadingBond - `Bond` object leading to that atom,
+		 * @param {Atom} leadingAtom - `Atom` object containing that bond
+		 */
+		service.deleteAtom = function (structure, atom, absPos, leadingBond, leadingAtom, hasDuplicate) {
+			var at, coords, outBonds = atom.getBonds(), i, outAtoms = [], struct, duplAtomObject, newStructure = [];
+
+			if (typeof leadingBond !== "undefined") {
+				for (i = 0; i < outBonds.length; i += 1) {
+					at = outBonds[i].getAtom();
+					coords = Utils.addVectors(absPos, at.getCoords());
+					at.setCoords(
+						Utils.subtractVectors(coords, structure.getOrigin())
+					);
+					outAtoms.push(at);
+				}
+				structure.addToStructures(outAtoms);
+			  leadingAtom.deleteBond(leadingBond);
+			} else {
+				struct = structure.getStructure();
+				for (i = 0; i < struct.length; i += 1) {
+					if (struct[i] !== atom) {
+					  newStructure.push(struct[i]);
+					} else {
+						newStructure = newStructure.concat(
+							extractAtoms(struct[i].getBonds(), struct[i].getCoords())
+						);
+					}
+				}
+				structure.setStructure(newStructure);
+			}
+
+			if (hasDuplicate) {
+				duplAtomObject = service.isWithinAtom(structure, absPos);
+				service.deleteAtom(
+					structure,
+					duplAtomObject.foundAtom,
+					duplAtomObject.absPos,
+					duplAtomObject.leadingBond,
+					duplAtomObject.prevAtom,
+					duplAtomObject.hasDuplicate
+				);
+			}
+
+			function extractAtoms(bonds, position) {
+				var i, at, coords, atoms = [];
+				for (i = 0; i < bonds.length; i += 1) {
+					at = bonds[i].getAtom();
+					coords = Utils.addVectors(position, at.getCoords());
+					at.setCoords(coords);
+					atoms.push(at);
+				}
+				return atoms;
+			}
 		};
 
 		/**
@@ -4517,12 +4513,12 @@
 		 * @param {number[]} absPos - absolute position of chosen `Atom`  object,
 		 * @param {number[]} mouseCoords - coordinates associated with a mouse event,
 		 * @param {StructureCluster} chosenStructure - `StructureCluster` object,
-		 * @param {boolean} customLength - if custom length should be used,
+		 * @param {boolean} customLength - if custom length should be used
 		 */
 		service.modifyAtom = function (structure, atom, firstAtom, absPos, mouseCoords, chosenStructure, customLength) {
 			var vector;
 
-			if (Utils.insideCircle(absPos, mouseCoords, Const.CIRC_R)) {
+			if (Utils.insideCircle(absPos, mouseCoords, CIRC_R)) {
 				vector = chooseDirectionAutomatically();
 			} else {
 				vector = chooseDirectionManually();
@@ -4795,22 +4791,31 @@
 		 * @param {Structure} structure - `Structure` object,
 		 * @param {number[]} mouseCoords - coordinates associated with a mouse event,
 		 * @param {number[]} downMouseCoords - coordinates associated with 'mousedown' event,
-		 * @param {StructureCluster} chosenStructure - `StructureCluster` object
+		 * @param {StructureCluster} chosenStructure - `StructureCluster` object,
+		 * @param {boolean} customLength - if custom length should be used
 		 */
-		service.addStructureOnEmptySpace = function (structure, mouseCoords, downMouseCoords, chosenStructure) {
+		service.addStructureOnEmptySpace = function (structure, mouseCoords, downMouseCoords, chosenStructure, customLength) {
 			var structureAux, coords, bond;
 			if (structure === null) {
 				// if the content is empty
 				structure = angular.copy(chosenStructure.getStructure(downMouseCoords, mouseCoords));
-				// and set its origin
+				// set its origin
 				structure.setOrigin(downMouseCoords);
+				if (customLength) {
+					structure.getStructure(0)
+					  .getBonds(0)
+						.getAtom()
+						.setCoords(
+							Utils.subtractVectors(mouseCoords, downMouseCoords)
+						);
+				}
 				if (structure.isAromatic()) {
 					// if the chosen Structure object is aromatic,
 					// then add appropriate flag to the original Structure object
 					bond = Const.getBondByDirection(structure.getName()).bond;
 					structure.addDecorate("aromatic", {
 						fromWhich: [0, 0],
-						coords: [downMouseCoords[0] + bond[0], downMouseCoords[1] + bond[1]]
+						coords: Utils.addVectors(downMouseCoords, bond)
 					});
 				}
 			} else {
@@ -4818,8 +4823,15 @@
 				// `Structure` object already exists
 				// calaculate new coords
 				coords = Utils.subtractVectors(downMouseCoords, structure.getOrigin());
-				// otherwise get default
 				structureAux = angular.copy(chosenStructure.getStructure(downMouseCoords, mouseCoords));
+				if (customLength) {
+					structureAux.getStructure(0)
+					  .getBonds(0)
+						.getAtom()
+						.setCoords(
+							Utils.subtractVectors(mouseCoords, downMouseCoords)
+						);
+				}
 				if (structureAux.isAromatic()) {
 					// if the chosen Structure object is aromatic,
 					// then add appropriate flag to the original Structure object
@@ -4827,7 +4839,7 @@
 					bond = Const.getBondByDirection(structureAux.getName()).bond;
 					structure.addDecorate("aromatic", {
 						fromWhich: angular.copy(coords),
-						coords: [downMouseCoords[0] + bond[0], downMouseCoords[1] + bond[1]]
+						coords: Utils.addVectors(downMouseCoords, bond)
 					});
 				}
 				// extract the first object from structures array and set its origin
@@ -5067,9 +5079,7 @@
 				perpVectCoordsCCW = Utils.getPerpVectorCCW(normVector),
 				perpVectCoordsCW = Utils.getPerpVectorCW(normVector),
         result, resultInv,
-				aux = Utils.vect(vectCoords).isLongerThan(normVector) ?
-				  Utils.multVectByScalar(normVector, 1.5 * PUSH):
-				  Utils.multVectByScalar(normVector, PUSH);
+				aux = Utils.multVectByScalar(normVector, PUSH);
 
 			if (push) {
 				currentEnd = Utils.addVectors(start, aux);
@@ -5090,7 +5100,9 @@
       resultInv = [
         "M", Utils.addVectors(currentEnd, perpVectCoordsCCW, factorInv),
         "L", Utils.addVectors(currentEnd, perpVectCoordsCW, factorInv)
-      ]
+      ];
+
+			max = parseFloat(max.toFixed(0));
 
 			for (i = max; i > 0; i -= 1) {
 				factor = factor + BETWEEN_DBL_BONDS / max;
@@ -5114,23 +5126,29 @@
 		* @returns {Array}
 		*/
 		service.calcUndefinedBondCoords = function (start, end, push, newPush) {
-			var i, M, L, max = 10, result,
+			var i, M, L, result, maxInit, max, subEnd, c1, c2,
 			  vectCoords = Utils.subtractVectors(end, start),
-				vectCoords = Utils.multVectByScalar(
+				normVector = Utils.multVectByScalar(
 				  Utils.norm(vectCoords),
 				  BOND_LENGTH
 			  ),
-				perpVectCoordsCCW = Utils.getPerpVectorCCW(vectCoords),
-				perpVectCoordsCW = Utils.getPerpVectorCW(vectCoords),
-				aux = Utils.multVectByScalar(vectCoords, PUSH),
-				subEnd = Utils.addVectors(start, vectCoords, 1 / max),
-				c1 = Utils.addVectors(start, perpVectCoordsCW, UNDEF_BOND),
-				c2 = Utils.addVectors(subEnd, perpVectCoordsCW, UNDEF_BOND);
+				perpVectCoordsCCW = Utils.getPerpVectorCCW(normVector),
+				perpVectCoordsCW = Utils.getPerpVectorCW(normVector),
+				aux = Utils.multVectByScalar(normVector, PUSH);
+
+			maxInit = 10 * Utils.getLength(vectCoords) / BOND_LENGTH;
+			maxInit = parseFloat(maxInit.toFixed(0));
+			if (maxInit % 2 !== 0) { maxInit += 1; }
+			max = maxInit;
+			subEnd = Utils.addVectors(start, vectCoords, 1 / max);
+			c1 = Utils.addVectors(start, perpVectCoordsCW, UNDEF_BOND);
+			c2 = Utils.addVectors(subEnd, perpVectCoordsCW, UNDEF_BOND);
 
 			if (push) {
 				start = Utils.addVectors(start, aux);
 				vectCoords = Utils.subtractVectors(vectCoords, aux);
-				max -= 2;
+				max -= 0.2 * maxInit;
+				if (max % 2 !== 0) { max += 1; }
 				subEnd = Utils.addVectors(start, vectCoords, 1 / max);
 				c1 = Utils.addVectors(start, perpVectCoordsCW, UNDEF_BOND),
 				c2 = Utils.addVectors(subEnd, perpVectCoordsCW, UNDEF_BOND);
@@ -5138,13 +5156,16 @@
 
 			if (newPush) {
 				vectCoords = Utils.subtractVectors(vectCoords, aux);
-				max -= 2;
+				max -= 0.2 * maxInit;
+				if (max % 2 !== 0) { max += 1; }
 				subEnd = Utils.addVectors(start, vectCoords, 1 / max);
 				c1 = Utils.addVectors(start, perpVectCoordsCW, UNDEF_BOND),
 				c2 = Utils.addVectors(subEnd, perpVectCoordsCW, UNDEF_BOND);
 			}
 
 			result = ["M", start, "C", c1, ",", c2, ",", subEnd];
+
+			max = parseFloat(max.toFixed(0));
 
 			for (i = max - 1; i > 0; i -= 1) {
 				subEnd = Utils.addVectors(subEnd, vectCoords, 1 / max);
