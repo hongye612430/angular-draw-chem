@@ -179,27 +179,19 @@
         L2inv = Utils.addVectors(start, perpVectCoordsCW, BETWEEN_DBL_BONDS);
 
 			if (push) {
-        if (inverted === "inverted") {
-          end = Utils.subtractVectors(end, aux);
-        } else {
-          start = Utils.addVectors(start, aux);
-        }
+        start = Utils.addVectors(start, aux);
+				L1inv = Utils.addVectors(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
+  			L2inv = Utils.addVectors(start, perpVectCoordsCW, BETWEEN_DBL_BONDS);
       }
 
 			if (newPush) {
-        if (inverted === "inverted") {
-          start = Utils.addVectors(start, aux);
-  				L1inv = Utils.addVectors(start, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
-  				L2inv = Utils.addVectors(start, perpVectCoordsCW, BETWEEN_DBL_BONDS);
-        } else {
-  				end = Utils.subtractVectors(end, aux);
-  				L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
-  				L2 = Utils.addVectors(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
-        }
+  			end = Utils.subtractVectors(end, aux);
+  			L1 = Utils.addVectors(end, perpVectCoordsCCW, BETWEEN_DBL_BONDS);
+  			L2 = Utils.addVectors(end, perpVectCoordsCW, BETWEEN_DBL_BONDS);
 			}
 
 			return inverted === "inverted" ?
-        ["wedge", "M", end, "L", L1inv, "L", L2inv, "Z"]:
+        ["wedge", "M", L1inv, "L", L2inv, "L", end, "Z"]:
         ["wedge", "M", start, "L", L1, "L", L2, "Z"];
 		}
 

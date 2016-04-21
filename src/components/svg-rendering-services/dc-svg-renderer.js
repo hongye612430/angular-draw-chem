@@ -21,6 +21,7 @@
 		var service = {},
 		  BETWEEN_DBL_BONDS = Const.BETWEEN_DBL_BONDS,
 			BETWEEN_TRP_BONDS = Const.BETWEEN_TRP_BONDS,
+			BOND_LENGTH = Const.BOND_LENGTH,
 			ARROW_START = Const.ARROW_START,
 			ARROW_SIZE = Const.ARROW_SIZE,
 			UNDEF_BOND = Const.UNDEF_BOND,
@@ -176,14 +177,19 @@
 				*/
 				function drawLine(prevAbsPos, absPos, bondType, atom, mode, push) {
 					var newLen = output.length, foundAtom,
+					  vectCoords = Utils.subtractVectors(absPos, prevAbsPos),
+					  bondVectorNorm = Utils.multVectByScalar(
+							Utils.norm(vectCoords),
+							BOND_LENGTH
+						),
 					  pushVector = Utils.addVectors(
 							prevAbsPos,
-							Utils.multVectByScalar(atom.getCoords(), PUSH)
+							Utils.multVectByScalar(bondVectorNorm, PUSH)
 						),
 						newPush = typeof atom.getLabel() !== "undefined",
-						newPushVector = Utils.addVectors(
-							prevAbsPos,
-							Utils.multVectByScalar(atom.getCoords(), 1 - PUSH)
+						newPushVector = Utils.subtractVectors(
+							absPos,
+							Utils.multVectByScalar(bondVectorNorm, PUSH)
 						);
 					if (atom.isOrphan()) {
 						foundAtom = ModStructure.isWithinAtom(input, absPos).foundAtom;

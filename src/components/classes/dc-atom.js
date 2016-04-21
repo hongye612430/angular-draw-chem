@@ -181,7 +181,8 @@
 
 		/**
 		 * Gets all attached bonds.
-		 * @param {string} type - type of the bond, 'in' or 'out'
+		 * @param {string} type - type of the bond, 'in' or 'out',
+		 * @param {number[]} coords - coords of the bond to find,
 		 * @returns {object|object[]} - returns an object if `type` is not supplied, an array of objects if `type` is supplied
 		 */
 		Atom.prototype.getAttachedBonds = function (type, coords) {
@@ -198,6 +199,23 @@
 			} else if (typeof type === "undefined") {
 				// returns an object holding both 'in' and 'out' properties
 				return this.attachedBonds;
+			}
+		};
+
+		/**
+		 * Removes specified attached bonds.
+		 * @param {string} type - type of the bond, 'in' or 'out',
+		 * @param {number[]} coords - coords of the bond to remove
+		 */
+		Atom.prototype.removeAttachedBonds = function (type, coords) {
+			var output = [];
+			if (this.attachedBonds[type] !== "undefined") {
+			  this.attachedBonds[type].forEach(function (bond) {
+				  if (!Utils.compareVectors(bond.vector, coords, 2)) {
+					  output.push(bond);
+				  }
+			  });
+				this.attachedBonds[type] = output.length > 0 ? output: undefined;
 			}
 		};
 

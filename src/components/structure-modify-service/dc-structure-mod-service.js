@@ -127,11 +127,13 @@
 		 * @param {number[]} endAtomAbsPos - end `Atom` object's absolute coords
 		 */
 		service.deleteBond = function (structure, bond, startAtom, endAtomAbsPos) {
-			var atom = bond.getAtom(),
+			var endAtom = bond.getAtom(),
 			  coords = Utils.subtractVectors(endAtomAbsPos, structure.getOrigin());
+			endAtom.removeAttachedBonds("in", endAtom.getCoords());
+			startAtom.removeAttachedBonds("out", endAtom.getCoords());
 			startAtom.deleteBond(bond);
-			atom.setCoords(coords);
-			structure.addToStructures(atom);
+			endAtom.setCoords(coords);
+			structure.addToStructures(endAtom);
 		};
 
 		/**
@@ -148,6 +150,7 @@
 			if (typeof leadingBond !== "undefined") {
 				for (i = 0; i < outBonds.length; i += 1) {
 					at = outBonds[i].getAtom();
+					at.removeAttachedBonds("in", at.getCoords());
 					coords = Utils.addVectors(absPos, at.getCoords());
 					at.setCoords(
 						Utils.subtractVectors(coords, structure.getOrigin())
@@ -155,6 +158,7 @@
 					outAtoms.push(at);
 				}
 				structure.addToStructures(outAtoms);
+				leadingAtom.removeAttachedBonds("out", atom.getCoords());
 			  leadingAtom.deleteBond(leadingBond);
 			} else {
 				struct = structure.getStructure();
@@ -186,6 +190,7 @@
 				var i, at, coords, atoms = [];
 				for (i = 0; i < bonds.length; i += 1) {
 					at = bonds[i].getAtom();
+					at.removeAttachedBonds("in", at.getCoords());
 					coords = Utils.addVectors(position, at.getCoords());
 					at.setCoords(coords);
 					atoms.push(at);
@@ -297,7 +302,7 @@
 				var name = chosenStructure.getName(), // gets name of the `StructureCluster `object
 					size = chosenStructure.getRingSize(), // gets size of the ring (defaults to 0 for non-rings)
 					mult = chosenStructure.getMult(), // gets multiplicity of the bond
-					bond, angle, nextAtom, rotVect, foundAtom;
+					bond, angle, nextAtom, rotVect, foundAtomObj;
 				if (size > 0) {
 					/*
 					* if we are dealing with a ring
@@ -318,14 +323,16 @@
 					*/
 					// generate `Bond` object in the direction indicated by `vector`
 					bond = Structures.generateBond(vector, name, mult);
-					// check if an `Atom` object laready exists at this coords
-					foundAtom = service.isWithinAtom(
+					// check if an `Atom` object already exists at this coords
+					foundAtomObj = service.isWithinAtom(
 						structure,
 						Utils.addVectors(absPos, vector)
-					).foundAtom;
-					if (typeof foundAtom !== "undefined") {
+					);
+					if (typeof foundAtomObj.foundAtom !== "undefined") {
+						vector = Utils.subtractVectors(foundAtomObj.absPos, absPos);
+						bond.getAtom().setCoords(vector);
 						bond.getAtom().setAsOrphan();
-						foundAtom.attachBond("in", { vector: vector, multiplicity: mult })
+						foundAtomObj.foundAtom.attachBond("in", { vector: vector, multiplicity: mult })
 					}
 					// attach it to the starting `atom`
 					atom.addBond(bond);
@@ -344,7 +351,7 @@
 					structure.setAromatic();
 					structure.addDecorate("aromatic", {
 						fromWhich: firstAtom.getCoords(),
-						coords: [vector[0] + absPos[0], vector[1] + absPos[1]]
+						coords: Utils.addVectors(vector, absPos)
 					});
 				}
 		  }
@@ -396,8 +403,8 @@
 					);
 					vect = Utils.rotVectCCW(firstOutBond, Const.ANGLE);
 				} else {
-					// defaults to bond in north direction
-					vect = Const.BOND_N;
+					// defaults to bond in south direction
+					vect = Const.BOND_S;
 				}
 				// recursively checks if this bond is already attached,
 				// if so, rotates it by `Const.FREQ` clockwise
@@ -445,7 +452,7 @@
 					);
 				} else {
 					// defaults to bond in north direction
-					vect = Const.BOND_N;
+					vect = Const.BOND_S;
 				}
 				// finds all possible bonds, starting with `vect` and rotates it by `Const.FREQ`
 				possibleBonds = Utils.calcPossibleVectors(vect, Const.FREQ);
@@ -520,30 +527,42 @@
 		 * @param {StructureCluster} chosenStructure - `StructureCluster` object
 		 */
 		service.modifyBond = function (bond, startAtom, chosenStructure) {
-			var ringSize = chosenStructure.getRingSize(), bondType, newIndex, index,
-			  singleBondsAdd = ["single", "double", "triple"],
-			  doubleBonds = ["double", "double-left", "double-right"], inverted,
-				endAtom = bond.getAtom(), attachedBondIn = [], attachedBondOut = [],
+			var ringSize = chosenStructure.getRingSize(),
+			  bondType, bondObj, newIndex, index = -1,
+			  singleBondsAdd = [
+					{ name: "single", mult: 1 },
+					{ name: "double", mult: 2 },
+					{ name: "triple", mult: 3 }
+				],
+			  doubleBonds = ["double", "double-left", "double-right"], inverted, differentType,
+				endAtom = bond.getAtom(),
 				currentType = bond.getType();
 			if (ringSize > 0) {
 				// todo
 			} else {
 				bondType = chosenStructure.getDefault().getStructure(0).getBonds(0).getType();
 				if (bondType === "single") {
-					index = singleBondsAdd.indexOf(currentType);
-					newIndex = index < 0 ? 0: Utils.moveToRight(singleBondsAdd, index, 1);
-					bondType = singleBondsAdd[newIndex];
-					attachedBondOut = startAtom.getAttachedBonds("out", endAtom.getCoords());
-					attachedBondOut.forEach(function (bond) {
-						bond.multiplicity = 1;
+					singleBondsAdd.forEach(function (b, i) {
+						if (b.name === currentType) { index = i; }
 					});
+					newIndex = index < 0 ? 0: Utils.moveToRight(singleBondsAdd, index, 1);
+					bondObj = singleBondsAdd[newIndex];
+					bondType = bondObj.name;
+					updateAttachedBonds(bondObj.mult);
 				} else if (bondType === "double") {
 					index = doubleBonds.indexOf(currentType);
 					newIndex = index < 0 ? 0: Utils.moveToRight(doubleBonds, index, 1);
 					bondType = doubleBonds[newIndex];
+					updateAttachedBonds(2);
+				}	else if (bondType === "triple") {
+					updateAttachedBonds(3);
+				}	else if (bondType === "undefined") {
+					updateAttachedBonds(1);
 				} else if (bondType === "wedge" || bondType === "dash") {
-					inverted = currentType.indexOf("inverted") >= 0 || currentType !== bondType;
-					bondType = inverted ? bondType: bondType + "-inverted";
+					inverted = currentType.indexOf("inverted") >= 0;
+					differentType = currentType !== bondType;
+					bondType = inverted || differentType ? bondType: bondType + "-inverted";
+					updateAttachedBonds(1);
 				}
 
 				if (bondType === currentType) {
@@ -551,6 +570,18 @@
 				} else {
 				  bond.setType(bondType);
 					return true;
+				}
+
+				function updateAttachedBonds(mult) {
+					var attachedBondIn = [], attachedBondOut = [];
+					attachedBondIn = endAtom.getAttachedBonds("in", endAtom.getCoords());
+					attachedBondIn.forEach(function (bond) {
+						bond.multiplicity = mult;
+					});
+					attachedBondOut = startAtom.getAttachedBonds("out", endAtom.getCoords());
+					attachedBondOut.forEach(function (bond) {
+						bond.multiplicity = mult;
+					});
 				}
 			}
 		};
@@ -564,7 +595,7 @@
 		 * @param {boolean} customLength - if custom length should be used
 		 */
 		service.addStructureOnEmptySpace = function (structure, mouseCoords, downMouseCoords, chosenStructure, customLength) {
-			var structureAux, coords, bond;
+			var structureAux, coords, bond, atom;
 			if (structure === null) {
 				// if the content is empty
 				structure = angular.copy(chosenStructure.getStructure(downMouseCoords, mouseCoords));
@@ -592,29 +623,9 @@
 				// `Structure` object already exists
 				// calaculate new coords
 				coords = Utils.subtractVectors(downMouseCoords, structure.getOrigin());
-				structureAux = angular.copy(chosenStructure.getStructure(downMouseCoords, mouseCoords));
-				if (customLength) {
-					structureAux.getStructure(0)
-					  .getBonds(0)
-						.getAtom()
-						.setCoords(
-							Utils.subtractVectors(mouseCoords, downMouseCoords)
-						);
-				}
-				if (structureAux.isAromatic()) {
-					// if the chosen Structure object is aromatic,
-					// then add appropriate flag to the original Structure object
-					structure.setAromatic();
-					bond = Const.getBondByDirection(structureAux.getName()).bond;
-					structure.addDecorate("aromatic", {
-						fromWhich: angular.copy(coords),
-						coords: Utils.addVectors(downMouseCoords, bond)
-					});
-				}
-				// extract the first object from structures array and set its origin
-				structureAux.getStructure(0).setCoords(coords);
-				// add to the original `Structure` object
-				structure.addToStructures(structureAux.getStructure(0));
+				atom = new Atom(coords);
+				structure.addToStructures(atom);
+				service.modifyAtom(structure, atom, atom, downMouseCoords, mouseCoords, chosenStructure, customLength);
 			}
 			return structure;
 		};
