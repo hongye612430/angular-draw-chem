@@ -28,6 +28,14 @@
 						<button ng-click="chooseCustomLabel(customLabel)" class="btn btn-primary" >Choose</button>
 					</div>
 			</div>
+			<div id="#dc-quick-tools-h" class="dc-quick-tools-h">
+				<!-- Quick Menu Items -->
+				<div class="btn-group" >
+					<button ng-repeat="(name, action) in quickMenu" ng-click="action.action(action.scope)" id="dc-btn-{{name}}" type="button" class="btn btn-default" >
+						<img class="dc-thumbnail" alt="{{action.id}}" ng-src="{{pathToSvg}}/{{action.id}}.svg">
+					</button>
+				</div>
+			</div>
 			<dc-content
 				class="dc-editor-dialog-content"
 				ng-mousedown="doOnMouseDown($event)"

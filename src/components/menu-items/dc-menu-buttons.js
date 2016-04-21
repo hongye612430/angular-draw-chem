@@ -28,9 +28,6 @@
 				"Arrows": {
 					actions: Arrows.arrows
 				},
-				"Shapes": {
-					actions: Shapes.shapes
-				},
 				"Structures": {
 					actions: Structures.structures
 				},
@@ -41,6 +38,8 @@
 
 			scope.menu = {};
 
+			scope.quickMenu = {};
+
       // stores all actions related to Actions, Edit, Arrows, and ModStructure menu items
       angular.forEach(menu, function (item, name) {
 				scope.menu[name] = {
@@ -49,11 +48,18 @@
 				}
 			});
 
+			angular.forEach(menu["Structures"].actions, function (item, name) {
+				if (item.quick) {
+					scope.quickMenu[name] = item;
+					item.scope = scope;
+				}
+			});
+
       scope.chooseCustomLabel = function (text) {
 				Flags.customLabel = text;
         Flags.selected = "customLabel";
       }
-    }
+    };
 
 		return service;
 	}

@@ -73,17 +73,20 @@
 			"benzene alt": {
 				action: createStructureAction(service.benzeneAlt),
 				id: "benzene-alt",
-				thumbnail: true
+				thumbnail: true,
+				quick: true
 			},
 			"cyclohexane": {
 				action: createStructureAction(service.cyclohexane),
 				id: "cyclohexane",
-				thumbnail: true
+				thumbnail: true,
+				quick: true
 			},
 			"cyclopentane": {
 				action: createStructureAction(service.cyclopentane),
 				id: "cyclopentane",
-				thumbnail: true
+				thumbnail: true,
+				quick: true
 			},
 			"cyclopentadiene": {
 				action: createStructureAction(service.cyclopentadiene),
@@ -109,17 +112,20 @@
 			"single bond": {
 				action: createStructureAction(service.singleBond),
 				id: "single-bond",
-				thumbnail: true
+				thumbnail: true,
+				quick: true
 			},
 			"wedge bond": {
 				action: createStructureAction(service.wedgeBond),
 				id: "wedge-bond",
-				thumbnail: true
+				thumbnail: true,
+				quick: true
 			},
 			"dash bond": {
 				action: createStructureAction(service.dashBond),
 				id: "dash-bond",
-				thumbnail: true
+				thumbnail: true,
+				quick: true
 			},
 			"undefined bond": {
 				action: createStructureAction(service.undefinedBond),
@@ -129,12 +135,14 @@
 			"double bond": {
 				action: createStructureAction(service.doubleBond),
 				id: "double-bond",
-				thumbnail: true
+				thumbnail: true,
+				quick: true
 			},
 			"triple bond": {
 				action: createStructureAction(service.tripleBond),
 				id: "triple-bond",
-				thumbnail: true
+				thumbnail: true,
+				quick: true
 			}
 		};
 
