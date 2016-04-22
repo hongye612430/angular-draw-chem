@@ -219,14 +219,17 @@
 		 * @param {Structure} structure - a `Structure` object to be labeled
 		 */
 		service.labelSingleAtoms = function (structure) {
-			var i, obj, struct = structure.getStructure(), hasDuplicate, absPos;
+			var i, obj, struct = structure.getStructure(), hasDuplicate, absPos, oldLabel;
 			for (i = 0; i < struct.length; i += 1) {
 				obj = struct[i];
 				if (obj instanceof Atom && !obj.isOrphan() && obj.getBonds().length === 0) {
 					absPos = Utils.addVectors(structure.getOrigin(), obj.getCoords());
 					hasDuplicate = service.isWithinAtom(structure, absPos).hasDuplicate;
 					if (!hasDuplicate) {
-						obj.setLabel(new Label("C", 4, "lr"));
+						oldLabel = obj.getLabel();
+						if (typeof oldLabel === "undefined") {
+						  obj.setLabel(new Label("C", 4, "lr"));
+						}
 						obj.resetAttachedBonds();
 					}
 				}
@@ -263,12 +266,17 @@
 
 			// if `Atom` object already has a label on it
 			// then change its direction on mouseup event
-			if (typeof currentLabel !== "undefined") {
+			if (typeof currentLabel !== "undefined" && isOldLabel()) {
 				if (currentLabel.getMode() === "lr") {
 					atom.getLabel().setMode("rl");
 				} else if (currentLabel.getMode() === "rl") {
 					atom.getLabel().setMode("lr");
 				}
+			}
+
+			function isOldLabel() {
+				var name = currentLabel.getLabelName();
+				return name === chosenLabel.getLabelName() || name === customLabel;
 			}
 		};
 
@@ -524,7 +532,8 @@
 		 * Modifies `Bond` object.
 		 * @param {Bond} bond - `Bond` object to be modified,
 		 * @param {Atom} startAtom - `Atom` object at the beginning of this bond,
-		 * @param {StructureCluster} chosenStructure - `StructureCluster` object
+		 * @param {StructureCluster} chosenStructure - `StructureCluster` object,
+		 * @returns {boolean}
 		 */
 		service.modifyBond = function (bond, startAtom, chosenStructure) {
 			var ringSize = chosenStructure.getRingSize(),
@@ -538,7 +547,8 @@
 				endAtom = bond.getAtom(),
 				currentType = bond.getType();
 			if (ringSize > 0) {
-				// todo
+				//Structures.generateFusedRing(bond, startAtom, chosenStructure);
+				//return true;
 			} else {
 				bondType = chosenStructure.getDefault().getStructure(0).getBonds(0).getType();
 				if (bondType === "single") {
@@ -571,18 +581,18 @@
 				  bond.setType(bondType);
 					return true;
 				}
+			}
 
-				function updateAttachedBonds(mult) {
-					var attachedBondIn = [], attachedBondOut = [];
-					attachedBondIn = endAtom.getAttachedBonds("in", endAtom.getCoords());
-					attachedBondIn.forEach(function (bond) {
-						bond.multiplicity = mult;
-					});
-					attachedBondOut = startAtom.getAttachedBonds("out", endAtom.getCoords());
-					attachedBondOut.forEach(function (bond) {
-						bond.multiplicity = mult;
-					});
-				}
+			function updateAttachedBonds(mult) {
+				var attachedBondIn = [], attachedBondOut = [];
+				attachedBondIn = endAtom.getAttachedBonds("in", endAtom.getCoords());
+				attachedBondIn.forEach(function (bond) {
+					bond.multiplicity = mult;
+				});
+				attachedBondOut = startAtom.getAttachedBonds("out", endAtom.getCoords());
+				attachedBondOut.forEach(function (bond) {
+					bond.multiplicity = mult;
+				});
 			}
 		};
 

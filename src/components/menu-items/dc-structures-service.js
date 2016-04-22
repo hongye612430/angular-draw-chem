@@ -255,6 +255,32 @@
 		return service;
 
 		/**
+		 * Recursively generates atoms for a fused ring.
+		 * @param {Bond} bond - `Bond` object, to which new ring will be added,
+		 * @param {Atom} startAtom - starting `Atom`,
+		 * @param {StructureCluster} ring - `StructureCluster` object with info about chosen ring
+		 */
+		service.generateFusedRing = function(bond, startAtom, ring) {
+			var angle = ring.getAngle(),
+			  endAtom = bond.getAtom(),
+			  size = ring.getSize();
+
+			if (getClearSide() === "left") {
+				genRing(Utils.rotVectCCW);
+			} else if (getClearSide() === "right") {
+				genRing(Utils.rotVectCW);
+			}
+
+			function getClearSide() {
+
+			}
+
+			function genRing() {
+
+			}
+		};
+
+		/**
 		* Adds an action associated with a button.
 		* @param {Function} cb - a callback fn to invoke after clicking on the button,
 		* @returns {Function}

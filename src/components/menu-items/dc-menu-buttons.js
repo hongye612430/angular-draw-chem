@@ -48,6 +48,7 @@
 				}
 			});
 
+			// stores all actions related to quick menu
 			angular.forEach(menu["Structures"].actions, function (item, name) {
 				if (item.quick) {
 					scope.quickMenu[name] = item;
