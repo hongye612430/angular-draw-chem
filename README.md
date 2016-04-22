@@ -4,10 +4,12 @@ current:
 
 [![Build Status](https://travis-ci.org/MMMalik/angular-draw-chem.svg?branch=master)](https://travis-ci.org/MMMalik/angular-draw-chem)
 
+<img alt="logo" src="http://mmmalik.github.io/angular-draw-chem/images/svg/logo-new.svg" width="200" height="200" />
+
 aim of the project
 ------
-The aim of this project is to create a light-weight, AngularJS-based editor for producing structural formulas.
-The editor is from the beginning designed to support `svg`, thus enabling the drawing of good-looking, scalable structures.
+The aim of this project is to create a light-weight, AngularJS-based editor for producing structural formulas (organic molecules mainly).
+The editor is from the beginning designed to support `svg`, thus enabling drawing of good-looking, scalable structures.
 
 examples
 ------
@@ -44,7 +46,7 @@ features
 
 &#10004; delete selected structures,
 
-&#10004; erase single atom,
+&#10004; erase single atom/bond,
 
 &#10004; basic reaction arrows,
 
@@ -60,17 +62,17 @@ features
 
 #### Still to do:
 
-&#8722; fix issues with transferring: labels have to be taken into account, no 'hover' effects,
-
 &#8722; make different cache 'instances',
 
 &#8722; add 'align middle' tools (vertical and horizontal),
 
-&#8722; fix positioning of some labels,
-
 &#8722; enable adding text elements (e.g. for comments or adding reaction conditions over an arrow),
 
-&#8722; add possibility to select and change bonds,
+&#8722; add possibility to select single atoms/bonds,
+
+&#8722; add possibility to make fused rings,
+
+&#8722; add possibility to make simple calculations (mass weight, formula, etc.),
 
 &#8722; add more scenario tests,
 
@@ -88,6 +90,8 @@ The project consists of the following components:
 
 #### svg rendering services
 1. `DrawChem` `factory` - the main entry point for the use in a custom `controller`,
+2. `DrawChemSvgUtils` `factory` - utilities for constructing `svg` elements,
+3. `DrawChemSvgBonds` `factory` - utilities for making bonds in `svg`,
 2. `DrawChemSvgRenderer` `factory` - contains key functionalities for transforming a `Structure` object into `svg`.
 
 #### structure modify services
