@@ -1,5 +1,5 @@
 <!doctype html>
-<html class="no-js" lang="">
+<html class="no-js" lang="" ng-app="angularDrawChemSite" ng-controller="AppCtrl as appCtrl">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -12,11 +12,11 @@
     <link rel="stylesheet" href="stylesheets/draw-chem-editor-modal.min.css">
     <base href="/angular-draw-chem/">
   </head>
-  <body dc-shortcuts ng-app="angularDrawChemSite" ng-controller="AppCtrl as appCtrl">
+  <body ng-class="{overflow: appCtrl.showEditor()}" dc-shortcuts >
     <div class="row">
       <div class="col-md-2 col-xs-3">
         <div class="sidebar" ng-controller="SidebarCtrl as ctrl">
-          <img class="logo" ng-src="images/svg/logo.svg"></img>
+          <img class="logo" ng-src="images/svg/logo-new.svg"></img>
           <sidebar-menu menu-items="ctrl.menuItems"></sidebar-menu>
           <div class="sidebar-additional">
             <p>
@@ -44,7 +44,7 @@
         </div>
       </div>
     </div>
-    <div draw-chem-editor dc-modal show-editor="appCtrl.showEditor()" width="99%" height="99%"></div>
+    <div draw-chem-editor dc-modal show-editor="appCtrl.showEditor()" width="100%" height="100%"></div>
     <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.0-beta.2/angular.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.0-beta.2/angular-sanitize.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.0-beta.2/angular-route.js"></script>

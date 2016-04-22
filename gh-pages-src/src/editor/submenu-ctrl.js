@@ -15,13 +15,13 @@
 			return "components" + location + "-sub.html";
 		};
 		vm.svgs = {
-			"erythromycin": { file: "erythromycin", style: { width: "30%" } },
-			"barbituric acid": { file: "barbituric-acid", style: { width: "15%" } },
-			"inositol": { file: "inositol", style: { width: "15%" } },
-			"miglustat": { file: "miglustat", style: { width: "15%" } },
-			"naringenin": { file: "naringenin", style: { width: "25%" } },
-			"curcumin": { file: "curcumin", style: { width: "35%" } },
-			"cephalosporins": { file: "cephalosporins", style: { width: "20%" } }
+			"erythromycin": { file: "erythromycin", style: { width: "50%" } },
+			"barbituric acid": { file: "barbituric-acid", style: { width: "25%" } },
+			"inositol": { file: "inositol", style: { width: "25%" } },
+			"miglustat": { file: "miglustat", style: { width: "25%" } },
+			"naringenin": { file: "naringenin", style: { width: "35%" } },
+			"curcumin": { file: "curcumin", style: { width: "45%" } },
+			"cephalosporins": { file: "cephalosporins", style: { width: "30%" } }
 		};
 		vm.releases = [];
 		$http
