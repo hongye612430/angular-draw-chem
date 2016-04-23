@@ -2,7 +2,7 @@
 
 <img alt="logo" src="http://mmmalik.github.io/angular-draw-chem/images/svg/logo-new.svg" width="200" height="200" />
 
-latest stable release: v1.0.0
+latest stable release: v2.0.0-beta
 
 current:
 
