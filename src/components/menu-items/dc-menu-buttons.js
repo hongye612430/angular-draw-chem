@@ -31,7 +31,7 @@
 				"Structures": {
 					actions: Structures.structures
 				},
-				"Labels": {
+				"Atom Labels": {
 					actions: Labels.labels
 				}
 			}
@@ -59,7 +59,12 @@
       scope.chooseCustomLabel = function (text) {
 				Flags.customLabel = text;
         Flags.selected = "customLabel";
-      }
+      };
+
+			scope.chooseTextArea = function (text) {
+				Flags.textArea = text;
+        Flags.selected = "textArea";
+      };
     };
 
 		return service;

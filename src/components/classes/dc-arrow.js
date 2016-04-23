@@ -57,6 +57,15 @@
 		};
 
 		/**
+		* Sets relative end (vector) of this `Arrow` object.
+		* @param {number[]} vector - end vector
+		*/
+		Arrow.prototype.setRelativeEnd = function (vector) {
+			this.relativeEnd = vector;
+			this.updateEnd();
+		};
+
+		/**
 		* Gets end coordinates of this `Arrow` object in relation to its origin.
 		* @param {string} coord - which coord to return ('x' or 'y'),
 		* @returns {number|number[]}

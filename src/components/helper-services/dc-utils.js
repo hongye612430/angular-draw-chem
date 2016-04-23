@@ -292,17 +292,18 @@
 		/**
 		 * Checks if a point is inside an area delimited by a rectangle.
 		 * @param {number[]} startAbsPos - absolute position of a starting point,
-		 * @param {Bond} bond - bond object,
+		 * @param {Bond|Arrow} obj - `Bond` or `Arrow` object,
 		 * @param {number[]} point - coordinates of a point to be validated,
 		 * @param {number} factor - factor,
 		 * @param {number} bondLength - default bond length,
 		 * @returns {boolean}
 		 */
-		service.insideFocus = function (startAbsPos, bond, point, factor, bondLength) {
-			var bondVect = bond.getAtom().getCoords(), i, j, area = 0,
-			  endAbsPos = service.addVectors(startAbsPos, bondVect),
+		service.insideFocus = function (startAbsPos, obj, point, factor, bondLength) {
+			var vect = typeof obj.getAtom !== "undefined" ? obj.getAtom().getCoords(): obj.getRelativeEnd(),
+			  i, j, area = 0,
+			  endAbsPos = service.addVectors(startAbsPos, vect),
 				normVector = service.multVectByScalar(
-				  service.norm(bondVect),
+				  service.norm(vect),
 				  bondLength
 			  ),
 			  perpVectCoordsCCW = service.getPerpVectorCCW(normVector),
@@ -399,6 +400,14 @@
 
 		service.getPerpVectorCW = function (v) {
 			return [v[1], -v[0]];
+		};
+
+		service.getOppositeVector = function (v) {
+			return service.multVectByScalar(v, -1);
+		};
+
+		service.getLengthRatio = function (v1, v2) {
+			return service.getLength(v1) / service.getLength(v2);
 		};
 
 		service.vect = function (v) {

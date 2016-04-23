@@ -32,6 +32,11 @@
       });
     };
 
+		/**
+		* Generates `rect` elements for bond focus.
+		* @param {Object[]} bondFocus - array of objects with data needed to construct a `rect` element,
+		* @param {Object} obj - object accumulating `rect` elements
+		*/
 		service.generateBondFocus = function(bondFocus, obj) {
 			bondFocus.forEach(function (bf) {
 				obj.full += "<rect class='focus' " +
@@ -94,7 +99,46 @@
     };
 
 		/**
-		* Generates `text` elements.
+		* Generates `text` elements for text areas.
+		* @param {Object[]} bondFocus - array of objects with data needed to construct a `rect` element,
+		* @param {Object} obj - object accumulating `rect` elements
+		*/
+		service.generateTextAreas = function(textAreas, obj) {
+			textAreas.forEach(function (textArea) {
+				var txt = "<text class='text-area' dy='0.2125em' " +
+					"x='" + textArea.x.toFixed(2) + "' " +
+					"y='" + textArea.y.toFixed(2) + "' " +
+					"textarea='true' " +
+					"text-anchor='lr' " +
+				">" + genText(textArea.text) + "</text>";
+				obj.full += txt;
+				obj.mini += txt;
+			});
+
+			function genText(text) {
+				var i, aux, isPreceded = false,
+				  match = text.match(/.?(\_\{.*?\})?/g),
+					output = "";
+	      for (i = 0; i < match.length; i += 1) {
+					aux = match[i].split("_{");
+					if(isPreceded) {
+						output += "<tspan dy='-" + DCSvg.textAreaFontSize * 0.25 + "' >" + aux[0] + "</tspan>";
+						isPreceded = false;
+					} else {
+						output += "<tspan>" + aux[0] + "</tspan>";
+					}
+					if (aux.length === 2) {
+						aux[1] = aux[1].substr(0, aux[1].length - 1);
+						output += "<tspan class='text-area-sub' dy='" + DCSvg.textAreaFontSize * 0.25 + "' >" + aux[1] + "</tspan>";
+						isPreceded = true;
+					}
+	      }
+	      return output;
+			}
+    };
+
+		/**
+		* Generates `text` elements for atom labels.
 		* @param {Object[]} labels - array of objects with data needed to construct a `text` element,
 		* @param {Object} obj - object accumulating `text` elements
 		*/
@@ -194,6 +238,14 @@
 			}
     };
 
+		/**
+		* Adds new element to `bondFocus` array based on supplied info.
+		* @param {Object[]} bondFocus - array of objects with all data necessary for generating `rect` elements associated with bond focus,
+		* @param {number[]} prevAbsPos - absolute position at the beginning of the bond,
+		* @param {number[]} absPos - absolute position at the end of the bond,
+		* @param {boolean} push - if there is a label at the beginning of the bond,
+		* @param {boolean} newPush - if there is a label at the end of the bond
+		*/
 		service.updateBondFocus = function (bondFocus, prevAbsPos, absPos, push, newPush) {
 			var vectCoords = Utils.subtractVectors(absPos, prevAbsPos),
 			  normVector = Utils.multVectByScalar(
@@ -209,6 +261,20 @@
 					Utils.multVectByScalar(normVector, BOND_FOCUS * 2)
 				),
 				width: Utils.getLength(vectCoords)
+			});
+		};
+
+		/**
+		* Adds new element to `texAreas` array based on supplied `TextArea` object and its absolute position.
+		* @param {Object[]} textAreas - array of objects with all data necessary for generating `text` elements,
+		* @param {number[]} absPos - absolute coordinates of `TextArea` object,
+		* @param {TextArea} textArea - `TextArea` object
+		*/
+		service.updateTextArea = function(textAreas, absPos, textArea) {
+			textAreas.push({
+				x: absPos[0],
+				y: absPos[1],
+				text: textArea.getText()
 			});
 		};
 

@@ -11,6 +11,8 @@
 
 		service.fontSize = 18;
 		service.subFontSize = 14;
+		service.textAreaFontSize = 14;
+		service.textAreaSubFontSize = 10;
 		service.font = "Arial";
 
 		/**
@@ -178,8 +180,13 @@
 						"tspan.sub": {
 							"font-size": service.subFontSize + "px"
 						},
-						"polygon.text": {
-							"fill": "white"
+						"text.text-area": {
+							"font-family": service.font,
+							"cursor": "default",
+							"font-size": service.textAreaFontSize + "px"
+						},
+						"tspan.text-area-sub": {
+							"font-size": service.textAreaSubFontSize + "px"
 						}
 					}
 				},

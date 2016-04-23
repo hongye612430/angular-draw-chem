@@ -43,7 +43,7 @@
 			// check if the event occurred on an atom
 			// if content is not empty and (label is selected or structure is selected or delete is selected)
 			// otherwise there is no necessity for checking this
-			if (currWorkingStructure !== null && DirUtils.performSearch(["label", "removeLabel", "customLabel", "structure", "delete"])) {
+			if (currWorkingStructure !== null && DirUtils.performSearch(["label", "removeLabel", "resizeArrow", "customLabel", "structure", "delete"])) {
         // if content is not empty
 				// check if label was clicked
 				// if so, replace mouseCoords with coords of an underlying atom
@@ -56,6 +56,11 @@
 					// if mouseCoords are not within an atom,
 					// then check if they are within a bond
 					checkIfDownOnBond();
+				}
+				if (!mouseFlags.downOnBond) {
+					// if mouseCoords are not within an atom nor a bond,
+					// then check if they are within an arrow
+					checkIfDownOnArrow();
 				}
       }
 
@@ -70,6 +75,17 @@
 					mouseFlags.downAtomLeadingBond = withinObject.leadingBond;
 					mouseFlags.downAtomFirst = withinObject.firstAtom;
 					mouseFlags.downAtomHasDuplicate = withinObject.hasDuplicate;
+        }
+      }
+
+			function checkIfDownOnArrow() {
+				var withinObject = ModStructure.isWithinArrow(currWorkingStructure, mouseFlags.downMouseCoords);
+        if (typeof withinObject.foundArrow !== "undefined") {
+          // set flags if arrow was found
+          mouseFlags.downOnArrow = true;
+					mouseFlags.downArrowObject = withinObject.foundArrow;
+					mouseFlags.downArrowStartCoords = withinObject.absPos;
+					mouseFlags.downArrowWhere = withinObject.where;
         }
       }
 
@@ -92,17 +108,13 @@
 		* @param {Object} element - element object listening to this event
 		*/
     service.doOnMouseUp = function ($event, scope, element) {
-      var mouseCoords = DirUtils.innerCoords(element, $event), drawn, changedStructure = true, ringSize;
+      var mouseCoords = DirUtils.innerCoords(element, $event), drawn, changedStructure = true;
 
 			// if button other than left was released do nothing
 			// or if selected flag is empty do nothing
       if ($event.which !== 1 || Flags.selected === "") {
 				DirUtils.resetMouseFlags();
 				return;
-			}
-
-			if (typeof scope.chosenStructure !== "undefined") {
-			  ringSize = scope.chosenStructure.getRingSize();
 			}
 
 			if (currWorkingStructure !== null && Flags.selected === "select") {
@@ -116,7 +128,18 @@
 				currWorkingStructure.getStructure().pop();
 			} else if (currWorkingStructure !== null && Flags.selected === "moveStructure") {
 				// if `move` tool was selected
-				ModStructure.moveStructure(currWorkingStructure, mouseCoords, mouseFlags.downMouseCoords);
+				ModStructure.moveStructure(
+					currWorkingStructure,
+					mouseCoords,
+					mouseFlags.downMouseCoords
+				);
+			} else if (Flags.selected === "textArea") {
+				// if `textArea` was selected
+				currWorkingStructure = ModStructure.addTextArea(
+					currWorkingStructure,
+					mouseFlags.downMouseCoords,
+					Flags.textArea
+				);
 			} else if (Flags.selected === "arrow") {
 				// if arrow was selected,
 				// and click was done on empty space
@@ -153,8 +176,7 @@
 					scope.chosenLabel,
 					Flags.customLabel
 				);
-      } else if (ringSize === 0 && mouseFlags.downOnAtom && Flags.selected === "structure" && $event.ctrlKey) {
-				// only when a bond is selected (ringSize = 0)
+      } else if (mouseFlags.downOnAtom && Flags.selected === "structure" && $event.ctrlKey) {
 				// if atom has been found and structure has been selected and ctrl key is pressed
         ModStructure.modifyAtom(
 					currWorkingStructure,
@@ -191,7 +213,22 @@
 					mouseFlags.downBondEndAtomPos
 				);
 				ModStructure.labelSingleAtoms(currWorkingStructure);
-      } else if (ringSize === 0 && Flags.selected === "structure" && $event.ctrlKey) {
+      } else if (mouseFlags.downOnArrow && Flags.selected === "delete") {
+        // if atom has been found and label is selected
+        ModStructure.deleteArrow(
+					currWorkingStructure,
+					mouseFlags.downArrowObject
+				);
+      } else if (mouseFlags.downOnArrow && Flags.selected === "resizeArrow") {
+        // if atom has been found and label is selected
+        ModStructure.resizeArrow(
+					mouseFlags.downArrowObject,
+					mouseFlags.downArrowStartCoords,
+					mouseFlags.downArrowWhere,
+					mouseCoords,
+					$event.ctrlKey
+				);
+      } else if (Flags.selected === "structure" && $event.ctrlKey) {
 				// if content is empty or atom was not found
         currWorkingStructure = ModStructure.addStructureOnEmptySpace(
 					currWorkingStructure,
@@ -229,7 +266,7 @@
 		*/
     service.doOnMouseMove = function ($event, scope, element) {
       var mouseCoords = DirUtils.innerCoords(element, $event),
-			  drawn, frozenStructure, frozenAtomObj = {}, ringSize;
+			  drawn, frozenStructure, frozenAtomObj = {}, frozenArrowObj = {};
 
       if ($event.which !== 1 || DirUtils.performSearch(["label", "labelCustom", "delete", ""])) {
 				// if mousedown event did not occur, then do nothing
@@ -237,14 +274,13 @@
         return;
       }
 
-			if (typeof scope.chosenStructure !== "undefined") {
-			  ringSize = scope.chosenStructure.getRingSize();
-			}
-
 			frozenStructure = angular.copy(currWorkingStructure);
 
 			if (frozenStructure !== null) {
 				frozenAtomObj = ModStructure.isWithinAtom(frozenStructure, mouseFlags.downMouseCoords);
+				if (typeof frozenAtomObj.foundAtom === "undefined") {
+					frozenArrowObj = ModStructure.isWithinArrow(frozenStructure, mouseFlags.downMouseCoords);
+				}
 			}
 
 			if (Flags.selected === "select") {
@@ -261,8 +297,7 @@
 					mouseFlags.downMouseCoords,
 					scope.chosenArrow
 				);
-      } else if (ringSize === 0 && typeof frozenAtomObj.foundAtom !== "undefined" && $event.ctrlKey) {
-				// only when a bond is selected (ringSize = 0)
+      } else if (typeof frozenAtomObj.foundAtom !== "undefined" && $event.ctrlKey) {
 				// if atom has been found and structure has been selected and ctrl key is pressed
         ModStructure.modifyAtom(
 					frozenStructure,
@@ -283,7 +318,7 @@
 					mouseCoords,
 					scope.chosenStructure
 				);
-      } else if (ringSize === 0 && Flags.selected === "structure" && $event.ctrlKey) {
+      } else if (Flags.selected === "structure" && $event.ctrlKey) {
 				// if content is empty or atom was not found
         frozenStructure = ModStructure.addStructureOnEmptySpace(
 					frozenStructure,
@@ -291,6 +326,15 @@
 					mouseFlags.downMouseCoords,
 					scope.chosenStructure,
 					true
+				);
+      } else if (typeof frozenArrowObj.foundArrow !== "undefined" && Flags.selected === "resizeArrow") {
+        // if atom has been found and label is selected
+        ModStructure.resizeArrow(
+					frozenArrowObj.foundArrow,
+					frozenArrowObj.absPos,
+					frozenArrowObj.where,
+					mouseCoords,
+					$event.ctrlKey
 				);
       } else if (Flags.selected === "structure") {
 				// if content is empty or atom was not found

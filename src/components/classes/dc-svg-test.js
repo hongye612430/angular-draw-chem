@@ -64,10 +64,15 @@ describe("DCSvg service tests", function () {
 				"}" +
 				"tspan.sub{" +
 					"font-size:14px;" +
+				"}"+
+				"text.text-area{" +
+					"font-family:Arial;" +
+					"cursor:default;" +
+					"font-size:14px;" +
 				"}" +
-				"polygon.text{" +
-					"fill:white;" +
-				"}" +
+				"tspan.text-area-sub{" +
+					"font-size:10px;" +
+				"}" + 
 			"</style>"
 		);
 	});

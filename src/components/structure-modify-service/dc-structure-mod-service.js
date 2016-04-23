@@ -13,10 +13,11 @@
 		"DCSelection",
 		"DCSvg",
 		"DCLabel",
+		"DCTextArea",
 		"DCStructure"
 	];
 
-	function DrawChemModStructure(Const, Utils, Structures, DCAtom, DCBond, DCArrow, DCSelection, DCSvg, DCLabel, DCStructure) {
+	function DrawChemModStructure(Const, Utils, Structures, DCAtom, DCBond, DCArrow, DCSelection, DCSvg, DCLabel, DCTextArea, DCStructure) {
 
 		var service = {},
 			BOND_LENGTH = Const.BOND_LENGTH,
@@ -24,11 +25,13 @@
 			BONDS_AUX = Const.BONDS_AUX,
 			CIRC_R = Const.CIRC_R,
 			AROMATIC_R = Const.AROMATIC_R,
+			FREQ = Const.FREQ,
 			Atom = DCAtom.Atom,
 			Arrow = DCArrow.Arrow,
 			Bond = DCBond.Bond,
 			Svg = DCSvg.Svg,
 			Label = DCLabel.Label,
+			TextArea = DCTextArea.TextArea,
 			Structure = DCStructure.Structure,
 			Selection = DCSelection.Selection;
 
@@ -72,6 +75,46 @@
 						found = true;
 					}
 					check(aux.getBonds(), absPos, aux);
+				}
+			}
+		};
+
+		/**
+		 * Checks if supplied coordinates are within an arrow.
+		 * @param {Structure} structure - a `Structure` object on which search is performed,
+		 * @param {number[]} position - set of coordinates against which the search is performed
+		 * @returns {Object}
+		 */
+		service.isWithinArrow = function (structure, position) {
+			var foundObj = {}, found = false,
+				origin = structure.getOrigin();
+
+			check(structure.getStructure(), origin);
+
+			return foundObj;
+
+			function check(struct, pos) {
+				var i, startAbsPos, endAbsPos, obj, isWithinStart, isWithinEnd, isWithinMiddle;
+				for(i = 0; i < struct.length; i += 1) {
+					obj = struct[i];
+					if (!(obj instanceof Arrow)) { continue; }
+					startAbsPos = Utils.addVectors(obj.getOrigin(), pos);
+					endAbsPos = Utils.addVectors(startAbsPos, obj.getRelativeEnd());
+					isWithinStart = Utils.insideCircle(startAbsPos, position, CIRC_R);
+					isWithinEnd = Utils.insideCircle(endAbsPos, position, CIRC_R);
+					isWithinMiddle = Utils.insideFocus(startAbsPos, obj, position, BOND_FOCUS, BOND_LENGTH);
+					if (isWithinStart || isWithinEnd || isWithinMiddle) {
+						if (!found) {
+							foundObj.foundArrow = obj;
+							foundObj.absPos = startAbsPos;
+							if (isWithinStart) { foundObj.where = "start"; }
+							else if (isWithinEnd) { foundObj.where = "end"; }
+							else if (isWithinMiddle) { foundObj.where = "middle"; }
+						} else {
+						  foundObj.hasDuplicate = true;
+						}
+						found = true;
+					}
 				}
 			}
 		};
@@ -134,6 +177,50 @@
 			startAtom.deleteBond(bond);
 			endAtom.setCoords(coords);
 			structure.addToStructures(endAtom);
+		};
+
+		/**
+		 * Deletes `Arrow` object.
+		 * @param {Structure} structure - a `Structure` object on which search is performed,
+		 * @param {Arrow} arrow - `Arrow` object to remove
+		 */
+		service.deleteArrow = function (structure, arrow) {
+			structure.deleteObject(arrow);
+		};
+
+		/**
+		 * Resizes `Arrow` object.
+		 * @param {Arrow} arrow - `Arrow` object to resize,
+		 * @param {number[]} startAbsPos - coords at the beginning of the arrow,
+		 * @param {string} whereClicked - indicates where to resize (start or end),
+		 * @param {number[]} mouseCoords- mouse coords associated with 'mouseup' or 'mousemove' event,
+		 * @param {boolean} ctrlKey- true if ctrl was down during this event
+		 */
+		service.resizeArrow = function (arrow, startAbsPos, whereClicked, mouseCoords, ctrlKey) {
+			var moveVector = Utils.subtractVectors(mouseCoords, startAbsPos),
+			  ratio = Utils.getLengthRatio(moveVector, arrow.getRelativeEnd()),
+			  endAbsPos = Utils.addVectors(startAbsPos, arrow.getRelativeEnd()),
+			  possibleVectors, closest;
+			if (whereClicked === "start") {
+				if (!ctrlKey) {
+					possibleVectors = Utils.calcPossibleVectors(Utils.getOppositeVector(arrow.getRelativeEnd()), FREQ);
+					closest = Utils.getClosestVector(endAbsPos, mouseCoords, possibleVectors);
+					moveVector = Utils.addVectors(arrow.getRelativeEnd(), Utils.multVectByScalar(closest, ratio));
+				}
+				arrow.setOrigin(
+					Utils.addVectors(arrow.getOrigin(), moveVector)
+				);
+				arrow.setRelativeEnd(
+					Utils.subtractVectors(arrow.getRelativeEnd(), moveVector)
+				);
+			} else if (whereClicked === "end") {
+				if (!ctrlKey) {
+				  possibleVectors = Utils.calcPossibleVectors(arrow.getRelativeEnd(), FREQ);
+					closest = Utils.getClosestVector(endAbsPos, mouseCoords, possibleVectors);
+					moveVector = Utils.addVectors(arrow.getRelativeEnd(), Utils.multVectByScalar(closest, ratio));
+				}
+				arrow.setRelativeEnd(moveVector);
+			}
 		};
 
 		/**
@@ -312,6 +399,11 @@
 					mult = chosenStructure.getMult(), // gets multiplicity of the bond
 					bond, angle, nextAtom, rotVect, foundAtomObj;
 				if (size > 0) {
+					// normalize vector
+					vector = Utils.multVectByScalar(
+						Utils.norm(vector),
+						BOND_LENGTH
+					);
 					/*
 					* if we are dealing with a ring
 					*/
@@ -597,6 +689,27 @@
 		};
 
 		/**
+		 * Modifies `Structure` object by adding new `TextArea` object to its `structure` array.
+		 * @param {Structure} structure - `Structure` object,
+		 * @param {number[]} downMouseCoords - coordinates associated with 'mousedown' event,
+		 * @param {string} text - input text
+		 */
+		service.addTextArea = function (structure, downMouseCoords, text) {
+			var txt = new TextArea(text);
+			if (structure === null) {
+				structure = new Structure();
+				structure.setOrigin(downMouseCoords);
+				txt.setOrigin([0, 0]);
+			} else {
+				txt.setOrigin(
+					Utils.subtractVectors(downMouseCoords, structure.getOrigin())
+				);
+			}
+			structure.addToStructures(txt);
+			return structure;
+		};
+
+		/**
 		 * Modifies `Structure` object by adding new `Atom` object to its `structure` array.
 		 * @param {Structure} structure - `Structure` object,
 		 * @param {number[]} mouseCoords - coordinates associated with a mouse event,
@@ -605,38 +718,22 @@
 		 * @param {boolean} customLength - if custom length should be used
 		 */
 		service.addStructureOnEmptySpace = function (structure, mouseCoords, downMouseCoords, chosenStructure, customLength) {
-			var structureAux, coords, bond, atom;
+			var coords, atom;
 			if (structure === null) {
 				// if the content is empty
-				structure = angular.copy(chosenStructure.getStructure(downMouseCoords, mouseCoords));
+				structure = new Structure();
 				// set its origin
 				structure.setOrigin(downMouseCoords);
-				if (customLength) {
-					structure.getStructure(0)
-					  .getBonds(0)
-						.getAtom()
-						.setCoords(
-							Utils.subtractVectors(mouseCoords, downMouseCoords)
-						);
-				}
-				if (structure.isAromatic()) {
-					// if the chosen Structure object is aromatic,
-					// then add appropriate flag to the original Structure object
-					bond = Const.getBondByDirection(structure.getName()).bond;
-					structure.addDecorate("aromatic", {
-						fromWhich: [0, 0],
-						coords: Utils.addVectors(downMouseCoords, bond)
-					});
-				}
+				coords = [0, 0];
 			} else {
 				// when the content is not empty
 				// `Structure` object already exists
 				// calaculate new coords
 				coords = Utils.subtractVectors(downMouseCoords, structure.getOrigin());
-				atom = new Atom(coords);
-				structure.addToStructures(atom);
-				service.modifyAtom(structure, atom, atom, downMouseCoords, mouseCoords, chosenStructure, customLength);
 			}
+			atom = new Atom(coords);
+			structure.addToStructures(atom);
+			service.modifyAtom(structure, atom, atom, downMouseCoords, mouseCoords, chosenStructure, customLength);
 			return structure;
 		};
 

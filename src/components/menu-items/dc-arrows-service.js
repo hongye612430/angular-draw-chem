@@ -26,11 +26,22 @@
 			"equilibrium arrow": {
 				action: createArrowAction("equilibrium-arrow"),
 				id: "equilibrium-arrow",
-				thumbnail: true
+				thumbnail: true,
+				separate: true
+			},
+			"resize arrow": {
+				action: createResizeAction(),
+				id: "resize-arrow"
 			}
 		};
 
 		return service;
+
+		function createResizeAction() {
+			return function (scope) {
+				Flags.selected = "resizeArrow";
+			}
+		}
 
 		function createArrowAction(name) {
 			return function (scope) {

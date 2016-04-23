@@ -9,6 +9,7 @@
 		"DCAtom",
 		"DCArrow",
 		"DCSelection",
+		"DCTextArea",
 		"DrawChemConst",
 		"DrawChemUtils",
 		"DrawChemSvgUtils",
@@ -16,7 +17,7 @@
 		"DrawChemModStructure"
 	];
 
-	function DrawChemSvgRenderer(DCSvg, DCBond, DCAtom, DCArrow, DCSelection, Const, Utils, SvgUtils, SvgBonds, ModStructure) {
+	function DrawChemSvgRenderer(DCSvg, DCBond, DCAtom, DCArrow, DCSelection, DCTextArea, Const, Utils, SvgUtils, SvgBonds, ModStructure) {
 
 		var service = {},
 		  BETWEEN_DBL_BONDS = Const.BETWEEN_DBL_BONDS,
@@ -30,6 +31,7 @@
 		  Atom = DCAtom.Atom,
 			Arrow = DCArrow.Arrow,
 			Selection = DCSelection.Selection,
+			TextArea = DCTextArea.TextArea,
       Svg = DCSvg.Svg;
 
     /**
@@ -47,6 +49,7 @@
 				labels = output.labels,
 				rects = output.rects,
 				bondFocus = output.bondFocus,
+				textAreas = output.textAreas,
 				minMax = output.minMax,
 			  svg = new Svg(
   				styleExpanded + genElements().full,
@@ -70,6 +73,7 @@
 				SvgUtils.generateBondFocus(bondFocus, result);
 				SvgUtils.generateCircles(circles, result);
 				SvgUtils.generateLabels(labels, result);
+				SvgUtils.generateTextAreas(textAreas, result);
 				if (input.isAromatic()) {
 					SvgUtils.generateAromatics(input, result);
 				}
@@ -82,9 +86,9 @@
 			* @returns {Object}
 			*/
 		  function parseInput(input) {
-				var output = [], circles = [], labels = [], rects = [], bondFocus = [],
+				var output = [], circles = [], labels = [], rects = [], bondFocus = [], textAreas = [],
           i, absPos, absPosStart, absPosEnd, len,
-          selection, atom, arrow, obj, push,
+          selection, atom, arrow, textArea, obj, push,
 					origin = input.getOrigin(),
           minMax = { minX: origin[0], maxX: origin[0], minY: origin[1], maxY: origin[1] },
 					circR = Const.CIRC_R;
@@ -110,12 +114,18 @@
 							circle: [absPos[0], absPos[1], circR]
 						});
 						connect(absPos, atom.getBonds(), output[len - 1], push);
+					} else if (obj instanceof TextArea) {
+						textArea = obj;
+						absPos = Utils.addVectors(origin, textArea.getOrigin());
+						SvgUtils.updateTextArea(textAreas, absPos, textArea);
+						updateMinMax(absPos);
 					} else if (obj instanceof Arrow) {
 						arrow = obj;
 						absPosStart = Utils.addVectors(origin, arrow.getOrigin());
 						absPosEnd = Utils.addVectors(origin, arrow.getEnd());
 						updateMinMax(absPosStart);
 						updateMinMax(absPosEnd);
+						SvgUtils.updateBondFocus(bondFocus, absPosStart, absPosEnd);
 						circles.push({ isSelected: arrow.isSelected(), circle: [ absPosStart[0], absPosStart[1], circR ] });
 						circles.push({ isSelected: arrow.isSelected(), circle: [ absPosEnd[0], absPosEnd[1], circR ] });
 						output.push(
@@ -130,6 +140,7 @@
 					circles: circles,
 					labels: labels,
 					bondFocus: bondFocus,
+					textAreas: textAreas,
 					minMax: minMax
 				};
 

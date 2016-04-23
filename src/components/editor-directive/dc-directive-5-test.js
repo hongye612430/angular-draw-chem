@@ -50,6 +50,7 @@ describe("DrawChemEditor directive tests - part5", function () {
 					"<rect class=\"focus\" x=\"96.50\" y=\"140.60\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-150.00, 96.50, 140.60)\"></rect>" +
 					"<rect class=\"focus\" x=\"77.68\" y=\"128.00\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-90.00, 77.68, 128.00)\"></rect>" +
 					"<rect class=\"focus\" x=\"79.18\" y=\"105.40\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-30.00, 79.18, 105.40)\"></rect>" +
+					"<rect class=\"focus\" x=\"198.00\" y=\"115.00\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(0.00, 198.00, 115.00)\"></rect>" +
           "<circle class=\"edit\" cx=\"98.00\" cy=\"98.00\" r=\"3.40\"></circle>" +
           "<circle class=\"edit\" cx=\"115.32\" cy=\"108.00\" r=\"3.40\"></circle>" +
           "<circle class=\"edit\" cx=\"115.32\" cy=\"128.00\" r=\"3.40\"></circle>" +
@@ -75,6 +76,7 @@ describe("DrawChemEditor directive tests - part5", function () {
 					"<rect class=\"focus\" x=\"96.50\" y=\"140.60\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-150.00, 96.50, 140.60)\"></rect>" +
 					"<rect class=\"focus\" x=\"77.68\" y=\"128.00\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-90.00, 77.68, 128.00)\"></rect>" +
 					"<rect class=\"focus\" x=\"79.18\" y=\"105.40\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-30.00, 79.18, 105.40)\"></rect>" +
+					"<rect class=\"focus\" x=\"198.00\" y=\"95.00\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(0.00, 198.00, 95.00)\"></rect>" +
           "<circle class=\"edit\" cx=\"98.00\" cy=\"98.00\" r=\"3.40\"></circle>" +
           "<circle class=\"edit\" cx=\"115.32\" cy=\"108.00\" r=\"3.40\"></circle>" +
           "<circle class=\"edit\" cx=\"115.32\" cy=\"128.00\" r=\"3.40\"></circle>" +
@@ -110,6 +112,7 @@ describe("DrawChemEditor directive tests - part5", function () {
 					"<rect class=\"focus\" x=\"96.50\" y=\"140.60\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-150.00, 96.50, 140.60)\"></rect>" +
 					"<rect class=\"focus\" x=\"77.68\" y=\"128.00\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-90.00, 77.68, 128.00)\"></rect>" +
 					"<rect class=\"focus\" x=\"79.18\" y=\"105.40\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-30.00, 79.18, 105.40)\"></rect>" +
+					"<rect class=\"focus\" x=\"198.00\" y=\"115.00\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(0.00, 198.00, 115.00)\"></rect>" +
           "<circle class=\"edit\" cx=\"98.00\" cy=\"98.00\" r=\"3.40\"></circle>" +
           "<circle class=\"edit\" cx=\"115.32\" cy=\"108.00\" r=\"3.40\"></circle>" +
           "<circle class=\"edit\" cx=\"115.32\" cy=\"128.00\" r=\"3.40\"></circle>" +
@@ -135,6 +138,7 @@ describe("DrawChemEditor directive tests - part5", function () {
 					"<rect class=\"focus\" x=\"96.50\" y=\"140.60\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-150.00, 96.50, 140.60)\"></rect>" +
 					"<rect class=\"focus\" x=\"77.68\" y=\"128.00\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-90.00, 77.68, 128.00)\"></rect>" +
 					"<rect class=\"focus\" x=\"79.18\" y=\"105.40\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-30.00, 79.18, 105.40)\"></rect>" +
+					"<rect class=\"focus\" x=\"198.00\" y=\"135.00\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(0.00, 198.00, 135.00)\"></rect>" +
           "<circle class=\"edit\" cx=\"98.00\" cy=\"98.00\" r=\"3.40\"></circle>" +
           "<circle class=\"edit\" cx=\"115.32\" cy=\"108.00\" r=\"3.40\"></circle>" +
           "<circle class=\"edit\" cx=\"115.32\" cy=\"128.00\" r=\"3.40\"></circle>" +
@@ -170,6 +174,7 @@ describe("DrawChemEditor directive tests - part5", function () {
 					"<rect class=\"focus\" x=\"96.50\" y=\"140.60\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-150.00, 96.50, 140.60)\"></rect>" +
 					"<rect class=\"focus\" x=\"77.68\" y=\"128.00\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-90.00, 77.68, 128.00)\"></rect>" +
 					"<rect class=\"focus\" x=\"79.18\" y=\"105.40\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-30.00, 79.18, 105.40)\"></rect>" +
+					"<rect class=\"focus\" x=\"198.00\" y=\"115.00\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(0.00, 198.00, 115.00)\"></rect>" +
           "<circle class=\"edit\" cx=\"98.00\" cy=\"98.00\" r=\"3.40\"></circle>" +
           "<circle class=\"edit\" cx=\"115.32\" cy=\"108.00\" r=\"3.40\"></circle>" +
           "<circle class=\"edit\" cx=\"115.32\" cy=\"128.00\" r=\"3.40\"></circle>" +
@@ -195,6 +200,7 @@ describe("DrawChemEditor directive tests - part5", function () {
 					"<rect class=\"focus\" x=\"96.50\" y=\"140.60\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-150.00, 96.50, 140.60)\"></rect>" +
 					"<rect class=\"focus\" x=\"77.68\" y=\"128.00\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-90.00, 77.68, 128.00)\"></rect>" +
 					"<rect class=\"focus\" x=\"79.18\" y=\"105.40\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-30.00, 79.18, 105.40)\"></rect>" +
+					"<rect class=\"focus\" x=\"80.68\" y=\"115.00\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(0.00, 80.68, 115.00)\"></rect>" +
           "<circle class=\"edit\" cx=\"98.00\" cy=\"98.00\" r=\"3.40\"></circle>" +
           "<circle class=\"edit\" cx=\"115.32\" cy=\"108.00\" r=\"3.40\"></circle>" +
           "<circle class=\"edit\" cx=\"115.32\" cy=\"128.00\" r=\"3.40\"></circle>" +
@@ -230,6 +236,7 @@ describe("DrawChemEditor directive tests - part5", function () {
 					"<rect class=\"focus\" x=\"96.50\" y=\"140.60\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-150.00, 96.50, 140.60)\"></rect>" +
 					"<rect class=\"focus\" x=\"77.68\" y=\"128.00\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-90.00, 77.68, 128.00)\"></rect>" +
 					"<rect class=\"focus\" x=\"79.18\" y=\"105.40\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-30.00, 79.18, 105.40)\"></rect>" +
+					"<rect class=\"focus\" x=\"198.00\" y=\"115.00\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(0.00, 198.00, 115.00)\"></rect>" +
           "<circle class=\"edit\" cx=\"98.00\" cy=\"98.00\" r=\"3.40\"></circle>" +
           "<circle class=\"edit\" cx=\"115.32\" cy=\"108.00\" r=\"3.40\"></circle>" +
           "<circle class=\"edit\" cx=\"115.32\" cy=\"128.00\" r=\"3.40\"></circle>" +
@@ -255,6 +262,7 @@ describe("DrawChemEditor directive tests - part5", function () {
 					"<rect class=\"focus\" x=\"199.18\" y=\"140.60\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-150.00, 199.18, 140.60)\"></rect>" +
 					"<rect class=\"focus\" x=\"180.36\" y=\"128.00\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-90.00, 180.36, 128.00)\"></rect>" +
 					"<rect class=\"focus\" x=\"181.86\" y=\"105.40\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-30.00, 181.86, 105.40)\"></rect>" +
+					"<rect class=\"focus\" x=\"198.00\" y=\"115.00\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(0.00, 198.00, 115.00)\"></rect>" +
           "<circle class=\"edit\" cx=\"200.68\" cy=\"98.00\" r=\"3.40\"></circle>" +
           "<circle class=\"edit\" cx=\"218.00\" cy=\"108.00\" r=\"3.40\"></circle>" +
           "<circle class=\"edit\" cx=\"218.00\" cy=\"128.00\" r=\"3.40\"></circle>" +
@@ -290,6 +298,7 @@ describe("DrawChemEditor directive tests - part5", function () {
 					"<rect class=\"focus\" x=\"96.50\" y=\"140.60\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-150.00, 96.50, 140.60)\"></rect>" +
 					"<rect class=\"focus\" x=\"77.68\" y=\"128.00\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-90.00, 77.68, 128.00)\"></rect>" +
 					"<rect class=\"focus\" x=\"79.18\" y=\"105.40\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-30.00, 79.18, 105.40)\"></rect>" +
+					"<rect class=\"focus\" x=\"198.00\" y=\"115.00\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(0.00, 198.00, 115.00)\"></rect>" +
           "<circle class=\"edit\" cx=\"98.00\" cy=\"98.00\" r=\"3.40\"></circle>" +
           "<circle class=\"edit\" cx=\"115.32\" cy=\"108.00\" r=\"3.40\"></circle>" +
           "<circle class=\"edit\" cx=\"115.32\" cy=\"128.00\" r=\"3.40\"></circle>" +
@@ -315,6 +324,7 @@ describe("DrawChemEditor directive tests - part5", function () {
 					"<rect class=\"focus\" x=\"199.18\" y=\"140.60\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-150.00, 199.18, 140.60)\"></rect>" +
 					"<rect class=\"focus\" x=\"180.36\" y=\"128.00\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-90.00, 180.36, 128.00)\"></rect>" +
 					"<rect class=\"focus\" x=\"181.86\" y=\"105.40\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-30.00, 181.86, 105.40)\"></rect>" +
+					"<rect class=\"focus\" x=\"198.00\" y=\"115.00\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(0.00, 198.00, 115.00)\"></rect>" +
           "<circle class=\"edit\" cx=\"200.68\" cy=\"98.00\" r=\"3.40\"></circle>" +
           "<circle class=\"edit\" cx=\"218.00\" cy=\"108.00\" r=\"3.40\"></circle>" +
           "<circle class=\"edit\" cx=\"218.00\" cy=\"128.00\" r=\"3.40\"></circle>" +
@@ -343,6 +353,7 @@ describe("DrawChemEditor directive tests - part5", function () {
 					"<rect class=\"focus\" x=\"199.18\" y=\"140.60\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-150.00, 199.18, 140.60)\"></rect>" +
 					"<rect class=\"focus\" x=\"180.36\" y=\"128.00\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-90.00, 180.36, 128.00)\"></rect>" +
 					"<rect class=\"focus\" x=\"181.86\" y=\"105.40\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-30.00, 181.86, 105.40)\"></rect>" +
+					"<rect class=\"focus\" x=\"198.00\" y=\"115.00\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(0.00, 198.00, 115.00)\"></rect>" +
           "<circle class=\"edit\" cx=\"200.68\" cy=\"98.00\" r=\"3.40\"></circle>" +
           "<circle class=\"edit\" cx=\"218.00\" cy=\"108.00\" r=\"3.40\"></circle>" +
           "<circle class=\"edit\" cx=\"218.00\" cy=\"128.00\" r=\"3.40\"></circle>" +
@@ -368,6 +379,7 @@ describe("DrawChemEditor directive tests - part5", function () {
 					"<rect class=\"focus\" x=\"96.50\" y=\"140.60\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-150.00, 96.50, 140.60)\"></rect>" +
 					"<rect class=\"focus\" x=\"77.68\" y=\"128.00\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-90.00, 77.68, 128.00)\"></rect>" +
 					"<rect class=\"focus\" x=\"79.18\" y=\"105.40\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(-30.00, 79.18, 105.40)\"></rect>" +
+					"<rect class=\"focus\" x=\"198.00\" y=\"115.00\" rx=\"2.00\" ry=\"2.00\" width=\"20.00\" height=\"6.00\" transform=\"rotate(0.00, 198.00, 115.00)\"></rect>" +
           "<circle class=\"edit\" cx=\"98.00\" cy=\"98.00\" r=\"3.40\"></circle>" +
           "<circle class=\"edit\" cx=\"115.32\" cy=\"108.00\" r=\"3.40\"></circle>" +
           "<circle class=\"edit\" cx=\"115.32\" cy=\"128.00\" r=\"3.40\"></circle>" +

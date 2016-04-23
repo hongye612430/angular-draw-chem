@@ -43,6 +43,19 @@
 		};
 
 		/**
+		* Removes an object from `structure` array.
+		*/
+		Structure.prototype.deleteObject = function (obj) {
+			var i, current, newStructures = [];
+			for (i = 0; i < this.structure.length; i += 1) {
+				current = this.structure[i];
+				// if not selected then ignore it
+				if (current !== obj) { newStructures.push(current); }
+			}
+			this.structure = newStructures;
+		};
+
+		/**
 		* Moves all structures marked as selected in a supplied `direction` by a `distance` vector.
 		* @param {string} direction - 'up', 'down', 'left', 'right' (for keyboard arrows), and 'mouse' for mouse,
 		* @param {number[]} distance - vector

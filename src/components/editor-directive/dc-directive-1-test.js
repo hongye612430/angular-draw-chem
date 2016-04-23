@@ -66,8 +66,13 @@ var styleExpanded = "circle.atom:hover{" +
 	"tspan.sub{" +
 		"font-size:14px;" +
 	"}" +
-	"polygon.text{" +
-		"fill:white;" +
+	"text.text-area{" +
+		"font-family:Arial;" +
+		"cursor:default;" +
+		"font-size:14px;" +
+	"}" +
+	"tspan.text-area-sub{" +
+		"font-size:10px;" +
 	"}";
 
 describe("DrawChemEditor directive tests - part1", function () {

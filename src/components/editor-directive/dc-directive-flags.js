@@ -19,6 +19,8 @@
 
 		service.customLabel = "";
 
+		service.textArea = "";
+
 		service.focused = false;
 
     service.selected = "";

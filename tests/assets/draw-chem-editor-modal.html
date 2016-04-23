@@ -3,8 +3,8 @@
 	<div class="dc-editor-dialog" ng-style="dialogStyle">
 		<button type="button" class="close dc-editor-close" aria-label="Close" ng-click="menu.Actions.actions.close.action()"><span aria-hidden="true">&times;</span></button>
 		<div class="dc-wrap">
-			<div id="#dc-tools-h" class="dc-tools-h">
-				<form class="form-inline">
+			<form class="form-inline">
+			  <div id="#dc-tools-h" class="dc-tools-h">
 					<!-- Menu Items -->
 					<div class="btn-group" uib-dropdown ng-repeat="(name, menuItem) in menu">
 						<button id="dc-btn-{{name}}" type="button" class="btn btn-primary" uib-dropdown-toggle>
@@ -24,27 +24,32 @@
 					</div>
 					<!-- Custom label -->
 					<div class="form-group dc-input-right">
-						<input class="form-control" type="text" ng-focus="setFocus()" ng-blur="unsetFocus()" ng-model="customLabel" placeholder="custom label">
+						<input class="form-control" size="15" type="text" ng-focus="setFocus()" ng-blur="unsetFocus()" ng-model="customLabel" placeholder="custom atom label">
 						<button ng-click="chooseCustomLabel(customLabel)" class="btn btn-primary" >Choose</button>
 					</div>
-			</div>
-			<div id="#dc-quick-tools-h" class="dc-quick-tools-h">
-				<!-- Quick Menu Items -->
-				<div class="btn-group" >
-					<button ng-repeat="(name, action) in quickMenu" ng-click="action.action(action.scope)" id="dc-btn-{{name}}" type="button" class="btn btn-default" >
-						<img class="dc-thumbnail" alt="{{action.id}}" ng-src="{{pathToSvg}}/{{action.id}}.svg">
-					</button>
-				</div>
-			</div>
+			  </div>
+			  <div id="#dc-quick-tools-h" class="dc-quick-tools-h">
+				  <!-- Quick Menu Items -->
+				  <div class="btn-group" >
+					  <button ng-repeat="(name, action) in quickMenu" ng-click="action.action(action.scope)" id="dc-btn-{{name}}" type="button" class="btn btn-default" >
+						  <img class="dc-thumbnail" alt="{{action.id}}" ng-src="{{pathToSvg}}/{{action.id}}.svg">
+					  </button>
+				  </div>
+				  <!-- Text area -->
+				  <div class="form-group dc-input-right">
+					  <input class="form-control" size="40" type="text" ng-focus="setFocus()" ng-blur="unsetFocus()" ng-model="textArea" placeholder="text area">
+					  <button ng-click="chooseTextArea(textArea)" class="btn btn-primary" >Choose</button>
+				  </div>
+			  </div>
+			</form>
 			<dc-content
-				class="dc-editor-dialog-content"
+			  class="dc-editor-dialog-content"
 				ng-mousedown="doOnMouseDown($event)"
 				ng-mouseup="doOnMouseUp($event)"
 				ng-mousemove="doOnMouseMove($event)"
 				ng-bind-html="content()">
 			</dc-content>
 			<div id="#dc-status"></div>
-			</form>
 		</div>
 	</div>
 </div>
