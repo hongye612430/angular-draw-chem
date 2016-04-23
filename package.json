@@ -1,6 +1,6 @@
 {
   "name": "angular-draw-chem",
-  "version": "1.0.0",
+  "version": "2.0.0-beta",
   "description": "AngularJS-based tool for drawing structural formulas in svg",
   "main": "./dest/js/angular-draw-chem.js",
   "scripts": {
