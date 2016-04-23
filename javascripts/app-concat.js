@@ -61,7 +61,7 @@
     vm.runOutput = function () {
 			DrawChem.closeEditor();
       vm.showOutput = true;
-		}    
+		}
 		vm.input = function () {
 			return $sce.trustAsHtml(DrawChem.getContent("test"));
 		}
@@ -91,13 +91,21 @@
 			return "components" + location + "-sub.html";
 		};
 		vm.svgs = {
-			"erythromycin": { file: "erythromycin", style: { width: "30%" } },
-			"barbituric acid": { file: "barbituric-acid", style: { width: "15%" } },
-			"inositol": { file: "inositol", style: { width: "15%" } },
-			"miglustat": { file: "miglustat", style: { width: "15%" } },
-			"naringenin": { file: "naringenin", style: { width: "25%" } },
-			"curcumin": { file: "curcumin", style: { width: "35%" } },
-			"cephalosporins": { file: "cephalosporins", style: { width: "20%" } }
+			"Ring-closing metathesis": {
+				file: "metathesis",
+				style: { width: "50%" },
+				paper: "Malik, M.; Witkowski, G.; Ceborska, M.; Jarosz, S. <i>Org. Lett.</i> <strong>2013</strong>, <i>15</i>, 6214-6217"
+			},
+			"White's macrolactonization": {
+				file: "macrolactonization",
+				style: { width: "65%" },
+				paper: "Fraunhoffer, K.F.; Prabagaran, N.; Sirois, L.E.; White, M. C. <i>JACS</i> <strong>2006</strong>, <i>128</i>, 9032-9033"
+			},
+			"Barton–McCombie deoxygenation": {
+				file: "barton",
+				style: { width: "75%" },
+				paper: "Tormo, J.; Fu, G. C. <i>Org. Syn.</i> <strong>2002</strong>, <i>78</i>, 239"
+			}
 		};
 		vm.releases = [];
 		$http

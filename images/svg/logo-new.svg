@@ -1,0 +1,14 @@
+<!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>
+<svg viewBox='263.69 102.50 242.93 182.50' height='100%' width='100%' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'>
+<g id='transfer'>
+<style type="text/css">path{stroke:#1C5993;stroke-width:3.5;fill:#B2CFEB;}path.wedge{fill:black;}rect.border{stroke:#324037;stroke-width:1.5;fill:#F0F0F0;}</style>
+<rect class='border' x='283.69' rx='5' y='122.50' ry='5' width='200.93' height='157.50'></rect>
+<path d='M 324.00 185.00 L 354.31 202.50 L 354.31 237.50 L 324.00 255.00 L 293.69 237.50 L 293.69 202.50 L 293.69 202.50 Z '></path>
+<path d='M 298.24 235.75 L 298.24 204.25 '></path>
+<path class='wedge' d='M 354.31 237.50 L 383.48 256.97 L 385.76 253.03 Z '></path>
+<path d='M 416.00 185.00 L 446.31 202.50 L 446.31 237.50 L 416.00 255.00 L 385.69 237.50 L 385.69 202.50 L 385.69 202.50 Z'></path>
+<path d='M 390.24 235.75 L 390.24 204.25'></path>
+<path class='wedge' d='M 446.31 237.50 L 475.48 256.97 L 477.76 253.03 Z '></path>
+<path d='M 446.31 202.50 L 446.31 167.50 L 446.31 132.50 '></path>
+</g>
+</svg>

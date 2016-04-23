@@ -3,26 +3,26 @@
 		<div class="dc-wrap">
 			<div id="#dc-tools-h" class="dc-tools-h">
 				<form class="form-inline">
-
 					<!-- Menu Items -->
 					<div class="btn-group" uib-dropdown ng-repeat="(name, menuItem) in menu">
 						<button id="dc-btn-{{name}}" type="button" class="btn btn-primary" uib-dropdown-toggle>
 							<span ng-bind="name"></span> <span class="caret"></span>
 						</button>
 						<ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="btn-append-to-single-button">
-							<li class="dc-menuitem" role="menuitem" ng-repeat="(name, action) in menuItem.actions">
-								<a class="dc-menuitem-link" ng-click="action.action(menuItem.scope)" id="dc-{{name}}">
+							<li class="dc-menuitem" role="menuitem" ng-repeat-start="(name, action) in menuItem.actions">
+								<a class="dc-menuitem-link" ng-click="action.action(menuItem.scope)" id="dc-{{action.id}}">
 									<span class="dc-menuitem-link-text" ng-bind="name"></span>
 									<small ng-if="action.shortcut" class="text-muted" ng-bind="action.shortcut"></small>
-									<img ng-if="action.thumbnail" class="dc-thumbnail" alt="{{name}}" ng-src="{{pathToSvg}}/{{name}}.svg">
+									<img ng-if="action.thumbnail" class="dc-thumbnail" alt="{{action.id}}" ng-src="{{pathToSvg}}/{{action.id}}.svg">
 								</a>
 							</li>
+							<li role="separator" class="divider" ng-if="action.separate" ng-repeat-end ></li>
 						</ul>
 						<span ng-if="!$last">&nbsp;</span>
 					</div>
 					<!-- Custom label -->
 					<div class="form-group dc-input-right">
-						<input class="form-control" type="text" ng-model="customLabel" placeholder="custom label">
+						<input class="form-control" type="text" ng-focus="setFocus()" ng-blur="unsetFocus()" ng-model="customLabel" placeholder="custom label">
 						<button ng-click="chooseCustomLabel()" class="btn btn-primary" >Choose</button>
 					</div>
 				</form>

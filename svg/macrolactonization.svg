@@ -1,0 +1,80 @@
+<!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>
+<svg viewBox='54.01 88.91 931.74 316.33' height='100%' width='100%' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' >
+<g id='transfer' >
+<style type="text/css">path{stroke:black;stroke-width:1.40;fill:none;}path.wedge{fill:black;}path.arrow{fill:black;}path.arrow-eq{fill:none;}circle.arom{stroke:black;stroke-width:1.40;fill:none;}circle.tr-arom{stroke:black;stroke-width:1.40;fill:none;}text{font-family:Arial;cursor:default;font-size:18px;}tspan.sub{font-size:14px;}text.text-area{font-family:Arial;cursor:default;font-size:14px;}tspan.text-area-sub{font-size:10px;}</style>
+<path d='M 84.01 231.64 L 104.58 203.32 L 137.87 214.14 L 137.87 238.64 M 127.88 252.38 L 104.58 259.96 L 84.01 231.64 '></path>
+<path d='M 146.36 255.31 L 166.19 269.71 L 198.16 255.48 '></path>
+<path class='wedge' d='M 198.16 255.48 L 204.08 220.91 L 199.56 220.43 Z '></path>
+<path d='M 201.82 220.67 L 224.20 210.70 '></path>
+<path d='M 198.16 255.48 L 217.98 269.88 M 225.38 286.49 L 222.82 310.86 L 251.13 331.43 L 273.51 321.46 M 284.20 306.75 L 286.76 282.39 L 258.45 261.81 L 262.11 227.01 L 294.08 212.77 L 297.74 177.96 L 269.42 157.39 L 237.45 171.62 L 209.13 151.05 L 177.16 165.29 L 148.84 144.72 '></path>
+<path d='M 147.92 142.64 L 115.95 156.87 M 149.77 146.79 L 117.80 161.03 '></path>
+<path d='M 116.87 158.95 '></path>
+<path d='M 287.69 284.46 L 310.07 274.50 M 285.84 280.31 L 308.22 270.34 '></path>
+<path d='M 318.74 268.15 '></path>
+<path class='wedge' d='M 251.13 331.43 L 245.21 366.00 L 249.74 366.48 Z '></path>
+<path d='M 247.47 366.24 '></path>
+<path d='M 221.89 308.78 L 199.51 318.74 M 223.74 312.94 L 201.36 322.90 '></path>
+<path d='M 190.84 325.09 '></path>
+<path d='M 163.92 269.47 L 161.36 293.84 M 168.45 269.95 L 165.89 294.32 '></path>
+<path d='M 162.53 304.52 '></path>
+<path class='wedge' d='M 137.87 214.14 L 159.03 201.58 L 156.35 197.90 Z '></path>
+<path d='M 166.19 193.57 '></path>
+<path d='M 591.16 174.29 '></path>
+<path d='M 551.87 258.14 M 560.36 264.31 L 580.19 278.71 L 612.16 264.48 '></path>
+<path class='wedge' d='M 612.16 264.48 L 618.08 229.91 L 613.56 229.43 Z '></path>
+<path d='M 615.82 229.67 L 638.20 219.70 '></path>
+<path d='M 612.16 264.48 L 631.98 278.88 M 639.38 295.49 L 636.82 319.86 L 665.13 340.43 L 687.51 330.46 M 698.20 315.75 L 700.76 291.39 L 672.45 270.81 L 676.11 236.01 L 708.08 221.77 L 711.74 186.96 L 683.42 166.39 L 651.45 180.62 L 623.13 160.05 L 591.16 174.29 L 562.84 153.72 '></path>
+<path d='M 565.11 153.95 L 568.77 119.14 M 560.58 153.48 L 564.24 118.67 '></path>
+<path d='M 566.50 118.91 '></path>
+<path d='M 701.69 293.46 L 724.07 283.50 M 699.84 289.31 L 722.22 279.34 '></path>
+<path d='M 732.74 277.15 '></path>
+<path class='wedge' d='M 665.13 340.43 L 659.21 375.00 L 663.74 375.48 Z '></path>
+<path d='M 661.47 375.24 '></path>
+<path d='M 635.89 317.78 L 613.51 327.74 M 637.74 321.94 L 615.36 331.90 '></path>
+<path d='M 604.84 334.09 '></path>
+<path d='M 577.92 278.47 L 575.36 302.84 M 582.45 278.95 L 579.89 303.32 '></path>
+<path d='M 576.53 313.52 '></path>
+<path d='M 544.84 265.94 L 528.45 284.15 L 496.48 269.91 L 500.13 235.11 L 534.37 227.83 L 546.62 249.05 '></path>
+<path class='wedge' d='M 534.37 227.83 L 542.24 200.09 L 537.78 199.19 Z '></path>
+<path d='M 540.01 199.64 '></path>
+<path d='M 541.51 197.93 L 523.11 181.76 M 538.51 201.35 L 520.11 185.17 '></path>
+<path d='M 513.72 176.53 '></path>
+<path d='M 540.01 199.64 L 561.53 198.29 M 578.67 189.52 L 591.16 174.29 '></path>
+<path d='M 591.16 174.29 '></path>
+<path class='arrow' d='M 366.01 261.64 L 457.02 261.64 M 451.77 261.64 L 451.77 259.36 L 457.02 261.64 L 451.77 263.91 Z '></path>
+<path d='M 842.01 270.64 M 851.10 265.39 L 863.23 258.39 M 875.04 243.00 L 881.38 219.33 L 916.38 219.33 L 922.72 243.00 M 934.53 258.39 L 946.66 265.39 '></path>
+<path d='M 935.15 248.55 L 946.26 240.03 M 932.38 244.94 L 943.49 236.42 '></path>
+<path d='M 953.21 231.83 '></path>
+<path d='M 865.38 244.94 L 854.27 236.42 M 862.61 248.55 L 851.50 240.03 '></path>
+<path d='M 844.55 231.83 '></path>
+<path d='M 878.01 294.64 '></path>
+<text class='tr' dy='0.2125em' x='130.87' y='252.29' atomx='137.87' atomy='249.14' text-anchor='start' ><tspan>N</tspan></text>
+<text class='tr' dy='0.2125em' x='226.79' y='209.58' atomx='233.79' atomy='206.43' text-anchor='start' ><tspan>P</tspan><tspan>h</tspan></text>
+<text class='tr' dy='0.2125em' x='219.47' y='279.20' atomx='226.47' atomy='276.05' text-anchor='start' ><tspan>N</tspan><tspan>H</tspan></text>
+<text class='tr' dy='0.2125em' x='276.11' y='320.34' atomx='283.11' atomy='317.19' text-anchor='start' ><tspan>N</tspan><tspan>H</tspan></text>
+<text class='tr' dy='0.2125em' x='311.74' y='271.30' atomx='318.74' atomy='268.15' text-anchor='start' ><tspan>O</tspan></text>
+<text class='tr' dy='0.2125em' x='197.84' y='328.24' atomx='190.84' atomy='325.09' text-anchor='end' ><tspan>O</tspan></text>
+<text class='tr' dy='0.2125em' x='169.53' y='307.67' atomx='162.53' atomy='304.52' text-anchor='end' ><tspan>O</tspan></text>
+<text class='tr' dy='0.2125em' x='159.19' y='196.72' atomx='166.19' atomy='193.57' text-anchor='start' ><tspan>C</tspan><tspan>O</tspan><tspan class='sub' dy='4.5' >2</tspan><tspan dy='-4.5' >H</tspan></text>
+<text class='tr' dy='0.2125em' x='544.87' y='261.29' atomx='551.87' atomy='258.14' text-anchor='start' ><tspan>N</tspan></text>
+<text class='tr' dy='0.2125em' x='640.79' y='218.58' atomx='647.79' atomy='215.43' text-anchor='start' ><tspan>P</tspan><tspan>h</tspan></text>
+<text class='tr' dy='0.2125em' x='633.47' y='288.20' atomx='640.47' atomy='285.05' text-anchor='start' ><tspan>N</tspan><tspan>H</tspan></text>
+<text class='tr' dy='0.2125em' x='690.11' y='329.34' atomx='697.11' atomy='326.19' text-anchor='start' ><tspan>N</tspan><tspan>H</tspan></text>
+<text class='tr' dy='0.2125em' x='725.74' y='280.30' atomx='732.74' atomy='277.15' text-anchor='start' ><tspan>O</tspan></text>
+<text class='tr' dy='0.2125em' x='611.84' y='337.24' atomx='604.84' atomy='334.09' text-anchor='end' ><tspan>O</tspan></text>
+<text class='tr' dy='0.2125em' x='583.53' y='316.67' atomx='576.53' atomy='313.52' text-anchor='end' ><tspan>O</tspan></text>
+<text class='tr' dy='0.2125em' x='520.72' y='179.68' atomx='513.72' atomy='176.53' text-anchor='end' ><tspan>O</tspan></text>
+<text class='tr' dy='0.2125em' x='579.01' y='200.79' atomx='572.01' atomy='197.64' text-anchor='end' ><tspan>O</tspan></text>
+<text class='tr' dy='0.2125em' x='849.01' y='273.79' atomx='842.01' atomy='270.64' text-anchor='end' ><tspan>P</tspan><tspan>h</tspan></text>
+<text class='tr' dy='0.2125em' x='865.32' y='256.29' atomx='872.32' atomy='253.14' text-anchor='start' ><tspan>S</tspan></text>
+<text class='tr' dy='0.2125em' x='932.44' y='256.29' atomx='925.44' atomy='253.14' text-anchor='end' ><tspan>S</tspan></text>
+<text class='tr' dy='0.2125em' x='948.75' y='273.79' atomx='955.75' atomy='270.64' text-anchor='start' ><tspan>P</tspan><tspan>h</tspan></text>
+<text class='tr' dy='0.2125em' x='946.21' y='234.98' atomx='953.21' atomy='231.83' text-anchor='start' ><tspan>O</tspan></text>
+<text class='tr' dy='0.2125em' x='851.55' y='234.98' atomx='844.55' atomy='231.83' text-anchor='end' ><tspan>O</tspan></text>
+<text class='tr' dy='0.2125em' x='871.01' y='297.79' atomx='878.01' atomy='294.64' text-anchor='start' ><tspan>P</tspan><tspan>d</tspan><tspan>(</tspan><tspan>O</tspan><tspan>A</tspan><tspan>c</tspan><tspan>)</tspan><tspan class='sub' dy='4.5' >2</tspan></text>
+<text class='text-area' dy='0.2125em' x='379.01' y='246.64' textarea='true' text-anchor='lr' ><tspan>W</tspan><tspan>h</tspan><tspan>i</tspan><tspan>t</tspan><tspan>e</tspan><tspan> </tspan><tspan>c</tspan><tspan>a</tspan><tspan>t</tspan><tspan>.</tspan><tspan></tspan></text>
+<text class='text-area' dy='0.2125em' x='380.01' y='280.64' textarea='true' text-anchor='lr' ><tspan>B</tspan><tspan>Q</tspan><tspan>,</tspan><tspan> </tspan><tspan>D</tspan><tspan>C</tspan><tspan>M</tspan><tspan></tspan></text>
+<text class='text-area' dy='0.2125em' x='894.01' y='268.64' textarea='true' text-anchor='lr' ><tspan>.</tspan><tspan></tspan></text>
+<text class='text-area' dy='0.2125em' x='814.01' y='193.64' textarea='true' text-anchor='lr' ><tspan>W</tspan><tspan>h</tspan><tspan>i</tspan><tspan>t</tspan><tspan>e</tspan><tspan> </tspan><tspan>c</tspan><tspan>a</tspan><tspan>t</tspan><tspan>.</tspan><tspan>:</tspan><tspan></tspan></text>
+</g>
+</svg>

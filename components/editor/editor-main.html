@@ -14,25 +14,28 @@
       <p><button class="btn btn-primary" ng-click="appCtrl.runEditor()"> Open Editor </button></p>
     </div>
   </div>
-  <div class="home row" ng-switch="mainCtrl.svg()">
-    <div class="col-md-5">
-      <p>
-        <strong>Output:</strong>
-        <div>
-          <span ng-switch-when=""><i>no structure transferred yet</i></span>
-          <div ng-switch-default class="structure" ng-bind-html="mainCtrl.input()"></div>
-        </div>
-      </p>
+  <div class="home" ng-switch="mainCtrl.svg()">
+    <div class="row home">
+      <div class="col-md-12">
+        <p>
+          <strong>Output:</strong>
+          <div>
+            <span ng-switch-when=""><i>no structure transferred yet</i></span>
+            <div ng-switch-default class="structure" ng-bind-html="mainCtrl.input()"></div>
+          </div>
+        </p>
+      </div>
     </div>
-    <div class="col-md-6">
-      <p>
-        <strong>Svg:</strong>
-        <div>
-          <span ng-switch-when=""><i>no structure transferred yet</i></span>
-          <pre ng-switch-default ng-bind="mainCtrl.svg()"></pre>
-        </div>
-      </p>
+    <div class="row home">
+      <div class="col-md-12">
+        <p>
+          <strong>Svg:</strong>
+          <div>
+            <span ng-switch-when=""><i>no structure transferred yet</i></span>
+            <pre ng-switch-default ng-bind="mainCtrl.svg()"></pre>
+          </div>
+        </p>
+      </div>
     </div>
-    <div class="col-md-1"></div>
   </div>
 </div>
