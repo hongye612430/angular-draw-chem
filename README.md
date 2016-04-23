@@ -1,10 +1,12 @@
+## adChem
+
+<img alt="logo" src="http://mmmalik.github.io/angular-draw-chem/images/svg/logo-new.svg" width="200" height="200" />
+
 latest stable release: v1.0.0
 
 current:
 
 [![Build Status](https://travis-ci.org/MMMalik/angular-draw-chem.svg?branch=master)](https://travis-ci.org/MMMalik/angular-draw-chem)
-
-<img alt="logo" src="http://mmmalik.github.io/angular-draw-chem/images/svg/logo-new.svg" width="200" height="200" />
 
 aim of the project
 ------
