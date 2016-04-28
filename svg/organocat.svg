@@ -1,0 +1,52 @@
+<!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>
+<svg viewBox='364.00 119.69 744.55 243.31' height='100%' width='100%' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' >
+<g id='transfer' >
+<style type="text/css">path{stroke:black;stroke-width:1.40;fill:none;}path.wedge{fill:black;}path.arrow{fill:black;}path.arrow-eq{fill:none;}circle.arom{stroke:black;stroke-width:1.40;fill:none;}circle.tr-arom{stroke:black;stroke-width:1.40;fill:none;}text{font-family:Arial;cursor:default;font-size:18px;}tspan.sub{font-size:14px;}text.text-area{font-family:Arial;cursor:default;font-size:14px;}tspan.text-area-sub{font-size:10px;}</style>
+<path d='M 399.00 263.00 M 408.09 268.25 L 429.31 280.50 L 459.62 263.00 L 459.62 228.00 L 489.93 210.50 L 520.24 228.00 L 541.46 215.75 '></path>
+<path d='M 517.97 228.00 L 517.97 252.50 M 522.52 228.00 L 522.52 252.50 '></path>
+<path d='M 520.24 263.00 '></path>
+<path d='M 427.04 280.50 L 427.04 305.00 M 431.59 280.50 L 431.59 305.00 '></path>
+<path d='M 429.31 315.50 '></path>
+<path class='arrow' d='M 594.00 244.00 L 838.15 244.00 M 832.90 244.00 L 832.90 241.72 L 838.15 244.00 L 832.90 246.27 Z '></path>
+<path d='M 672.00 180.00 L 689.50 149.69 '></path>
+<path d='M 689.50 149.69 L 724.50 149.69 M 691.25 154.24 L 722.75 154.24 '></path>
+<path d='M 724.50 149.69 L 742.00 180.00 '></path>
+<path d='M 742.00 180.00 L 724.50 210.31 M 737.18 179.24 L 721.43 206.52 '></path>
+<path d='M 724.50 210.31 L 689.50 210.31 '></path>
+<path d='M 689.50 210.31 L 672.00 180.00 M 692.57 206.52 L 676.82 179.24 '></path>
+<path d='M 672.00 180.00 '></path>
+<path d='M 742.00 180.00 L 777.00 180.00 '></path>
+<path d='M 778.97 181.14 L 791.22 159.92 M 775.03 178.86 L 787.28 157.64 '></path>
+<path d='M 794.50 149.69 '></path>
+<path d='M 672.00 180.00 L 647.50 180.00 '></path>
+<path d='M 927.00 263.00 L 957.31 280.50 L 957.31 305.00 M 948.22 320.75 L 927.00 333.00 '></path>
+<path d='M 927.00 333.00 L 896.69 315.50 M 927.76 328.18 L 900.48 312.43 '></path>
+<path d='M 896.69 315.50 L 896.69 280.50 '></path>
+<path d='M 896.69 280.50 L 927.00 263.00 M 900.48 283.57 L 927.76 267.82 '></path>
+<path d='M 927.00 263.00 '></path>
+<path class='wedge' d='M 957.31 280.50 L 988.76 264.97 L 986.48 261.03 Z '></path>
+<path d='M 987.62 263.00 L 987.62 228.00 '></path>
+<path d='M 987.62 228.00 L 1017.93 210.50 M 991.41 231.07 L 1018.69 215.32 '></path>
+<path d='M 1017.93 210.50 L 1048.24 228.00 '></path>
+<path d='M 1048.24 228.00 L 1048.24 263.00 M 1043.69 229.75 L 1043.69 261.25 '></path>
+<path d='M 1048.24 263.00 L 1017.93 280.50 '></path>
+<path d='M 1017.93 280.50 L 987.62 263.00 M 1018.69 275.68 L 991.41 259.93 '></path>
+<path d='M 987.62 263.00 '></path>
+<path d='M 1048.24 228.00 L 1069.46 215.75 '></path>
+<path d='M 927.00 263.00 L 927.00 228.00 '></path>
+<path d='M 928.14 226.03 L 906.92 213.78 M 925.86 229.97 L 904.64 217.72 '></path>
+<path d='M 896.69 210.50 '></path>
+<path d='M 927.00 228.00 L 948.22 215.75 '></path>
+<text class='tr' dy='0.2125em' x='406.00' y='266.15' atomx='399.00' atomy='263.00' text-anchor='end' ><tspan>H</tspan></text>
+<text class='tr' dy='0.2125em' x='543.55' y='213.65' atomx='550.55' atomy='210.50' text-anchor='start' ><tspan>H</tspan></text>
+<text class='tr' dy='0.2125em' x='513.24' y='266.15' atomx='520.24' atomy='263.00' text-anchor='start' ><tspan>O</tspan></text>
+<text class='tr' dy='0.2125em' x='422.31' y='318.65' atomx='429.31' atomy='315.50' text-anchor='start' ><tspan>O</tspan></text>
+<text class='tr' dy='0.2125em' x='787.50' y='152.84' atomx='794.50' atomy='149.69' text-anchor='start' ><tspan>N</tspan><tspan>P</tspan><tspan>M</tspan><tspan>P</tspan></text>
+<text class='tr' dy='0.2125em' x='644.00' y='183.15' atomx='637.00' atomy='180.00' text-anchor='end' ><tspan>O</tspan><tspan class='sub' dy='4.5' >2</tspan><tspan dy='-4.5' >N</tspan></text>
+<text class='tr' dy='0.2125em' x='950.31' y='318.65' atomx='957.31' atomy='315.50' text-anchor='start' ><tspan>N</tspan><tspan>P</tspan><tspan>M</tspan><tspan>P</tspan></text>
+<text class='tr' dy='0.2125em' x='1071.55' y='213.65' atomx='1078.55' atomy='210.50' text-anchor='start' ><tspan>N</tspan><tspan>O</tspan><tspan class='sub' dy='4.5' >2</tspan></text>
+<text class='tr' dy='0.2125em' x='903.69' y='213.65' atomx='896.69' atomy='210.50' text-anchor='end' ><tspan>O</tspan></text>
+<text class='tr' dy='0.2125em' x='950.31' y='213.65' atomx='957.31' atomy='210.50' text-anchor='start' ><tspan>H</tspan></text>
+<text class='text-area' dy='0.2125em' x='671.00' y='277.00' textarea='true' text-anchor='lr' ><tspan>L</tspan><tspan>-</tspan><tspan>p</tspan><tspan>r</tspan><tspan>o</tspan><tspan>l</tspan><tspan>i</tspan><tspan>n</tspan><tspan>e</tspan><tspan> </tspan><tspan>(</tspan><tspan>c</tspan><tspan>a</tspan><tspan>t</tspan><tspan>.</tspan><tspan>)</tspan><tspan></tspan></text>
+</g>
+</svg>

@@ -1,0 +1,41 @@
+<!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>
+<svg viewBox='401.45 150.00 758.49 252.50' height='100%' width='100%' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' >
+<g id='transfer' >
+<style type="text/css">path{stroke:black;stroke-width:1.40;fill:none;}path.wedge{fill:black;}path.arrow{fill:black;}path.arrow-eq{fill:none;}circle.arom{stroke:black;stroke-width:1.40;fill:none;}circle.tr-arom{stroke:black;stroke-width:1.40;fill:none;}text{font-family:Arial;cursor:default;font-size:18px;}tspan.sub{font-size:14px;}text.text-area{font-family:Arial;cursor:default;font-size:14px;}tspan.text-area-sub{font-size:10px;}</style>
+<path d='M 583.00 215.00 L 604.22 227.25 M 613.31 243.00 L 613.31 267.50 '></path>
+<path d='M 613.20 267.70 L 613.42 267.30 M 616.11 269.64 L 616.57 268.86 M 619.03 271.59 L 619.71 270.41 M 621.95 273.54 L 622.86 271.96 M 624.87 275.49 L 626.00 273.51 M 627.78 277.43 L 629.15 275.07 M 630.70 279.38 L 632.29 276.62 M 633.62 281.33 L 635.44 278.17 M 636.54 283.27 L 638.58 279.73 M 639.45 285.22 L 641.73 281.28 M 642.37 287.17 L 644.87 282.83 '></path>
+<path d='M 643.62 285.00 L 673.93 267.50 L 673.93 232.50 '></path>
+<path d='M 613.31 267.50 L 583.00 285.00 L 583.00 320.00 '></path>
+<path d='M 579.50 320.00 L 579.50 355.00 M 583.00 320.00 L 583.00 355.00 M 586.50 320.00 L 586.50 355.00 '></path>
+<path d='M 583.00 355.00 '></path>
+<path d='M 585.27 215.00 L 585.27 190.50 M 580.73 215.00 L 580.73 190.50 '></path>
+<path d='M 583.00 180.00 '></path>
+<path d='M 552.69 232.50 L 522.38 215.00 L 492.07 232.50 L 461.76 215.00 L 431.45 232.50 L 431.45 267.50 L 461.76 285.00 L 492.07 267.50 '></path>
+<path d='M 492.07 267.50 L 522.38 285.00 M 491.31 272.32 L 518.59 288.07 '></path>
+<path d='M 522.38 285.00 L 522.38 320.00 L 492.07 337.50 '></path>
+<path d='M 490.32 334.47 L 460.01 351.97 M 492.07 337.50 L 461.76 355.00 M 493.82 340.53 L 463.51 358.03 '></path>
+<path d='M 461.76 355.00 L 431.45 372.50 '></path>
+<path d='M 552.69 232.50 L 583.00 215.00 '></path>
+<path d='M 1039.00 219.00 L 1060.22 231.25 M 1069.31 247.00 L 1069.31 271.50 '></path>
+<path d='M 1069.20 271.70 L 1069.42 271.30 M 1072.11 273.64 L 1072.57 272.86 M 1075.03 275.59 L 1075.71 274.41 M 1077.95 277.54 L 1078.86 275.96 M 1080.87 279.49 L 1082.00 277.51 M 1083.78 281.43 L 1085.15 279.07 M 1086.70 283.38 L 1088.29 280.62 M 1089.62 285.33 L 1091.44 282.17 M 1092.54 287.27 L 1094.58 283.73 M 1095.45 289.22 L 1097.73 285.28 M 1098.37 291.17 L 1100.87 286.83 '></path>
+<path d='M 1099.62 289.00 L 1129.93 271.50 L 1129.93 236.50 '></path>
+<path d='M 1069.31 271.50 L 1039.00 289.00 '></path>
+<path d='M 1041.28 219.00 L 1041.28 194.50 M 1036.72 219.00 L 1036.72 194.50 '></path>
+<path d='M 1039.00 184.00 '></path>
+<path d='M 1008.69 236.50 L 978.38 219.00 L 948.07 236.50 L 917.76 219.00 L 887.45 236.50 L 887.45 271.50 L 917.76 289.00 L 917.76 324.00 '></path>
+<path d='M 917.76 324.00 L 948.07 341.50 M 921.55 320.93 L 948.83 336.68 '></path>
+<path d='M 948.07 341.50 L 978.38 324.00 L 978.38 289.00 '></path>
+<path d='M 978.38 289.00 L 1008.69 271.50 M 977.62 284.18 L 1004.90 268.43 '></path>
+<path d='M 1008.69 271.50 L 1039.00 289.00 '></path>
+<path d='M 1008.69 236.50 L 1039.00 219.00 '></path>
+<path d='M 583.00 215.00 '></path>
+<path d='M 1039.00 219.00 '></path>
+<path class='arrow' d='M 704.00 258.00 L 844.23 258.00 M 838.98 258.00 L 838.98 255.72 L 844.23 258.00 L 838.98 260.27 Z '></path>
+<text class='tr' dy='0.2125em' x='620.31' y='235.65' atomx='613.31' atomy='232.50' text-anchor='end' ><tspan>O</tspan></text>
+<text class='tr' dy='0.2125em' x='590.00' y='183.15' atomx='583.00' atomy='180.00' text-anchor='end' ><tspan>O</tspan></text>
+<text class='tr' dy='0.2125em' x='1076.31' y='239.65' atomx='1069.31' atomy='236.50' text-anchor='end' ><tspan>O</tspan></text>
+<text class='tr' dy='0.2125em' x='1046.00' y='187.15' atomx='1039.00' atomy='184.00' text-anchor='end' ><tspan>O</tspan></text>
+<text class='text-area' dy='0.2125em' x='720.00' y='241.00' textarea='true' text-anchor='lr' ><tspan>1</tspan><tspan>.</tspan><tspan> </tspan><tspan>M</tspan><tspan>o</tspan><tspan> </tspan><tspan>c</tspan><tspan>a</tspan><tspan>t</tspan><tspan>.</tspan><tspan></tspan></text>
+<text class='text-area' dy='0.2125em' x='711.00' y='281.00' textarea='true' text-anchor='lr' ><tspan>2</tspan><tspan>.</tspan><tspan> </tspan><tspan>H</tspan><tspan class='text-area-sub' dy='3.5' >2</tspan><tspan dy='-3.5' > </tspan><tspan>/</tspan><tspan> </tspan><tspan>L</tspan><tspan>i</tspan><tspan>n</tspan><tspan>d</tspan><tspan>l</tspan><tspan>a</tspan><tspan>r</tspan><tspan> </tspan><tspan>c</tspan><tspan>a</tspan><tspan>t</tspan><tspan>.</tspan><tspan></tspan></text>
+</g>
+</svg>
